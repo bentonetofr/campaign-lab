@@ -14,6 +14,22 @@ if (document.body.classList.contains("home-page")) {
   const campaignInput = document.getElementById("campaign");
   const loginForm = document.getElementById("loginForm");
 
+  const lastCampaignTitle = document.getElementById("lastCampaignTitle");
+  const lastPlayersCount = document.getElementById("lastPlayersCount");
+  const lastSessionsCount = document.getElementById("lastSessionsCount");
+  const lastSheetsCount = document.getElementById("lastSheetsCount");
+  const lastItemsCount = document.getElementById("lastItemsCount");
+
+  const lastCampaign = JSON.parse(localStorage.getItem("lastCampaign"));
+
+  if (lastCampaign) {
+    if (lastCampaignTitle) lastCampaignTitle.textContent = lastCampaign.name;
+    if (lastPlayersCount) lastPlayersCount.textContent = lastCampaign.players;
+    if (lastSessionsCount) lastSessionsCount.textContent = lastCampaign.sessions;
+    if (lastSheetsCount) lastSheetsCount.textContent = lastCampaign.sheets;
+    if (lastItemsCount) lastItemsCount.textContent = lastCampaign.items;
+  }
+
   let selectedSystem = "";
   let selectedProfile = "Mestre";
 
@@ -30,13 +46,8 @@ if (document.body.classList.contains("home-page")) {
 
       selectedSystem = card.dataset.system;
 
-      if (selectedSystemText) {
-        selectedSystemText.textContent = selectedSystem;
-      }
-
-      if (previewSystem) {
-        previewSystem.textContent = selectedSystem;
-      }
+      if (selectedSystemText) selectedSystemText.textContent = selectedSystem;
+      if (previewSystem) previewSystem.textContent = selectedSystem;
     });
   });
 
@@ -47,9 +58,7 @@ if (document.body.classList.contains("home-page")) {
 
       selectedProfile = button.dataset.profile;
 
-      if (previewProfile) {
-        previewProfile.textContent = selectedProfile;
-      }
+      if (previewProfile) previewProfile.textContent = selectedProfile;
     });
   });
 
@@ -65,20 +74,31 @@ if (document.body.classList.contains("home-page")) {
 
       const nameInput = document.getElementById("name");
       const emailInput = document.getElementById("email");
-      const campaignInput = document.getElementById("campaign");
 
       if (!selectedSystem) {
         alert("Escolha um sistema antes de entrar.");
         return;
       }
 
-      if (selectedSystem === "Altherium") {
-        localStorage.setItem("system", selectedSystem);
-        localStorage.setItem("profile", selectedProfile);
-        localStorage.setItem("campaignName", campaignInput.value);
-        localStorage.setItem("userName", nameInput.value);
-        localStorage.setItem("userEmail", emailInput.value);
+      const lastCampaignData = {
+        name: campaignInput.value,
+        system: selectedSystem,
+        profile: selectedProfile,
+        players: "01",
+        sessions: "00",
+        sheets: "00",
+        items: "00",
+      };
 
+      localStorage.setItem("lastCampaign", JSON.stringify(lastCampaignData));
+
+      localStorage.setItem("system", selectedSystem);
+      localStorage.setItem("profile", selectedProfile);
+      localStorage.setItem("campaignName", campaignInput.value);
+      localStorage.setItem("userName", nameInput.value);
+      localStorage.setItem("userEmail", emailInput.value);
+
+      if (selectedSystem === "Altherium") {
         if (selectedProfile === "Mestre") {
           window.location.href = "altherium-mestre.html";
           return;
@@ -91,19 +111,13 @@ if (document.body.classList.contains("home-page")) {
       }
 
       if (selectedSystem === "D&D") {
-        localStorage.setItem("system", selectedSystem);
-        localStorage.setItem("profile", selectedProfile);
-        localStorage.setItem("campaignName", campaignInput.value);
-        localStorage.setItem("userName", nameInput.value);
-        localStorage.setItem("userEmail", emailInput.value);
-
         if (selectedProfile === "Mestre") {
           window.location.href = "dnd-mestre.html";
           return;
         }
 
         if (selectedProfile === "Jogador") {
-          alert("A página do jogador de D&D ainda não foi criada.");
+          window.location.href = "dnd-jogador.html";
           return;
         }
       }
@@ -167,7 +181,6 @@ if (document.body.classList.contains("altherium-page")) {
             <div class="altherium-card">
               <h3>${player.nome}</h3>
               <p>Personagem: ${player.personagem}</p>
-
               <div class="altherium-actions">
                 <button data-delete-player="${index}">Excluir</button>
               </div>
@@ -194,7 +207,6 @@ if (document.body.classList.contains("altherium-page")) {
             <div class="altherium-card">
               <h3>${sheet.nome}</h3>
               <p>Raiz: ${sheet.raiz}</p>
-
               <div class="altherium-actions">
                 <button data-delete-sheet="${index}">Excluir</button>
               </div>
@@ -221,7 +233,6 @@ if (document.body.classList.contains("altherium-page")) {
             <div class="altherium-card">
               <h3>${monster.nome}</h3>
               <p>Tipo: ${monster.tipo}</p>
-
               <div class="altherium-actions">
                 <button data-delete-monster="${index}">Excluir</button>
               </div>
@@ -241,12 +252,10 @@ if (document.body.classList.contains("altherium-page")) {
     function openModal(type) {
       currentMode = type;
       modal.classList.add("active");
-
       mainForm.reset();
 
       if (type === "player") {
         modalTitle.textContent = "Novo Player";
-
         formFields.innerHTML = `
           <input name="nome" placeholder="Nome do player" required />
           <input name="personagem" placeholder="Nome do personagem" required />
@@ -255,10 +264,8 @@ if (document.body.classList.contains("altherium-page")) {
 
       if (type === "sheet") {
         modalTitle.textContent = "Nova Ficha";
-
         formFields.innerHTML = `
           <input name="nome" placeholder="Nome do personagem" required />
-
           <select name="raiz" required>
             <option value="Berserker">Berserker</option>
             <option value="Runaskin">Runaskin</option>
@@ -269,7 +276,6 @@ if (document.body.classList.contains("altherium-page")) {
 
       if (type === "monster") {
         modalTitle.textContent = "Nova Criatura";
-
         formFields.innerHTML = `
           <input name="nome" placeholder="Nome da criatura" required />
           <input name="tipo" placeholder="Tipo da criatura" required />
@@ -288,17 +294,9 @@ if (document.body.classList.contains("altherium-page")) {
 
       const data = Object.fromEntries(new FormData(mainForm));
 
-      if (currentMode === "player") {
-        players.push(data);
-      }
-
-      if (currentMode === "sheet") {
-        sheets.push(data);
-      }
-
-      if (currentMode === "monster") {
-        monsters.push(data);
-      }
+      if (currentMode === "player") players.push(data);
+      if (currentMode === "sheet") sheets.push(data);
+      if (currentMode === "monster") monsters.push(data);
 
       closeModal();
       renderAll();
@@ -308,11 +306,7 @@ if (document.body.classList.contains("altherium-page")) {
       const target = event.target;
 
       if (target.closest("[data-clear-access]")) {
-        localStorage.removeItem("system");
-        localStorage.removeItem("profile");
-        localStorage.removeItem("campaignName");
-        localStorage.removeItem("userName");
-        localStorage.removeItem("userEmail");
+        clearAccess();
       }
 
       if (target.dataset.openModal) {
@@ -342,23 +336,7 @@ if (document.body.classList.contains("altherium-page")) {
         renderAll();
       }
 
-      if (target.classList.contains("altherium-tab")) {
-        document
-          .querySelectorAll(".altherium-tab")
-          .forEach((button) => button.classList.remove("active"));
-
-        document
-          .querySelectorAll(".altherium-section")
-          .forEach((section) => section.classList.remove("active"));
-
-        target.classList.add("active");
-
-        const selectedSection = document.getElementById(target.dataset.tab);
-
-        if (selectedSection) {
-          selectedSection.classList.add("active");
-        }
-      }
+      handleTabs(target);
     });
 
     renderAll();
@@ -386,29 +364,18 @@ if (document.body.classList.contains("altherium-player-page")) {
 
     const storageKey = `altherium-sheet-${userName}-${campaignName}`;
 
-    if (playerNameView) {
-      playerNameView.textContent = userName || "---";
-    }
-
-    if (campaignNameView) {
-      campaignNameView.textContent = campaignName || "---";
-    }
+    if (playerNameView) playerNameView.textContent = userName || "---";
+    if (campaignNameView) campaignNameView.textContent = campaignName || "---";
 
     function loadPlayerSheet() {
       const savedSheet = localStorage.getItem(storageKey);
-
-      if (!savedSheet) {
-        return;
-      }
+      if (!savedSheet) return;
 
       const sheetData = JSON.parse(savedSheet);
 
       Object.keys(sheetData).forEach((key) => {
         const field = playerSheetForm.elements[key];
-
-        if (field) {
-          field.value = sheetData[key];
-        }
+        if (field) field.value = sheetData[key];
       });
     }
 
@@ -418,9 +385,7 @@ if (document.body.classList.contains("altherium-player-page")) {
 
       localStorage.setItem(storageKey, JSON.stringify(sheetData));
 
-      if (showAlert) {
-        alert("Ficha salva com sucesso.");
-      }
+      if (showAlert) alert("Ficha salva com sucesso.");
     }
 
     if (savePlayerSheet) {
@@ -439,11 +404,7 @@ if (document.body.classList.contains("altherium-player-page")) {
       const target = event.target;
 
       if (target.closest("[data-clear-access]")) {
-        localStorage.removeItem("system");
-        localStorage.removeItem("profile");
-        localStorage.removeItem("campaignName");
-        localStorage.removeItem("userName");
-        localStorage.removeItem("userEmail");
+        clearAccess();
       }
     });
 
@@ -505,7 +466,6 @@ if (document.body.classList.contains("dnd-master-page")) {
             <div class="altherium-card">
               <h3>${player.nome}</h3>
               <p>Personagem: ${player.personagem}</p>
-
               <div class="altherium-actions">
                 <button data-delete-dnd-player="${index}">Excluir</button>
               </div>
@@ -534,7 +494,6 @@ if (document.body.classList.contains("dnd-master-page")) {
               <p>Classe: ${character.classe}</p>
               <p>Raça: ${character.raca}</p>
               <p>Nível: ${character.nivel}</p>
-
               <div class="altherium-actions">
                 <button data-delete-dnd-character="${index}">Excluir</button>
               </div>
@@ -563,7 +522,6 @@ if (document.body.classList.contains("dnd-master-page")) {
               <p>Tipo: ${monster.tipo}</p>
               <p>ND: ${monster.nd}</p>
               <p>PV: ${monster.pv}</p>
-
               <div class="altherium-actions">
                 <button data-delete-dnd-monster="${index}">Excluir</button>
               </div>
@@ -587,7 +545,6 @@ if (document.body.classList.contains("dnd-master-page")) {
 
       if (type === "player") {
         dndModalTitle.textContent = "Novo Player";
-
         dndFormFields.innerHTML = `
           <input name="nome" placeholder="Nome do player" required />
           <input name="personagem" placeholder="Nome do personagem" required />
@@ -596,7 +553,6 @@ if (document.body.classList.contains("dnd-master-page")) {
 
       if (type === "character") {
         dndModalTitle.textContent = "Novo Personagem";
-
         dndFormFields.innerHTML = `
           <input name="nome" placeholder="Nome do personagem" required />
 
@@ -622,7 +578,6 @@ if (document.body.classList.contains("dnd-master-page")) {
 
       if (type === "monster") {
         dndModalTitle.textContent = "Novo Monstro";
-
         dndFormFields.innerHTML = `
           <input name="nome" placeholder="Nome do monstro" required />
           <input name="tipo" placeholder="Tipo. Ex: Morto-vivo, Dragão" required />
@@ -643,17 +598,9 @@ if (document.body.classList.contains("dnd-master-page")) {
 
       const data = Object.fromEntries(new FormData(dndForm));
 
-      if (currentDndMode === "player") {
-        dndPlayers.push(data);
-      }
-
-      if (currentDndMode === "character") {
-        dndCharacters.push(data);
-      }
-
-      if (currentDndMode === "monster") {
-        dndMonsters.push(data);
-      }
+      if (currentDndMode === "player") dndPlayers.push(data);
+      if (currentDndMode === "character") dndCharacters.push(data);
+      if (currentDndMode === "monster") dndMonsters.push(data);
 
       closeDndModal();
       renderAllDnd();
@@ -663,11 +610,7 @@ if (document.body.classList.contains("dnd-master-page")) {
       const target = event.target;
 
       if (target.closest("[data-clear-access]")) {
-        localStorage.removeItem("system");
-        localStorage.removeItem("profile");
-        localStorage.removeItem("campaignName");
-        localStorage.removeItem("userName");
-        localStorage.removeItem("userEmail");
+        clearAccess();
       }
 
       if (target.dataset.openDndModal) {
@@ -697,25 +640,112 @@ if (document.body.classList.contains("dnd-master-page")) {
         renderAllDnd();
       }
 
-      if (target.classList.contains("altherium-tab")) {
-        document
-          .querySelectorAll(".altherium-tab")
-          .forEach((button) => button.classList.remove("active"));
-
-        document
-          .querySelectorAll(".altherium-section")
-          .forEach((section) => section.classList.remove("active"));
-
-        target.classList.add("active");
-
-        const selectedSection = document.getElementById(target.dataset.tab);
-
-        if (selectedSection) {
-          selectedSection.classList.add("active");
-        }
-      }
+      handleTabs(target);
     });
 
     renderAllDnd();
+  }
+}
+
+/* =========================================================
+   D&D - PAINEL DO JOGADOR
+========================================================= */
+
+if (document.body.classList.contains("dnd-player-page")) {
+  const system = localStorage.getItem("system");
+  const profile = localStorage.getItem("profile");
+  const userName = localStorage.getItem("userName");
+  const campaignName = localStorage.getItem("campaignName");
+
+  if (system !== "D&D" || profile !== "Jogador") {
+    alert("Acesso negado. Escolha D&D e perfil Jogador na página inicial.");
+    window.location.href = "index.html";
+  } else {
+    const playerNameView = document.getElementById("dndPlayerNameView");
+    const campaignNameView = document.getElementById("dndCampaignNameView");
+    const playerSheetForm = document.getElementById("dndPlayerSheetForm");
+    const saveDndSheet = document.getElementById("saveDndSheet");
+
+    const storageKey = `dnd-sheet-${userName}-${campaignName}`;
+
+    if (playerNameView) playerNameView.textContent = userName || "---";
+    if (campaignNameView) campaignNameView.textContent = campaignName || "---";
+
+    function loadDndSheet() {
+      const savedSheet = localStorage.getItem(storageKey);
+      if (!savedSheet) return;
+
+      const sheetData = JSON.parse(savedSheet);
+
+      Object.keys(sheetData).forEach((key) => {
+        const field = playerSheetForm.elements[key];
+        if (field) field.value = sheetData[key];
+      });
+    }
+
+    function saveDndSheetData(showAlert = true) {
+      const formData = new FormData(playerSheetForm);
+      const sheetData = Object.fromEntries(formData);
+
+      localStorage.setItem(storageKey, JSON.stringify(sheetData));
+
+      if (showAlert) alert("Ficha de D&D salva com sucesso.");
+    }
+
+    if (saveDndSheet) {
+      saveDndSheet.addEventListener("click", () => {
+        saveDndSheetData(true);
+      });
+    }
+
+    if (playerSheetForm) {
+      playerSheetForm.addEventListener("input", () => {
+        saveDndSheetData(false);
+      });
+    }
+
+    document.addEventListener("click", (event) => {
+      const target = event.target;
+
+      if (target.closest("[data-clear-access]")) {
+        clearAccess();
+      }
+    });
+
+    loadDndSheet();
+  }
+}
+
+/* =========================================================
+   FUNÇÕES GLOBAIS
+========================================================= */
+
+function clearAccess() {
+  localStorage.removeItem("system");
+  localStorage.removeItem("profile");
+  localStorage.removeItem("campaignName");
+  localStorage.removeItem("userName");
+  localStorage.removeItem("userEmail");
+}
+
+function handleTabs(target) {
+  if (!target.classList.contains("altherium-tab")) {
+    return;
+  }
+
+  document
+    .querySelectorAll(".altherium-tab")
+    .forEach((button) => button.classList.remove("active"));
+
+  document
+    .querySelectorAll(".altherium-section")
+    .forEach((section) => section.classList.remove("active"));
+
+  target.classList.add("active");
+
+  const selectedSection = document.getElementById(target.dataset.tab);
+
+  if (selectedSection) {
+    selectedSection.classList.add("active");
   }
 }
