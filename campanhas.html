@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campaign Lab | Campanhas</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body class="campaign-list-page">
+    <div class="background-glow"></div>
+
+    <header class="header">
+      <div class="header-container">
+        <a href="index.html" class="logo" data-clear-access>
+          <img src="img/logo.png" alt="Campaign Lab" />
+        </a>
+
+        <nav class="nav">
+          <a href="index.html">Início</a>
+        </nav>
+
+        <a href="index.html" class="header-cta" data-clear-access>Voltar</a>
+      </div>
+    </header>
+
+    <main class="altherium-main">
+      <section class="altherium-hero">
+        <div class="altherium-hero-text">
+          <p class="tag">Campanhas disponíveis</p>
+          <h1>Escolha sua campanha</h1>
+          <p>
+            Selecione uma campanha criada por um mestre para entrar como
+            jogador.
+          </p>
+        </div>
+
+        <div class="altherium-dashboard">
+          <div class="altherium-status-card">
+            <span>Sistema</span>
+            <strong id="campaignListSystem">---</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="altherium-panel">
+        <div class="altherium-panel-header">
+          <div>
+            <h2>Mesas encontradas</h2>
+            <p>Clique em uma campanha para entrar.</p>
+          </div>
+        </div>
+
+        <div class="altherium-grid" id="campaignsGrid"></div>
+      </section>
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase.js"></script>
+    <script src="js/script.js"></script>
+  </body>
+</html>

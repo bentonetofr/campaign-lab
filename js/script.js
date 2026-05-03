@@ -1,3 +1,5 @@
+const supabaseClient = window.supabaseClient;
+
 /* =========================================================
    HOME - CAMPAIGN LAB
 ========================================================= */
@@ -33,12 +35,7 @@ if (document.body.classList.contains("home-page")) {
   let selectedSystem = "";
   let selectedProfile = "Mestre";
 
-  localStorage.removeItem("system");
-  localStorage.removeItem("profile");
-  localStorage.removeItem("campaignName");
-  localStorage.removeItem("campaignId");
-  localStorage.removeItem("userName");
-  localStorage.removeItem("userEmail");
+  clearAccess(false);
 
   systemCards.forEach((card) => {
     card.addEventListener("click", () => {
@@ -87,67 +84,70 @@ if (document.body.classList.contains("home-page")) {
       const password = passwordInput.value.trim();
       const campaignName = campaignInput.value.trim();
 
-      if (!name || !email || !password || !campaignName) {
-        alert("Preencha todos os campos.");
+      if (!name || !email || !password) {
+        alert("Preencha nome, e-mail e senha.");
+        return;
+      }
+
+      if (selectedProfile === "Mestre" && !campaignName) {
+        alert("Mestres precisam informar o nome da campanha.");
         return;
       }
 
       try {
         const user = await loginOrCreateUser(email, password, name);
 
-        const campaign = await getOrCreateCampaign({
-          name: campaignName,
-          system: selectedSystem,
-          profile: selectedProfile,
-          userId: user.id,
-        });
-
-        await saveCampaignMember({
-          campaignId: campaign.id,
-          userId: user.id,
-          profile: selectedProfile,
-          displayName: name,
-          email,
-        });
-
-        const lastCampaignData = {
-          id: campaign.id,
-          name: campaign.name,
-          system: selectedSystem,
-          profile: selectedProfile,
-          players: "01",
-          sessions: "00",
-          sheets: "00",
-          items: "00",
-        };
-
-        localStorage.setItem("lastCampaign", JSON.stringify(lastCampaignData));
-
         localStorage.setItem("system", selectedSystem);
         localStorage.setItem("profile", selectedProfile);
-        localStorage.setItem("campaignName", campaign.name);
-        localStorage.setItem("campaignId", campaign.id);
         localStorage.setItem("userName", name);
         localStorage.setItem("userEmail", email);
         localStorage.setItem("userId", user.id);
 
-        if (selectedSystem === "Altherium" && selectedProfile === "Mestre") {
-          window.location.href = "altherium-mestre.html";
-          return;
+        if (selectedProfile === "Mestre") {
+          const campaign = await getOrCreateCampaign({
+            name: campaignName,
+            system: selectedSystem,
+            profile: selectedProfile,
+            userId: user.id,
+          });
+
+          await saveCampaignMember({
+            campaignId: campaign.id,
+            userId: user.id,
+            profile: selectedProfile,
+            displayName: name,
+            email,
+          });
+
+          localStorage.setItem("campaignName", campaign.name);
+          localStorage.setItem("campaignId", campaign.id);
+
+          const lastCampaignData = {
+            id: campaign.id,
+            name: campaign.name,
+            system: selectedSystem,
+            profile: selectedProfile,
+            players: "01",
+            sessions: "00",
+            sheets: "00",
+            items: "00",
+          };
+
+          localStorage.setItem("lastCampaign", JSON.stringify(lastCampaignData));
+
+          if (selectedSystem === "Altherium") {
+            window.location.href = "altherium-mestre.html";
+            return;
+          }
+
+          if (selectedSystem === "D&D") {
+            window.location.href = "dnd-mestre.html";
+            return;
+          }
         }
 
-        if (selectedSystem === "Altherium" && selectedProfile === "Jogador") {
-          window.location.href = "altherium-jogador.html";
-          return;
-        }
-
-        if (selectedSystem === "D&D" && selectedProfile === "Mestre") {
-          window.location.href = "dnd-mestre.html";
-          return;
-        }
-
-        if (selectedSystem === "D&D" && selectedProfile === "Jogador") {
-          window.location.href = "dnd-jogador.html";
+        if (selectedProfile === "Jogador") {
+          window.location.href = "campanhas.html";
           return;
         }
       } catch (error) {
@@ -158,122 +158,120 @@ if (document.body.classList.contains("home-page")) {
 }
 
 /* =========================================================
-   SUPABASE - LOGIN E CAMPANHAS
+   LISTA DE CAMPANHAS PARA JOGADORES
 ========================================================= */
 
-async function loginOrCreateUser(email, password, name) {
-  let { data, error } = await supabaseClient.auth.signInWithPassword({
-    email,
-    password,
-  });
+if (document.body.classList.contains("campaign-list-page")) {
+  const system = localStorage.getItem("system");
+  const profile = localStorage.getItem("profile");
+  const userId = localStorage.getItem("userId");
+  const userName = localStorage.getItem("userName");
+  const userEmail = localStorage.getItem("userEmail");
 
-  if (!error && data.user) {
-    return data.user;
+  const campaignListSystem = document.getElementById("campaignListSystem");
+  const campaignsGrid = document.getElementById("campaignsGrid");
+
+  if (!system || profile !== "Jogador" || !userId) {
+    alert("Acesso negado. Entre como jogador primeiro.");
+    window.location.href = "index.html";
+  } else {
+    if (campaignListSystem) {
+      campaignListSystem.textContent = system;
+    }
+
+    loadCampaigns();
   }
 
-  const signUpResult = await supabaseClient.auth.signUp({
-    email,
-    password,
-    options: {
-      data: {
-        display_name: name,
-      },
-    },
-  });
-
-  if (signUpResult.error) {
-    throw new Error(signUpResult.error.message);
-  }
-
-  if (!signUpResult.data.user) {
-    throw new Error("Não foi possível criar o usuário.");
-  }
-
-  if (!signUpResult.data.session) {
-    throw new Error(
-      "Conta criada. Confirme seu e-mail antes de entrar, ou desative a confirmação de e-mail no Supabase durante os testes."
-    );
-  }
-
-  return signUpResult.data.user;
-}
-
-async function getOrCreateCampaign({ name, system, profile, userId }) {
-  if (profile === "Mestre") {
-    const { data: existingCampaigns, error: searchError } = await supabaseClient
+  async function loadCampaigns() {
+    const { data, error } = await supabaseClient
       .from("campaigns")
       .select("*")
-      .eq("name", name)
       .eq("system", system)
-      .eq("master_id", userId)
-      .limit(1);
+      .order("created_at", { ascending: false });
 
-    if (searchError) {
-      throw new Error(searchError.message);
+    if (error) {
+      campaignsGrid.innerHTML = `
+        <div class="altherium-empty">
+          <h3>Erro ao carregar campanhas</h3>
+          <p>${error.message}</p>
+        </div>
+      `;
+      return;
     }
 
-    if (existingCampaigns.length > 0) {
-      return existingCampaigns[0];
+    if (!data || data.length === 0) {
+      campaignsGrid.innerHTML = `
+        <div class="altherium-empty">
+          <h3>Nenhuma campanha encontrada</h3>
+          <p>Peça para o mestre criar uma campanha de ${system}.</p>
+        </div>
+      `;
+      return;
     }
 
-    const { data: createdCampaign, error: createError } = await supabaseClient
-      .from("campaigns")
-      .insert({
-        name,
+    campaignsGrid.innerHTML = data
+      .map(
+        (campaign) => `
+          <button
+            class="altherium-card campaign-select-card"
+            data-campaign-id="${campaign.id}"
+            data-campaign-name="${campaign.name}"
+          >
+            <h3>${campaign.name}</h3>
+            <p>Sistema: ${campaign.system}</p>
+            <p>Clique para entrar nesta campanha.</p>
+          </button>
+        `
+      )
+      .join("");
+  }
+
+  document.addEventListener("click", async (event) => {
+    const card = event.target.closest(".campaign-select-card");
+
+    if (!card) return;
+
+    const campaignId = card.dataset.campaignId;
+    const campaignName = card.dataset.campaignName;
+
+    try {
+      await saveCampaignMember({
+        campaignId,
+        userId,
+        profile: "Jogador",
+        displayName: userName,
+        email: userEmail,
+      });
+
+      localStorage.setItem("campaignId", campaignId);
+      localStorage.setItem("campaignName", campaignName);
+
+      const lastCampaignData = {
+        id: campaignId,
+        name: campaignName,
         system,
-        master_id: userId,
-      })
-      .select()
-      .single();
+        profile: "Jogador",
+        players: "01",
+        sessions: "00",
+        sheets: "00",
+        items: "00",
+      };
 
-    if (createError) {
-      throw new Error(createError.message);
+      localStorage.setItem("lastCampaign", JSON.stringify(lastCampaignData));
+
+      if (system === "Altherium") {
+        window.location.href = "altherium-jogador.html";
+        return;
+      }
+
+      if (system === "D&D") {
+        window.location.href = "dnd-jogador.html";
+        return;
+      }
+    } catch (error) {
+      alert(error.message);
     }
-
-    return createdCampaign;
-  }
-
-  const { data: foundCampaigns, error: findError } = await supabaseClient
-    .from("campaigns")
-    .select("*")
-    .eq("name", name)
-    .eq("system", system)
-    .limit(1);
-
-  if (findError) {
-    throw new Error(findError.message);
-  }
-
-  if (!foundCampaigns || foundCampaigns.length === 0) {
-    throw new Error("Campanha não encontrada. Verifique o nome com o mestre.");
-  }
-
-  return foundCampaigns[0];
-}
-
-async function saveCampaignMember({
-  campaignId,
-  userId,
-  profile,
-  displayName,
-  email,
-}) {
-  const { error } = await supabaseClient.from("campaign_members").upsert(
-    {
-      campaign_id: campaignId,
-      user_id: userId,
-      profile,
-      display_name: displayName,
-      email,
-    },
-    {
-      onConflict: "campaign_id,user_id",
-    }
-  );
-
-  if (error) {
-    throw new Error(error.message);
-  }
+  });
 }
 
 /* =========================================================
@@ -866,15 +864,129 @@ if (document.body.classList.contains("dnd-player-page")) {
 }
 
 /* =========================================================
+   SUPABASE - LOGIN E CAMPANHAS
+========================================================= */
+
+async function loginOrCreateUser(email, password, name) {
+  const loginResult = await supabaseClient.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (!loginResult.error && loginResult.data.user) {
+    return loginResult.data.user;
+  }
+
+  const signUpResult = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        display_name: name,
+      },
+    },
+  });
+
+  if (signUpResult.error) {
+    throw new Error(signUpResult.error.message);
+  }
+
+  if (!signUpResult.data.user) {
+    throw new Error("Não foi possível criar o usuário.");
+  }
+
+  if (!signUpResult.data.session) {
+    throw new Error(
+      "Conta criada. Confirme seu e-mail antes de entrar, ou desative a confirmação de e-mail no Supabase durante os testes."
+    );
+  }
+
+  return signUpResult.data.user;
+}
+
+async function getOrCreateCampaign({ name, system, profile, userId }) {
+  if (profile !== "Mestre") {
+    throw new Error("Apenas mestres podem criar campanhas.");
+  }
+
+  const { data: existingCampaigns, error: searchError } = await supabaseClient
+    .from("campaigns")
+    .select("*")
+    .eq("name", name)
+    .eq("system", system)
+    .eq("master_id", userId)
+    .limit(1);
+
+  if (searchError) {
+    throw new Error(searchError.message);
+  }
+
+  if (existingCampaigns.length > 0) {
+    return existingCampaigns[0];
+  }
+
+  const { data: createdCampaign, error: createError } = await supabaseClient
+    .from("campaigns")
+    .insert({
+      name,
+      system,
+      master_id: userId,
+    })
+    .select()
+    .single();
+
+  if (createError) {
+    throw new Error(createError.message);
+  }
+
+  return createdCampaign;
+}
+
+async function saveCampaignMember({
+  campaignId,
+  userId,
+  profile,
+  displayName,
+  email,
+}) {
+  const { error } = await supabaseClient.from("campaign_members").upsert(
+    {
+      campaign_id: campaignId,
+      user_id: userId,
+      profile,
+      display_name: displayName,
+      email,
+    },
+    {
+      onConflict: "campaign_id,user_id",
+    }
+  );
+
+  if (error) {
+    throw new Error(error.message);
+  }
+}
+
+/* =========================================================
    FUNÇÕES GLOBAIS
 ========================================================= */
 
-function clearAccess() {
+function clearAccess(keepLastCampaign = true) {
   localStorage.removeItem("system");
   localStorage.removeItem("profile");
   localStorage.removeItem("campaignName");
+  localStorage.removeItem("campaignId");
   localStorage.removeItem("userName");
   localStorage.removeItem("userEmail");
+  localStorage.removeItem("userId");
+
+  if (!keepLastCampaign) return;
+
+  const lastCampaign = localStorage.getItem("lastCampaign");
+
+  if (lastCampaign) {
+    localStorage.setItem("lastCampaign", lastCampaign);
+  }
 }
 
 function handleTabs(target) {
