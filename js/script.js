@@ -36,6 +36,7 @@ if (document.body.classList.contains("home-page")) {
   localStorage.removeItem("system");
   localStorage.removeItem("profile");
   localStorage.removeItem("campaignName");
+  localStorage.removeItem("campaignId");
   localStorage.removeItem("userName");
   localStorage.removeItem("userEmail");
 
@@ -69,61 +70,209 @@ if (document.body.classList.contains("home-page")) {
   }
 
   if (loginForm) {
-    loginForm.addEventListener("submit", (event) => {
+    loginForm.addEventListener("submit", async (event) => {
       event.preventDefault();
 
       const nameInput = document.getElementById("name");
       const emailInput = document.getElementById("email");
+      const passwordInput = document.getElementById("password");
 
       if (!selectedSystem) {
         alert("Escolha um sistema antes de entrar.");
         return;
       }
 
-      const lastCampaignData = {
-        name: campaignInput.value,
-        system: selectedSystem,
-        profile: selectedProfile,
-        players: "01",
-        sessions: "00",
-        sheets: "00",
-        items: "00",
-      };
+      const name = nameInput.value.trim();
+      const email = emailInput.value.trim();
+      const password = passwordInput.value.trim();
+      const campaignName = campaignInput.value.trim();
 
-      localStorage.setItem("lastCampaign", JSON.stringify(lastCampaignData));
+      if (!name || !email || !password || !campaignName) {
+        alert("Preencha todos os campos.");
+        return;
+      }
 
-      localStorage.setItem("system", selectedSystem);
-      localStorage.setItem("profile", selectedProfile);
-      localStorage.setItem("campaignName", campaignInput.value);
-      localStorage.setItem("userName", nameInput.value);
-      localStorage.setItem("userEmail", emailInput.value);
+      try {
+        const user = await loginOrCreateUser(email, password, name);
 
-      if (selectedSystem === "Altherium") {
-        if (selectedProfile === "Mestre") {
+        const campaign = await getOrCreateCampaign({
+          name: campaignName,
+          system: selectedSystem,
+          profile: selectedProfile,
+          userId: user.id,
+        });
+
+        await saveCampaignMember({
+          campaignId: campaign.id,
+          userId: user.id,
+          profile: selectedProfile,
+          displayName: name,
+          email,
+        });
+
+        const lastCampaignData = {
+          id: campaign.id,
+          name: campaign.name,
+          system: selectedSystem,
+          profile: selectedProfile,
+          players: "01",
+          sessions: "00",
+          sheets: "00",
+          items: "00",
+        };
+
+        localStorage.setItem("lastCampaign", JSON.stringify(lastCampaignData));
+
+        localStorage.setItem("system", selectedSystem);
+        localStorage.setItem("profile", selectedProfile);
+        localStorage.setItem("campaignName", campaign.name);
+        localStorage.setItem("campaignId", campaign.id);
+        localStorage.setItem("userName", name);
+        localStorage.setItem("userEmail", email);
+        localStorage.setItem("userId", user.id);
+
+        if (selectedSystem === "Altherium" && selectedProfile === "Mestre") {
           window.location.href = "altherium-mestre.html";
           return;
         }
 
-        if (selectedProfile === "Jogador") {
+        if (selectedSystem === "Altherium" && selectedProfile === "Jogador") {
           window.location.href = "altherium-jogador.html";
           return;
         }
-      }
 
-      if (selectedSystem === "D&D") {
-        if (selectedProfile === "Mestre") {
+        if (selectedSystem === "D&D" && selectedProfile === "Mestre") {
           window.location.href = "dnd-mestre.html";
           return;
         }
 
-        if (selectedProfile === "Jogador") {
+        if (selectedSystem === "D&D" && selectedProfile === "Jogador") {
           window.location.href = "dnd-jogador.html";
           return;
         }
+      } catch (error) {
+        alert(error.message);
       }
-
-      alert("Esse sistema ainda não foi implementado.");
     });
+  }
+}
+
+/* =========================================================
+   SUPABASE - LOGIN E CAMPANHAS
+========================================================= */
+
+async function loginOrCreateUser(email, password, name) {
+  let { data, error } = await supabaseClient.auth.signInWithPassword({
+    email,
+    password,
+  });
+
+  if (!error && data.user) {
+    return data.user;
+  }
+
+  const signUpResult = await supabaseClient.auth.signUp({
+    email,
+    password,
+    options: {
+      data: {
+        display_name: name,
+      },
+    },
+  });
+
+  if (signUpResult.error) {
+    throw new Error(signUpResult.error.message);
+  }
+
+  if (!signUpResult.data.user) {
+    throw new Error("Não foi possível criar o usuário.");
+  }
+
+  if (!signUpResult.data.session) {
+    throw new Error(
+      "Conta criada. Confirme seu e-mail antes de entrar, ou desative a confirmação de e-mail no Supabase durante os testes."
+    );
+  }
+
+  return signUpResult.data.user;
+}
+
+async function getOrCreateCampaign({ name, system, profile, userId }) {
+  if (profile === "Mestre") {
+    const { data: existingCampaigns, error: searchError } = await supabaseClient
+      .from("campaigns")
+      .select("*")
+      .eq("name", name)
+      .eq("system", system)
+      .eq("master_id", userId)
+      .limit(1);
+
+    if (searchError) {
+      throw new Error(searchError.message);
+    }
+
+    if (existingCampaigns.length > 0) {
+      return existingCampaigns[0];
+    }
+
+    const { data: createdCampaign, error: createError } = await supabaseClient
+      .from("campaigns")
+      .insert({
+        name,
+        system,
+        master_id: userId,
+      })
+      .select()
+      .single();
+
+    if (createError) {
+      throw new Error(createError.message);
+    }
+
+    return createdCampaign;
+  }
+
+  const { data: foundCampaigns, error: findError } = await supabaseClient
+    .from("campaigns")
+    .select("*")
+    .eq("name", name)
+    .eq("system", system)
+    .limit(1);
+
+  if (findError) {
+    throw new Error(findError.message);
+  }
+
+  if (!foundCampaigns || foundCampaigns.length === 0) {
+    throw new Error("Campanha não encontrada. Verifique o nome com o mestre.");
+  }
+
+  return foundCampaigns[0];
+}
+
+async function saveCampaignMember({
+  campaignId,
+  userId,
+  profile,
+  displayName,
+  email,
+}) {
+  const { error } = await supabaseClient.from("campaign_members").upsert(
+    {
+      campaign_id: campaignId,
+      user_id: userId,
+      profile,
+      display_name: displayName,
+      email,
+    },
+    {
+      onConflict: "campaign_id,user_id",
+    }
+  );
+
+  if (error) {
+    throw new Error(error.message);
   }
 }
 
