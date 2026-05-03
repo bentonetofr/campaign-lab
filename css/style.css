@@ -1,5 +1,9 @@
 @import url("https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 
+/* =========================================================
+   VARIÁVEIS
+========================================================= */
+
 :root {
   --bg: #030712;
   --bg-soft: #07111f;
@@ -20,6 +24,10 @@
   --glass: rgba(255, 255, 255, 0.055);
 }
 
+/* =========================================================
+   RESET / BASE
+========================================================= */
+
 * {
   margin: 0;
   padding: 0;
@@ -33,6 +41,8 @@ html {
 body,
 button,
 input,
+select,
+textarea,
 a,
 p,
 span,
@@ -67,8 +77,14 @@ a {
 }
 
 button,
-input {
+input,
+select,
+textarea {
   font: inherit;
+}
+
+button {
+  cursor: pointer;
 }
 
 .background-glow {
@@ -82,7 +98,9 @@ input {
   mask-image: linear-gradient(to bottom, black, transparent 75%);
 }
 
-/* HEADER */
+/* =========================================================
+   HEADER PADRÃO
+========================================================= */
 
 .header {
   width: 100%;
@@ -95,7 +113,6 @@ input {
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 }
 
-/* CONTAINER */
 .header-container {
   max-width: 1400px;
   margin: 0 auto;
@@ -106,17 +123,14 @@ input {
   justify-content: space-between;
 }
 
-/* LOGO */
 .logo {
   display: flex;
   align-items: center;
 }
 
-/* 🔥 LOGO AJUSTADA (AGORA GRANDE E BONITA) */
 .logo img {
-  height: 110px; /* AQUI está o segredo */
+  height: 110px;
   width: auto;
-
   object-fit: contain;
 
   filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.5))
@@ -129,61 +143,6 @@ input {
   transform: scale(1.05);
 }
 
-/* NAV */
-.nav {
-  display: flex;
-  align-items: center;
-  gap: 30px;
-}
-
-.nav a {
-  position: relative;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text-soft);
-  transition: 0.25s;
-}
-
-.nav a::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -5px;
-
-  width: 0%;
-  height: 2px;
-
-  background: linear-gradient(90deg, var(--cyan), var(--violet));
-  transition: 0.3s;
-}
-
-.nav a:hover {
-  color: var(--text);
-}
-
-.nav a:hover::after {
-  width: 100%;
-}
-
-/* BOTÃO */
-.header-cta {
-  padding: 9px 18px;
-  border-radius: 999px;
-
-  font-size: 14px;
-  font-weight: 700;
-
-  background: linear-gradient(135deg, var(--cyan), var(--violet));
-  color: #020617;
-
-  transition: 0.3s;
-}
-
-.header-cta:hover {
-  transform: translateY(-2px);
-}
-
-/* NAV */
 .nav {
   display: flex;
   align-items: center;
@@ -192,15 +151,12 @@ input {
 
 .nav a {
   position: relative;
-
   font-size: 15px;
   font-weight: 600;
   color: var(--text-soft);
-
   transition: 0.25s;
 }
 
-/* efeito underline animado */
 .nav a::after {
   content: "";
   position: absolute;
@@ -222,9 +178,9 @@ input {
   width: 100%;
 }
 
-/* BOTÃO CTA */
 .header-cta {
   padding: 10px 18px;
+  border: none;
   border-radius: 999px;
 
   font-size: 14px;
@@ -246,6 +202,65 @@ input {
     0 0 60px rgba(139, 92, 246, 0.3);
 }
 
+/* =========================================================
+   HEADER CENTRALIZADO
+========================================================= */
+
+.header-center {
+  width: 100%;
+  height: 100px;
+
+  position: sticky;
+  top: 0;
+  z-index: 999;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(2, 6, 23, 0.6);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.header-container-center {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-center .logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.header-center .logo img {
+  height: 48px;
+  width: auto;
+
+  transform: scale(5.2);
+  transform-origin: center center;
+
+  object-fit: contain;
+
+  filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.4))
+    drop-shadow(0 0 25px rgba(34, 211, 238, 0.2));
+
+  transition: 0.3s ease;
+}
+
+.header-center .logo img:hover {
+  transform: scale(5.35);
+  filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.6))
+    drop-shadow(0 0 35px rgba(34, 211, 238, 0.3));
+}
+
+/* =========================================================
+   COMPONENTES GERAIS
+========================================================= */
+
 .logo-mark {
   width: 44px;
   height: 44px;
@@ -266,20 +281,6 @@ input {
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--glass);
-}
-
-.hero {
-  min-height: 100vh;
-  padding: 170px 7% 90px;
-
-  display: grid;
-  grid-template-columns: 1.05fr 0.95fr;
-  align-items: center;
-  gap: 60px;
-}
-
-.hero-content {
-  max-width: 920px;
 }
 
 .tag {
@@ -305,20 +306,6 @@ h1 {
   margin-bottom: 30px;
 }
 
-.hero-text {
-  max-width: 760px;
-  color: var(--text-soft);
-  font-size: 23px;
-  line-height: 1.65;
-}
-
-.hero-actions {
-  margin-top: 42px;
-  display: flex;
-  gap: 16px;
-  flex-wrap: wrap;
-}
-
 .btn {
   padding: 18px 26px;
   border-radius: 18px;
@@ -342,9 +329,49 @@ h1 {
   color: var(--text);
 }
 
-.app-preview {
+/* =========================================================
+   HERO HOME / LOGIN
+========================================================= */
+
+.hero {
+  min-height: 100vh;
+  padding: 170px 7% 90px;
+
+  display: grid;
+  grid-template-columns: 1.05fr 0.95fr;
+  align-items: center;
+  gap: 60px;
+}
+
+.hero-content {
+  max-width: 920px;
+}
+
+.hero-text {
+  max-width: 760px;
+  color: var(--text-soft);
+  font-size: 23px;
+  line-height: 1.65;
+}
+
+.hero-actions {
+  margin-top: 42px;
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.access-hero {
+  min-height: 100vh;
+}
+
+/* =========================================================
+   APP PREVIEW / JANELA PREMIUM
+========================================================= */
+
+.app-preview,
+.access-window {
   position: relative;
-  padding: 28px;
   border: 1px solid var(--border);
   border-radius: 34px;
 
@@ -358,6 +385,14 @@ h1 {
 
   backdrop-filter: blur(24px);
   animation: floatPanel 5s ease-in-out infinite;
+}
+
+.app-preview {
+  padding: 28px;
+}
+
+.access-window {
+  padding: 34px;
 }
 
 @keyframes floatPanel {
@@ -396,14 +431,24 @@ h1 {
   background: #34d399;
 }
 
-.app-header {
+.app-header,
+.access-window-header {
   display: flex;
   justify-content: space-between;
   gap: 20px;
+}
+
+.app-header {
   margin-bottom: 26px;
 }
 
-.app-header p {
+.access-window-header {
+  align-items: flex-start;
+  margin-bottom: 28px;
+}
+
+.app-header p,
+.access-window-header p {
   color: var(--muted);
   margin-bottom: 8px;
 }
@@ -412,14 +457,26 @@ h1 {
   font-size: 30px;
 }
 
-.app-header strong {
+.access-window-header h2 {
+  font-size: clamp(42px, 5vw, 70px);
+  line-height: 0.95;
+  margin: 0;
+}
+
+.app-header strong,
+.access-window-header strong {
   height: fit-content;
   padding: 8px 12px;
   border-radius: 999px;
   background: rgba(34, 197, 94, 0.12);
   color: #86efac;
   font-size: 13px;
+  font-weight: 900;
 }
+
+/* =========================================================
+   STATS / TIMELINE
+========================================================= */
 
 .stats-grid {
   display: grid;
@@ -476,6 +533,91 @@ h1 {
 .timeline-item p {
   color: var(--text-soft);
 }
+
+.access-timeline {
+  margin-top: 28px;
+}
+
+/* =========================================================
+   FORMULÁRIOS
+========================================================= */
+
+form,
+.access-form {
+  display: flex;
+  flex-direction: column;
+}
+
+label {
+  color: var(--text-soft);
+  font-weight: 800;
+  margin-bottom: 8px;
+}
+
+input,
+select,
+textarea {
+  width: 100%;
+  padding: 18px;
+  margin-bottom: 18px;
+
+  border: 1px solid var(--border);
+  border-radius: 16px;
+
+  background: rgba(2, 6, 23, 0.72);
+  color: var(--text);
+  outline: none;
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: #64748b;
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--cyan);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.12);
+}
+
+.access-window .access-form {
+  margin-top: 8px;
+}
+
+.access-window .access-form input {
+  background: rgba(15, 23, 42, 0.72);
+}
+
+.submit-btn,
+.altherium-submit {
+  border: none;
+  background: linear-gradient(135deg, var(--cyan), var(--violet));
+  color: #020617;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.submit-btn {
+  padding: 19px;
+  margin-top: 8px;
+  border-radius: 18px;
+}
+
+.submit-btn:hover {
+  transform: translateY(-4px);
+}
+
+.altherium-submit {
+  width: 100%;
+  padding: 14px;
+  border-radius: 12px;
+}
+
+/* =========================================================
+   SEÇÕES HOME ANTIGAS / REUTILIZADAS
+========================================================= */
 
 .systems-section,
 .features-section,
@@ -593,7 +735,8 @@ h1 {
 }
 
 .login-card,
-.access-preview {
+.access-preview,
+.access-card {
   border: 1px solid var(--border);
   border-radius: 34px;
   padding: 42px;
@@ -642,58 +785,6 @@ h1 {
   color: #020617;
 }
 
-form {
-  display: flex;
-  flex-direction: column;
-}
-
-label {
-  color: var(--text-soft);
-  font-weight: 800;
-  margin-bottom: 8px;
-}
-
-input {
-  width: 100%;
-  padding: 18px;
-  margin-bottom: 18px;
-
-  border: 1px solid var(--border);
-  border-radius: 16px;
-
-  background: rgba(2, 6, 23, 0.72);
-  color: var(--text);
-  outline: none;
-}
-
-input::placeholder {
-  color: #64748b;
-}
-
-input:focus {
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.12);
-}
-
-.submit-btn {
-  padding: 19px;
-  margin-top: 8px;
-
-  border: none;
-  border-radius: 18px;
-
-  background: linear-gradient(135deg, var(--cyan), var(--violet));
-  color: #020617;
-
-  font-weight: 900;
-  cursor: pointer;
-  transition: 0.25s;
-}
-
-.submit-btn:hover {
-  transform: translateY(-4px);
-}
-
 .access-preview h3 {
   font-size: 38px;
   margin-bottom: 28px;
@@ -729,26 +820,13 @@ input:focus {
   font-weight: 900;
 }
 
-.footer {
-  padding: 42px 7%;
-  border-top: 1px solid var(--border);
-
-  display: flex;
-  justify-content: space-between;
-  gap: 20px;
-
-  color: var(--muted);
-}
-
 /* =========================================================
-   ALTHERIUM - PAINEL DO MESTRE
+   PAINÉIS RPG
 ========================================================= */
 
 .altherium-main {
   padding: 160px 7% 80px;
 }
-
-/* HERO */
 
 .altherium-hero {
   display: grid;
@@ -767,8 +845,6 @@ input:focus {
   font-size: 18px;
 }
 
-/* DASHBOARD */
-
 .altherium-dashboard {
   display: grid;
   gap: 16px;
@@ -778,7 +854,6 @@ input:focus {
   padding: 22px;
   border-radius: 20px;
   border: 1px solid var(--border);
-
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -791,8 +866,6 @@ input:focus {
 .altherium-status-card strong {
   font-size: 32px;
 }
-
-/* TABS */
 
 .altherium-tabs {
   display: flex;
@@ -818,8 +891,6 @@ input:focus {
   color: #020617;
 }
 
-/* SECTIONS */
-
 .altherium-section {
   display: none;
 }
@@ -827,8 +898,6 @@ input:focus {
 .altherium-section.active {
   display: block;
 }
-
-/* PANEL */
 
 .altherium-panel {
   border: 1px solid var(--border);
@@ -858,8 +927,6 @@ input:focus {
   font-size: 14px;
 }
 
-/* BUTTON */
-
 .altherium-btn {
   padding: 10px 18px;
   border-radius: 999px;
@@ -872,21 +939,16 @@ input:focus {
   cursor: pointer;
 }
 
-/* GRID */
-
 .altherium-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 18px;
 }
 
-/* CARD */
-
 .altherium-card {
   padding: 20px;
   border-radius: 20px;
   border: 1px solid var(--border);
-
   background: rgba(255, 255, 255, 0.04);
 }
 
@@ -916,11 +978,14 @@ input:focus {
   cursor: pointer;
 }
 
-/* MODAL */
+/* =========================================================
+   MODAL
+========================================================= */
 
 .altherium-modal {
   position: fixed;
   inset: 0;
+  z-index: 1000;
 
   display: none;
   align-items: center;
@@ -934,6 +999,7 @@ input:focus {
 }
 
 .altherium-modal-box {
+  position: relative;
   width: 100%;
   max-width: 400px;
 
@@ -960,11 +1026,8 @@ input:focus {
   margin-bottom: 20px;
 }
 
-/* FORM */
-
 #altheriumForm input,
 #altheriumForm select {
-  width: 100%;
   padding: 12px;
   margin-bottom: 12px;
 
@@ -975,22 +1038,8 @@ input:focus {
   color: white;
 }
 
-.altherium-submit {
-  width: 100%;
-  padding: 14px;
-
-  border-radius: 12px;
-  border: none;
-
-  background: linear-gradient(135deg, var(--cyan), var(--violet));
-  color: #020617;
-
-  font-weight: 900;
-  cursor: pointer;
-}
-
 /* =========================================================
-   ALTHERIUM - PAINEL DO JOGADOR
+   FICHA DO JOGADOR
 ========================================================= */
 
 .player-sheet-section {
@@ -1023,29 +1072,197 @@ input:focus {
   color: var(--cyan);
 }
 
-.player-sheet-form select,
-.player-sheet-form textarea {
-  width: 100%;
-  padding: 18px;
-  margin-bottom: 18px;
-
-  border: 1px solid var(--border);
-  border-radius: 16px;
-
-  background: rgba(2, 6, 23, 0.72);
-  color: var(--text);
-  outline: none;
-}
-
 .player-sheet-form textarea {
   min-height: 160px;
   resize: vertical;
 }
 
-.player-sheet-form select:focus,
-.player-sheet-form textarea:focus {
-  border-color: var(--cyan);
-  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.12);
+/* =========================================================
+   MINHAS CAMPANHAS
+========================================================= */
+
+.my-campaigns-page .altherium-main {
+  padding-top: 170px;
+}
+
+.campaigns-area {
+  display: grid;
+  gap: 40px;
+}
+
+.campaign-group {
+  padding: 34px;
+  border: 1px solid var(--border);
+  border-radius: 34px;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.78), rgba(2, 6, 23, 0.9)),
+    radial-gradient(circle at top left, var(--violet-soft), transparent 42%);
+
+  backdrop-filter: blur(22px);
+}
+
+.premium-campaign-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 22px;
+}
+
+.premium-campaign-card {
+  min-height: 280px;
+  padding: 26px;
+  border: 1px solid var(--border);
+  border-radius: 28px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(2, 6, 23, 0.92)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    );
+
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+
+  transition: 0.3s ease;
+}
+
+.premium-campaign-card:hover {
+  transform: translateY(-8px);
+  border-color: rgba(34, 211, 238, 0.55);
+  box-shadow:
+    0 28px 80px rgba(0, 0, 0, 0.35),
+    0 0 60px rgba(34, 211, 238, 0.12);
+}
+
+.campaign-card-top,
+.campaign-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.campaign-card-top span,
+.campaign-card-top strong {
+  padding: 8px 12px;
+  border-radius: 999px;
+
+  font-size: 12px;
+  font-weight: 900;
+}
+
+.campaign-card-top span {
+  background: rgba(34, 211, 238, 0.1);
+  color: var(--cyan);
+}
+
+.campaign-card-top strong {
+  background: rgba(139, 92, 246, 0.14);
+  color: #c4b5fd;
+}
+
+.premium-campaign-card h3 {
+  font-size: 30px;
+  line-height: 1.05;
+}
+
+.premium-campaign-card p {
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.campaign-card-footer {
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+
+  color: var(--cyan);
+  font-weight: 900;
+}
+
+.campaign-card-footer strong {
+  font-size: 26px;
+}
+
+.premium-empty {
+  min-height: 180px;
+  padding: 28px;
+  border: 1px solid var(--border);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+/* =========================================================
+   FOOTER
+========================================================= */
+
+.footer {
+  padding: 42px 7%;
+  border-top: 1px solid var(--border);
+
+  display: flex;
+  justify-content: space-between;
+  gap: 20px;
+
+  color: var(--muted);
+}
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (max-width: 1000px) {
+  .hero,
+  .login-section,
+  .systems-grid,
+  .features-section,
+  .access-hero {
+    grid-template-columns: 1fr;
+  }
+
+  .nav,
+  .header-cta {
+    display: none;
+  }
+
+  .hero {
+    padding-top: 140px;
+  }
+
+  .app-preview,
+  .access-window {
+    animation: none;
+  }
+
+  .logo img {
+    height: 52px;
+  }
+
+  .header-center .logo img {
+    height: 48px;
+    transform: scale(3.2);
+  }
+
+  .header-center .logo img:hover {
+    transform: scale(3.35);
+  }
+
+  .header-container {
+    padding: 18px 6%;
+  }
+}
+
+@media (max-width: 900px) {
+  .altherium-hero {
+    grid-template-columns: 1fr;
+  }
 }
 
 @media (max-width: 800px) {
@@ -1055,44 +1272,13 @@ input:focus {
   }
 }
 
-/* RESPONSIVO */
-
-@media (max-width: 900px) {
-  .altherium-hero {
-    grid-template-columns: 1fr;
-  }
-}
-
-@media (max-width: 1000px) {
-  .hero,
-  .login-section,
-  .systems-grid,
-  .features-section {
-    grid-template-columns: 1fr;
+@media (max-width: 700px) {
+  .access-window {
+    padding: 26px;
   }
 
-  .nav {
-    display: none;
-  }
-
-  .header-cta {
-    display: none;
-  }
-
-  .hero {
-    padding-top: 140px;
-  }
-
-  .app-preview {
-    animation: none;
-  }
-
-  .logo img {
-    height: 52px;
-  }
-
-  .header-container {
-    padding: 18px 6%;
+  .access-window-header {
+    flex-direction: column;
   }
 }
 
@@ -1117,11 +1303,25 @@ input:focus {
 
   .system-card,
   .login-card,
-  .access-preview {
+  .access-preview,
+  .access-card,
+  .campaign-group {
     padding: 28px;
+  }
+
+  .premium-campaign-card {
+    min-height: auto;
   }
 
   .footer {
     flex-direction: column;
+  }
+
+  .header-center .logo img {
+    transform: scale(2.5);
+  }
+
+  .header-center .logo img:hover {
+    transform: scale(2.65);
   }
 }

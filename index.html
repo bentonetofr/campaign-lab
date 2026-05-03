@@ -3,234 +3,106 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Campaign Lab</title>
-    <link rel="stylesheet" href="css/style.css" />
+    <title>Campaign Lab | Acesso</title>
+    <link rel="icon" href="img/favicon.svg" />
+
+    <link rel="stylesheet" href="css/style.css"/>
   </head>
 
-  <body class="home-page">
+  <body class="home-page login-page">
     <div class="background-glow"></div>
 
-    <header class="header">
-      <div class="header-container">
+    <!-- HEADER CENTRALIZADO -->
+    <header class="header header-center">
+      <div class="header-container-center">
         <a href="index.html" class="logo">
           <img src="img/logo.png" alt="Campaign Lab" />
         </a>
-
-        <nav class="nav">
-          <a href="#sistemas">Sistemas</a>
-          <a href="#recursos">Recursos</a>
-          <a href="#login">Entrar</a>
-        </nav>
-
-        <a href="#login" class="header-cta">Começar</a>
       </div>
     </header>
 
     <main>
-      <section class="hero">
+      <section class="hero access-hero">
+        <!-- TEXTO ESQUERDA -->
         <div class="hero-content">
-          <p class="tag">Gerenciador de campanhas de RPG</p>
+          <p class="tag">Campaign Lab</p>
 
-          <h1>Sua mesa inteira dentro de um painel inteligente</h1>
+          <h1>Entre na sua mesa de RPG</h1>
 
           <p class="hero-text">
-            Escolha o sistema, separe mestres e jogadores, organize campanhas,
-            fichas, sessões, itens e anotações com uma interface feita para RPG.
+            Digite seu nome, coloque sua senha e acesse apenas as campanhas
+            liberadas para você.
           </p>
 
           <div class="hero-actions">
-            <a href="#sistemas" class="btn btn-primary">Escolher sistema</a>
-            <a href="#login" class="btn btn-secondary">Acessar campanha</a>
+            <a href="#loginBox" class="btn btn-primary">Acessar campanhas</a>
           </div>
         </div>
 
-        <div class="app-preview">
+        <!-- CARD LOGIN PREMIUM -->
+        <div class="access-card access-window" id="loginBox">
+          <!-- TOP BAR -->
           <div class="app-topbar">
             <span></span>
             <span></span>
             <span></span>
           </div>
 
-          <div class="app-header">
+          <!-- HEADER -->
+          <div class="access-window-header">
             <div>
-              <p>Campanha ativa</p>
-              <h2 id="lastCampaignTitle">Nenhuma campanha acessada</h2>
+              <p>Acesso privado</p>
+              <h2>Quem é você?</h2>
             </div>
 
             <strong>Online</strong>
           </div>
 
-          <div class="stats-grid">
-            <div class="stat-card">
-              <span>Jogadores</span>
-              <strong id="lastPlayersCount">--</strong>
-            </div>
-
-            <div class="stat-card">
-              <span>Sessões</span>
-              <strong id="lastSessionsCount">--</strong>
-            </div>
-
-            <div class="stat-card">
-              <span>Fichas</span>
-              <strong id="lastSheetsCount">--</strong>
-            </div>
-
-            <div class="stat-card">
-              <span>Itens</span>
-              <strong id="lastItemsCount">--</strong>
-            </div>
-          </div>
-
-          <div class="timeline">
-            <div class="timeline-item active">
-              <span></span>
-              <p>Campanha acessada recentemente</p>
-            </div>
-
-            <div class="timeline-item">
-              <span></span>
-              <p>Resumo carregado do navegador</p>
-            </div>
-
-            <div class="timeline-item">
-              <span></span>
-              <p>Pronto para continuar</p>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      <section class="systems-section" id="sistemas">
-        <div class="section-title">
-          <p class="tag">Primeiro passo</p>
-          <h2>Escolha o sistema da campanha</h2>
-          <p>
-            Cada sistema abre um espaço próprio para regras, fichas e campanhas.
-          </p>
-        </div>
-
-        <div class="systems-grid">
-          <button class="system-card" data-system="Altherium">
-            <div class="system-icon">ᚱ</div>
-            <h3>Altherium</h3>
-            <p>
-              Fantasia sombria com runas, linhagens antigas, guerras brutais e
-              poderes míticos.
-            </p>
-          </button>
-
-          <button class="system-card" data-system="D&D">
-            <div class="system-icon">⚔</div>
-            <h3>D&D</h3>
-            <p>
-              Aventuras clássicas com classes, magias, exploração, masmorras e
-              monstros lendários.
-            </p>
-          </button>
-        </div>
-      </section>
-
-      <section class="features-section" id="recursos">
-        <div class="feature-card">
-          <span>01</span>
-          <h3>Mestres separados</h3>
-          <p>Cada mestre controla suas próprias campanhas e jogadores.</p>
-        </div>
-
-        <div class="feature-card">
-          <span>02</span>
-          <h3>Jogadores organizados</h3>
-          <p>Jogadores entram na campanha certa e acessam suas fichas.</p>
-        </div>
-
-        <div class="feature-card">
-          <span>03</span>
-          <h3>Painel por sistema</h3>
-          <p>Altherium e D&D ficam separados por regras e estilo de jogo.</p>
-        </div>
-      </section>
-
-      <section class="login-section" id="login">
-        <div class="login-card">
-          <p class="tag">Acesso</p>
-          <h2>Entrar na campanha</h2>
-
-          <div class="selected-box">
-            Sistema selecionado:
-            <strong id="selectedSystem">Nenhum</strong>
-          </div>
-
-          <div class="profile-options">
-            <button
-              class="profile-btn active"
-              data-profile="Mestre"
-              type="button"
-            >
-              Mestre
-            </button>
-
-            <button class="profile-btn" data-profile="Jogador" type="button">
-              Jogador
-            </button>
-          </div>
-
-          <form id="loginForm">
-            <label for="name">Nome</label>
-            <input id="name" type="text" placeholder="Seu nome" required />
-
-            <label for="email">E-mail</label>
+          <!-- FORM -->
+          <div class="access-form">
+            <label for="userNameInput">Nome</label>
             <input
-              id="email"
-              type="email"
-              placeholder="seuemail@email.com"
-              required
+              id="userNameInput"
+              type="text"
+              placeholder="Digite seu nome"
             />
+
             <label for="password">Senha</label>
             <input
               id="password"
               type="password"
               placeholder="Digite sua senha"
-              required
             />
 
-            <label for="campaign">Campanha</label>
-            <input id="campaign" type="text" placeholder="Nome da campanha" />
-
-            <button type="submit" class="submit-btn">Entrar no painel</button>
-          </form>
-        </div>
-
-        <div class="access-preview">
-          <h3>Resumo do acesso</h3>
-
-          <div class="preview-line">
-            <span>Sistema</span>
-            <strong id="previewSystem">---</strong>
+            <button id="loginBtn" class="submit-btn">Entrar</button>
           </div>
 
-          <div class="preview-line">
-            <span>Perfil</span>
-            <strong id="previewProfile">Mestre</strong>
-          </div>
+          <!-- TIMELINE -->
+          <div class="timeline access-timeline">
+            <div class="timeline-item active">
+              <span></span>
+              <p>Campanhas controladas pelo sistema</p>
+            </div>
 
-          <div class="preview-line">
-            <span>Campanha</span>
-            <strong id="previewCampaign">---</strong>
-          </div>
+            <div class="timeline-item">
+              <span></span>
+              <p>Perfil definido automaticamente</p>
+            </div>
 
-          <div class="preview-badge">Pronto para iniciar</div>
+            <div class="timeline-item">
+              <span></span>
+              <p>Pronto para iniciar</p>
+            </div>
+          </div>
         </div>
       </section>
     </main>
 
     <footer class="footer">
       <p>Campaign Lab © 2026</p>
-      <p>Organização premium para campanhas de RPG.</p>
+      <p>Mesas privadas, organizadas e prontas para jogar.</p>
     </footer>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase.js"></script>
     <script src="js/script.js"></script>
   </body>
 </html>
