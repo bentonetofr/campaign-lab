@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Altherium | Painel do Mestre</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body class="altherium-page">
+    <div class="background-glow"></div>
+
+    <header class="header">
+      <div class="header-container">
+        <a href="index.html" class="logo" data-clear-access>
+          <img src="img/logo.png" alt="Campaign Lab" />
+        </a>
+
+        <nav class="nav">
+          <a href="#players">Players</a>
+          <a href="#fichas">Fichas</a>
+          <a href="#bestiario">Bestiário</a>
+        </nav>
+
+        <a href="index.html" class="header-cta" data-clear-access>Voltar</a>
+      </div>
+    </header>
+
+    <main class="altherium-main">
+      <section class="altherium-hero">
+        <div class="altherium-hero-text">
+          <p class="tag">Sistema Altherium</p>
+          <h1>Painel do Mestre</h1>
+          <p>
+            Controle players, fichas, criaturas, atributos, raízes e recursos da
+            campanha em um painel feito para o mestre.
+          </p>
+        </div>
+
+        <div class="altherium-dashboard">
+          <div class="altherium-status-card">
+            <span>Players online</span>
+            <strong id="onlineCount">0</strong>
+          </div>
+
+          <div class="altherium-status-card">
+            <span>Fichas criadas</span>
+            <strong id="sheetCount">0</strong>
+          </div>
+
+          <div class="altherium-status-card">
+            <span>Criaturas</span>
+            <strong id="monsterCount">0</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="altherium-tabs">
+        <button class="altherium-tab active" data-tab="players">Players</button>
+        <button class="altherium-tab" data-tab="fichas">Fichas</button>
+        <button class="altherium-tab" data-tab="bestiario">Bestiário</button>
+      </section>
+
+      <section id="players" class="altherium-section active">
+        <div class="altherium-panel">
+          <div class="altherium-panel-header">
+            <div>
+              <h2>Players logados</h2>
+              <p>Veja quem está online e qual personagem está sendo usado.</p>
+            </div>
+
+            <button class="altherium-btn" data-open-modal="player">
+              Adicionar player
+            </button>
+          </div>
+
+          <div class="altherium-grid" id="playersGrid"></div>
+        </div>
+      </section>
+
+      <section id="fichas" class="altherium-section">
+        <div class="altherium-panel">
+          <div class="altherium-panel-header">
+            <div>
+              <h2>Fichas</h2>
+              <p>Crie, veja e modifique fichas com cálculo automático.</p>
+            </div>
+
+            <button class="altherium-btn" data-open-modal="sheet">
+              Nova ficha
+            </button>
+          </div>
+
+          <div class="altherium-grid" id="sheetsGrid"></div>
+        </div>
+      </section>
+
+      <section id="bestiario" class="altherium-section">
+        <div class="altherium-panel">
+          <div class="altherium-panel-header">
+            <div>
+              <h2>Bestiário</h2>
+              <p>
+                Cadastre inimigos, criaturas e fichas convertidas em monstros.
+              </p>
+            </div>
+
+            <button class="altherium-btn" data-open-modal="monster">
+              Nova criatura
+            </button>
+          </div>
+
+          <div class="altherium-grid" id="monsterGrid"></div>
+        </div>
+      </section>
+    </main>
+
+    <div class="altherium-modal" id="altheriumModal">
+      <div class="altherium-modal-box">
+        <button class="altherium-close" data-close-modal>×</button>
+
+        <h2 id="altheriumModalTitle"></h2>
+
+        <form id="altheriumForm">
+          <div id="altheriumFormFields"></div>
+          <button type="submit" class="altherium-submit">Salvar</button>
+        </form>
+      </div>
+    </div>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>

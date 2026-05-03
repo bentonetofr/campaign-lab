@@ -1,11 +1,232 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Campaing Lab</title>
-</head>
-<body>
-    
-</body>
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campaign Lab</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body class="home-page">
+    <div class="background-glow"></div>
+
+    <header class="header">
+      <div class="header-container">
+        <a href="index.html" class="logo">
+          <img src="img/logo.png" alt="Campaign Lab" />
+        </a>
+
+        <nav class="nav">
+          <a href="#sistemas">Sistemas</a>
+          <a href="#recursos">Recursos</a>
+          <a href="#login">Entrar</a>
+        </nav>
+
+        <a href="#login" class="header-cta">Começar</a>
+      </div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <div class="hero-content">
+          <p class="tag">Gerenciador de campanhas de RPG</p>
+
+          <h1>Sua mesa inteira dentro de um painel inteligente</h1>
+
+          <p class="hero-text">
+            Escolha o sistema, separe mestres e jogadores, organize campanhas,
+            fichas, sessões, itens e anotações com uma interface feita para RPG.
+          </p>
+
+          <div class="hero-actions">
+            <a href="#sistemas" class="btn btn-primary">Escolher sistema</a>
+            <a href="#login" class="btn btn-secondary">Acessar campanha</a>
+          </div>
+        </div>
+
+        <div class="app-preview">
+          <div class="app-topbar">
+            <span></span>
+            <span></span>
+            <span></span>
+          </div>
+
+          <div class="app-header">
+            <div>
+              <p>Campanha ativa</p>
+              <h2>A Queda de Torvalenn</h2>
+            </div>
+
+            <strong>Online</strong>
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-card">
+              <span>Jogadores</span>
+              <strong>06</strong>
+            </div>
+
+            <div class="stat-card">
+              <span>Sessões</span>
+              <strong>18</strong>
+            </div>
+
+            <div class="stat-card">
+              <span>Fichas</span>
+              <strong>12</strong>
+            </div>
+
+            <div class="stat-card">
+              <span>Itens</span>
+              <strong>47</strong>
+            </div>
+          </div>
+
+          <div class="timeline">
+            <div class="timeline-item active">
+              <span></span>
+              <p>Missão principal atualizada</p>
+            </div>
+
+            <div class="timeline-item">
+              <span></span>
+              <p>Novo personagem criado</p>
+            </div>
+
+            <div class="timeline-item">
+              <span></span>
+              <p>Inventário sincronizado</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="systems-section" id="sistemas">
+        <div class="section-title">
+          <p class="tag">Primeiro passo</p>
+          <h2>Escolha o sistema da campanha</h2>
+          <p>
+            Cada sistema abre um espaço próprio para regras, fichas e campanhas.
+          </p>
+        </div>
+
+        <div class="systems-grid">
+          <button class="system-card" data-system="Altherium">
+            <div class="system-icon">ᚱ</div>
+            <h3>Altherium</h3>
+            <p>
+              Fantasia sombria com runas, linhagens antigas, guerras brutais e
+              poderes míticos.
+            </p>
+          </button>
+
+          <button class="system-card" data-system="D&D">
+            <div class="system-icon">⚔</div>
+            <h3>D&D</h3>
+            <p>
+              Aventuras clássicas com classes, magias, exploração, masmorras e
+              monstros lendários.
+            </p>
+          </button>
+        </div>
+      </section>
+
+      <section class="features-section" id="recursos">
+        <div class="feature-card">
+          <span>01</span>
+          <h3>Mestres separados</h3>
+          <p>Cada mestre controla suas próprias campanhas e jogadores.</p>
+        </div>
+
+        <div class="feature-card">
+          <span>02</span>
+          <h3>Jogadores organizados</h3>
+          <p>Jogadores entram na campanha certa e acessam suas fichas.</p>
+        </div>
+
+        <div class="feature-card">
+          <span>03</span>
+          <h3>Painel por sistema</h3>
+          <p>Altherium e D&D ficam separados por regras e estilo de jogo.</p>
+        </div>
+      </section>
+
+      <section class="login-section" id="login">
+        <div class="login-card">
+          <p class="tag">Acesso</p>
+          <h2>Entrar na campanha</h2>
+
+          <div class="selected-box">
+            Sistema selecionado:
+            <strong id="selectedSystem">Nenhum</strong>
+          </div>
+
+          <div class="profile-options">
+            <button
+              class="profile-btn active"
+              data-profile="Mestre"
+              type="button"
+            >
+              Mestre
+            </button>
+
+            <button class="profile-btn" data-profile="Jogador" type="button">
+              Jogador
+            </button>
+          </div>
+
+          <form id="loginForm">
+            <label for="name">Nome</label>
+            <input id="name" type="text" placeholder="Seu nome" required />
+
+            <label for="email">E-mail</label>
+            <input
+              id="email"
+              type="email"
+              placeholder="seuemail@email.com"
+              required
+            />
+
+            <label for="campaign">Campanha</label>
+            <input
+              id="campaign"
+              type="text"
+              placeholder="Nome da campanha"
+              required
+            />
+
+            <button type="submit" class="submit-btn">Entrar no painel</button>
+          </form>
+        </div>
+
+        <div class="access-preview">
+          <h3>Resumo do acesso</h3>
+
+          <div class="preview-line">
+            <span>Sistema</span>
+            <strong id="previewSystem">---</strong>
+          </div>
+
+          <div class="preview-line">
+            <span>Perfil</span>
+            <strong id="previewProfile">Mestre</strong>
+          </div>
+
+          <div class="preview-line">
+            <span>Campanha</span>
+            <strong id="previewCampaign">---</strong>
+          </div>
+
+          <div class="preview-badge">Pronto para iniciar</div>
+        </div>
+      </section>
+    </main>
+
+    <footer class="footer">
+      <p>Campaign Lab © 2026</p>
+      <p>Organização premium para campanhas de RPG.</p>
+    </footer>
+
+    <script src="js/script.js"></script>
+  </body>
 </html>

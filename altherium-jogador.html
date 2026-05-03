@@ -1,0 +1,197 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Altherium | Painel do Jogador</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body class="altherium-player-page">
+    <div class="background-glow"></div>
+
+    <header class="header">
+      <div class="header-container">
+        <a href="index.html" class="logo" data-clear-access>
+          <img src="img/logo.png" alt="Campaign Lab" />
+        </a>
+
+        <nav class="nav">
+          <a href="#ficha">Ficha</a>
+          <a href="#atributos">Atributos</a>
+          <a href="#recursos">Recursos</a>
+        </nav>
+
+        <a href="index.html" class="header-cta" data-clear-access>Voltar</a>
+      </div>
+    </header>
+
+    <main class="altherium-main">
+      <section class="altherium-hero">
+        <div class="altherium-hero-text">
+          <p class="tag">Sistema Altherium</p>
+          <h1>Painel do Jogador</h1>
+          <p>
+            Veja e edite a ficha do seu personagem. Futuramente, as alterações
+            aparecerão em tempo real para o mestre.
+          </p>
+        </div>
+
+        <div class="altherium-dashboard">
+          <div class="altherium-status-card">
+            <span>Jogador</span>
+            <strong id="playerNameView">---</strong>
+          </div>
+
+          <div class="altherium-status-card">
+            <span>Campanha</span>
+            <strong id="campaignNameView">---</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="player-sheet-section" id="ficha">
+        <div class="altherium-panel">
+          <div class="altherium-panel-header">
+            <div>
+              <h2>Ficha do Personagem</h2>
+              <p>Edite os dados principais do seu personagem.</p>
+            </div>
+
+            <button class="altherium-btn" id="savePlayerSheet">
+              Salvar ficha
+            </button>
+          </div>
+
+          <form class="player-sheet-form" id="playerSheetForm">
+            <div class="form-grid">
+              <div>
+                <label for="characterName">Nome do personagem</label>
+                <input
+                  id="characterName"
+                  name="characterName"
+                  type="text"
+                  placeholder="Ex: Kael de Torvalenn"
+                />
+              </div>
+
+              <div>
+                <label for="characterRoot">Raiz</label>
+                <select id="characterRoot" name="characterRoot">
+                  <option value="Berserker">Berserker</option>
+                  <option value="Runaskin">Runaskin</option>
+                  <option value="Pilar">Pilar</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="characterLevel">Nível</label>
+                <input
+                  id="characterLevel"
+                  name="characterLevel"
+                  type="number"
+                  min="1"
+                  value="1"
+                />
+              </div>
+
+              <div>
+                <label for="characterOrigin">Origem</label>
+                <input
+                  id="characterOrigin"
+                  name="characterOrigin"
+                  type="text"
+                  placeholder="Ex: Skaldheim"
+                />
+              </div>
+            </div>
+
+            <h3 id="atributos">Atributos</h3>
+
+            <div class="attributes-grid">
+              <div>
+                <label for="furia">Fúria</label>
+                <input id="furia" name="furia" type="number" value="0" />
+              </div>
+
+              <div>
+                <label for="destino">Destino</label>
+                <input id="destino" name="destino" type="number" value="0" />
+              </div>
+
+              <div>
+                <label for="espirito">Espírito</label>
+                <input id="espirito" name="espirito" type="number" value="0" />
+              </div>
+
+              <div>
+                <label for="impulso">Impulso</label>
+                <input id="impulso" name="impulso" type="number" value="0" />
+              </div>
+
+              <div>
+                <label for="estrategia">Estratégia</label>
+                <input
+                  id="estrategia"
+                  name="estrategia"
+                  type="number"
+                  value="0"
+                />
+              </div>
+
+              <div>
+                <label for="runico">Rúnico</label>
+                <input id="runico" name="runico" type="number" value="0" />
+              </div>
+            </div>
+
+            <h3 id="recursos">Recursos</h3>
+
+            <div class="form-grid">
+              <div>
+                <label for="vida">Vida</label>
+                <input id="vida" name="vida" type="number" value="10" />
+              </div>
+
+              <div>
+                <label for="defesa">Defesa</label>
+                <input id="defesa" name="defesa" type="number" value="0" />
+              </div>
+
+              <div>
+                <label for="hacksilvers">Hacksilvers</label>
+                <input
+                  id="hacksilvers"
+                  name="hacksilvers"
+                  type="number"
+                  value="2000"
+                />
+              </div>
+
+              <div>
+                <label for="arma">Arma principal</label>
+                <input
+                  id="arma"
+                  name="arma"
+                  type="text"
+                  placeholder="Ex: Machado"
+                />
+              </div>
+            </div>
+
+            <div>
+              <label for="notes">Anotações</label>
+              <textarea
+                id="notes"
+                name="notes"
+                placeholder="História, itens, poderes, marcas, runas..."
+              ></textarea>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>

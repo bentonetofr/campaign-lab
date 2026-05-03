@@ -1,0 +1,254 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>D&D | Painel do Jogador</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body class="dnd-player-page">
+    <div class="background-glow"></div>
+
+    <header class="header">
+      <div class="header-container">
+        <a href="index.html" class="logo" data-clear-access>
+          <img src="img/logo.png" alt="Campaign Lab" />
+        </a>
+
+        <nav class="nav">
+          <a href="#ficha">Ficha</a>
+          <a href="#atributos">Atributos</a>
+          <a href="#recursos">Recursos</a>
+        </nav>
+
+        <a href="index.html" class="header-cta" data-clear-access>Voltar</a>
+      </div>
+    </header>
+
+    <main class="altherium-main">
+      <section class="altherium-hero">
+        <div class="altherium-hero-text">
+          <p class="tag">Sistema D&D</p>
+          <h1>Painel do Jogador</h1>
+          <p>
+            Veja e edite a ficha do seu personagem de D&D. Futuramente, essas
+            alterações poderão aparecer em tempo real para o mestre.
+          </p>
+        </div>
+
+        <div class="altherium-dashboard">
+          <div class="altherium-status-card">
+            <span>Jogador</span>
+            <strong id="dndPlayerNameView">---</strong>
+          </div>
+
+          <div class="altherium-status-card">
+            <span>Campanha</span>
+            <strong id="dndCampaignNameView">---</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="player-sheet-section" id="ficha">
+        <div class="altherium-panel">
+          <div class="altherium-panel-header">
+            <div>
+              <h2>Ficha do Personagem</h2>
+              <p>Edite classe, raça, atributos, vida, CA e recursos.</p>
+            </div>
+
+            <button class="altherium-btn" id="saveDndSheet">
+              Salvar ficha
+            </button>
+          </div>
+
+          <form class="player-sheet-form" id="dndPlayerSheetForm">
+            <div class="form-grid">
+              <div>
+                <label for="dndCharacterName">Nome do personagem</label>
+                <input
+                  id="dndCharacterName"
+                  name="characterName"
+                  type="text"
+                  placeholder="Ex: Arannis"
+                />
+              </div>
+
+              <div>
+                <label for="dndClass">Classe</label>
+                <select id="dndClass" name="class">
+                  <option value="Bárbaro">Bárbaro</option>
+                  <option value="Bardo">Bardo</option>
+                  <option value="Bruxo">Bruxo</option>
+                  <option value="Clérigo">Clérigo</option>
+                  <option value="Druida">Druida</option>
+                  <option value="Feiticeiro">Feiticeiro</option>
+                  <option value="Guerreiro">Guerreiro</option>
+                  <option value="Ladino">Ladino</option>
+                  <option value="Mago">Mago</option>
+                  <option value="Monge">Monge</option>
+                  <option value="Paladino">Paladino</option>
+                  <option value="Patrulheiro">Patrulheiro</option>
+                </select>
+              </div>
+
+              <div>
+                <label for="dndRace">Raça</label>
+                <input
+                  id="dndRace"
+                  name="race"
+                  type="text"
+                  placeholder="Ex: Humano, Elfo, Anão"
+                />
+              </div>
+
+              <div>
+                <label for="dndLevel">Nível</label>
+                <input
+                  id="dndLevel"
+                  name="level"
+                  type="number"
+                  min="1"
+                  value="1"
+                />
+              </div>
+
+              <div>
+                <label for="dndBackground">Antecedente</label>
+                <input
+                  id="dndBackground"
+                  name="background"
+                  type="text"
+                  placeholder="Ex: Soldado, Nobre, Criminoso"
+                />
+              </div>
+
+              <div>
+                <label for="dndAlignment">Tendência</label>
+                <input
+                  id="dndAlignment"
+                  name="alignment"
+                  type="text"
+                  placeholder="Ex: Leal e Bom"
+                />
+              </div>
+            </div>
+
+            <h3 id="atributos">Atributos</h3>
+
+            <div class="attributes-grid">
+              <div>
+                <label for="strength">Força</label>
+                <input id="strength" name="strength" type="number" value="10" />
+              </div>
+
+              <div>
+                <label for="dexterity">Destreza</label>
+                <input
+                  id="dexterity"
+                  name="dexterity"
+                  type="number"
+                  value="10"
+                />
+              </div>
+
+              <div>
+                <label for="constitution">Constituição</label>
+                <input
+                  id="constitution"
+                  name="constitution"
+                  type="number"
+                  value="10"
+                />
+              </div>
+
+              <div>
+                <label for="intelligence">Inteligência</label>
+                <input
+                  id="intelligence"
+                  name="intelligence"
+                  type="number"
+                  value="10"
+                />
+              </div>
+
+              <div>
+                <label for="wisdom">Sabedoria</label>
+                <input id="wisdom" name="wisdom" type="number" value="10" />
+              </div>
+
+              <div>
+                <label for="charisma">Carisma</label>
+                <input id="charisma" name="charisma" type="number" value="10" />
+              </div>
+            </div>
+
+            <h3 id="recursos">Recursos</h3>
+
+            <div class="form-grid">
+              <div>
+                <label for="armorClass">Classe de Armadura</label>
+                <input
+                  id="armorClass"
+                  name="armorClass"
+                  type="number"
+                  value="10"
+                />
+              </div>
+
+              <div>
+                <label for="hitPoints">Pontos de Vida</label>
+                <input
+                  id="hitPoints"
+                  name="hitPoints"
+                  type="number"
+                  value="10"
+                />
+              </div>
+
+              <div>
+                <label for="speed">Deslocamento</label>
+                <input id="speed" name="speed" type="text" value="9m" />
+              </div>
+
+              <div>
+                <label for="gold">Ouro</label>
+                <input id="gold" name="gold" type="number" value="0" />
+              </div>
+
+              <div>
+                <label for="mainWeapon">Arma principal</label>
+                <input
+                  id="mainWeapon"
+                  name="mainWeapon"
+                  type="text"
+                  placeholder="Ex: Espada longa"
+                />
+              </div>
+
+              <div>
+                <label for="spellcasting">Conjurador?</label>
+                <select id="spellcasting" name="spellcasting">
+                  <option value="Não">Não</option>
+                  <option value="Sim">Sim</option>
+                </select>
+              </div>
+            </div>
+
+            <div>
+              <label for="dndNotes">Anotações</label>
+              <textarea
+                id="dndNotes"
+                name="notes"
+                placeholder="Magias, equipamentos, talentos, história, aliados..."
+              ></textarea>
+            </div>
+          </form>
+        </div>
+      </section>
+    </main>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>
