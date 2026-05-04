@@ -210,7 +210,7 @@ button {
 
 .header-center {
   width: 100%;
-  height: 100px;
+  height: 92px;
 
   position: sticky;
   top: 0;
@@ -220,32 +220,43 @@ button {
   align-items: center;
   justify-content: center;
 
+  overflow: hidden;
+
   background: rgba(2, 6, 23, 0.6);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
 
 .header-container-center {
+  width: 100%;
+  max-width: 1400px;
   height: 100%;
+  padding: 0 5%;
+
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .header-center .logo {
+  height: 100%;
+
   display: flex;
   align-items: center;
   justify-content: center;
 }
 
 .header-center .logo img {
-  height: 48px;
+  height: 76px;
+  max-height: 76px;
   width: auto;
+  max-width: min(760px, 82vw);
 
-  transform: scale(5.2);
+  transform: none;
   transform-origin: center center;
 
   object-fit: contain;
+  display: block;
 
   filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.4))
     drop-shadow(0 0 25px rgba(34, 211, 238, 0.2));
@@ -254,7 +265,7 @@ button {
 }
 
 .header-center .logo img:hover {
-  transform: scale(5.35);
+  transform: scale(1.03);
   filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.6))
     drop-shadow(0 0 35px rgba(34, 211, 238, 0.3));
 }
@@ -4548,7 +4559,11 @@ textarea:focus {
 
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.92)),
-    radial-gradient(circle at top right, rgba(34, 211, 238, 0.08), transparent 42%);
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.08),
+      transparent 42%
+    );
 
   transition: 0.25s ease;
 }
@@ -4728,5 +4743,97 @@ textarea:focus {
 
   .initiative-sheet-box input {
     width: 100%;
+  }
+}
+
+/* =========================================================
+   CORREÇÃO FINAL - LOGO DO HEADER MENOR
+========================================================= */
+
+/*
+  O header centralizado estava usando transform: scale(5.2),
+  por isso a logo continuava gigante mesmo mudando o height.
+  Este bloco fica no final para sobrescrever qualquer regra antiga.
+*/
+
+.header-center {
+  height: 92px !important;
+  overflow: hidden !important;
+}
+
+.header-container-center {
+  width: 100% !important;
+  max-width: 1400px !important;
+  height: 100% !important;
+  padding: 0 5% !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.header-center .logo {
+  height: 100% !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.header-center .logo img {
+  height: 76px !important;
+  max-height: 76px !important;
+  width: auto !important;
+  max-width: min(760px, 82vw) !important;
+
+  display: block !important;
+  object-fit: contain !important;
+
+  transform: none !important;
+  transform-origin: center center !important;
+}
+
+.header-center .logo img:hover {
+  transform: scale(1.03) !important;
+}
+
+/* Caso alguma página use o header padrão em vez do header centralizado */
+.header:not(.header-center) .logo img {
+  height: 82px !important;
+  max-height: 82px !important;
+  width: auto !important;
+}
+
+@media (max-width: 1000px) {
+  .header-center {
+    height: 82px !important;
+  }
+
+  .header-center .logo img {
+    height: 66px !important;
+    max-height: 66px !important;
+    max-width: 84vw !important;
+    transform: none !important;
+  }
+
+  .header-center .logo img:hover {
+    transform: scale(1.03) !important;
+  }
+}
+
+@media (max-width: 600px) {
+  .header-center {
+    height: 72px !important;
+  }
+
+  .header-center .logo img {
+    height: 56px !important;
+    max-height: 56px !important;
+    max-width: 88vw !important;
+    transform: none !important;
+  }
+
+  .header-center .logo img:hover {
+    transform: scale(1.03) !important;
   }
 }
