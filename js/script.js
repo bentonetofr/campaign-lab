@@ -1,39 +1,4 @@
-const usuariosPermitidos = [
-  { id: "cisco", nome: "Cisco", senha: "1234" },
-  { id: "bolo", nome: "Bolo", senha: "1408" },
-  { id: "emu", nome: "Emu", senha: "1234" },
-  { id: "nat", nome: "Nat", senha: "1234" },
-  { id: "bruna", nome: "Bruna", senha: "1234" },
-  { id: "sarah", nome: "Sarah", senha: "1234" },
-  { id: "nico", nome: "Nico", senha: "1234" },
-  { id: "nub", nome: "Nub", senha: "1234" },
-  { id: "matheus", nome: "Matheus", senha: "1234" },
-  { id: "igor", nome: "Igor", senha: "1234" },
-  { id: "galaxy", nome: "Galaxy", senha: "1234" },
-  { id: "braba", nome: "Braba", senha: "1234" },
-  { id: "milla", nome: "Milla", senha: "1234" },
-];
-
-const campanhasBase = [
-  {
-    id: "altherium-torvalenn",
-    nome: "A Queda de Torvalenn",
-    sistema: "Altherium",
-    mestreId: "cisco",
-    jogadores: ["bolo"],
-    descricao:
-      "Campanha principal de Altherium, marcada por runas, guerra e o destino de Torvalenn.",
-  },
-  {
-    id: "dnd-reinos-perdidos",
-    nome: "Reinos Perdidos",
-    sistema: "D&D",
-    mestreId: "cisco",
-    jogadores: ["nat"],
-    descricao:
-      "Uma aventura clássica de D&D com exploração, monstros lendários e reinos esquecidos.",
-  },
-];
+const DB = window.supabaseClient;
 
 const ALTHERIUM_DOMAINS = [
   ["brutalidade", "Brutalidade", "Fúria"],
@@ -83,11 +48,121 @@ const DND_SKILLS = [
   ["skillSurvival", "Sobrevivência"],
 ];
 
+let profilesCache = [];
+let campaignsCache = [];
+let realtimeChannel = null;
+let saveTimer = null;
+
+/* =========================================================
+   BOOT
+========================================================= */
+
+document.addEventListener("DOMContentLoaded", async () => {
+  if (!DB) {
+    alert("Supabase não carregou. Verifique se supabase-config.js está antes do script.js.");
+    return;
+  }
+
+  if (document.body.classList.contains("login-page")) {
+    setupLoginPage();
+    return;
+  }
+
+  const user = getLoggedUserFromSession();
+
+  if (!user && needsLoggedUser()) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  if (document.body.classList.contains("my-campaigns-page")) {
+    await renderMyCampaignsPage();
+    subscribeGlobalRealtime(renderMyCampaignsPage);
+  }
+
+  if (document.body.classList.contains("create-campaign-page")) {
+    await setupCreateCampaignPage();
+  }
+
+  if (document.body.classList.contains("altherium-page")) {
+    await protectPage("Altherium", "Mestre");
+    await setupMasterCampaignName();
+    await setupMasterPlayersRealtime("playersGrid", "onlineCount");
+    await setupAltheriumMasterSheets();
+    await setupInitiativeBoard({
+      system: "Altherium",
+      boardId: "initiativeBoard",
+      clearButtonId: "clearInitiativeBtn",
+      getSheet: getOrCreateCampaignSheet,
+      updateSheet: updateCampaignSheet,
+    });
+    setupAddPlayersToCampaign({
+      modalId: "altheriumModal",
+      titleId: "altheriumModalTitle",
+      fieldsId: "altheriumFormFields",
+      formId: "altheriumForm",
+      openSelector: "[data-open-modal='player']",
+      closeSelector: "[data-close-modal]",
+    });
+    subscribeCampaignRealtime(refreshCurrentMasterPanel);
+  }
+
+  if (document.body.classList.contains("altherium-player-page")) {
+    await protectPage("Altherium", "Jogador");
+    setupPlayerInfo("playerNameView", "campaignNameView");
+    await setupAltheriumPlayerSheet();
+    subscribeCampaignRealtime(loadSheetIntoPlayerForm);
+  }
+
+  if (document.body.classList.contains("dnd-master-page")) {
+    await protectPage("D&D", "Mestre");
+    await setupMasterCampaignName();
+    await setupMasterPlayersRealtime("dndPlayersGrid", "dndPlayerCount");
+    await setupDndMasterSheets();
+    await setupInitiativeBoard({
+      system: "D&D",
+      boardId: "dndInitiativeBoard",
+      clearButtonId: "clearDndInitiativeBtn",
+      getSheet: getOrCreateDndSheet,
+      updateSheet: updateDndSheet,
+    });
+    setupAddPlayersToCampaign({
+      modalId: "dndModal",
+      titleId: "dndModalTitle",
+      fieldsId: "dndFormFields",
+      formId: "dndForm",
+      openSelector: "[data-open-dnd-modal='player']",
+      closeSelector: "[data-close-dnd-modal]",
+    });
+    subscribeCampaignRealtime(refreshCurrentMasterPanel);
+  }
+
+  if (document.body.classList.contains("dnd-player-page")) {
+    await protectPage("D&D", "Jogador");
+    setupPlayerInfo("dndPlayerNameView", "dndCampaignNameView");
+    await setupDndPlayerSheet();
+    subscribeCampaignRealtime(loadDndSheetIntoPlayerForm);
+  }
+
+  setupTabs();
+});
+
+function needsLoggedUser() {
+  return (
+    document.body.classList.contains("my-campaigns-page") ||
+    document.body.classList.contains("create-campaign-page") ||
+    document.body.classList.contains("altherium-page") ||
+    document.body.classList.contains("altherium-player-page") ||
+    document.body.classList.contains("dnd-master-page") ||
+    document.body.classList.contains("dnd-player-page")
+  );
+}
+
 /* =========================================================
    LOGIN
 ========================================================= */
 
-if (document.body.classList.contains("login-page")) {
+function setupLoginPage() {
   const loginBtn = document.getElementById("loginBtn");
   const userNameInput = document.getElementById("userNameInput");
   const passwordInput = document.getElementById("password");
@@ -100,7 +175,7 @@ if (document.body.classList.contains("login-page")) {
     });
   }
 
-  function loginUser() {
+  async function loginUser() {
     const typedName = userNameInput.value.trim().toLowerCase();
     const password = passwordInput.value.trim();
 
@@ -109,42 +184,172 @@ if (document.body.classList.contains("login-page")) {
       return;
     }
 
-    const user = usuariosPermitidos.find((item) => item.id === typedName);
+    const { data: user, error } = await DB
+      .from("profiles")
+      .select("id, name, password")
+      .eq("id", typedName)
+      .maybeSingle();
+
+    if (error) {
+      console.error(error);
+      alert("Erro ao buscar usuário no Supabase.");
+      return;
+    }
 
     if (!user) {
       alert("sai fora chefe, vc n faz parte dos casas. Mete o pé!");
       return;
     }
 
-    if (user.senha !== password) {
+    if (user.password !== password) {
       alert("Para de ser burro fi, coloca a senha certa krai.");
       return;
     }
 
     sessionStorage.setItem("loggedUserId", user.id);
+    sessionStorage.setItem("loggedUserName", user.name);
     window.location.href = "minhas-campanhas.html";
   }
 }
 
 /* =========================================================
-   MINHAS CAMPANHAS
+   PROFILES
 ========================================================= */
 
-if (document.body.classList.contains("my-campaigns-page")) {
-  renderMyCampaignsPage();
-  window.addEventListener("storage", renderMyCampaignsPage);
-  setInterval(renderMyCampaignsPage, 1000);
+async function getProfiles(force = false) {
+  if (profilesCache.length && !force) return profilesCache;
+
+  const { data, error } = await DB
+    .from("profiles")
+    .select("id, name")
+    .order("name", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    return profilesCache;
+  }
+
+  profilesCache = data || [];
+  return profilesCache;
 }
 
-function renderMyCampaignsPage() {
-  const user = getLoggedUser();
+function getLoggedUserFromSession() {
+  const id = sessionStorage.getItem("loggedUserId");
+  const name = sessionStorage.getItem("loggedUserName");
+
+  if (!id) return null;
+
+  return {
+    id,
+    nome: name || id,
+    name: name || id,
+  };
+}
+
+/* =========================================================
+   CAMPANHAS
+========================================================= */
+
+async function getAllCampaigns(force = false) {
+  if (campaignsCache.length && !force) return campaignsCache;
+
+  const { data, error } = await DB
+    .from("campaigns")
+    .select(
+      `
+      id,
+      name,
+      system,
+      master_id,
+      description,
+      created_at,
+      campaign_members (
+        user_id,
+        role
+      )
+    `
+    )
+    .order("created_at", { ascending: true });
+
+  if (error) {
+    console.error(error);
+    alert("Erro ao carregar campanhas do Supabase.");
+    return campaignsCache;
+  }
+
+  campaignsCache = (data || []).map(mapCampaignFromDb);
+  return campaignsCache;
+}
+
+function mapCampaignFromDb(row) {
+  const members = row.campaign_members || [];
+  const jogadores = members
+    .filter((member) => member.role === "Jogador")
+    .map((member) => member.user_id);
+
+  return {
+    id: row.id,
+    nome: row.name,
+    name: row.name,
+    sistema: row.system,
+    system: row.system,
+    mestreId: row.master_id,
+    master_id: row.master_id,
+    descricao: row.description || "",
+    description: row.description || "",
+    membros: members,
+    jogadores,
+  };
+}
+
+async function getCurrentCampaign(force = false) {
+  const campaignId = getCurrentCampaignId();
+  if (!campaignId) return null;
+
+  const campaigns = await getAllCampaigns(force);
+  return campaigns.find((item) => item.id === campaignId) || null;
+}
+
+function getCampaignPlayerIds(campaign) {
+  return Array.isArray(campaign.jogadores) ? campaign.jogadores : [];
+}
+
+async function getUserCampaigns(userId) {
+  const campaigns = await getAllCampaigns(true);
+  const userCampaigns = [];
+
+  campaigns.forEach((campaign) => {
+    const activePlayers = getCampaignPlayerIds(campaign);
+
+    if (campaign.mestreId === userId) {
+      userCampaigns.push({
+        ...campaign,
+        perfil: "Mestre",
+        pagina: getCampaignPage(campaign.sistema, "Mestre"),
+      });
+    }
+
+    if (activePlayers.includes(userId)) {
+      userCampaigns.push({
+        ...campaign,
+        perfil: "Jogador",
+        pagina: getCampaignPage(campaign.sistema, "Jogador"),
+      });
+    }
+  });
+
+  return userCampaigns;
+}
+
+async function renderMyCampaignsPage() {
+  const user = getLoggedUserFromSession();
 
   if (!user) {
     window.location.href = "index.html";
     return;
   }
 
-  const userCampaigns = getUserCampaigns(user.id);
+  const userCampaigns = await getUserCampaigns(user.id);
   const campaignsAsMaster = userCampaigns.filter((campaign) => campaign.perfil === "Mestre");
   const campaignsAsPlayer = userCampaigns.filter((campaign) => campaign.perfil === "Jogador");
 
@@ -214,263 +419,9 @@ function renderCampaigns(container, campaigns) {
     .join("");
 }
 
-/* =========================================================
-   CRIAR CAMPANHA
-========================================================= */
-
-if (document.body.classList.contains("create-campaign-page")) {
-  const user = getLoggedUser();
-
-  if (!user) {
-    window.location.href = "index.html";
-  } else {
-    setupCreateCampaignPage(user);
-  }
-}
-
-function setupCreateCampaignPage(user) {
-  const creatorNameView = document.getElementById("creatorNameView");
-  const playersPickerGrid = document.getElementById("playersPickerGrid");
-  const createCampaignForm = document.getElementById("createCampaignForm");
-
-  if (creatorNameView) creatorNameView.textContent = user.nome;
-  if (!playersPickerGrid || !createCampaignForm) return;
-
-  const availablePlayers = usuariosPermitidos.filter((player) => player.id !== user.id);
-
-  playersPickerGrid.innerHTML = availablePlayers
-    .map(
-      (player) => `
-        <label class="player-check-card">
-          <input type="checkbox" value="${player.id}" />
-          <span>${player.nome}</span>
-        </label>
-      `
-    )
-    .join("");
-
-  createCampaignForm.addEventListener("submit", (event) => {
-    event.preventDefault();
-
-    const campaignName = document.getElementById("campaignName").value.trim();
-    const campaignSystem = document.getElementById("campaignSystem").value;
-
-    const selectedPlayers = Array.from(playersPickerGrid.querySelectorAll("input:checked")).map(
-      (input) => input.value
-    );
-
-    if (!campaignName || !campaignSystem) {
-      alert("Preencha o nome e escolha o sistema.");
-      return;
-    }
-
-    const customCampaigns = getCustomCampaigns();
-
-    const newCampaign = {
-      id: createCampaignId(campaignName),
-      nome: campaignName,
-      sistema: campaignSystem,
-      mestreId: user.id,
-      jogadores: selectedPlayers,
-      descricao: `Campanha de ${campaignSystem} criada por ${user.nome}.`,
-      criadaEm: new Date().toISOString(),
-    };
-
-    customCampaigns.push(newCampaign);
-    saveCustomCampaigns(customCampaigns);
-
-    selectedPlayers.forEach((playerId) => {
-      if (campaignSystem === "Altherium") {
-        getOrCreateCampaignSheet(newCampaign.id, playerId, campaignSystem);
-      }
-
-      if (campaignSystem === "D&D") {
-        getOrCreateDndSheet(newCampaign.id, playerId, campaignSystem);
-      }
-    });
-
-    alert("Campanha criada com sucesso.");
-    window.location.href = "minhas-campanhas.html";
-  });
-}
-
-/* =========================================================
-   PÁGINAS
-========================================================= */
-
-if (document.body.classList.contains("altherium-page")) {
-  protectPage("Altherium", "Mestre");
-  setupMasterCampaignName();
-  setupMasterPlayersRealtime("playersGrid", "onlineCount");
-  setupAltheriumMasterSheets();
-  setupInitiativeBoard({
-    system: "Altherium",
-    boardId: "initiativeBoard",
-    clearButtonId: "clearInitiativeBtn",
-    getSheet: getOrCreateCampaignSheet,
-    updateSheet: updateCampaignSheet,
-  });
-  setupAddPlayersToCampaign({
-    modalId: "altheriumModal",
-    titleId: "altheriumModalTitle",
-    fieldsId: "altheriumFormFields",
-    formId: "altheriumForm",
-    openSelector: "[data-open-modal='player']",
-    closeSelector: "[data-close-modal]",
-  });
-}
-
-if (document.body.classList.contains("altherium-player-page")) {
-  protectPage("Altherium", "Jogador");
-  setupPlayerInfo("playerNameView", "campaignNameView");
-  setupAltheriumPlayerSheet();
-}
-
-if (document.body.classList.contains("dnd-master-page")) {
-  protectPage("D&D", "Mestre");
-  setupMasterCampaignName();
-  setupMasterPlayersRealtime("dndPlayersGrid", "dndPlayerCount");
-  setupDndMasterSheets();
-  setupInitiativeBoard({
-    system: "D&D",
-    boardId: "dndInitiativeBoard",
-    clearButtonId: "clearDndInitiativeBtn",
-    getSheet: getOrCreateDndSheet,
-    updateSheet: updateDndSheet,
-  });
-  setupAddPlayersToCampaign({
-    modalId: "dndModal",
-    titleId: "dndModalTitle",
-    fieldsId: "dndFormFields",
-    formId: "dndForm",
-    openSelector: "[data-open-dnd-modal='player']",
-    closeSelector: "[data-close-dnd-modal]",
-  });
-}
-
-if (document.body.classList.contains("dnd-player-page")) {
-  protectPage("D&D", "Jogador");
-  setupPlayerInfo("dndPlayerNameView", "dndCampaignNameView");
-  setupDndPlayerSheet();
-}
-
-/* =========================================================
-   CAMPANHAS
-========================================================= */
-
-function getAllCampaigns() {
-  const deletedIds = getDeletedCampaignIds();
-
-  return [...campanhasBase, ...getCustomCampaigns()].filter(
-    (campaign) => !deletedIds.includes(campaign.id)
-  );
-}
-
-function getCustomCampaigns() {
-  return JSON.parse(localStorage.getItem("customCampaigns")) || [];
-}
-
-function saveCustomCampaigns(campaigns) {
-  localStorage.setItem("customCampaigns", JSON.stringify(campaigns));
-}
-
-function getDeletedCampaignIds() {
-  return JSON.parse(localStorage.getItem("deletedCampaignIds")) || [];
-}
-
-function saveDeletedCampaignIds(ids) {
-  localStorage.setItem("deletedCampaignIds", JSON.stringify(ids));
-}
-
-function getLeftCampaigns() {
-  return JSON.parse(localStorage.getItem("leftCampaigns")) || [];
-}
-
-function saveLeftCampaigns(leftCampaigns) {
-  localStorage.setItem("leftCampaigns", JSON.stringify(leftCampaigns));
-}
-
-function getRemovedCampaignPlayers() {
-  return JSON.parse(localStorage.getItem("removedCampaignPlayers")) || [];
-}
-
-function saveRemovedCampaignPlayers(players) {
-  localStorage.setItem("removedCampaignPlayers", JSON.stringify(players));
-}
-
-function getAddedCampaignPlayers() {
-  return JSON.parse(localStorage.getItem("addedCampaignPlayers")) || [];
-}
-
-function saveAddedCampaignPlayers(players) {
-  localStorage.setItem("addedCampaignPlayers", JSON.stringify(players));
-}
-
-function getCampaignPlayerIds(campaign) {
-  const removedPlayers = getRemovedCampaignPlayers();
-  const leftCampaigns = getLeftCampaigns();
-  const addedPlayers = getAddedCampaignPlayers();
-
-  const basePlayers = Array.isArray(campaign.jogadores) ? [...campaign.jogadores] : [];
-
-  const extraPlayers = addedPlayers
-    .filter((item) => item.campaignId === campaign.id)
-    .map((item) => item.userId);
-
-  const allPlayers = [...new Set([...basePlayers, ...extraPlayers])];
-
-  return allPlayers.filter((playerId) => {
-    const wasRemoved = removedPlayers.some(
-      (item) => item.campaignId === campaign.id && item.userId === playerId
-    );
-
-    const hasLeft = leftCampaigns.some(
-      (item) => item.campaignId === campaign.id && item.userId === playerId
-    );
-
-    return !wasRemoved && !hasLeft;
-  });
-}
-
-function getUserCampaigns(userId) {
-  const campaigns = [];
-
-  getAllCampaigns().forEach((campaign) => {
-    const activePlayers = getCampaignPlayerIds(campaign);
-
-    if (campaign.mestreId === userId) {
-      campaigns.push({
-        ...campaign,
-        jogadores: activePlayers,
-        perfil: "Mestre",
-        pagina: getCampaignPage(campaign.sistema, "Mestre"),
-      });
-    }
-
-    if (activePlayers.includes(userId)) {
-      campaigns.push({
-        ...campaign,
-        jogadores: activePlayers,
-        perfil: "Jogador",
-        pagina: getCampaignPage(campaign.sistema, "Jogador"),
-      });
-    }
-  });
-
-  return campaigns;
-}
-
-function getCampaignPage(system, profile) {
-  if (system === "Altherium" && profile === "Mestre") return "altherium-mestre.html";
-  if (system === "Altherium" && profile === "Jogador") return "altherium-jogador.html";
-  if (system === "D&D" && profile === "Mestre") return "dnd-mestre.html";
-  if (system === "D&D" && profile === "Jogador") return "dnd-jogador.html";
-
-  return "minhas-campanhas.html";
-}
-
-function enterCampaignById(id, perfil) {
-  const campaign = getAllCampaigns().find((item) => item.id === id);
+async function enterCampaignById(id, perfil) {
+  const campaigns = await getAllCampaigns(true);
+  const campaign = campaigns.find((item) => item.id === id);
 
   if (!campaign) {
     alert("Campanha não encontrada.");
@@ -486,31 +437,24 @@ function enterCampaign(id, nome, sistema, perfil, pagina) {
   sessionStorage.setItem("system", sistema);
   sessionStorage.setItem("profile", perfil);
 
-  const campaign = getAllCampaigns().find((item) => item.id === id);
-  const playerIds = campaign ? getCampaignPlayerIds(campaign) : [];
-
-  sessionStorage.setItem(
-    "lastCampaign",
-    JSON.stringify({
-      id,
-      name: nome,
-      system: sistema,
-      profile: perfil,
-      players: String(playerIds.length).padStart(2, "0"),
-      sessions: "00",
-      sheets: String(playerIds.length).padStart(2, "0"),
-      items: "00",
-    })
-  );
-
   window.location.href = pagina;
 }
 
-function deleteCampaign(event, campaignId) {
+function getCampaignPage(system, profile) {
+  if (system === "Altherium" && profile === "Mestre") return "altherium-mestre.html";
+  if (system === "Altherium" && profile === "Jogador") return "altherium-jogador.html";
+  if (system === "D&D" && profile === "Mestre") return "dnd-mestre.html";
+  if (system === "D&D" && profile === "Jogador") return "dnd-jogador.html";
+
+  return "minhas-campanhas.html";
+}
+
+async function deleteCampaign(event, campaignId) {
   event.stopPropagation();
 
-  const user = getLoggedUser();
-  const campaign = getAllCampaigns().find((item) => item.id === campaignId);
+  const user = getLoggedUserFromSession();
+  const campaigns = await getAllCampaigns(true);
+  const campaign = campaigns.find((item) => item.id === campaignId);
 
   if (!user || !campaign) {
     alert("Campanha não encontrada.");
@@ -524,128 +468,220 @@ function deleteCampaign(event, campaignId) {
 
   if (!confirm(`Tem certeza que quer excluir a campanha "${campaign.nome}"?`)) return;
 
-  const customCampaigns = getCustomCampaigns();
-  const isCustom = customCampaigns.some((item) => item.id === campaignId);
+  const { error } = await DB
+    .from("campaigns")
+    .delete()
+    .eq("id", campaignId)
+    .eq("master_id", user.id);
 
-  if (isCustom) {
-    saveCustomCampaigns(customCampaigns.filter((item) => item.id !== campaignId));
-  } else {
-    const deletedIds = getDeletedCampaignIds();
-
-    if (!deletedIds.includes(campaignId)) {
-      deletedIds.push(campaignId);
-      saveDeletedCampaignIds(deletedIds);
-    }
+  if (error) {
+    console.error(error);
+    alert("Erro ao excluir campanha.");
+    return;
   }
 
-  deleteSheetsByCampaign(campaignId);
-  deleteDndSheetsByCampaign(campaignId);
+  campaignsCache = [];
 
   if (getCurrentCampaignId() === campaignId) clearCurrentCampaign();
 
-  renderMyCampaignsPage();
+  await renderMyCampaignsPage();
 }
 
-function leaveCampaign(event, campaignId) {
+async function leaveCampaign(event, campaignId) {
   event.stopPropagation();
 
-  const user = getLoggedUser();
-  const campaign = getAllCampaigns().find((item) => item.id === campaignId);
+  const user = getLoggedUserFromSession();
 
-  if (!user || !campaign) {
-    alert("Campanha não encontrada.");
+  if (!user) return;
+
+  if (!confirm("Tem certeza que quer sair desta campanha?")) return;
+
+  const { error } = await DB
+    .from("campaign_members")
+    .delete()
+    .eq("campaign_id", campaignId)
+    .eq("user_id", user.id)
+    .eq("role", "Jogador");
+
+  if (error) {
+    console.error(error);
+    alert("Erro ao sair da campanha.");
     return;
   }
 
-  if (!getCampaignPlayerIds(campaign).includes(user.id)) {
-    alert("Você não é jogador desta campanha.");
-    return;
-  }
-
-  if (!confirm(`Tem certeza que quer sair da campanha "${campaign.nome}"?`)) return;
-
-  const customCampaigns = getCustomCampaigns();
-  const customCampaign = customCampaigns.find((item) => item.id === campaignId);
-
-  if (customCampaign) {
-    customCampaign.jogadores = customCampaign.jogadores.filter((playerId) => playerId !== user.id);
-    saveCustomCampaigns(customCampaigns);
-  }
-
-  const leftCampaigns = getLeftCampaigns();
-  const alreadyLeft = leftCampaigns.some(
-    (item) => item.userId === user.id && item.campaignId === campaignId
-  );
-
-  if (!alreadyLeft) {
-    leftCampaigns.push({ userId: user.id, campaignId });
-    saveLeftCampaigns(leftCampaigns);
-  }
+  campaignsCache = [];
 
   if (getCurrentCampaignId() === campaignId) clearCurrentCampaign();
 
-  renderMyCampaignsPage();
+  await renderMyCampaignsPage();
 }
 
-function createCampaignId(name) {
-  return (
-    name
-      .toLowerCase()
-      .normalize("NFD")
-      .replace(/[\u0300-\u036f]/g, "")
-      .replace(/[^a-z0-9]+/g, "-")
-      .replace(/(^-|-$)/g, "") +
-    "-" +
-    Date.now()
+/* =========================================================
+   CRIAR CAMPANHA
+========================================================= */
+
+async function setupCreateCampaignPage() {
+  const user = getLoggedUserFromSession();
+
+  if (!user) {
+    window.location.href = "index.html";
+    return;
+  }
+
+  setText("creatorNameView", user.nome);
+
+  const playersPickerGrid = document.getElementById("playersPickerGrid");
+  const createCampaignForm = document.getElementById("createCampaignForm");
+
+  if (!playersPickerGrid || !createCampaignForm) return;
+
+  const profiles = (await getProfiles(true)).filter((profile) => profile.id !== user.id);
+
+  playersPickerGrid.innerHTML = profiles
+    .map(
+      (player) => `
+        <label class="player-check-card">
+          <input type="checkbox" value="${player.id}" />
+          <span>${player.name}</span>
+        </label>
+      `
+    )
+    .join("");
+
+  createCampaignForm.addEventListener("submit", async (event) => {
+    event.preventDefault();
+
+    const campaignName = document.getElementById("campaignName").value.trim();
+    const campaignSystem = document.getElementById("campaignSystem").value;
+
+    const selectedPlayers = Array.from(playersPickerGrid.querySelectorAll("input:checked")).map(
+      (input) => input.value
+    );
+
+    if (!campaignName || !campaignSystem) {
+      alert("Preencha o nome e escolha o sistema.");
+      return;
+    }
+
+    const { data: campaign, error: campaignError } = await DB
+      .from("campaigns")
+      .insert({
+        name: campaignName,
+        system: campaignSystem,
+        master_id: user.id,
+        description: `Campanha de ${campaignSystem} criada por ${user.nome}.`,
+      })
+      .select("id, name, system")
+      .single();
+
+    if (campaignError) {
+      console.error(campaignError);
+      alert("Erro ao criar campanha.");
+      return;
+    }
+
+    const members = [
+      {
+        campaign_id: campaign.id,
+        user_id: user.id,
+        role: "Mestre",
+      },
+      ...selectedPlayers.map((playerId) => ({
+        campaign_id: campaign.id,
+        user_id: playerId,
+        role: "Jogador",
+      })),
+    ];
+
+    const { error: membersError } = await DB.from("campaign_members").insert(members);
+
+    if (membersError) {
+      console.error(membersError);
+      alert("Campanha criada, mas houve erro ao adicionar membros.");
+      return;
+    }
+
+    for (const playerId of selectedPlayers) {
+      if (campaignSystem === "Altherium") {
+        await getOrCreateCampaignSheet(campaign.id, playerId, campaignSystem);
+      }
+
+      if (campaignSystem === "D&D") {
+        await getOrCreateDndSheet(campaign.id, playerId, campaignSystem);
+      }
+    }
+
+    campaignsCache = [];
+
+    alert("Campanha criada com sucesso.");
+    window.location.href = "minhas-campanhas.html";
+  });
+}
+
+/* =========================================================
+   PROTEÇÃO
+========================================================= */
+
+async function protectPage(requiredSystem, requiredProfile) {
+  const user = getLoggedUserFromSession();
+  const system = sessionStorage.getItem("system");
+  const profile = sessionStorage.getItem("profile");
+  const campaignId = getCurrentCampaignId();
+
+  if (!user || system !== requiredSystem || profile !== requiredProfile || !campaignId) {
+    alert("Acesso negado.");
+    window.location.href = "index.html";
+    return;
+  }
+
+  const userCampaigns = await getUserCampaigns(user.id);
+
+  const hasAccess = userCampaigns.some(
+    (campaign) => campaign.id === campaignId && campaign.perfil === requiredProfile
   );
+
+  if (!hasAccess) {
+    alert("Você não tem acesso a esta campanha.");
+    window.location.href = "minhas-campanhas.html";
+  }
 }
 
 /* =========================================================
    ABAS
 ========================================================= */
 
-document.addEventListener("click", (event) => {
-  const tab = event.target.closest(".altherium-tab");
-  if (!tab) return;
+function setupTabs() {
+  document.addEventListener("click", (event) => {
+    const tab = event.target.closest(".altherium-tab");
+    if (!tab) return;
 
-  document.querySelectorAll(".altherium-tab").forEach((button) => button.classList.remove("active"));
-  document.querySelectorAll(".altherium-section").forEach((section) => section.classList.remove("active"));
+    document.querySelectorAll(".altherium-tab").forEach((button) => button.classList.remove("active"));
+    document.querySelectorAll(".altherium-section").forEach((section) => section.classList.remove("active"));
 
-  tab.classList.add("active");
+    tab.classList.add("active");
 
-  const selectedSection = document.getElementById(tab.dataset.tab);
-  if (selectedSection) selectedSection.classList.add("active");
-});
+    const selectedSection = document.getElementById(tab.dataset.tab);
+    if (selectedSection) selectedSection.classList.add("active");
+  });
+}
 
 /* =========================================================
    PLAYERS NO PAINEL DO MESTRE
 ========================================================= */
 
-function setupMasterPlayersRealtime(gridId, counterId) {
-  const grid = document.getElementById(gridId);
-  const counter = document.getElementById(counterId);
+async function setupMasterPlayersRealtime(gridId, counterId) {
+  await renderCampaignPlayers(gridId, counterId);
+}
+
+async function renderCampaignPlayers(gridIdOrElement, counterIdOrElement) {
+  const grid =
+    typeof gridIdOrElement === "string" ? document.getElementById(gridIdOrElement) : gridIdOrElement;
+  const counter =
+    typeof counterIdOrElement === "string" ? document.getElementById(counterIdOrElement) : counterIdOrElement;
 
   if (!grid) return;
 
-  renderCampaignPlayers(grid, counter);
-
-  window.addEventListener("storage", () => {
-    renderCampaignPlayers(grid, counter);
-    renderMasterSheets();
-    renderDndMasterSheets();
-    setupMasterCampaignName();
-  });
-
-  setInterval(() => {
-    renderCampaignPlayers(grid, counter);
-    renderMasterSheets();
-    renderDndMasterSheets();
-    setupMasterCampaignName();
-  }, 1000);
-}
-
-function renderCampaignPlayers(grid, counter) {
-  const campaign = getCurrentCampaign();
+  const campaign = await getCurrentCampaign(true);
 
   if (!campaign) {
     grid.innerHTML = `
@@ -654,13 +690,13 @@ function renderCampaignPlayers(grid, counter) {
         <p>Volte para suas campanhas e entre novamente.</p>
       </div>
     `;
-
     if (counter) counter.textContent = "0";
     return;
   }
 
+  const profiles = await getProfiles();
   const players = getCampaignPlayerIds(campaign)
-    .map((playerId) => usuariosPermitidos.find((user) => user.id === playerId))
+    .map((playerId) => profiles.find((profile) => profile.id === playerId))
     .filter(Boolean);
 
   if (counter) counter.textContent = players.length;
@@ -679,7 +715,7 @@ function renderCampaignPlayers(grid, counter) {
     .map(
       (player) => `
         <div class="altherium-card">
-          <h3>${player.nome}</h3>
+          <h3>${player.name}</h3>
           <p>Status: Jogador da campanha</p>
 
           <div class="altherium-actions">
@@ -694,7 +730,7 @@ function renderCampaignPlayers(grid, counter) {
 }
 
 /* =========================================================
-   ADICIONAR PLAYERS
+   ADICIONAR / REMOVER PLAYERS
 ========================================================= */
 
 function setupAddPlayersToCampaign(config) {
@@ -707,13 +743,13 @@ function setupAddPlayersToCampaign(config) {
 
   const submitButton = form.querySelector("button[type='submit']");
 
-  document.addEventListener("click", (event) => {
+  document.addEventListener("click", async (event) => {
     const openButton = event.target.closest(config.openSelector);
     const closeButton = event.target.closest(config.closeSelector);
 
     if (openButton) {
       event.preventDefault();
-      openAddPlayersModal(modal, modalTitle, formFields, form, submitButton);
+      await openAddPlayersModal(modal, modalTitle, formFields, form, submitButton);
     }
 
     if (closeButton || event.target === modal) {
@@ -721,33 +757,34 @@ function setupAddPlayersToCampaign(config) {
     }
   });
 
-  form.addEventListener("submit", (event) => {
+  form.addEventListener("submit", async (event) => {
     if (form.dataset.mode !== "add-players") return;
 
     event.preventDefault();
-    addSelectedPlayersToCampaign(form, modal, submitButton);
+    await addSelectedPlayersToCampaign(form, modal, submitButton);
   });
 }
 
-function openAddPlayersModal(modal, modalTitle, formFields, form, submitButton) {
-  const loggedUser = getLoggedUser();
-  const campaign = getCurrentCampaign();
+async function openAddPlayersModal(modal, modalTitle, formFields, form, submitButton) {
+  const user = getLoggedUserFromSession();
+  const campaign = await getCurrentCampaign(true);
 
-  if (!loggedUser || !campaign) {
+  if (!user || !campaign) {
     alert("Campanha não encontrada.");
     return;
   }
 
-  if (campaign.mestreId !== loggedUser.id) {
+  if (campaign.mestreId !== user.id) {
     alert("Apenas o mestre pode adicionar jogadores.");
     return;
   }
 
+  const profiles = await getProfiles(true);
   const activePlayers = getCampaignPlayerIds(campaign);
 
-  const availablePlayers = usuariosPermitidos.filter((user) => {
-    const isMaster = user.id === campaign.mestreId;
-    const alreadyInCampaign = activePlayers.includes(user.id);
+  const availablePlayers = profiles.filter((profile) => {
+    const isMaster = profile.id === campaign.mestreId;
+    const alreadyInCampaign = activePlayers.includes(profile.id);
     return !isMaster && !alreadyInCampaign;
   });
 
@@ -760,7 +797,6 @@ function openAddPlayersModal(modal, modalTitle, formFields, form, submitButton) 
         <p>Todos os usuários cadastrados já estão nesta campanha.</p>
       </div>
     `;
-
     if (submitButton) submitButton.disabled = true;
   } else {
     formFields.innerHTML = `
@@ -770,14 +806,13 @@ function openAddPlayersModal(modal, modalTitle, formFields, form, submitButton) 
             (player) => `
               <label class="player-check-card">
                 <input type="checkbox" name="players" value="${player.id}" />
-                <span>${player.nome}</span>
+                <span>${player.name}</span>
               </label>
             `
           )
           .join("")}
       </div>
     `;
-
     if (submitButton) submitButton.disabled = false;
   }
 
@@ -786,16 +821,16 @@ function openAddPlayersModal(modal, modalTitle, formFields, form, submitButton) 
   modal.classList.add("active");
 }
 
-function addSelectedPlayersToCampaign(form, modal, submitButton) {
-  const loggedUser = getLoggedUser();
-  const campaign = getCurrentCampaign();
+async function addSelectedPlayersToCampaign(form, modal, submitButton) {
+  const user = getLoggedUserFromSession();
+  const campaign = await getCurrentCampaign(true);
 
-  if (!loggedUser || !campaign) {
+  if (!user || !campaign) {
     alert("Campanha não encontrada.");
     return;
   }
 
-  if (campaign.mestreId !== loggedUser.id) {
+  if (campaign.mestreId !== user.id) {
     alert("Apenas o mestre pode adicionar jogadores.");
     return;
   }
@@ -814,122 +849,83 @@ function addSelectedPlayersToCampaign(form, modal, submitButton) {
     submitButton.textContent = "Aplicando...";
   }
 
-  const customCampaigns = getCustomCampaigns();
-  const customCampaign = customCampaigns.find((item) => item.id === campaign.id);
+  const rows = selectedPlayers.map((playerId) => ({
+    campaign_id: campaign.id,
+    user_id: playerId,
+    role: "Jogador",
+  }));
 
-  if (customCampaign) {
-    selectedPlayers.forEach((playerId) => {
-      if (!customCampaign.jogadores.includes(playerId)) customCampaign.jogadores.push(playerId);
-    });
+  const { error } = await DB
+    .from("campaign_members")
+    .upsert(rows, { onConflict: "campaign_id,user_id" });
 
-    saveCustomCampaigns(customCampaigns);
-  } else {
-    const addedPlayers = getAddedCampaignPlayers();
-
-    selectedPlayers.forEach((playerId) => {
-      const alreadyAdded = addedPlayers.some(
-        (item) => item.campaignId === campaign.id && item.userId === playerId
-      );
-
-      if (!alreadyAdded) addedPlayers.push({ campaignId: campaign.id, userId: playerId });
-    });
-
-    saveAddedCampaignPlayers(addedPlayers);
+  if (error) {
+    console.error(error);
+    alert("Erro ao adicionar jogadores.");
+    if (submitButton) submitButton.disabled = false;
+    return;
   }
 
-  removePlayerBlocks(campaign.id, selectedPlayers);
+  for (const playerId of selectedPlayers) {
+    if (campaign.sistema === "Altherium") {
+      await getOrCreateCampaignSheet(campaign.id, playerId, campaign.sistema);
+    }
 
-  selectedPlayers.forEach((playerId) => {
-    if (campaign.sistema === "Altherium") getOrCreateCampaignSheet(campaign.id, playerId, campaign.sistema);
-    if (campaign.sistema === "D&D") getOrCreateDndSheet(campaign.id, playerId, campaign.sistema);
-  });
+    if (campaign.sistema === "D&D") {
+      await getOrCreateDndSheet(campaign.id, playerId, campaign.sistema);
+    }
+  }
 
-  refreshCurrentMasterPanel();
+  campaignsCache = [];
+
+  await refreshCurrentMasterPanel();
   closeSharedModal(modal, form, submitButton);
-  window.dispatchEvent(new Event("storage"));
 
   alert("Jogador adicionado com sucesso.");
 }
 
-function removePlayerFromCampaign(campaignId, playerId) {
-  const campaign = getAllCampaigns().find((item) => item.id === campaignId);
-  const loggedUser = getLoggedUser();
+async function removePlayerFromCampaign(campaignId, playerId) {
+  const user = getLoggedUserFromSession();
+  const campaign = (await getAllCampaigns(true)).find((item) => item.id === campaignId);
 
-  if (!campaign || !loggedUser) {
-    alert("Erro ao encontrar campanha ou usuário.");
+  if (!user || !campaign) {
+    alert("Campanha não encontrada.");
     return;
   }
 
-  if (campaign.mestreId !== loggedUser.id) {
+  if (campaign.mestreId !== user.id) {
     alert("Apenas o mestre desta campanha pode remover jogadores.");
     return;
   }
 
-  const player = usuariosPermitidos.find((item) => item.id === playerId);
+  if (!confirm("Remover este jogador da campanha?")) return;
 
-  if (!confirm(`Remover ${player ? player.nome : "este jogador"} da campanha?`)) return;
+  const { error } = await DB
+    .from("campaign_members")
+    .delete()
+    .eq("campaign_id", campaignId)
+    .eq("user_id", playerId)
+    .eq("role", "Jogador");
 
-  const customCampaigns = getCustomCampaigns();
-  const customCampaign = customCampaigns.find((item) => item.id === campaignId);
-
-  if (customCampaign) {
-    customCampaign.jogadores = customCampaign.jogadores.filter((id) => id !== playerId);
-    saveCustomCampaigns(customCampaigns);
+  if (error) {
+    console.error(error);
+    alert("Erro ao remover jogador.");
+    return;
   }
 
-  const removedPlayers = getRemovedCampaignPlayers();
-  const alreadyRemoved = removedPlayers.some(
-    (item) => item.campaignId === campaignId && item.userId === playerId
-  );
-
-  if (!alreadyRemoved) {
-    removedPlayers.push({ campaignId, userId: playerId });
-    saveRemovedCampaignPlayers(removedPlayers);
-  }
-
-  saveAddedCampaignPlayers(
-    getAddedCampaignPlayers().filter(
-      (item) => !(item.campaignId === campaignId && item.userId === playerId)
-    )
-  );
-
-  refreshCurrentMasterPanel();
-  window.dispatchEvent(new Event("storage"));
-}
-
-function removePlayerBlocks(campaignId, playerIds) {
-  saveRemovedCampaignPlayers(
-    getRemovedCampaignPlayers().filter(
-      (item) => !(item.campaignId === campaignId && playerIds.includes(item.userId))
-    )
-  );
-
-  saveLeftCampaigns(
-    getLeftCampaigns().filter(
-      (item) => !(item.campaignId === campaignId && playerIds.includes(item.userId))
-    )
-  );
+  campaignsCache = [];
+  await refreshCurrentMasterPanel();
 }
 
 /* =========================================================
    FICHAS DE ALTHERIUM
 ========================================================= */
 
-function getCampaignSheets() {
-  return JSON.parse(localStorage.getItem("campaignSheets")) || [];
-}
-
-function saveCampaignSheets(sheets) {
-  localStorage.setItem("campaignSheets", JSON.stringify(sheets));
-}
-
 function getDefaultSheet(campaignId, playerId, system) {
-  const player = usuariosPermitidos.find((item) => item.id === playerId);
-
   const sheet = {
     campaignId,
     playerId,
-    ownerName: player ? player.nome : "Jogador",
+    ownerName: "",
     system,
     characterName: "",
     root: "",
@@ -966,7 +962,6 @@ function getDefaultSheet(campaignId, playerId, system) {
     hacksilvers: "550",
     triumphs: "",
     notes: "",
-    updatedAt: new Date().toISOString(),
   };
 
   ALTHERIUM_DOMAINS.forEach((domain) => {
@@ -980,44 +975,51 @@ function getDefaultSheet(campaignId, playerId, system) {
   return sheet;
 }
 
-function getOrCreateCampaignSheet(campaignId, playerId, system) {
-  const sheets = getCampaignSheets();
+async function getOrCreateCampaignSheet(campaignId, playerId, system) {
+  const { data, error } = await DB
+    .from("altherium_sheets")
+    .select("id, campaign_id, user_id, data")
+    .eq("campaign_id", campaignId)
+    .eq("user_id", playerId)
+    .maybeSingle();
 
-  const index = sheets.findIndex(
-    (item) => item.campaignId === campaignId && item.playerId === playerId
-  );
-
-  if (index >= 0) {
-    const normalized = {
-      ...getDefaultSheet(campaignId, playerId, system),
-      ...sheets[index],
-    };
-
-    sheets[index] = normalized;
-    saveCampaignSheets(sheets);
-
-    return normalized;
+  if (error) {
+    console.error(error);
+    return getDefaultSheet(campaignId, playerId, system);
   }
 
-  const newSheet = getDefaultSheet(campaignId, playerId, system);
-  sheets.push(newSheet);
-  saveCampaignSheets(sheets);
+  const profiles = await getProfiles();
+  const profile = profiles.find((item) => item.id === playerId);
+
+  if (data) {
+    return {
+      ...getDefaultSheet(campaignId, playerId, system),
+      ...(data.data || {}),
+      campaignId,
+      playerId,
+      ownerName: profile ? profile.name : playerId,
+      system,
+    };
+  }
+
+  const newSheet = {
+    ...getDefaultSheet(campaignId, playerId, system),
+    ownerName: profile ? profile.name : playerId,
+  };
+
+  const { error: insertError } = await DB.from("altherium_sheets").insert({
+    campaign_id: campaignId,
+    user_id: playerId,
+    data: newSheet,
+  });
+
+  if (insertError) console.error(insertError);
 
   return newSheet;
 }
 
-function updateCampaignSheet(campaignId, playerId, data) {
-  const sheets = getCampaignSheets();
-  const campaign = getAllCampaigns().find((item) => item.id === campaignId);
-
-  const index = sheets.findIndex(
-    (item) => item.campaignId === campaignId && item.playerId === playerId
-  );
-
-  const oldSheet =
-    index >= 0
-      ? { ...getDefaultSheet(campaignId, playerId, campaign ? campaign.sistema : "Altherium"), ...sheets[index] }
-      : getDefaultSheet(campaignId, playerId, campaign ? campaign.sistema : "Altherium");
+async function updateCampaignSheet(campaignId, playerId, data) {
+  const oldSheet = await getOrCreateCampaignSheet(campaignId, playerId, "Altherium");
 
   const updatedSheet = {
     ...oldSheet,
@@ -1025,74 +1027,70 @@ function updateCampaignSheet(campaignId, playerId, data) {
     updatedAt: new Date().toISOString(),
   };
 
-  if (index >= 0) sheets[index] = updatedSheet;
-  else sheets.push(updatedSheet);
+  const { error } = await DB
+    .from("altherium_sheets")
+    .upsert(
+      {
+        campaign_id: campaignId,
+        user_id: playerId,
+        data: updatedSheet,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "campaign_id,user_id" }
+    );
 
-  saveCampaignSheets(sheets);
-  window.dispatchEvent(new Event("storage"));
+  if (error) {
+    console.error(error);
+    alert("Erro ao salvar ficha de Altherium.");
+  }
 }
 
-function deleteSheetsByCampaign(campaignId) {
-  saveCampaignSheets(getCampaignSheets().filter((sheet) => sheet.campaignId !== campaignId));
-}
+async function setupAltheriumMasterSheets() {
+  await renderMasterSheets();
 
-function createMissingSheetsForCurrentCampaign() {
-  const campaign = getCurrentCampaign();
-  if (!campaign || campaign.sistema !== "Altherium") return;
-
-  getCampaignPlayerIds(campaign).forEach((playerId) => {
-    getOrCreateCampaignSheet(campaign.id, playerId, campaign.sistema);
-  });
-}
-
-function setupAltheriumMasterSheets() {
-  renderMasterSheets();
-
-  document.addEventListener("click", (event) => {
+  document.addEventListener("click", async (event) => {
     const createSheetsButton = event.target.closest("[data-create-player-sheets]");
     const openSheetButton = event.target.closest("[data-open-sheet]");
 
     if (createSheetsButton) {
-      createMissingSheetsForCurrentCampaign();
-      renderMasterSheets();
+      const campaign = await getCurrentCampaign(true);
+      if (!campaign) return;
+
+      for (const playerId of getCampaignPlayerIds(campaign)) {
+        await getOrCreateCampaignSheet(campaign.id, playerId, campaign.sistema);
+      }
+
+      await renderMasterSheets();
       alert("Fichas sincronizadas.");
     }
 
     if (openSheetButton) {
-      openMasterSheetModal(openSheetButton.dataset.openSheet);
+      await openMasterSheetModal(openSheetButton.dataset.openSheet);
     }
   });
 
   const form = document.getElementById("altheriumForm");
 
   if (form) {
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("submit", async (event) => {
       if (form.dataset.mode !== "edit-sheet") return;
-
       event.preventDefault();
-      saveSheetFromModal(true);
+      await saveSheetFromModal(true);
     });
 
     form.addEventListener("input", () => {
       if (form.dataset.mode !== "edit-sheet") return;
-      saveSheetFromModal(false);
+      saveDebounced(() => saveSheetFromModal(false));
     });
   }
-
-  window.addEventListener("storage", () => {
-    renderMasterSheets();
-    refreshOpenSheetModal();
-  });
-
-  setInterval(renderMasterSheets, 1000);
 }
 
-function renderMasterSheets() {
+async function renderMasterSheets() {
   const grid = document.getElementById("sheetsGrid");
   const counter = document.getElementById("sheetCount");
   if (!grid) return;
 
-  const campaign = getCurrentCampaign();
+  const campaign = await getCurrentCampaign(true);
 
   if (!campaign || campaign.sistema !== "Altherium") {
     grid.innerHTML = `
@@ -1106,11 +1104,6 @@ function renderMasterSheets() {
   }
 
   const playerIds = getCampaignPlayerIds(campaign);
-
-  playerIds.forEach((playerId) => {
-    getOrCreateCampaignSheet(campaign.id, playerId, campaign.sistema);
-  });
-
   if (counter) counter.textContent = playerIds.length;
 
   if (!playerIds.length) {
@@ -1123,47 +1116,50 @@ function renderMasterSheets() {
     return;
   }
 
-  grid.innerHTML = playerIds
-    .map((playerId) => {
-      const player = usuariosPermitidos.find((item) => item.id === playerId);
-      const sheet = getOrCreateCampaignSheet(campaign.id, playerId, campaign.sistema);
+  const cards = [];
 
-      return `
-        <button class="sheet-card" data-open-sheet="${playerId}">
-          <div class="sheet-card-top">
-            <span>${player ? player.nome : "Jogador"}</span>
-            <strong>${sheet.root || "Sem raíz"}</strong>
-          </div>
+  for (const playerId of playerIds) {
+    const profiles = await getProfiles();
+    const player = profiles.find((item) => item.id === playerId);
+    const sheet = await getOrCreateCampaignSheet(campaign.id, playerId, campaign.sistema);
 
-          <h3>${sheet.characterName || "Personagem sem nome"}</h3>
-          <p>Genesis: ${sheet.genesis || "---"}</p>
-          <p>
-            PV ${sheet.pvCurrent || "0"}/${sheet.pvMax || "0"} •
-            PE ${sheet.peCurrent || "0"}/${sheet.peMax || "0"} •
-            Iniciativa ${sheet.combatInitiative || "--"}
-          </p>
+    cards.push(`
+      <button class="sheet-card" data-open-sheet="${playerId}">
+        <div class="sheet-card-top">
+          <span>${player ? player.name : "Jogador"}</span>
+          <strong>${sheet.root || "Sem raíz"}</strong>
+        </div>
 
-          <div class="sheet-card-footer">
-            <span>Abrir ficha completa</span>
-            <strong>→</strong>
-          </div>
-        </button>
-      `;
-    })
-    .join("");
+        <h3>${sheet.characterName || "Personagem sem nome"}</h3>
+        <p>Genesis: ${sheet.genesis || "---"}</p>
+        <p>
+          PV ${sheet.pvCurrent || "0"}/${sheet.pvMax || "0"} •
+          PE ${sheet.peCurrent || "0"}/${sheet.peMax || "0"} •
+          Iniciativa ${sheet.combatInitiative || "--"}
+        </p>
+
+        <div class="sheet-card-footer">
+          <span>Abrir ficha completa</span>
+          <strong>→</strong>
+        </div>
+      </button>
+    `);
+  }
+
+  grid.innerHTML = cards.join("");
 }
 
-function openMasterSheetModal(playerId) {
+async function openMasterSheetModal(playerId) {
   const modal = document.getElementById("altheriumModal");
   const modalTitle = document.getElementById("altheriumModalTitle");
   const form = document.getElementById("altheriumForm");
   const formFields = document.getElementById("altheriumFormFields");
   const submitButton = form ? form.querySelector("button[type='submit']") : null;
-  const campaign = getCurrentCampaign();
+  const campaign = await getCurrentCampaign(true);
 
   if (!modal || !modalTitle || !form || !formFields || !campaign) return;
 
-  const sheet = getOrCreateCampaignSheet(campaign.id, playerId, campaign.sistema);
+  const sheet = await getOrCreateCampaignSheet(campaign.id, playerId, campaign.sistema);
 
   modalTitle.textContent = `Ficha de ${sheet.ownerName}`;
   formFields.innerHTML = buildMasterSheetEditor(sheet);
@@ -1223,17 +1219,13 @@ function buildMasterSheetEditor(sheet) {
           <div class="rune-weapons-table">
             <h3>Armas</h3>
             <div class="rune-weapon-head"><span>Nome</span><span>Dano</span><span>Alcance</span></div>
-            ${[1, 2, 3, 4]
-              .map(
-                (index) => `
-                  <div class="rune-weapon-row">
-                    <input type="text" name="weapon${index}Name" value="${escapeHtml(sheet[`weapon${index}Name`])}" />
-                    <input type="text" name="weapon${index}Damage" value="${escapeHtml(sheet[`weapon${index}Damage`])}" />
-                    <input type="text" name="weapon${index}Range" value="${escapeHtml(sheet[`weapon${index}Range`])}" />
-                  </div>
-                `
-              )
-              .join("")}
+            ${[1, 2, 3, 4].map((index) => `
+              <div class="rune-weapon-row">
+                <input type="text" name="weapon${index}Name" value="${escapeHtml(sheet[`weapon${index}Name`])}" />
+                <input type="text" name="weapon${index}Damage" value="${escapeHtml(sheet[`weapon${index}Damage`])}" />
+                <input type="text" name="weapon${index}Range" value="${escapeHtml(sheet[`weapon${index}Range`])}" />
+              </div>
+            `).join("")}
           </div>
         </div>
       </section>
@@ -1243,15 +1235,13 @@ function buildMasterSheetEditor(sheet) {
           <div class="rune-section-title"><h3>Domínios</h3></div>
           <div class="rune-domains-table">
             <div class="rune-domain-head"><span>Domínios</span><span>Atributos</span><span>Dados</span></div>
-            ${ALTHERIUM_DOMAINS.map(
-              (domain) => `
-                <label>
-                  <span>${domain.label}</span>
-                  <small>${domain.attr}</small>
-                  <input type="text" name="domain_${domain.key}" value="${escapeHtml(sheet[`domain_${domain.key}`])}" />
-                </label>
-              `
-            ).join("")}
+            ${ALTHERIUM_DOMAINS.map((domain) => `
+              <label>
+                <span>${domain.label}</span>
+                <small>${domain.attr}</small>
+                <input type="text" name="domain_${domain.key}" value="${escapeHtml(sheet[`domain_${domain.key}`])}" />
+              </label>
+            `).join("")}
           </div>
         </div>
       </section>
@@ -1260,13 +1250,9 @@ function buildMasterSheetEditor(sheet) {
         <div class="rune-frame">
           <div class="rune-section-title"><h3>Inventário</h3></div>
           <div class="rune-inventory-list">
-            ${Array.from({ length: 13 }, (_, index) => index + 1)
-              .map(
-                (slot) => `
-                  <input type="text" name="inventory${slot}" value="${escapeHtml(sheet[`inventory${slot}`])}" placeholder="- item" />
-                `
-              )
-              .join("")}
+            ${Array.from({ length: 13 }, (_, index) => index + 1).map((slot) => `
+              <input type="text" name="inventory${slot}" value="${escapeHtml(sheet[`inventory${slot}`])}" placeholder="- item" />
+            `).join("")}
           </div>
 
           <label class="rune-money-field">
@@ -1288,7 +1274,7 @@ function buildMasterSheetEditor(sheet) {
   `;
 }
 
-function saveSheetFromModal(showAlert = false) {
+async function saveSheetFromModal(showAlert = false) {
   const form = document.getElementById("altheriumForm");
   if (!form) return;
 
@@ -1297,53 +1283,31 @@ function saveSheetFromModal(showAlert = false) {
 
   if (!campaignId || !playerId) return;
 
-  updateCampaignSheet(campaignId, playerId, Object.fromEntries(new FormData(form)));
-  refreshCurrentMasterPanel();
+  await updateCampaignSheet(campaignId, playerId, Object.fromEntries(new FormData(form)));
+  await refreshCurrentMasterPanel();
 
   if (showAlert) alert("Ficha salva com sucesso.");
 }
 
-function refreshOpenSheetModal() {
-  const form = document.getElementById("altheriumForm");
-  const formFields = document.getElementById("altheriumFormFields");
-
-  if (!form || !formFields || form.dataset.mode !== "edit-sheet") return;
-
-  const focused = document.activeElement;
-  if (focused && form.contains(focused)) return;
-
-  const campaign = getCurrentCampaign();
-  const playerId = form.dataset.playerId;
-
-  if (!campaign || !playerId) return;
-
-  formFields.innerHTML = buildMasterSheetEditor(
-    getOrCreateCampaignSheet(campaign.id, playerId, campaign.sistema)
-  );
-}
-
-function setupAltheriumPlayerSheet() {
-  const user = getLoggedUser();
-  const campaign = getCurrentCampaign();
+async function setupAltheriumPlayerSheet() {
+  const user = getLoggedUserFromSession();
+  const campaign = await getCurrentCampaign(true);
   const form = document.getElementById("playerSheetForm");
   const saveButton = document.getElementById("savePlayerSheet");
 
   if (!user || !campaign || !form) return;
 
-  getOrCreateCampaignSheet(campaign.id, user.id, campaign.sistema);
-  loadSheetIntoPlayerForm();
+  await getOrCreateCampaignSheet(campaign.id, user.id, campaign.sistema);
+  await loadSheetIntoPlayerForm();
 
   form.addEventListener("input", () => savePlayerSheet(false));
 
   if (saveButton) saveButton.addEventListener("click", () => savePlayerSheet(true));
-
-  window.addEventListener("storage", loadSheetIntoPlayerForm);
-  setInterval(loadSheetIntoPlayerForm, 1000);
 }
 
-function loadSheetIntoPlayerForm() {
-  const user = getLoggedUser();
-  const campaign = getCurrentCampaign();
+async function loadSheetIntoPlayerForm() {
+  const user = getLoggedUserFromSession();
+  const campaign = await getCurrentCampaign(true);
   const form = document.getElementById("playerSheetForm");
 
   if (!user || !campaign || !form) return;
@@ -1356,7 +1320,7 @@ function loadSheetIntoPlayerForm() {
     return;
   }
 
-  const sheet = getOrCreateCampaignSheet(campaign.id, user.id, campaign.sistema);
+  const sheet = await getOrCreateCampaignSheet(campaign.id, user.id, campaign.sistema);
 
   Object.keys(sheet).forEach((key) => {
     if (form.elements[key]) form.elements[key].value = sheet[key] || "";
@@ -1366,14 +1330,14 @@ function loadSheetIntoPlayerForm() {
   updateResourceBars();
 }
 
-function savePlayerSheet(showAlert) {
-  const user = getLoggedUser();
-  const campaign = getCurrentCampaign();
+async function savePlayerSheet(showAlert) {
+  const user = getLoggedUserFromSession();
+  const campaign = await getCurrentCampaign();
   const form = document.getElementById("playerSheetForm");
 
   if (!user || !campaign || !form) return;
 
-  updateCampaignSheet(campaign.id, user.id, Object.fromEntries(new FormData(form)));
+  await updateCampaignSheet(campaign.id, user.id, Object.fromEntries(new FormData(form)));
   updatePlayerSheetPreview();
   updateResourceBars();
 
@@ -1402,21 +1366,11 @@ function updateResourceBars() {
    FICHAS DE D&D
 ========================================================= */
 
-function getDndSheets() {
-  return JSON.parse(localStorage.getItem("dndSheets")) || [];
-}
-
-function saveDndSheets(sheets) {
-  localStorage.setItem("dndSheets", JSON.stringify(sheets));
-}
-
 function getDefaultDndSheet(campaignId, playerId, system) {
-  const player = usuariosPermitidos.find((item) => item.id === playerId);
-
   const sheet = {
     campaignId,
     playerId,
-    ownerName: player ? player.nome : "Jogador",
+    ownerName: "",
     system,
     characterName: "",
     classLevel: "",
@@ -1481,7 +1435,6 @@ function getDefaultDndSheet(campaignId, playerId, system) {
     cantrips: "",
     preparedSpells: "",
     spellNotes: "",
-    updatedAt: new Date().toISOString(),
   };
 
   DND_SKILLS.forEach(([key]) => {
@@ -1495,44 +1448,51 @@ function getDefaultDndSheet(campaignId, playerId, system) {
   return sheet;
 }
 
-function getOrCreateDndSheet(campaignId, playerId, system) {
-  const sheets = getDndSheets();
+async function getOrCreateDndSheet(campaignId, playerId, system) {
+  const { data, error } = await DB
+    .from("dnd_sheets")
+    .select("id, campaign_id, user_id, data")
+    .eq("campaign_id", campaignId)
+    .eq("user_id", playerId)
+    .maybeSingle();
 
-  const index = sheets.findIndex(
-    (sheet) => sheet.campaignId === campaignId && sheet.playerId === playerId
-  );
-
-  if (index >= 0) {
-    const normalized = {
-      ...getDefaultDndSheet(campaignId, playerId, system),
-      ...sheets[index],
-    };
-
-    sheets[index] = normalized;
-    saveDndSheets(sheets);
-
-    return normalized;
+  if (error) {
+    console.error(error);
+    return getDefaultDndSheet(campaignId, playerId, system);
   }
 
-  const newSheet = getDefaultDndSheet(campaignId, playerId, system);
-  sheets.push(newSheet);
-  saveDndSheets(sheets);
+  const profiles = await getProfiles();
+  const profile = profiles.find((item) => item.id === playerId);
+
+  if (data) {
+    return {
+      ...getDefaultDndSheet(campaignId, playerId, system),
+      ...(data.data || {}),
+      campaignId,
+      playerId,
+      ownerName: profile ? profile.name : playerId,
+      system,
+    };
+  }
+
+  const newSheet = {
+    ...getDefaultDndSheet(campaignId, playerId, system),
+    ownerName: profile ? profile.name : playerId,
+  };
+
+  const { error: insertError } = await DB.from("dnd_sheets").insert({
+    campaign_id: campaignId,
+    user_id: playerId,
+    data: newSheet,
+  });
+
+  if (insertError) console.error(insertError);
 
   return newSheet;
 }
 
-function updateDndSheet(campaignId, playerId, data) {
-  const sheets = getDndSheets();
-  const campaign = getAllCampaigns().find((item) => item.id === campaignId);
-
-  const index = sheets.findIndex(
-    (sheet) => sheet.campaignId === campaignId && sheet.playerId === playerId
-  );
-
-  const oldSheet =
-    index >= 0
-      ? { ...getDefaultDndSheet(campaignId, playerId, campaign ? campaign.sistema : "D&D"), ...sheets[index] }
-      : getDefaultDndSheet(campaignId, playerId, campaign ? campaign.sistema : "D&D");
+async function updateDndSheet(campaignId, playerId, data) {
+  const oldSheet = await getOrCreateDndSheet(campaignId, playerId, "D&D");
 
   const updatedSheet = {
     ...oldSheet,
@@ -1540,75 +1500,72 @@ function updateDndSheet(campaignId, playerId, data) {
     updatedAt: new Date().toISOString(),
   };
 
-  if (index >= 0) sheets[index] = updatedSheet;
-  else sheets.push(updatedSheet);
+  const { error } = await DB
+    .from("dnd_sheets")
+    .upsert(
+      {
+        campaign_id: campaignId,
+        user_id: playerId,
+        data: updatedSheet,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "campaign_id,user_id" }
+    );
 
-  saveDndSheets(sheets);
-  window.dispatchEvent(new Event("storage"));
+  if (error) {
+    console.error(error);
+    alert("Erro ao salvar ficha de D&D.");
+  }
 }
 
-function deleteDndSheetsByCampaign(campaignId) {
-  saveDndSheets(getDndSheets().filter((sheet) => sheet.campaignId !== campaignId));
-}
+async function setupDndMasterSheets() {
+  await renderDndMasterSheets();
 
-function createMissingDndSheetsForCurrentCampaign() {
-  const campaign = getCurrentCampaign();
-  if (!campaign || campaign.sistema !== "D&D") return;
-
-  getCampaignPlayerIds(campaign).forEach((playerId) => {
-    getOrCreateDndSheet(campaign.id, playerId, campaign.sistema);
-  });
-}
-
-function setupDndMasterSheets() {
-  renderDndMasterSheets();
-
-  document.addEventListener("click", (event) => {
+  document.addEventListener("click", async (event) => {
     const syncButton = event.target.closest("[data-create-dnd-sheets]");
     const openSheetButton = event.target.closest("[data-open-dnd-sheet]");
 
     if (syncButton) {
-      createMissingDndSheetsForCurrentCampaign();
-      renderDndMasterSheets();
+      const campaign = await getCurrentCampaign(true);
+      if (!campaign) return;
+
+      for (const playerId of getCampaignPlayerIds(campaign)) {
+        await getOrCreateDndSheet(campaign.id, playerId, campaign.sistema);
+      }
+
+      await renderDndMasterSheets();
       alert("Fichas de D&D sincronizadas.");
     }
 
     if (openSheetButton) {
-      openDndMasterSheetModal(openSheetButton.dataset.openDndSheet);
+      await openDndMasterSheetModal(openSheetButton.dataset.openDndSheet);
     }
   });
 
   const form = document.getElementById("dndForm");
 
   if (form) {
-    form.addEventListener("submit", (event) => {
+    form.addEventListener("submit", async (event) => {
       if (form.dataset.mode !== "edit-dnd-sheet") return;
 
       event.preventDefault();
-      saveDndSheetFromModal(true);
+      await saveDndSheetFromModal(true);
     });
 
     form.addEventListener("input", () => {
       if (form.dataset.mode !== "edit-dnd-sheet") return;
-      saveDndSheetFromModal(false);
+      saveDebounced(() => saveDndSheetFromModal(false));
     });
   }
-
-  window.addEventListener("storage", () => {
-    renderDndMasterSheets();
-    refreshOpenDndSheetModal();
-  });
-
-  setInterval(renderDndMasterSheets, 1000);
 }
 
-function renderDndMasterSheets() {
+async function renderDndMasterSheets() {
   const grid = document.getElementById("dndCharactersGrid");
   const counter = document.getElementById("dndCharacterCount");
 
   if (!grid) return;
 
-  const campaign = getCurrentCampaign();
+  const campaign = await getCurrentCampaign(true);
 
   if (!campaign || campaign.sistema !== "D&D") {
     grid.innerHTML = `
@@ -1623,11 +1580,6 @@ function renderDndMasterSheets() {
   }
 
   const playerIds = getCampaignPlayerIds(campaign);
-
-  playerIds.forEach((playerId) => {
-    getOrCreateDndSheet(campaign.id, playerId, campaign.sistema);
-  });
-
   if (counter) counter.textContent = playerIds.length;
 
   if (!playerIds.length) {
@@ -1640,46 +1592,49 @@ function renderDndMasterSheets() {
     return;
   }
 
-  grid.innerHTML = playerIds
-    .map((playerId) => {
-      const player = usuariosPermitidos.find((item) => item.id === playerId);
-      const sheet = getOrCreateDndSheet(campaign.id, playerId, campaign.sistema);
+  const profiles = await getProfiles();
+  const cards = [];
 
-      return `
-        <button class="sheet-card dnd-sheet-card" data-open-dnd-sheet="${playerId}">
-          <div class="sheet-card-top">
-            <span>${player ? player.nome : "Jogador"}</span>
-            <strong>${sheet.classLevel || "Sem classe"}</strong>
-          </div>
+  for (const playerId of playerIds) {
+    const player = profiles.find((item) => item.id === playerId);
+    const sheet = await getOrCreateDndSheet(campaign.id, playerId, campaign.sistema);
 
-          <h3>${sheet.characterName || "Personagem sem nome"}</h3>
-          <p>Raça: ${sheet.race || "---"} • CA ${sheet.armorClass || "0"}</p>
-          <p>
-            PV ${sheet.hpCurrent || "0"}/${sheet.hpMax || "0"} •
-            Iniciativa ${sheet.combatInitiative || "--"}
-          </p>
+    cards.push(`
+      <button class="sheet-card dnd-sheet-card" data-open-dnd-sheet="${playerId}">
+        <div class="sheet-card-top">
+          <span>${player ? player.name : "Jogador"}</span>
+          <strong>${sheet.classLevel || "Sem classe"}</strong>
+        </div>
 
-          <div class="sheet-card-footer">
-            <span>Abrir ficha completa</span>
-            <strong>→</strong>
-          </div>
-        </button>
-      `;
-    })
-    .join("");
+        <h3>${sheet.characterName || "Personagem sem nome"}</h3>
+        <p>Raça: ${sheet.race || "---"} • CA ${sheet.armorClass || "0"}</p>
+        <p>
+          PV ${sheet.hpCurrent || "0"}/${sheet.hpMax || "0"} •
+          Iniciativa ${sheet.combatInitiative || "--"}
+        </p>
+
+        <div class="sheet-card-footer">
+          <span>Abrir ficha completa</span>
+          <strong>→</strong>
+        </div>
+      </button>
+    `);
+  }
+
+  grid.innerHTML = cards.join("");
 }
 
-function openDndMasterSheetModal(playerId) {
+async function openDndMasterSheetModal(playerId) {
   const modal = document.getElementById("dndModal");
   const modalTitle = document.getElementById("dndModalTitle");
   const form = document.getElementById("dndForm");
   const formFields = document.getElementById("dndFormFields");
   const submitButton = form ? form.querySelector("button[type='submit']") : null;
-  const campaign = getCurrentCampaign();
+  const campaign = await getCurrentCampaign(true);
 
   if (!modal || !modalTitle || !form || !formFields || !campaign) return;
 
-  const sheet = getOrCreateDndSheet(campaign.id, playerId, campaign.sistema);
+  const sheet = await getOrCreateDndSheet(campaign.id, playerId, campaign.sistema);
 
   modalTitle.textContent = `Ficha de ${sheet.ownerName}`;
   formFields.innerHTML = buildDndSheetEditor(sheet, true);
@@ -1866,7 +1821,7 @@ function buildDndSheetEditor(sheet, isModal = false) {
   `;
 }
 
-function saveDndSheetFromModal(showAlert = false) {
+async function saveDndSheetFromModal(showAlert = false) {
   const form = document.getElementById("dndForm");
   if (!form) return;
 
@@ -1875,51 +1830,31 @@ function saveDndSheetFromModal(showAlert = false) {
 
   if (!campaignId || !playerId) return;
 
-  updateDndSheet(campaignId, playerId, Object.fromEntries(new FormData(form)));
-  refreshCurrentMasterPanel();
+  await updateDndSheet(campaignId, playerId, Object.fromEntries(new FormData(form)));
+  await refreshCurrentMasterPanel();
 
   if (showAlert) alert("Ficha de D&D salva com sucesso.");
 }
 
-function refreshOpenDndSheetModal() {
-  const form = document.getElementById("dndForm");
-  const formFields = document.getElementById("dndFormFields");
-
-  if (!form || !formFields || form.dataset.mode !== "edit-dnd-sheet") return;
-
-  const focused = document.activeElement;
-  if (focused && form.contains(focused)) return;
-
-  const campaign = getCurrentCampaign();
-  const playerId = form.dataset.playerId;
-
-  if (!campaign || !playerId) return;
-
-  formFields.innerHTML = buildDndSheetEditor(getOrCreateDndSheet(campaign.id, playerId, campaign.sistema), true);
-}
-
-function setupDndPlayerSheet() {
-  const user = getLoggedUser();
-  const campaign = getCurrentCampaign();
+async function setupDndPlayerSheet() {
+  const user = getLoggedUserFromSession();
+  const campaign = await getCurrentCampaign(true);
   const form = document.getElementById("dndPlayerSheetForm");
   const saveButton = document.getElementById("saveDndSheet");
 
   if (!user || !campaign || !form) return;
 
-  getOrCreateDndSheet(campaign.id, user.id, campaign.sistema);
-  loadDndSheetIntoPlayerForm();
+  await getOrCreateDndSheet(campaign.id, user.id, campaign.sistema);
+  await loadDndSheetIntoPlayerForm();
 
   form.addEventListener("input", () => saveDndPlayerSheet(false));
 
   if (saveButton) saveButton.addEventListener("click", () => saveDndPlayerSheet(true));
-
-  window.addEventListener("storage", loadDndSheetIntoPlayerForm);
-  setInterval(loadDndSheetIntoPlayerForm, 1000);
 }
 
-function loadDndSheetIntoPlayerForm() {
-  const user = getLoggedUser();
-  const campaign = getCurrentCampaign();
+async function loadDndSheetIntoPlayerForm() {
+  const user = getLoggedUserFromSession();
+  const campaign = await getCurrentCampaign(true);
   const form = document.getElementById("dndPlayerSheetForm");
 
   if (!user || !campaign || !form) return;
@@ -1932,7 +1867,7 @@ function loadDndSheetIntoPlayerForm() {
     return;
   }
 
-  const sheet = getOrCreateDndSheet(campaign.id, user.id, campaign.sistema);
+  const sheet = await getOrCreateDndSheet(campaign.id, user.id, campaign.sistema);
 
   Object.keys(sheet).forEach((key) => {
     if (form.elements[key]) form.elements[key].value = sheet[key] || "";
@@ -1942,14 +1877,14 @@ function loadDndSheetIntoPlayerForm() {
   updateDndAutoNumbers();
 }
 
-function saveDndPlayerSheet(showAlert) {
-  const user = getLoggedUser();
-  const campaign = getCurrentCampaign();
+async function saveDndPlayerSheet(showAlert) {
+  const user = getLoggedUserFromSession();
+  const campaign = await getCurrentCampaign();
   const form = document.getElementById("dndPlayerSheetForm");
 
   if (!user || !campaign || !form) return;
 
-  updateDndSheet(campaign.id, user.id, Object.fromEntries(new FormData(form)));
+  await updateDndSheet(campaign.id, user.id, Object.fromEntries(new FormData(form)));
   updateDndPlayerPreview();
   updateDndAutoNumbers();
 
@@ -1979,36 +1914,20 @@ function updateDndAutoNumbers() {
   setBarFill("dndHpBarFill", form.elements.hpCurrent.value, form.elements.hpMax.value);
 }
 
-function updateDndModView(inputName, viewId) {
-  const form = document.getElementById("dndPlayerSheetForm");
-  const view = document.getElementById(viewId);
-  if (!form || !view) return;
-
-  view.textContent = formatDndMod(form.elements[inputName].value);
-}
-
 /* =========================================================
    INICIATIVA
 ========================================================= */
 
-function setupInitiativeBoard(config) {
-  const board = document.getElementById(config.boardId);
+async function setupInitiativeBoard(config) {
+  await renderInitiativeBoard(config);
+
   const clearButton = document.getElementById(config.clearButtonId);
-
-  if (!board) return;
-
-  renderInitiativeBoard(config);
-  window.addEventListener("storage", () => renderInitiativeBoard(config));
-  setInterval(() => renderInitiativeBoard(config), 1000);
-
-  if (clearButton) {
-    clearButton.addEventListener("click", () => clearInitiative(config));
-  }
+  if (clearButton) clearButton.addEventListener("click", () => clearInitiative(config));
 }
 
-function renderInitiativeBoard(config) {
+async function renderInitiativeBoard(config) {
   const board = document.getElementById(config.boardId);
-  const campaign = getCurrentCampaign();
+  const campaign = await getCurrentCampaign(true);
 
   if (!board) return;
 
@@ -2034,27 +1953,28 @@ function renderInitiativeBoard(config) {
     return;
   }
 
-  const initiativeList = playerIds
-    .map((playerId) => {
-      const sheet = config.getSheet(campaign.id, playerId, campaign.sistema);
-      const initiativeValue = sheet.combatInitiative;
+  const initiativeList = [];
 
-      return {
-        playerId,
-        characterName: sheet.characterName || sheet.personagem || sheet.ownerName || "Personagem sem nome",
-        initiative: initiativeValue,
-        initiativeNumber:
-          initiativeValue === "" || initiativeValue === undefined || initiativeValue === null
-            ? null
-            : Number(initiativeValue),
-      };
-    })
-    .sort((a, b) => {
-      if (a.initiativeNumber === null && b.initiativeNumber === null) return 0;
-      if (a.initiativeNumber === null) return 1;
-      if (b.initiativeNumber === null) return -1;
-      return b.initiativeNumber - a.initiativeNumber;
+  for (const playerId of playerIds) {
+    const sheet = await config.getSheet(campaign.id, playerId, campaign.sistema);
+    const initiativeValue = sheet.combatInitiative;
+
+    initiativeList.push({
+      playerId,
+      characterName: sheet.characterName || sheet.personagem || sheet.ownerName || "Personagem sem nome",
+      initiativeNumber:
+        initiativeValue === "" || initiativeValue === undefined || initiativeValue === null
+          ? null
+          : Number(initiativeValue),
     });
+  }
+
+  initiativeList.sort((a, b) => {
+    if (a.initiativeNumber === null && b.initiativeNumber === null) return 0;
+    if (a.initiativeNumber === null) return 1;
+    if (b.initiativeNumber === null) return -1;
+    return b.initiativeNumber - a.initiativeNumber;
+  });
 
   board.innerHTML = initiativeList
     .map((item, index) => {
@@ -2076,8 +1996,8 @@ function renderInitiativeBoard(config) {
     .join("");
 }
 
-function clearInitiative(config) {
-  const campaign = getCurrentCampaign();
+async function clearInitiative(config) {
+  const campaign = await getCurrentCampaign(true);
 
   if (!campaign) {
     alert("Campanha não encontrada.");
@@ -2086,17 +2006,71 @@ function clearInitiative(config) {
 
   if (!confirm("Limpar a iniciativa de todos os personagens?")) return;
 
-  getCampaignPlayerIds(campaign).forEach((playerId) => {
-    config.updateSheet(campaign.id, playerId, {
+  for (const playerId of getCampaignPlayerIds(campaign)) {
+    await config.updateSheet(campaign.id, playerId, {
       combatInitiative: "",
     });
-  });
+  }
 
-  renderInitiativeBoard(config);
+  await renderInitiativeBoard(config);
 }
 
 /* =========================================================
-   MODAL / REFRESH / TÍTULOS
+   REALTIME
+========================================================= */
+
+function subscribeGlobalRealtime(callback) {
+  if (realtimeChannel) DB.removeChannel(realtimeChannel);
+
+  realtimeChannel = DB
+    .channel("global-campaign-lab")
+    .on("postgres_changes", { event: "*", schema: "public", table: "campaigns" }, async () => {
+      campaignsCache = [];
+      await callback();
+    })
+    .on("postgres_changes", { event: "*", schema: "public", table: "campaign_members" }, async () => {
+      campaignsCache = [];
+      await callback();
+    })
+    .subscribe();
+}
+
+function subscribeCampaignRealtime(callback) {
+  const campaignId = getCurrentCampaignId();
+
+  if (!campaignId) return;
+
+  if (realtimeChannel) DB.removeChannel(realtimeChannel);
+
+  realtimeChannel = DB
+    .channel(`campaign-${campaignId}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "campaign_members", filter: `campaign_id=eq.${campaignId}` },
+      async () => {
+        campaignsCache = [];
+        await callback();
+      }
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "altherium_sheets", filter: `campaign_id=eq.${campaignId}` },
+      async () => {
+        await callback();
+      }
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "dnd_sheets", filter: `campaign_id=eq.${campaignId}` },
+      async () => {
+        await callback();
+      }
+    )
+    .subscribe();
+}
+
+/* =========================================================
+   MODAL / REFRESH / HELPERS
 ========================================================= */
 
 function closeSharedModal(modal, form, submitButton) {
@@ -2114,87 +2088,49 @@ function closeSharedModal(modal, form, submitButton) {
   }
 }
 
-function refreshCurrentMasterPanel() {
+async function refreshCurrentMasterPanel() {
   if (document.body.classList.contains("altherium-page")) {
-    const grid = document.getElementById("playersGrid");
-    const counter = document.getElementById("onlineCount");
-
-    if (grid) renderCampaignPlayers(grid, counter);
-
-    renderMasterSheets();
+    await renderCampaignPlayers("playersGrid", "onlineCount");
+    await renderMasterSheets();
+    await renderInitiativeBoard({
+      system: "Altherium",
+      boardId: "initiativeBoard",
+      clearButtonId: "clearInitiativeBtn",
+      getSheet: getOrCreateCampaignSheet,
+      updateSheet: updateCampaignSheet,
+    });
   }
 
   if (document.body.classList.contains("dnd-master-page")) {
-    const grid = document.getElementById("dndPlayersGrid");
-    const counter = document.getElementById("dndPlayerCount");
-
-    if (grid) renderCampaignPlayers(grid, counter);
-
-    renderDndMasterSheets();
+    await renderCampaignPlayers("dndPlayersGrid", "dndPlayerCount");
+    await renderDndMasterSheets();
+    await renderInitiativeBoard({
+      system: "D&D",
+      boardId: "dndInitiativeBoard",
+      clearButtonId: "clearDndInitiativeBtn",
+      getSheet: getOrCreateDndSheet,
+      updateSheet: updateDndSheet,
+    });
   }
 
-  setupMasterCampaignName();
+  await setupMasterCampaignName();
 }
 
-function setupMasterCampaignName() {
+async function setupMasterCampaignName() {
   const campaignName = sessionStorage.getItem("campaignName");
-  const masterCampaignName = document.getElementById("masterCampaignName");
-
-  if (masterCampaignName) {
-    masterCampaignName.textContent = campaignName || "Campanha não identificada";
-  }
+  setText("masterCampaignName", campaignName || "Campanha não identificada");
 }
 
 function setupPlayerInfo(playerElementId, campaignElementId) {
-  const user = getLoggedUser();
+  const user = getLoggedUserFromSession();
   const campaignName = sessionStorage.getItem("campaignName");
 
   setText(playerElementId, user ? user.nome : "---");
   setText(campaignElementId, campaignName || "---");
 }
 
-/* =========================================================
-   HELPERS
-========================================================= */
-
-function getLoggedUser() {
-  const loggedUserId =
-    sessionStorage.getItem("loggedUserId") || localStorage.getItem("loggedUserId");
-
-  return usuariosPermitidos.find((item) => item.id === loggedUserId);
-}
-
 function getCurrentCampaignId() {
-  return sessionStorage.getItem("campaignId") || localStorage.getItem("campaignId");
-}
-
-function getCurrentCampaign() {
-  const campaignId = getCurrentCampaignId();
-  return getAllCampaigns().find((item) => item.id === campaignId);
-}
-
-function protectPage(requiredSystem, requiredProfile) {
-  const loggedUserId =
-    sessionStorage.getItem("loggedUserId") || localStorage.getItem("loggedUserId");
-
-  const system = sessionStorage.getItem("system") || localStorage.getItem("system");
-  const profile = sessionStorage.getItem("profile") || localStorage.getItem("profile");
-  const campaignId = getCurrentCampaignId();
-
-  if (!loggedUserId || system !== requiredSystem || profile !== requiredProfile) {
-    alert("Acesso negado.");
-    window.location.href = "index.html";
-    return;
-  }
-
-  const hasAccess = getUserCampaigns(loggedUserId).some(
-    (campaign) => campaign.id === campaignId && campaign.perfil === requiredProfile
-  );
-
-  if (!hasAccess) {
-    alert("Você não tem acesso a esta campanha.");
-    window.location.href = "minhas-campanhas.html";
-  }
+  return sessionStorage.getItem("campaignId");
 }
 
 function clearCurrentCampaign() {
@@ -2202,7 +2138,6 @@ function clearCurrentCampaign() {
   sessionStorage.removeItem("campaignName");
   sessionStorage.removeItem("system");
   sessionStorage.removeItem("profile");
-  sessionStorage.removeItem("lastCampaign");
 }
 
 function logout() {
@@ -2213,6 +2148,11 @@ function logout() {
 function setText(id, value) {
   const element = document.getElementById(id);
   if (element) element.textContent = value;
+}
+
+function saveDebounced(callback) {
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(callback, 450);
 }
 
 function setBarFill(id, currentValue, maxValue) {
@@ -2226,6 +2166,21 @@ function setBarFill(id, currentValue, maxValue) {
   if (max > 0) percent = Math.max(0, Math.min(100, (current / max) * 100));
 
   element.style.width = `${percent}%`;
+}
+
+function updateDndModView(inputName, viewId) {
+  const form = document.getElementById("dndPlayerSheetForm");
+  const view = document.getElementById(viewId);
+
+  if (!form || !view) return;
+
+  view.textContent = formatDndMod(form.elements[inputName].value);
+}
+
+function formatDndMod(value) {
+  const score = Number(value) || 10;
+  const mod = Math.floor((score - 10) / 2);
+  return mod >= 0 ? `+${mod}` : String(mod);
 }
 
 function escapeHtml(value) {
@@ -2327,10 +2282,4 @@ function dndTextareaBox(label, name, value, rows) {
       <textarea name="${name}" rows="${rows}">${escapeHtml(value)}</textarea>
     </label>
   `;
-}
-
-function formatDndMod(value) {
-  const score = Number(value) || 10;
-  const mod = Math.floor((score - 10) / 2);
-  return mod >= 0 ? `+${mod}` : String(mod);
 }
