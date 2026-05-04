@@ -10,19 +10,11 @@
   <body class="altherium-page">
     <div class="background-glow"></div>
 
-    <header class="header">
-      <div class="header-container">
-        <a href="index.html" class="logo" data-clear-access>
+    <header class="header header-center">
+      <div class="header-container-center">
+        <a href="minhas-campanhas.html" class="logo">
           <img src="img/logo.png" alt="Campaign Lab" />
         </a>
-
-        <nav class="nav">
-          <a href="#players">Players</a>
-          <a href="#fichas">Fichas</a>
-          <a href="#bestiario">Bestiário</a>
-        </nav>
-
-        <a href="index.html" class="header-cta" data-clear-access>Voltar</a>
       </div>
     </header>
 
@@ -30,11 +22,9 @@
       <section class="altherium-hero">
         <div class="altherium-hero-text">
           <p class="tag">Sistema Altherium</p>
-          <h1>Painel do Mestre</h1>
-          <p>
-            Controle players, fichas, criaturas, atributos, raízes e recursos da
-            campanha em um painel feito para o mestre.
-          </p>
+          <h1 class="campaign-title-view" id="masterCampaignName">Campanha</h1>
+          <h2 class="master-panel-subtitle">Painel do Mestre</h2>
+          <p>Controle jogadores, fichas, iniciativa e criaturas da sua campanha.</p>
         </div>
 
         <div class="altherium-dashboard">
@@ -44,7 +34,7 @@
           </div>
 
           <div class="altherium-status-card">
-            <span>Fichas criadas</span>
+            <span>Fichas</span>
             <strong id="sheetCount">0</strong>
           </div>
 
@@ -57,8 +47,9 @@
 
       <section class="altherium-tabs">
         <button class="altherium-tab active" data-tab="players">Players</button>
-        <button class="altherium-tab" data-tab="fichas">Fichas</button>
-        <button class="altherium-tab" data-tab="bestiario">Bestiário</button>
+        <button class="altherium-tab" data-tab="fichas">Personagens</button>
+        <button class="altherium-tab" data-tab="iniciativa">Iniciativa</button>
+        <button class="altherium-tab" data-tab="bestiario">Monstros</button>
       </section>
 
       <section id="players" class="altherium-section active">
@@ -66,7 +57,7 @@
           <div class="altherium-panel-header">
             <div>
               <h2>Players logados</h2>
-              <p>Veja quem está online e qual personagem está sendo usado.</p>
+              <p>Veja quem está na campanha e remova jogadores se precisar.</p>
             </div>
 
             <button class="altherium-btn" data-open-modal="player">
@@ -82,16 +73,33 @@
         <div class="altherium-panel">
           <div class="altherium-panel-header">
             <div>
-              <h2>Fichas</h2>
-              <p>Crie, veja e modifique fichas com cálculo automático.</p>
+              <h2>Personagens</h2>
+              <p>Todas as fichas dos jogadores da campanha. Clique em uma ficha para abrir e editar.</p>
             </div>
 
-            <button class="altherium-btn" data-open-modal="sheet">
-              Nova ficha
+            <button class="altherium-btn" data-create-player-sheets>
+              Sincronizar fichas
             </button>
           </div>
 
-          <div class="altherium-grid" id="sheetsGrid"></div>
+          <div class="altherium-grid sheet-grid" id="sheetsGrid"></div>
+        </div>
+      </section>
+
+      <section id="iniciativa" class="altherium-section">
+        <div class="altherium-panel">
+          <div class="altherium-panel-header">
+            <div>
+              <h2>Ordem de iniciativa</h2>
+              <p>A ordem é atualizada automaticamente com base nas fichas dos personagens.</p>
+            </div>
+
+            <button class="altherium-btn" id="clearInitiativeBtn">
+              Limpar iniciativa
+            </button>
+          </div>
+
+          <div class="initiative-board" id="initiativeBoard"></div>
         </div>
       </section>
 
@@ -99,10 +107,8 @@
         <div class="altherium-panel">
           <div class="altherium-panel-header">
             <div>
-              <h2>Bestiário</h2>
-              <p>
-                Cadastre inimigos, criaturas e fichas convertidas em monstros.
-              </p>
+              <h2>Monstros</h2>
+              <p>Cadastre criaturas, inimigos e ameaças da campanha.</p>
             </div>
 
             <button class="altherium-btn" data-open-modal="monster">
@@ -110,26 +116,31 @@
             </button>
           </div>
 
-          <div class="altherium-grid" id="monsterGrid"></div>
+          <div class="altherium-grid" id="monsterGrid">
+            <div class="altherium-empty">
+              <h3>Nenhuma criatura cadastrada</h3>
+              <p>Use o botão acima para criar monstros da campanha.</p>
+            </div>
+          </div>
         </div>
       </section>
     </main>
 
     <div class="altherium-modal" id="altheriumModal">
-      <div class="altherium-modal-box">
+      <div class="altherium-modal-box altherium-sheet-modal-box">
         <button class="altherium-close" data-close-modal>×</button>
-
-        <h2 id="altheriumModalTitle"></h2>
+        <h2 id="altheriumModalTitle">Modal</h2>
 
         <form id="altheriumForm">
           <div id="altheriumFormFields"></div>
-          <button type="submit" class="altherium-submit">Salvar</button>
+
+          <div class="modal-submit-row">
+            <button type="submit" class="altherium-submit">Aplicar</button>
+          </div>
         </form>
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase.js"></script>
     <script src="js/script.js"></script>
   </body>
 </html>

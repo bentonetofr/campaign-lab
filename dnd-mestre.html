@@ -10,19 +10,11 @@
   <body class="dnd-master-page">
     <div class="background-glow"></div>
 
-    <header class="header">
-      <div class="header-container">
-        <a href="index.html" class="logo" data-clear-access>
+    <header class="header header-center">
+      <div class="header-container-center">
+        <a href="minhas-campanhas.html" class="logo">
           <img src="img/logo.png" alt="Campaign Lab" />
         </a>
-
-        <nav class="nav">
-          <a href="#players">Players</a>
-          <a href="#personagens">Personagens</a>
-          <a href="#monstros">Monstros</a>
-        </nav>
-
-        <a href="index.html" class="header-cta" data-clear-access>Voltar</a>
       </div>
     </header>
 
@@ -30,21 +22,22 @@
       <section class="altherium-hero">
         <div class="altherium-hero-text">
           <p class="tag">Sistema D&D</p>
-          <h1>Painel do Mestre</h1>
+          <h1 class="campaign-title-view" id="masterCampaignName">Campanha</h1>
+          <h2 class="master-panel-subtitle">Painel do Mestre</h2>
           <p>
-            Controle jogadores, personagens, classes, níveis, monstros,
-            encontros e recursos da campanha em um painel feito para D&D.
+            Controle jogadores, fichas, iniciativa, monstros e recursos da sua
+            campanha.
           </p>
         </div>
 
         <div class="altherium-dashboard">
           <div class="altherium-status-card">
-            <span>Players online</span>
+            <span>Players</span>
             <strong id="dndPlayerCount">0</strong>
           </div>
 
           <div class="altherium-status-card">
-            <span>Personagens</span>
+            <span>Fichas</span>
             <strong id="dndCharacterCount">0</strong>
           </div>
 
@@ -56,19 +49,24 @@
       </section>
 
       <section class="altherium-tabs">
-        <button class="altherium-tab active" data-tab="players">Players</button>
-        <button class="altherium-tab" data-tab="personagens">
+        <button class="altherium-tab active" data-tab="dndPlayers">
+          Players
+        </button>
+        <button class="altherium-tab" data-tab="dndCharacters">
           Personagens
         </button>
-        <button class="altherium-tab" data-tab="monstros">Monstros</button>
+        <button class="altherium-tab" data-tab="dndInitiative">
+          Iniciativa
+        </button>
+        <button class="altherium-tab" data-tab="dndMonsters">Monstros</button>
       </section>
 
-      <section id="players" class="altherium-section active">
+      <section id="dndPlayers" class="altherium-section active">
         <div class="altherium-panel">
           <div class="altherium-panel-header">
             <div>
               <h2>Players logados</h2>
-              <p>Veja quem está online e qual personagem está usando.</p>
+              <p>Veja quem faz parte da campanha.</p>
             </div>
 
             <button class="altherium-btn" data-open-dnd-modal="player">
@@ -80,29 +78,52 @@
         </div>
       </section>
 
-      <section id="personagens" class="altherium-section">
+      <section id="dndCharacters" class="altherium-section">
         <div class="altherium-panel">
           <div class="altherium-panel-header">
             <div>
               <h2>Personagens</h2>
-              <p>Cadastre personagens com raça, classe, nível e tendência.</p>
+              <p>
+                Fichas dos jogadores da campanha. Clique em uma ficha para abrir
+                e editar.
+              </p>
             </div>
 
-            <button class="altherium-btn" data-open-dnd-modal="character">
-              Novo personagem
+            <button class="altherium-btn" data-create-dnd-sheets>
+              Sincronizar fichas
             </button>
           </div>
 
-          <div class="altherium-grid" id="dndCharactersGrid"></div>
+          <div class="altherium-grid sheet-grid" id="dndCharactersGrid"></div>
         </div>
       </section>
 
-      <section id="monstros" class="altherium-section">
+      <section id="dndInitiative" class="altherium-section">
+        <div class="altherium-panel">
+          <div class="altherium-panel-header">
+            <div>
+              <h2>Ordem de iniciativa</h2>
+              <p>
+                A ordem é atualizada automaticamente com base nas fichas dos
+                personagens.
+              </p>
+            </div>
+
+            <button class="altherium-btn" id="clearDndInitiativeBtn">
+              Limpar iniciativa
+            </button>
+          </div>
+
+          <div class="initiative-board" id="dndInitiativeBoard"></div>
+        </div>
+      </section>
+
+      <section id="dndMonsters" class="altherium-section">
         <div class="altherium-panel">
           <div class="altherium-panel-header">
             <div>
               <h2>Monstros</h2>
-              <p>Monte encontros com criaturas, ND, tipo e pontos de vida.</p>
+              <p>Cadastre inimigos, criaturas e encontros da campanha.</p>
             </div>
 
             <button class="altherium-btn" data-open-dnd-modal="monster">
@@ -110,26 +131,31 @@
             </button>
           </div>
 
-          <div class="altherium-grid" id="dndMonstersGrid"></div>
+          <div class="altherium-grid" id="dndMonstersGrid">
+            <div class="altherium-empty">
+              <h3>Nenhum monstro cadastrado</h3>
+              <p>Use o botão acima para cadastrar ameaças da campanha.</p>
+            </div>
+          </div>
         </div>
       </section>
     </main>
 
     <div class="altherium-modal" id="dndModal">
-      <div class="altherium-modal-box">
+      <div class="altherium-modal-box dnd-sheet-modal-box">
         <button class="altherium-close" data-close-dnd-modal>×</button>
-
-        <h2 id="dndModalTitle"></h2>
+        <h2 id="dndModalTitle">Modal</h2>
 
         <form id="dndForm">
           <div id="dndFormFields"></div>
-          <button type="submit" class="altherium-submit">Salvar</button>
+
+          <div class="modal-submit-row">
+            <button type="submit" class="altherium-submit">Aplicar</button>
+          </div>
         </form>
       </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase.js"></script>
     <script src="js/script.js"></script>
   </body>
 </html>

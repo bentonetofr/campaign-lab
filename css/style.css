@@ -1,4 +1,6 @@
+@import url("https://fonts.googleapis.com/css2?family=Caesar+Dressing&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap");
+@import url("https://fonts.googleapis.com/css2?family=Aboreto&display=swap");
 
 /* =========================================================
    VARIÁVEIS
@@ -1326,7 +1328,6 @@ textarea:focus {
   }
 }
 
-
 /* =========================================================
    CRIAR CAMPANHA
 ========================================================= */
@@ -1463,4 +1464,3269 @@ textarea:focus {
 .campaign-leave-btn:hover {
   background: rgba(251, 191, 36, 0.18);
   transform: translateY(-2px);
+}
+
+/* =========================================================
+   TÍTULO DA CAMPANHA NO PAINEL DO MESTRE
+========================================================= */
+
+.campaign-title-view {
+  max-width: 900px;
+
+  margin-bottom: 14px;
+
+  font-size: clamp(52px, 7vw, 96px);
+  line-height: 0.95;
+  letter-spacing: -2px;
+
+  color: var(--text);
+
+  text-shadow:
+    0 0 22px rgba(34, 211, 238, 0.18),
+    0 0 60px rgba(34, 211, 238, 0.08);
+}
+
+.master-panel-subtitle {
+  margin-bottom: 18px;
+
+  font-size: clamp(28px, 3vw, 44px);
+  line-height: 1;
+
+  color: var(--cyan);
+}
+
+@media (max-width: 600px) {
+  .campaign-title-view {
+    font-size: 44px;
+  }
+
+  .master-panel-subtitle {
+    font-size: 26px;
+  }
+}
+
+/* =========================================================
+   MODAL DE ADICIONAR PLAYERS
+========================================================= */
+
+.altherium-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.altherium-modal.active {
+  display: flex;
+}
+
+.altherium-modal-box {
+  position: relative;
+
+  width: min(760px, 100%);
+  max-height: calc(100vh - 40px);
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 28px;
+  border-radius: 26px;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.96)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.1),
+      transparent 42%
+    );
+
+  border: 1px solid var(--border);
+  box-shadow:
+    0 30px 100px rgba(0, 0, 0, 0.45),
+    0 0 50px rgba(34, 211, 238, 0.08);
+
+  overflow: hidden;
+}
+
+.altherium-modal-box h2 {
+  margin-bottom: 18px;
+  font-size: 30px;
+}
+
+.altherium-close,
+[data-close-dnd-modal] {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+
+  width: 42px;
+  height: 42px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font-size: 22px;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.altherium-close:hover,
+[data-close-dnd-modal]:hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+#altheriumForm,
+#dndForm {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+#altheriumFormFields,
+#dndFormFields {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 6px;
+}
+
+#altheriumFormFields::-webkit-scrollbar,
+#dndFormFields::-webkit-scrollbar {
+  width: 8px;
+}
+
+#altheriumFormFields::-webkit-scrollbar-thumb,
+#dndFormFields::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+}
+
+.players-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.player-check-card {
+  min-height: 72px;
+  padding: 18px 16px;
+
+  border: 1px solid var(--border);
+  border-radius: 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 14px;
+
+  background: rgba(255, 255, 255, 0.04);
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.player-check-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(34, 211, 238, 0.4);
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.player-check-card input {
+  width: 20px;
+  height: 20px;
+  margin: 0;
+  accent-color: var(--cyan);
+  flex-shrink: 0;
+}
+
+.player-check-card span {
+  font-size: 20px;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.modal-submit-row {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid var(--border);
+
+  display: flex;
+  justify-content: flex-end;
+}
+
+.modal-submit-row .altherium-submit {
+  width: auto;
+  min-width: 170px;
+  padding: 14px 22px;
+  border-radius: 14px;
+}
+
+.altherium-empty {
+  padding: 24px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.altherium-empty h3 {
+  margin-bottom: 8px;
+}
+
+.altherium-empty p {
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+
+@media (max-width: 700px) {
+  .altherium-modal {
+    padding: 12px;
+  }
+
+  .altherium-modal-box {
+    width: 100%;
+    max-height: calc(100vh - 24px);
+    padding: 22px;
+  }
+
+  .players-picker-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .player-check-card span {
+    font-size: 18px;
+  }
+}
+
+/* =========================================================
+   FICHA DIGITAL DE ALTHERIUM
+========================================================= */
+
+.altherium-sheet-page {
+  padding-bottom: 90px;
+}
+
+.altherium-sheet-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.altherium-sheet-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 22px;
+  align-items: flex-start;
+
+  padding: 30px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 30px;
+
+  background:
+    linear-gradient(145deg, rgba(9, 16, 39, 0.9), rgba(2, 6, 23, 0.94)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    );
+}
+
+.altherium-sheet-toolbar h2 {
+  margin: 8px 0;
+  font-size: clamp(32px, 4vw, 56px);
+}
+
+.altherium-sheet-toolbar p {
+  color: rgba(226, 232, 240, 0.74);
+}
+
+.altherium-rune-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.rune-paper-page {
+  width: 100%;
+  max-width: 980px;
+  margin: 0 auto;
+
+  padding: clamp(18px, 4vw, 48px);
+
+  border-radius: 28px;
+  border: 1px solid rgba(15, 23, 42, 0.22);
+
+  background:
+    linear-gradient(rgba(229, 229, 220, 0.92), rgba(196, 196, 184, 0.92)),
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.75), transparent 52%);
+
+  box-shadow:
+    0 30px 100px rgba(0, 0, 0, 0.42),
+    inset 0 0 0 8px rgba(0, 0, 0, 0.04);
+
+  color: #080808;
+}
+
+.rune-frame {
+  position: relative;
+
+  min-height: 860px;
+  padding: clamp(18px, 4vw, 48px);
+
+  border: 8px double rgba(0, 0, 0, 0.76);
+  outline: 2px solid rgba(0, 0, 0, 0.42);
+  outline-offset: -18px;
+
+  background:
+    linear-gradient(90deg, transparent 0 98%, rgba(0, 0, 0, 0.05) 98%),
+    radial-gradient(
+      circle at center,
+      rgba(255, 255, 255, 0.35),
+      transparent 70%
+    );
+}
+
+.rune-frame::before,
+.rune-frame::after {
+  content: "ᚱ ᚢ ᚾ ᛖ ᛋ ᚨ ᛚ ᚦ ᛖ ᚱ ᛁ ᚢ ᛗ";
+  position: absolute;
+  left: 28px;
+  right: 28px;
+
+  color: rgba(0, 0, 0, 0.55);
+  font-size: 20px;
+  letter-spacing: 6px;
+  text-align: center;
+  pointer-events: none;
+}
+
+.rune-frame::before {
+  top: 8px;
+}
+
+.rune-frame::after {
+  bottom: 8px;
+}
+
+.rune-page-header {
+  max-width: 520px;
+  margin: 0 auto 34px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.rune-page-header label {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.rune-page-header span {
+  font-size: clamp(30px, 5vw, 52px);
+  line-height: 1;
+  font-weight: 900;
+  color: #050505;
+}
+
+.rune-page-header input {
+  width: 100%;
+  border: none;
+  border-bottom: 3px solid rgba(0, 0, 0, 0.28);
+  background: rgba(255, 255, 255, 0.28);
+  color: #050505;
+  text-align: center;
+  font-size: 22px;
+  font-weight: 900;
+  outline: none;
+}
+
+.rune-resource-list {
+  max-width: 430px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 26px;
+}
+
+.rune-resource-line {
+  display: grid;
+  grid-template-columns: 86px 74px 16px 74px 1fr;
+  align-items: center;
+  gap: 8px;
+
+  font-size: 24px;
+  font-weight: 900;
+}
+
+.rune-resource-line strong {
+  color: #050505;
+}
+
+.rune-resource-line input {
+  width: 100%;
+  padding: 8px;
+  border: 2px solid rgba(0, 0, 0, 0.38);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.35);
+  color: #050505;
+  text-align: center;
+  font-weight: 900;
+  outline: none;
+}
+
+.rune-bar {
+  height: 11px;
+  border: 2px solid rgba(0, 0, 0, 0.45);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.12);
+}
+
+.rune-bar div {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #123f4a, #1f6f7c);
+  transition: 0.25s;
+}
+
+.rune-attributes-table {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  border: 3px solid #000;
+  margin: 28px 0 38px;
+  background: #173844;
+}
+
+.rune-attributes-table label {
+  display: flex;
+  flex-direction: column;
+  border-right: 3px solid rgba(220, 220, 210, 0.75);
+}
+
+.rune-attributes-table label:last-child {
+  border-right: none;
+}
+
+.rune-attributes-table span {
+  min-height: 48px;
+  display: grid;
+  place-items: center;
+  padding: 8px;
+
+  color: #f7f7f0;
+  font-size: 16px;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.rune-attributes-table input {
+  min-height: 74px;
+  width: 100%;
+
+  border: none;
+  border-top: 3px solid rgba(220, 220, 210, 0.75);
+  background: #173844;
+
+  color: #f7f7f0;
+  font-size: 30px;
+  font-weight: 900;
+  text-align: center;
+  outline: none;
+}
+
+.rune-body-table {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  border: 3px solid #000;
+  margin-bottom: 54px;
+  background: #020202;
+}
+
+.rune-body-table label {
+  display: flex;
+  flex-direction: column;
+  border-right: 3px solid #173844;
+}
+
+.rune-body-table label:last-child {
+  border-right: none;
+}
+
+.rune-body-table span,
+.rune-body-table small {
+  display: block;
+  color: #f7f7f0;
+  text-align: center;
+  font-weight: 900;
+}
+
+.rune-body-table span {
+  padding-top: 14px;
+  font-size: 19px;
+  text-transform: uppercase;
+}
+
+.rune-body-table small {
+  padding-bottom: 10px;
+  font-size: 18px;
+}
+
+.rune-body-table input {
+  min-height: 54px;
+  border: none;
+  border-top: 3px solid #173844;
+  background: #020202;
+  color: #f7f7f0;
+  font-size: 20px;
+  text-align: center;
+  outline: none;
+}
+
+.rune-weapons-table {
+  border: 3px solid #000;
+  background: #173844;
+}
+
+.rune-weapons-table h3 {
+  padding: 12px;
+  border-bottom: 3px solid #000;
+  color: #f7f7f0;
+  text-align: center;
+  font-size: 22px;
+  text-transform: uppercase;
+}
+
+.rune-weapon-head,
+.rune-weapon-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+}
+
+.rune-weapon-head span {
+  padding: 12px;
+  border-right: 3px solid #000;
+  border-bottom: 3px solid #000;
+  color: #f7f7f0;
+  text-align: center;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.rune-weapon-head span:last-child {
+  border-right: none;
+}
+
+.rune-weapon-row input {
+  min-height: 46px;
+  border: none;
+  border-right: 3px solid #000;
+  border-bottom: 3px solid #000;
+  background: #173844;
+  color: #f7f7f0;
+  text-align: center;
+  font-size: 18px;
+  outline: none;
+}
+
+.rune-weapon-row input:last-child {
+  border-right: none;
+}
+
+.rune-weapon-row:last-child input {
+  border-bottom: none;
+}
+
+.rune-section-title {
+  margin-bottom: 22px;
+}
+
+.rune-section-title.centered {
+  text-align: center;
+}
+
+.rune-section-title h3 {
+  color: #050505;
+  font-size: clamp(32px, 5vw, 54px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.rune-section-title p {
+  margin-top: 8px;
+  color: rgba(0, 0, 0, 0.7);
+  font-weight: 800;
+}
+
+.rune-domains-table {
+  border: 3px solid rgba(0, 0, 0, 0.85);
+  background: #173844;
+}
+
+.rune-domain-head,
+.rune-domains-table label {
+  display: grid;
+  grid-template-columns: 1.2fr 1.2fr 1fr;
+}
+
+.rune-domain-head span {
+  padding: 14px;
+  border-right: 3px solid rgba(220, 220, 210, 0.7);
+  border-bottom: 3px solid rgba(220, 220, 210, 0.7);
+  color: #f7f7f0;
+  text-align: center;
+  font-size: 26px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.rune-domain-head span:last-child {
+  border-right: none;
+}
+
+.rune-domains-table label span,
+.rune-domains-table label small,
+.rune-domains-table label input {
+  min-height: 34px;
+  border-right: 3px solid rgba(220, 220, 210, 0.7);
+  border-bottom: 3px solid rgba(220, 220, 210, 0.7);
+  color: #f7f7f0;
+}
+
+.rune-domains-table label span,
+.rune-domains-table label small {
+  display: grid;
+  place-items: center;
+  font-size: 15px;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.rune-domains-table label input {
+  border-top: none;
+  border-left: none;
+  background: #173844;
+  text-align: center;
+  font-weight: 900;
+  outline: none;
+}
+
+.rune-domains-table label input:last-child {
+  border-right: none;
+}
+
+.rune-inventory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 28px;
+}
+
+.rune-inventory-list input {
+  width: 100%;
+  padding: 8px 12px;
+  border: none;
+  border-bottom: 2px solid rgba(0, 0, 0, 0.22);
+  background: transparent;
+  color: #050505;
+  font-size: 22px;
+  font-weight: 800;
+  outline: none;
+}
+
+.rune-inventory-list input::placeholder {
+  color: rgba(0, 0, 0, 0.7);
+}
+
+.rune-money-field {
+  width: fit-content;
+  margin: 80px auto 0;
+
+  display: flex;
+  align-items: center;
+  gap: 10px;
+
+  padding: 8px 16px;
+  background: #173844;
+}
+
+.rune-money-field span {
+  color: #f7f7f0;
+  font-size: 24px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.rune-money-field input {
+  width: 140px;
+  border: none;
+  background: transparent;
+  color: #f7f7f0;
+  font-size: 24px;
+  font-weight: 900;
+  outline: none;
+}
+
+.rune-triumphs-area {
+  width: 100%;
+  min-height: 300px;
+  padding: 18px;
+
+  border: 2px dashed rgba(0, 0, 0, 0.26);
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.22);
+  color: #050505;
+
+  font-size: 18px;
+  font-weight: 700;
+  line-height: 1.5;
+  resize: vertical;
+  outline: none;
+}
+
+.rune-triumphs-area:focus {
+  border-color: #173844;
+  box-shadow: 0 0 0 4px rgba(23, 56, 68, 0.12);
+}
+
+/* =========================================================
+   CARDS DAS FICHAS NO PAINEL DO MESTRE
+========================================================= */
+
+.sheet-grid {
+  align-items: stretch;
+}
+
+.sheet-card {
+  min-height: 250px;
+  padding: 24px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 26px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 16px;
+
+  background:
+    linear-gradient(145deg, rgba(9, 16, 39, 0.92), rgba(4, 10, 25, 0.94)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.09),
+      transparent 40%
+    );
+
+  color: #ffffff;
+  text-align: left;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.sheet-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(34, 211, 238, 0.4);
+  box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
+}
+
+.sheet-card-top,
+.sheet-card-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.sheet-card-top span {
+  color: #22d3ee;
+  font-weight: 900;
+}
+
+.sheet-card-top strong {
+  padding: 8px 12px;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.12);
+  font-size: 12px;
+}
+
+.sheet-card h3 {
+  font-size: 28px;
+  line-height: 1.1;
+}
+
+.sheet-card p {
+  color: rgba(255, 255, 255, 0.72);
+  line-height: 1.5;
+}
+
+.sheet-card-footer {
+  color: #22d3ee;
+  font-weight: 900;
+}
+
+/* =========================================================
+   MODAL DE FICHA
+========================================================= */
+
+.altherium-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  padding: 20px;
+
+  background: rgba(0, 0, 0, 0.72);
+  backdrop-filter: blur(10px);
+}
+
+.altherium-modal.active {
+  display: flex;
+}
+
+.altherium-modal-box {
+  position: relative;
+  width: min(1100px, 100%);
+  max-height: calc(100vh - 40px);
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 28px;
+  border-radius: 28px;
+
+  background:
+    linear-gradient(145deg, rgba(10, 16, 36, 0.98), rgba(4, 10, 22, 0.98)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.1),
+      transparent 42%
+    );
+
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  overflow: hidden;
+}
+
+.altherium-sheet-modal-box {
+  width: min(1180px, 100%);
+}
+
+.altherium-modal-box h2 {
+  margin-bottom: 18px;
+  padding-right: 60px;
+  font-size: 30px;
+}
+
+.altherium-close {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+
+  width: 42px;
+  height: 42px;
+
+  border: none;
+  border-radius: 12px;
+
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  font-size: 24px;
+  cursor: pointer;
+}
+
+#altheriumForm {
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  height: 100%;
+}
+
+#altheriumFormFields {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-right: 8px;
+}
+
+#altheriumFormFields::-webkit-scrollbar {
+  width: 8px;
+}
+
+#altheriumFormFields::-webkit-scrollbar-thumb {
+  background: rgba(148, 163, 184, 0.35);
+  border-radius: 999px;
+}
+
+.modal-submit-row {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(148, 163, 184, 0.12);
+
+  display: flex;
+  justify-content: flex-end;
+}
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (max-width: 1000px) {
+  .rune-attributes-table {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .rune-attributes-table label:nth-child(3) {
+    border-right: none;
+  }
+
+  .rune-attributes-table label:nth-child(-n + 3) {
+    border-bottom: 3px solid rgba(220, 220, 210, 0.75);
+  }
+
+  .rune-body-table {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rune-body-table label:nth-child(2) {
+    border-right: none;
+  }
+
+  .rune-body-table label:nth-child(-n + 2) {
+    border-bottom: 3px solid #173844;
+  }
+
+  .rune-domain-head,
+  .rune-domains-table label {
+    grid-template-columns: 1fr;
+  }
+
+  .rune-domain-head span,
+  .rune-domains-table label span,
+  .rune-domains-table label small,
+  .rune-domains-table label input {
+    border-right: none;
+  }
+}
+
+@media (max-width: 720px) {
+  .altherium-sheet-toolbar {
+    flex-direction: column;
+  }
+
+  .rune-paper-page {
+    padding: 14px;
+  }
+
+  .rune-frame {
+    min-height: auto;
+    padding: 22px;
+    border-width: 5px;
+    outline-offset: -10px;
+  }
+
+  .rune-frame::before,
+  .rune-frame::after {
+    display: none;
+  }
+
+  .rune-resource-line {
+    grid-template-columns: 1fr 1fr auto 1fr;
+  }
+
+  .rune-resource-line .rune-bar {
+    grid-column: 1 / -1;
+  }
+
+  .rune-attributes-table {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rune-attributes-table label {
+    border-bottom: 3px solid rgba(220, 220, 210, 0.75);
+  }
+
+  .rune-attributes-table label:nth-child(2n) {
+    border-right: none;
+  }
+
+  .rune-body-table {
+    grid-template-columns: 1fr;
+  }
+
+  .rune-body-table label {
+    border-right: none;
+    border-bottom: 3px solid #173844;
+  }
+
+  .rune-weapon-head,
+  .rune-weapon-row {
+    grid-template-columns: 1fr;
+  }
+
+  .rune-weapon-head span,
+  .rune-weapon-row input {
+    border-right: none;
+  }
+
+  .altherium-modal {
+    padding: 10px;
+  }
+
+  .altherium-modal-box {
+    max-height: calc(100vh - 20px);
+    padding: 18px;
+  }
+}
+
+/* =========================================================
+   FONTE DA FICHA DE ALTHERIUM
+========================================================= */
+
+.altherium-rune-sheet,
+.altherium-rune-sheet * {
+  font-family: "Caesar Dressing", cursive !important;
+}
+
+/* força a fonte também nos campos da ficha */
+.altherium-rune-sheet input,
+.altherium-rune-sheet textarea,
+.altherium-rune-sheet select {
+  font-family: "Caesar Dressing", cursive !important;
+}
+
+/* caixas numéricas e campos principais */
+.rune-page-header input,
+.rune-resource-line input,
+.rune-attributes-table input,
+.rune-body-table input,
+.rune-weapon-row input,
+.rune-domains-table input,
+.rune-inventory-list input,
+.rune-money-field input,
+.rune-triumphs-area {
+  font-family: "Caesar Dressing", cursive !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.5px;
+}
+
+/* títulos e rótulos */
+.rune-page-header span,
+.rune-section-title h3,
+.rune-weapons-table h3,
+.rune-domain-head span,
+.rune-weapon-head span,
+.rune-body-table span,
+.rune-money-field span {
+  font-family: "Caesar Dressing", cursive !important;
+  letter-spacing: 1px;
+}
+
+/* =========================================================
+   MELHORIA VISUAL DAS TABELAS DA FICHA DE ALTHERIUM
+========================================================= */
+
+/* tabela de atributos */
+.rune-attributes-table {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 12px;
+  margin: 28px 0 38px;
+  border: none;
+  background: transparent;
+}
+
+.rune-attributes-table label {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(21, 58, 70, 0.98),
+    rgba(15, 45, 55, 0.98)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+.rune-attributes-table span {
+  min-height: 52px;
+  display: grid;
+  place-items: center;
+  padding: 10px 8px;
+  color: #f5f4ee;
+  font-size: 16px;
+  font-weight: 700;
+  text-align: center;
+  text-transform: uppercase;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rune-attributes-table input {
+  min-height: 76px;
+  width: 100%;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 30px;
+  font-weight: 700;
+  text-align: center;
+  outline: none;
+}
+
+.rune-attributes-table input:focus {
+  background: rgba(34, 211, 238, 0.08);
+  box-shadow: inset 0 0 0 2px rgba(34, 211, 238, 0.35);
+}
+
+/* tabela de proteção corporal */
+.rune-body-table {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 42px;
+  border: none;
+  background: transparent;
+}
+
+.rune-body-table label {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 2px solid rgba(255, 255, 255, 0.18);
+  border-radius: 18px;
+  background: linear-gradient(
+    180deg,
+    rgba(21, 58, 70, 0.98),
+    rgba(15, 45, 55, 0.98)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+.rune-body-table span {
+  padding-top: 14px;
+  color: #f5f4ee;
+  text-align: center;
+  font-size: 19px;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rune-body-table small {
+  padding: 4px 0 12px;
+  color: rgba(255, 255, 255, 0.72);
+  text-align: center;
+  font-size: 15px;
+  font-weight: 700;
+  border-bottom: 2px solid rgba(255, 255, 255, 0.12);
+}
+
+.rune-body-table input {
+  min-height: 58px;
+  border: none;
+  background: transparent;
+  color: #ffffff;
+  font-size: 20px;
+  text-align: center;
+  outline: none;
+}
+
+.rune-body-table input:focus {
+  background: rgba(34, 211, 238, 0.08);
+  box-shadow: inset 0 0 0 2px rgba(34, 211, 238, 0.35);
+}
+
+/* tabela de armas */
+.rune-weapons-table {
+  border: none;
+  border-radius: 20px;
+  overflow: hidden;
+  background: rgba(10, 26, 33, 0.35);
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
+}
+
+.rune-weapons-table h3 {
+  padding: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+  color: #f7f7f0;
+  text-align: center;
+  font-size: 24px;
+  text-transform: uppercase;
+  background: linear-gradient(
+    180deg,
+    rgba(27, 74, 89, 0.98),
+    rgba(20, 58, 70, 0.98)
+  );
+}
+
+.rune-weapon-head,
+.rune-weapon-row {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1fr;
+  gap: 12px;
+  padding: 10px 12px;
+}
+
+.rune-weapon-head {
+  background: rgba(255, 255, 255, 0.06);
+}
+
+.rune-weapon-head span {
+  padding: 10px;
+  border: none;
+  border-radius: 12px;
+  color: #f7f7f0;
+  text-align: center;
+  font-weight: 700;
+  text-transform: uppercase;
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.rune-weapon-row {
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.rune-weapon-row input {
+  min-height: 48px;
+  padding: 0 12px;
+  border: 2px solid rgba(255, 255, 255, 0.14);
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.04);
+  color: #f7f7f0;
+  text-align: center;
+  font-size: 18px;
+  outline: none;
+}
+
+.rune-weapon-row input:focus {
+  border-color: rgba(34, 211, 238, 0.55);
+  background: rgba(34, 211, 238, 0.08);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.08);
+}
+
+/* tabela de domínios */
+.rune-domains-table {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  border: none;
+  background: transparent;
+}
+
+.rune-domain-head,
+.rune-domains-table label {
+  display: grid;
+  grid-template-columns: 1.3fr 1fr 0.9fr;
+  gap: 12px;
+}
+
+.rune-domain-head {
+  margin-bottom: 6px;
+}
+
+.rune-domain-head span {
+  padding: 14px 16px;
+  border: none;
+  border-radius: 16px;
+  background: linear-gradient(180deg, rgba(23, 64, 77, 1), rgba(18, 53, 64, 1));
+  color: #f5f4ee;
+  text-align: center;
+  font-size: 18px;
+  font-weight: 700;
+  text-transform: uppercase;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
+}
+
+.rune-domains-table label {
+  align-items: stretch;
+}
+
+.rune-domains-table label span,
+.rune-domains-table label small,
+.rune-domains-table label input {
+  min-height: 58px;
+  padding: 0 16px;
+  border: 2px solid rgba(255, 255, 255, 0.12);
+  border-radius: 16px;
+  background: linear-gradient(
+    180deg,
+    rgba(21, 58, 70, 0.98),
+    rgba(15, 45, 55, 0.98)
+  );
+  color: #f5f4ee;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 6px 14px rgba(0, 0, 0, 0.14);
+}
+
+.rune-domains-table label span,
+.rune-domains-table label small {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.rune-domains-table label span {
+  font-size: 16px;
+}
+
+.rune-domains-table label small {
+  font-size: 14px;
+  color: #9eeaf4;
+}
+
+.rune-domains-table label input {
+  text-align: center;
+  font-size: 20px;
+  font-weight: 700;
+  outline: none;
+}
+
+.rune-domains-table label input:focus {
+  border-color: rgba(34, 211, 238, 0.55);
+  background: rgba(34, 211, 238, 0.08);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.08);
+}
+
+/* inventário mais bonito */
+.rune-inventory-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-top: 28px;
+}
+
+.rune-inventory-list input {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 18px;
+  border: 2px solid rgba(0, 0, 0, 0.14);
+  border-radius: 14px;
+  background: rgba(23, 64, 77, 0.1);
+  color: #050505;
+  font-size: 20px;
+  font-weight: 700;
+  outline: none;
+}
+
+.rune-inventory-list input:focus {
+  border-color: rgba(23, 64, 77, 0.45);
+  box-shadow: 0 0 0 4px rgba(23, 64, 77, 0.08);
+}
+
+/* responsivo */
+@media (max-width: 1000px) {
+  .rune-attributes-table {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .rune-body-table {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rune-domain-head,
+  .rune-domains-table label {
+    grid-template-columns: 1fr 1fr 1fr;
+  }
+}
+
+@media (max-width: 720px) {
+  .rune-attributes-table {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .rune-body-table {
+    grid-template-columns: 1fr;
+  }
+
+  .rune-weapon-head,
+  .rune-weapon-row,
+  .rune-domain-head,
+  .rune-domains-table label {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   MODAL DA FICHA DO MESTRE - MAIOR E MELHOR DE VISUALIZAR
+========================================================= */
+
+/* fundo do modal */
+.altherium-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+
+  display: none;
+  align-items: center;
+  justify-content: center;
+
+  padding: 16px;
+
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(10px);
+}
+
+.altherium-modal.active {
+  display: flex;
+}
+
+/* caixa principal do modal */
+.altherium-modal-box {
+  position: relative;
+
+  width: min(1600px, calc(100vw - 32px));
+  height: min(94vh, 1200px);
+  max-height: calc(100vh - 32px);
+
+  display: flex;
+  flex-direction: column;
+
+  padding: 28px;
+  border-radius: 30px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+
+  background:
+    linear-gradient(145deg, rgba(10, 16, 36, 0.98), rgba(4, 10, 22, 0.98)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    );
+
+  box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
+
+  overflow: hidden;
+}
+
+/* versão específica do modal da ficha */
+.altherium-sheet-modal-box {
+  width: min(1680px, calc(100vw - 32px));
+  height: min(95vh, 1300px);
+  max-height: calc(100vh - 32px);
+}
+
+/* título do modal */
+.altherium-modal-box h2 {
+  margin-bottom: 18px;
+  padding-right: 70px;
+  font-size: clamp(28px, 3vw, 46px);
+  line-height: 1.1;
+  color: #ffffff;
+}
+
+/* botão fechar */
+.altherium-close {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+
+  width: 48px;
+  height: 48px;
+
+  display: grid;
+  place-items: center;
+
+  border: none;
+  border-radius: 14px;
+
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-size: 28px;
+  font-weight: 700;
+  cursor: pointer;
+
+  transition: 0.25s ease;
+}
+
+.altherium-close:hover {
+  background: rgba(34, 211, 238, 0.18);
+  transform: scale(1.04);
+}
+
+/* formulário do modal */
+#altheriumForm {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+/* área rolável da ficha */
+#altheriumFormFields {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: auto;
+  padding-right: 12px;
+  padding-bottom: 12px;
+}
+
+/* scrollbar */
+#altheriumFormFields::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+#altheriumFormFields::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+}
+
+#altheriumFormFields::-webkit-scrollbar-thumb {
+  background: rgba(34, 211, 238, 0.35);
+  border-radius: 999px;
+}
+
+#altheriumFormFields::-webkit-scrollbar-thumb:hover {
+  background: rgba(34, 211, 238, 0.55);
+}
+
+/* rodapé com botão salvar */
+.modal-submit-row {
+  margin-top: 18px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 12px;
+
+  background: linear-gradient(
+    to top,
+    rgba(4, 10, 22, 0.96),
+    rgba(4, 10, 22, 0.72)
+  );
+}
+
+/* faz a ficha ocupar mais espaço dentro do modal */
+.master-rune-sheet {
+  width: 100%;
+  min-width: 1200px;
+}
+
+.master-rune-sheet .rune-paper-page {
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 28px;
+}
+
+.master-rune-sheet .rune-frame {
+  min-height: auto;
+  padding: 32px;
+}
+
+/* deixa a página da ficha menos apertada dentro do modal */
+.master-rune-sheet .rune-page-header {
+  max-width: 700px;
+}
+
+.master-rune-sheet .rune-page-header span {
+  font-size: clamp(34px, 4vw, 58px);
+}
+
+.master-rune-sheet .rune-page-header input {
+  font-size: 24px;
+}
+
+/* botões do modal */
+.altherium-submit {
+  min-width: 210px;
+  height: 54px;
+  padding: 0 26px;
+  border: none;
+  border-radius: 18px;
+
+  background: linear-gradient(135deg, #22d3ee, #06b6d4);
+  color: #001018;
+  font-size: 20px;
+  font-weight: 800;
+  cursor: pointer;
+
+  box-shadow: 0 10px 28px rgba(34, 211, 238, 0.24);
+  transition: 0.25s ease;
+}
+
+.altherium-submit:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 30px rgba(34, 211, 238, 0.34);
+}
+
+/* =========================================================
+   RESPONSIVO
+========================================================= */
+
+@media (max-width: 1100px) {
+  .altherium-modal-box,
+  .altherium-sheet-modal-box {
+    width: calc(100vw - 20px);
+    height: calc(100vh - 20px);
+    max-height: calc(100vh - 20px);
+    padding: 20px;
+  }
+
+  .master-rune-sheet {
+    min-width: 980px;
+  }
+
+  .master-rune-sheet .rune-paper-page {
+    max-width: 1200px;
+    padding: 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  .altherium-modal {
+    padding: 8px;
+  }
+
+  .altherium-modal-box,
+  .altherium-sheet-modal-box {
+    width: calc(100vw - 16px);
+    height: calc(100vh - 16px);
+    max-height: calc(100vh - 16px);
+    padding: 16px;
+    border-radius: 20px;
+  }
+
+  .altherium-modal-box h2 {
+    font-size: 28px;
+    padding-right: 56px;
+  }
+
+  .altherium-close {
+    width: 42px;
+    height: 42px;
+    font-size: 24px;
+    top: 14px;
+    right: 14px;
+  }
+
+  .master-rune-sheet {
+    min-width: 820px;
+  }
+
+  .master-rune-sheet .rune-paper-page {
+    padding: 14px;
+  }
+
+  .master-rune-sheet .rune-frame {
+    padding: 18px;
+  }
+
+  .altherium-submit {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .modal-submit-row {
+    justify-content: stretch;
+  }
+}
+
+/* =========================================================
+   CORREÇÃO FORTE - FICHA DO MESTRE QUASE TELA CHEIA
+========================================================= */
+
+.altherium-modal.active {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.altherium-sheet-modal-box {
+  width: 96vw !important;
+  height: 94vh !important;
+  max-width: none !important;
+  max-height: none !important;
+
+  padding: 28px !important;
+  border-radius: 28px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* área interna do modal */
+.altherium-sheet-modal-box #altheriumForm {
+  flex: 1 !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+/* área onde a ficha aparece */
+.altherium-sheet-modal-box #altheriumFormFields {
+  flex: 1 !important;
+  min-height: 0 !important;
+
+  overflow: auto !important;
+  padding: 18px !important;
+}
+
+/* remove o formato estreito */
+.altherium-sheet-modal-box .master-rune-sheet {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: none !important;
+
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 28px !important;
+  align-items: start !important;
+}
+
+/* cada página da ficha vira um bloco grande */
+.altherium-sheet-modal-box .master-rune-sheet .rune-paper-page {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 22px !important;
+}
+
+/* deixa a primeira página maior, ocupando a linha inteira */
+.altherium-sheet-modal-box .master-rune-sheet .rune-paper-page:first-child {
+  grid-column: 1 / -1 !important;
+}
+
+/* reduz a altura interna para não virar uma coluna gigante */
+.altherium-sheet-modal-box .master-rune-sheet .rune-frame {
+  min-height: auto !important;
+  height: auto !important;
+  padding: 34px !important;
+}
+
+/* primeira página em layout mais largo */
+.altherium-sheet-modal-box
+  .master-rune-sheet
+  .rune-paper-page:first-child
+  .rune-frame {
+  display: grid !important;
+  grid-template-columns: 1fr 1fr !important;
+  gap: 32px !important;
+}
+
+/* nome, pv e atributos ficam na esquerda/direita de forma melhor */
+.altherium-sheet-modal-box .master-rune-sheet .rune-page-header {
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+.altherium-sheet-modal-box .master-rune-sheet .rune-resource-list {
+  max-width: none !important;
+  margin: 0 !important;
+}
+
+/* atributos ocupam toda a largura da primeira página */
+.altherium-sheet-modal-box .master-rune-sheet .rune-attributes-table,
+.altherium-sheet-modal-box .master-rune-sheet .rune-body-table,
+.altherium-sheet-modal-box .master-rune-sheet .rune-weapons-table {
+  grid-column: 1 / -1 !important;
+}
+
+/* melhora campos dentro do modal */
+.altherium-sheet-modal-box input,
+.altherium-sheet-modal-box textarea {
+  font-size: 18px !important;
+}
+
+/* botão salvar fixo no rodapé */
+.altherium-sheet-modal-box .modal-submit-row {
+  flex-shrink: 0 !important;
+  margin-top: 14px !important;
+  padding-top: 14px !important;
+}
+
+/* responsivo: em telas menores volta para 1 coluna */
+@media (max-width: 1100px) {
+  .altherium-sheet-modal-box {
+    width: 98vw !important;
+    height: 96vh !important;
+    padding: 18px !important;
+  }
+
+  .altherium-sheet-modal-box .master-rune-sheet {
+    grid-template-columns: 1fr !important;
+  }
+
+  .altherium-sheet-modal-box .master-rune-sheet .rune-paper-page:first-child {
+    grid-column: auto !important;
+  }
+
+  .altherium-sheet-modal-box
+    .master-rune-sheet
+    .rune-paper-page:first-child
+    .rune-frame {
+    display: block !important;
+  }
+}
+
+/* =========================================================
+   FICHA DIGITAL DE D&D
+========================================================= */
+
+.dnd-sheet-page {
+  padding-bottom: 90px;
+}
+
+.dnd-sheet-wrapper {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.dnd-sheet-toolbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 22px;
+  align-items: flex-start;
+
+  padding: 30px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 30px;
+
+  background:
+    linear-gradient(145deg, rgba(9, 16, 39, 0.9), rgba(2, 6, 23, 0.94)),
+    radial-gradient(
+      circle at top right,
+      rgba(239, 68, 68, 0.12),
+      transparent 42%
+    );
+}
+
+.dnd-sheet-toolbar h2 {
+  margin: 8px 0;
+  font-size: clamp(32px, 4vw, 56px);
+}
+
+.dnd-sheet-toolbar p {
+  color: rgba(226, 232, 240, 0.74);
+}
+
+.dnd-character-sheet {
+  display: flex;
+  flex-direction: column;
+  gap: 34px;
+}
+
+.dnd-paper-page {
+  width: 100%;
+  max-width: 1160px;
+  margin: 0 auto;
+  padding: clamp(18px, 4vw, 42px);
+
+  border-radius: 28px;
+  border: 1px solid rgba(15, 23, 42, 0.22);
+
+  background:
+    linear-gradient(rgba(245, 245, 242, 0.96), rgba(224, 224, 218, 0.96)),
+    radial-gradient(circle at top, rgba(255, 255, 255, 0.75), transparent 52%);
+
+  box-shadow:
+    0 30px 100px rgba(0, 0, 0, 0.42),
+    inset 0 0 0 8px rgba(0, 0, 0, 0.04);
+
+  color: #080808;
+}
+
+.dnd-frame {
+  min-height: 900px;
+  padding: clamp(18px, 3vw, 38px);
+
+  border: 6px double rgba(0, 0, 0, 0.72);
+  outline: 2px solid rgba(0, 0, 0, 0.24);
+  outline-offset: -14px;
+
+  background:
+    radial-gradient(circle at top left, rgba(0, 0, 0, 0.05), transparent 40%),
+    radial-gradient(
+      circle at bottom right,
+      rgba(0, 0, 0, 0.04),
+      transparent 42%
+    );
+}
+
+.dnd-banner {
+  margin-bottom: 24px;
+  padding: 18px;
+  border-bottom: 4px solid #111;
+  text-align: center;
+}
+
+.dnd-banner h3 {
+  font-size: clamp(34px, 5vw, 58px);
+  line-height: 1;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.dnd-identity-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+  margin-bottom: 22px;
+}
+
+.dnd-identity-grid label,
+.dnd-details-grid label,
+.dnd-spell-header label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+
+  font-size: 13px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.dnd-identity-grid input,
+.dnd-details-grid input,
+.dnd-spell-header input {
+  min-height: 46px;
+  padding: 0 12px;
+  border: 2px solid rgba(0, 0, 0, 0.28);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.58);
+  color: #080808;
+  font-size: 17px;
+  font-weight: 800;
+  outline: none;
+}
+
+.dnd-main-grid {
+  display: grid;
+  grid-template-columns: 180px 1fr 300px;
+  gap: 18px;
+}
+
+.dnd-abilities-column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.dnd-ability-card {
+  padding: 14px;
+  border: 3px solid #111;
+  border-radius: 18px;
+
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+
+  background: rgba(255, 255, 255, 0.58);
+}
+
+.dnd-ability-card span {
+  font-size: 14px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.dnd-ability-card input {
+  width: 88px;
+  height: 58px;
+
+  border: 2px solid rgba(0, 0, 0, 0.32);
+  border-radius: 14px;
+
+  background: #f8f8f2;
+  color: #080808;
+
+  font-size: 28px;
+  font-weight: 900;
+  text-align: center;
+  outline: none;
+}
+
+.dnd-ability-card strong {
+  min-width: 58px;
+  min-height: 38px;
+  display: grid;
+  place-items: center;
+
+  border: 2px solid #111;
+  border-radius: 999px;
+
+  background: #ffffff;
+  font-size: 20px;
+}
+
+.dnd-middle-column,
+.dnd-right-column {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.dnd-box {
+  padding: 16px;
+  border: 3px solid #111;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.dnd-box h3 {
+  margin-bottom: 12px;
+  text-align: center;
+  font-size: 16px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.dnd-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dnd-list.two-cols {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.dnd-list label {
+  display: grid;
+  grid-template-columns: 1fr 58px;
+  align-items: center;
+  gap: 8px;
+}
+
+.dnd-list label span {
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.dnd-list input {
+  height: 34px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  background: #f8f8f2;
+  color: #080808;
+  text-align: center;
+  font-weight: 900;
+  outline: none;
+}
+
+.dnd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 12px;
+}
+
+.dnd-stats-grid label {
+  min-height: 96px;
+  padding: 12px;
+
+  border: 3px solid #111;
+  border-radius: 18px;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 8px;
+
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.dnd-stats-grid span {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.dnd-stats-grid input {
+  min-height: 42px;
+  border: none;
+  background: transparent;
+  color: #080808;
+  text-align: center;
+  font-size: 24px;
+  font-weight: 900;
+  outline: none;
+}
+
+.dnd-hp-box {
+  padding: 16px;
+  border: 3px solid #111;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.dnd-hp-box h3 {
+  margin-bottom: 12px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.dnd-hp-row {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: end;
+  gap: 10px;
+}
+
+.dnd-hp-row label,
+.dnd-hp-box label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.dnd-hp-row input,
+.dnd-hp-box input {
+  min-height: 44px;
+  border: 2px solid rgba(0, 0, 0, 0.24);
+  border-radius: 12px;
+  background: #f8f8f2;
+  color: #080808;
+  text-align: center;
+  font-size: 20px;
+  font-weight: 900;
+  outline: none;
+}
+
+.dnd-hp-bar {
+  height: 12px;
+  margin: 14px 0;
+  border: 2px solid #111;
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+.dnd-hp-bar div {
+  width: 0;
+  height: 100%;
+  background: linear-gradient(90deg, #991b1b, #ef4444);
+  transition: 0.25s;
+}
+
+.dnd-bottom-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 18px;
+  margin-top: 20px;
+}
+
+.dnd-attack-table {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.dnd-attack-table div,
+.dnd-attack-table label {
+  display: grid;
+  grid-template-columns: 1.4fr 0.8fr 1.2fr;
+  gap: 8px;
+}
+
+.dnd-attack-table span {
+  text-align: center;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.dnd-attack-table input {
+  min-height: 38px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 10px;
+  background: #f8f8f2;
+  color: #080808;
+  text-align: center;
+  font-weight: 800;
+  outline: none;
+}
+
+.dnd-textarea-box textarea,
+.dnd-box textarea {
+  width: 100%;
+  min-height: 130px;
+  padding: 12px;
+
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+
+  background: #f8f8f2;
+  color: #080808;
+
+  font: inherit;
+  font-weight: 700;
+  resize: vertical;
+  outline: none;
+}
+
+.dnd-section-title {
+  margin-bottom: 22px;
+  text-align: center;
+}
+
+.dnd-section-title h3 {
+  font-size: clamp(30px, 5vw, 54px);
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.dnd-details-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.dnd-story-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.dnd-spell-header {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.dnd-spell-slots {
+  padding: 16px;
+  border: 3px solid #111;
+  border-radius: 18px;
+  margin-bottom: 20px;
+  background: rgba(255, 255, 255, 0.56);
+}
+
+.dnd-spell-slots h3 {
+  margin-bottom: 14px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.dnd-spell-slots div {
+  display: grid;
+  grid-template-columns: repeat(9, 1fr);
+  gap: 10px;
+}
+
+.dnd-spell-slots label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-align: center;
+  font-weight: 900;
+}
+
+.dnd-spell-slots input {
+  min-height: 40px;
+  border: 2px solid rgba(0, 0, 0, 0.22);
+  border-radius: 10px;
+  background: #f8f8f2;
+  text-align: center;
+  font-weight: 900;
+  outline: none;
+}
+
+.dnd-spells-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+
+.dnd-spells-grid label {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding: 16px;
+
+  border: 3px solid #111;
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.56);
+
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.dnd-spells-grid textarea {
+  width: 100%;
+  padding: 12px;
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  border-radius: 12px;
+  background: #f8f8f2;
+  color: #080808;
+  font: inherit;
+  font-weight: 700;
+  resize: vertical;
+  outline: none;
+}
+
+.dnd-paper-page input:focus,
+.dnd-paper-page textarea:focus {
+  border-color: #991b1b;
+  box-shadow: 0 0 0 4px rgba(153, 27, 27, 0.08);
+}
+
+/* modal grande do mestre para ficha D&D */
+.dnd-sheet-modal-box {
+  width: 96vw !important;
+  height: 94vh !important;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.dnd-sheet-modal-box #dndForm {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.dnd-sheet-modal-box #dndFormFields {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 18px;
+}
+
+.dnd-sheet-modal-box .master-dnd-sheet {
+  width: 100%;
+  min-width: 1100px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  align-items: start;
+}
+
+.dnd-sheet-modal-box .master-dnd-sheet .dnd-paper-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.dnd-sheet-modal-box .master-dnd-sheet .dnd-paper-page:first-child {
+  grid-column: 1 / -1;
+}
+
+/* responsivo */
+@media (max-width: 1100px) {
+  .dnd-main-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dnd-abilities-column {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dnd-bottom-grid,
+  .dnd-story-grid,
+  .dnd-spells-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dnd-spell-header,
+  .dnd-details-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+
+  .dnd-spell-slots div {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .dnd-sheet-modal-box .master-dnd-sheet {
+    grid-template-columns: 1fr;
+    min-width: 900px;
+  }
+
+  .dnd-sheet-modal-box .master-dnd-sheet .dnd-paper-page:first-child {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 720px) {
+  .dnd-sheet-toolbar {
+    flex-direction: column;
+  }
+
+  .dnd-paper-page {
+    padding: 14px;
+  }
+
+  .dnd-frame {
+    padding: 18px;
+    min-height: auto;
+  }
+
+  .dnd-identity-grid,
+  .dnd-details-grid,
+  .dnd-spell-header,
+  .dnd-abilities-column,
+  .dnd-stats-grid,
+  .dnd-list.two-cols {
+    grid-template-columns: 1fr;
+  }
+
+  .dnd-sheet-modal-box .master-dnd-sheet {
+    min-width: 760px;
+  }
+}
+
+/* =========================================================
+   D&D SHEET - DARK MODE
+========================================================= */
+
+.dnd-paper-page {
+  background:
+    linear-gradient(180deg, rgba(9, 12, 20, 0.98), rgba(4, 8, 16, 0.98)),
+    radial-gradient(circle at top, rgba(239, 68, 68, 0.08), transparent 45%);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow:
+    0 30px 100px rgba(0, 0, 0, 0.55),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  color: #f8fafc;
+}
+
+.dnd-frame {
+  background:
+    linear-gradient(180deg, rgba(11, 18, 32, 0.92), rgba(7, 12, 24, 0.96)),
+    radial-gradient(
+      circle at top left,
+      rgba(239, 68, 68, 0.06),
+      transparent 35%
+    );
+  border: 2px solid rgba(248, 250, 252, 0.18);
+  outline: 1px solid rgba(248, 250, 252, 0.08);
+  outline-offset: -10px;
+}
+
+.dnd-banner {
+  border-bottom: 2px solid rgba(248, 250, 252, 0.14);
+}
+
+.dnd-banner h3,
+.dnd-section-title h3,
+.dnd-box h3,
+.dnd-sheet-toolbar h2 {
+  color: #f8fafc;
+}
+
+.dnd-sheet-toolbar {
+  background:
+    linear-gradient(145deg, rgba(8, 14, 28, 0.96), rgba(3, 7, 18, 0.98)),
+    radial-gradient(
+      circle at top right,
+      rgba(239, 68, 68, 0.12),
+      transparent 42%
+    );
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.dnd-sheet-toolbar p,
+.dnd-paper-page p,
+.dnd-paper-page label,
+.dnd-paper-page span,
+.dnd-paper-page strong {
+  color: #e2e8f0;
+}
+
+.dnd-identity-grid label,
+.dnd-details-grid label,
+.dnd-spell-header label,
+.dnd-spells-grid label,
+.dnd-textarea-box,
+.dnd-hp-box label,
+.dnd-list label span,
+.dnd-attack-table span,
+.dnd-stats-grid span,
+.dnd-ability-card span {
+  color: #cbd5e1;
+}
+
+.dnd-box,
+.dnd-ability-card,
+.dnd-stats-grid label,
+.dnd-hp-box,
+.dnd-spell-slots,
+.dnd-spells-grid label {
+  background: linear-gradient(
+    180deg,
+    rgba(18, 26, 45, 0.92),
+    rgba(10, 17, 31, 0.96)
+  );
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 10px 26px rgba(0, 0, 0, 0.22);
+}
+
+.dnd-ability-card strong {
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  color: #ffffff;
+}
+
+.dnd-paper-page input,
+.dnd-paper-page textarea {
+  background: rgba(2, 6, 23, 0.88);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  color: #f8fafc;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.dnd-paper-page input::placeholder,
+.dnd-paper-page textarea::placeholder {
+  color: rgba(203, 213, 225, 0.45);
+}
+
+.dnd-identity-grid input,
+.dnd-details-grid input,
+.dnd-spell-header input,
+.dnd-list input,
+.dnd-stats-grid input,
+.dnd-hp-row input,
+.dnd-hp-box input,
+.dnd-attack-table input,
+.dnd-spell-slots input,
+.dnd-ability-card input,
+.dnd-box textarea,
+.dnd-spells-grid textarea {
+  background: rgba(3, 8, 20, 0.92);
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.dnd-paper-page input:focus,
+.dnd-paper-page textarea:focus {
+  border-color: rgba(239, 68, 68, 0.7);
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
+}
+
+.dnd-attack-table div {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  padding-bottom: 8px;
+  margin-bottom: 4px;
+}
+
+.dnd-list label,
+.dnd-attack-table label {
+  color: #e2e8f0;
+}
+
+.dnd-hp-bar {
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.dnd-hp-bar div {
+  background: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
+}
+
+.dnd-spell-slots h3,
+.dnd-spells-grid label,
+.dnd-textarea-box h3 {
+  color: #f8fafc;
+}
+
+.dnd-sheet-modal-box {
+  background:
+    linear-gradient(145deg, rgba(7, 12, 24, 0.98), rgba(2, 6, 16, 0.98)),
+    radial-gradient(
+      circle at top right,
+      rgba(239, 68, 68, 0.1),
+      transparent 42%
+    );
+}
+
+/* cards das fichas no painel do mestre */
+.dnd-sheet-card {
+  background:
+    linear-gradient(145deg, rgba(9, 16, 30, 0.95), rgba(4, 9, 20, 0.96)),
+    radial-gradient(
+      circle at top right,
+      rgba(239, 68, 68, 0.08),
+      transparent 40%
+    );
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  color: #f8fafc;
+}
+
+.dnd-sheet-card h3,
+.dnd-sheet-card p,
+.dnd-sheet-card span,
+.dnd-sheet-card strong {
+  color: #f8fafc;
+}
+
+.dnd-sheet-card .sheet-card-top strong,
+.dnd-sheet-card .sheet-card-footer strong {
+  color: #f87171;
+}
+
+/* scrollbar interna do modal */
+#dndFormFields::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+#dndFormFields::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 999px;
+}
+
+#dndFormFields::-webkit-scrollbar-thumb {
+  background: rgba(239, 68, 68, 0.35);
+  border-radius: 999px;
+}
+
+#dndFormFields::-webkit-scrollbar-thumb:hover {
+  background: rgba(239, 68, 68, 0.55);
+}
+
+/* =========================================================
+   FONTE DA FICHA DE D&D
+========================================================= */
+
+.dnd-character-sheet,
+.dnd-character-sheet *,
+.dnd-paper-page,
+.dnd-paper-page *,
+.dnd-sheet-modal-box,
+.dnd-sheet-modal-box * {
+  font-family: "Aboreto", serif !important;
+}
+
+/* Mantém os campos bonitos com a fonte nova */
+.dnd-paper-page input,
+.dnd-paper-page textarea,
+.dnd-sheet-modal-box input,
+.dnd-sheet-modal-box textarea {
+  font-family: "Aboreto", serif !important;
+  letter-spacing: 0.8px;
+}
+
+/* Títulos maiores e com presença */
+.dnd-banner h3,
+.dnd-section-title h3,
+.dnd-box h3,
+.dnd-spell-slots h3,
+.dnd-sheet-toolbar h2 {
+  font-family: "Aboreto", serif !important;
+  letter-spacing: 1.4px;
+  font-weight: 400 !important;
+}
+
+/* Labels e textos menores */
+.dnd-paper-page label,
+.dnd-paper-page span,
+.dnd-paper-page small,
+.dnd-sheet-modal-box label,
+.dnd-sheet-modal-box span,
+.dnd-sheet-modal-box small {
+  font-family: "Aboreto", serif !important;
+  letter-spacing: 0.6px;
+  font-weight: 400 !important;
+}
+
+/* Números dos atributos e status */
+.dnd-ability-card input,
+.dnd-ability-card strong,
+.dnd-stats-grid input,
+.dnd-hp-row input,
+.dnd-hp-box input,
+.dnd-list input,
+.dnd-attack-table input,
+.dnd-spell-slots input {
+  font-family: "Aboreto", serif !important;
+  font-weight: 400 !important;
+  letter-spacing: 0.5px;
+}
+
+.dnd-banner h3 {
+  font-size: clamp(42px, 6vw, 72px);
+}
+
+.dnd-section-title h3 {
+  font-size: clamp(34px, 5vw, 62px);
+}
+
+.dnd-box h3 {
+  font-size: 18px;
+}
+
+/* =========================================================
+   FICHA DE ALTHERIUM - DARK MODE
+========================================================= */
+
+.altherium-sheet-wrapper {
+  color: #f8fafc;
+}
+
+.rune-paper-page {
+  background:
+    linear-gradient(180deg, rgba(8, 13, 24, 0.98), rgba(3, 7, 16, 0.98)),
+    radial-gradient(circle at top, rgba(34, 211, 238, 0.08), transparent 46%);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  box-shadow:
+    0 30px 100px rgba(0, 0, 0, 0.58),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.03);
+  color: #f8fafc;
+}
+
+.rune-frame {
+  background:
+    linear-gradient(180deg, rgba(11, 18, 32, 0.92), rgba(7, 12, 24, 0.96)),
+    radial-gradient(
+      circle at top left,
+      rgba(34, 211, 238, 0.06),
+      transparent 36%
+    );
+  border: 2px solid rgba(248, 250, 252, 0.18);
+  outline: 1px solid rgba(248, 250, 252, 0.08);
+  outline-offset: -10px;
+}
+
+.rune-frame::before,
+.rune-frame::after {
+  color: rgba(226, 232, 240, 0.28);
+}
+
+.rune-page-header span,
+.rune-section-title h3,
+.rune-weapons-table h3,
+.rune-money-field span {
+  color: #f8fafc;
+}
+
+.rune-section-title p {
+  color: rgba(226, 232, 240, 0.72);
+}
+
+.rune-page-header input,
+.rune-resource-line input,
+.rune-attributes-table input,
+.rune-body-table input,
+.rune-weapon-row input,
+.rune-domains-table label input,
+.rune-inventory-list input,
+.rune-money-field input,
+.rune-triumphs-area {
+  background: rgba(2, 6, 23, 0.88);
+  border-color: rgba(148, 163, 184, 0.24);
+  color: #f8fafc;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.rune-page-header input::placeholder,
+.rune-resource-line input::placeholder,
+.rune-weapon-row input::placeholder,
+.rune-inventory-list input::placeholder,
+.rune-triumphs-area::placeholder {
+  color: rgba(203, 213, 225, 0.45);
+}
+
+.rune-page-header input {
+  border-bottom: 2px solid rgba(34, 211, 238, 0.32);
+}
+
+.rune-resource-line {
+  color: #f8fafc;
+}
+
+.rune-resource-line strong {
+  color: #22d3ee;
+}
+
+.rune-resource-line span {
+  color: #e2e8f0;
+}
+
+.rune-bar {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(148, 163, 184, 0.22);
+}
+
+.rune-bar div {
+  background: linear-gradient(90deg, #0891b2, #22d3ee, #67e8f9);
+}
+
+.rune-attributes-table,
+.rune-body-table,
+.rune-weapons-table,
+.rune-domains-table {
+  background: transparent;
+}
+
+.rune-attributes-table label,
+.rune-body-table label,
+.rune-domains-table label span,
+.rune-domains-table label small,
+.rune-domains-table label input {
+  background: linear-gradient(
+    180deg,
+    rgba(18, 31, 50, 0.95),
+    rgba(10, 20, 36, 0.98)
+  );
+  border-color: rgba(148, 163, 184, 0.18);
+  color: #f8fafc;
+}
+
+.rune-attributes-table span,
+.rune-body-table span,
+.rune-body-table small {
+  color: #e2e8f0;
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(148, 163, 184, 0.14);
+}
+
+.rune-attributes-table span,
+.rune-body-table span {
+  color: #22d3ee;
+}
+
+.rune-attributes-table input:focus,
+.rune-body-table input:focus,
+.rune-weapon-row input:focus,
+.rune-domains-table label input:focus,
+.rune-inventory-list input:focus,
+.rune-triumphs-area:focus {
+  border-color: rgba(34, 211, 238, 0.65);
+  background: rgba(34, 211, 238, 0.08);
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.1);
+}
+
+.rune-weapons-table {
+  background: linear-gradient(
+    180deg,
+    rgba(18, 31, 50, 0.92),
+    rgba(10, 20, 36, 0.96)
+  );
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
+}
+
+.rune-weapons-table h3 {
+  background: linear-gradient(
+    180deg,
+    rgba(8, 145, 178, 0.22),
+    rgba(14, 116, 144, 0.14)
+  );
+  border-bottom: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.rune-weapon-head {
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.rune-weapon-head span {
+  color: #22d3ee;
+  background: rgba(255, 255, 255, 0.035);
+  border-color: rgba(148, 163, 184, 0.16);
+}
+
+.rune-weapon-row {
+  border-color: rgba(148, 163, 184, 0.12);
+}
+
+.rune-domain-head span {
+  background: linear-gradient(
+    180deg,
+    rgba(8, 145, 178, 0.22),
+    rgba(14, 116, 144, 0.14)
+  );
+  color: #f8fafc;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+}
+
+.rune-domains-table label small {
+  color: #67e8f9;
+}
+
+.rune-inventory-list input {
+  background: linear-gradient(
+    180deg,
+    rgba(18, 31, 50, 0.86),
+    rgba(10, 20, 36, 0.92)
+  );
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  color: #f8fafc;
+}
+
+.rune-money-field {
+  background: linear-gradient(
+    180deg,
+    rgba(8, 145, 178, 0.22),
+    rgba(14, 116, 144, 0.14)
+  );
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+}
+
+.rune-triumphs-area {
+  background: linear-gradient(
+    180deg,
+    rgba(18, 31, 50, 0.86),
+    rgba(10, 20, 36, 0.92)
+  );
+  border: 1px dashed rgba(34, 211, 238, 0.32);
+  color: #f8fafc;
+}
+
+/* Modal do mestre também em dark mode */
+.altherium-sheet-modal-box .rune-paper-page {
+  background:
+    linear-gradient(180deg, rgba(8, 13, 24, 0.98), rgba(3, 7, 16, 0.98)),
+    radial-gradient(circle at top, rgba(34, 211, 238, 0.08), transparent 46%);
+}
+
+.altherium-sheet-modal-box .rune-frame {
+  background:
+    linear-gradient(180deg, rgba(11, 18, 32, 0.92), rgba(7, 12, 24, 0.96)),
+    radial-gradient(
+      circle at top left,
+      rgba(34, 211, 238, 0.06),
+      transparent 36%
+    );
+}
+
+/* Cards das fichas de Altherium no painel do mestre */
+.sheet-card:not(.dnd-sheet-card) {
+  background:
+    linear-gradient(145deg, rgba(9, 16, 30, 0.95), rgba(4, 9, 20, 0.96)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.08),
+      transparent 40%
+    );
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  color: #f8fafc;
+}
+
+.sheet-card:not(.dnd-sheet-card) h3,
+.sheet-card:not(.dnd-sheet-card) p,
+.sheet-card:not(.dnd-sheet-card) span,
+.sheet-card:not(.dnd-sheet-card) strong {
+  color: #f8fafc;
+}
+
+.sheet-card:not(.dnd-sheet-card) .sheet-card-top strong,
+.sheet-card:not(.dnd-sheet-card) .sheet-card-footer strong,
+.sheet-card:not(.dnd-sheet-card) .sheet-card-footer span {
+  color: #22d3ee;
+}
+
+/* título principal da área da ficha */
+.dnd-sheet-toolbar h2 {
+  font-family: "Aboreto", serif !important;
+  font-weight: 400 !important;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+}
+
+/* =========================================================
+   SISTEMA DE INICIATIVA
+========================================================= */
+
+.initiative-sheet-box {
+  margin: 24px 0;
+  padding: 22px;
+  border-radius: 22px;
+  border: 1px solid rgba(34, 211, 238, 0.28);
+
+  background:
+    linear-gradient(180deg, rgba(8, 145, 178, 0.16), rgba(14, 116, 144, 0.08)),
+    rgba(2, 6, 23, 0.6);
+
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
+}
+
+.initiative-sheet-box label {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.initiative-sheet-box span {
+  color: #22d3ee;
+  font-size: 28px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.initiative-sheet-box input {
+  width: 130px;
+  min-height: 64px;
+  border: 1px solid rgba(34, 211, 238, 0.34);
+  border-radius: 18px;
+  background: rgba(2, 6, 23, 0.86);
+  color: #f8fafc;
+  text-align: center;
+  font-size: 30px;
+  font-weight: 900;
+  outline: none;
+}
+
+.initiative-sheet-box input:focus {
+  border-color: rgba(34, 211, 238, 0.8);
+  box-shadow: 0 0 0 5px rgba(34, 211, 238, 0.12);
+}
+
+.initiative-sheet-box p {
+  margin-top: 12px;
+  color: rgba(226, 232, 240, 0.72);
+  line-height: 1.5;
+}
+
+.dnd-initiative-box {
+  border-color: rgba(239, 68, 68, 0.3);
+  background:
+    linear-gradient(180deg, rgba(239, 68, 68, 0.14), rgba(127, 29, 29, 0.08)),
+    rgba(2, 6, 23, 0.6);
+}
+
+.dnd-initiative-box span {
+  color: #f87171;
+}
+
+.dnd-initiative-box input {
+  border-color: rgba(239, 68, 68, 0.34);
+}
+
+.dnd-initiative-box input:focus {
+  border-color: rgba(239, 68, 68, 0.8);
+  box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.12);
+}
+
+.initiative-board {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.initiative-row {
+  display: grid;
+  grid-template-columns: 72px 1fr 110px;
+  align-items: center;
+  gap: 18px;
+
+  padding: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 22px;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.92)),
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.08), transparent 42%);
+
+  transition: 0.25s ease;
+}
+
+.initiative-row.active {
+  border-color: rgba(34, 211, 238, 0.52);
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.14),
+    0 20px 50px rgba(0, 0, 0, 0.28);
+}
+
+.dnd-master-page .initiative-row.active {
+  border-color: rgba(239, 68, 68, 0.52);
+  box-shadow:
+    0 0 0 1px rgba(239, 68, 68, 0.14),
+    0 20px 50px rgba(0, 0, 0, 0.28);
+}
+
+.initiative-position {
+  width: 58px;
+  height: 58px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 18px;
+  background: linear-gradient(135deg, #22d3ee, #06b6d4);
+  color: #020617;
+
+  font-size: 26px;
+  font-weight: 900;
+}
+
+.dnd-master-page .initiative-position {
+  background: linear-gradient(135deg, #f87171, #dc2626);
+}
+
+.initiative-character {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.initiative-character strong {
+  color: #f8fafc;
+  font-size: 26px;
+}
+
+.initiative-character span {
+  color: rgba(226, 232, 240, 0.68);
+  font-size: 14px;
+}
+
+.initiative-value {
+  min-height: 58px;
+
+  display: grid;
+  place-items: center;
+
+  border-radius: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  background: rgba(255, 255, 255, 0.05);
+
+  color: #f8fafc;
+  font-size: 30px;
+  font-weight: 900;
+}
+
+/* =========================================================
+   AJUSTES FINAIS DAS FICHAS E MODAIS
+========================================================= */
+
+.altherium-sheet-modal-box,
+.dnd-sheet-modal-box {
+  width: 96vw !important;
+  height: 94vh !important;
+  max-width: none !important;
+  max-height: none !important;
+}
+
+.altherium-sheet-modal-box #altheriumForm,
+.dnd-sheet-modal-box #dndForm {
+  flex: 1;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.altherium-sheet-modal-box #altheriumFormFields,
+.dnd-sheet-modal-box #dndFormFields {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  padding: 18px;
+}
+
+.altherium-sheet-modal-box .master-rune-sheet,
+.dnd-sheet-modal-box .master-dnd-sheet {
+  width: 100%;
+  min-width: 1100px;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 28px;
+  align-items: start;
+}
+
+.altherium-sheet-modal-box .master-rune-sheet .rune-paper-page,
+.dnd-sheet-modal-box .master-dnd-sheet .dnd-paper-page {
+  width: 100%;
+  max-width: none;
+  margin: 0;
+}
+
+.altherium-sheet-modal-box .master-rune-sheet .rune-paper-page:first-child,
+.dnd-sheet-modal-box .master-dnd-sheet .dnd-paper-page:first-child {
+  grid-column: 1 / -1;
+}
+
+/* =========================================================
+   GARANTIA DE FONTES NAS FICHAS
+========================================================= */
+
+.altherium-rune-sheet,
+.altherium-rune-sheet *,
+.altherium-sheet-modal-box .altherium-rune-sheet,
+.altherium-sheet-modal-box .altherium-rune-sheet * {
+  font-family: "Caesar Dressing", cursive !important;
+}
+
+.dnd-character-sheet,
+.dnd-character-sheet *,
+.dnd-sheet-modal-box .dnd-character-sheet,
+.dnd-sheet-modal-box .dnd-character-sheet * {
+  font-family: "Aboreto", serif !important;
+  font-weight: 400 !important;
+}
+
+.dnd-sheet-toolbar .tag,
+.dnd-sheet-toolbar h2,
+.dnd-sheet-toolbar p {
+  font-family: "Aboreto", serif !important;
+  font-weight: 400 !important;
+}
+
+.dnd-sheet-toolbar h2 {
+  letter-spacing: 4px !important;
+  text-transform: uppercase !important;
+}
+
+@media (max-width: 1100px) {
+  .altherium-sheet-modal-box .master-rune-sheet,
+  .dnd-sheet-modal-box .master-dnd-sheet {
+    grid-template-columns: 1fr;
+    min-width: 900px;
+  }
+
+  .altherium-sheet-modal-box .master-rune-sheet .rune-paper-page:first-child,
+  .dnd-sheet-modal-box .master-dnd-sheet .dnd-paper-page:first-child {
+    grid-column: auto;
+  }
+}
+
+@media (max-width: 700px) {
+  .initiative-row {
+    grid-template-columns: 1fr;
+  }
+
+  .initiative-position,
+  .initiative-value {
+    width: 100%;
+  }
+
+  .initiative-sheet-box label {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .initiative-sheet-box input {
+    width: 100%;
+  }
 }
