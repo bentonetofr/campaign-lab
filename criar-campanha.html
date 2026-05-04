@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="pt-br">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Campaign Lab | Criar Campanha</title>
+    <link rel="stylesheet" href="css/style.css" />
+  </head>
+
+  <body class="create-campaign-page">
+    <div class="background-glow"></div>
+
+    <header class="header header-center">
+      <div class="header-container-center">
+        <a href="index.html" class="logo">
+          <img src="img/logo.png" alt="Campaign Lab" />
+        </a>
+      </div>
+    </header>
+
+    <main class="altherium-main">
+      <section class="altherium-hero">
+        <div class="altherium-hero-text">
+          <p class="tag">Nova campanha</p>
+          <h1>Criar Campanha</h1>
+          <p>
+            Escolha o sistema, defina o nome da mesa e adicione os jogadores já
+            registrados no Campaign Lab.
+          </p>
+        </div>
+
+        <div class="altherium-dashboard">
+          <div class="altherium-status-card">
+            <span>Criador</span>
+            <strong id="creatorNameView">---</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="create-campaign-card">
+        <form id="createCampaignForm">
+          <label for="campaignName">Nome da campanha</label>
+          <input
+            id="campaignName"
+            type="text"
+            placeholder="Ex: Contra-corrente"
+            required
+          />
+
+          <label for="campaignSystem">Sistema</label>
+          <select id="campaignSystem" required>
+            <option value="">Escolha o sistema</option>
+            <option value="Altherium">Altherium</option>
+            <option value="D&D">D&D</option>
+          </select>
+
+          <div class="players-picker-header">
+            <div>
+              <h2>Adicionar jogadores</h2>
+              <p>Marque quem vai participar como jogador.</p>
+            </div>
+          </div>
+
+          <div class="players-picker-grid" id="playersPickerGrid"></div>
+
+          <div class="create-campaign-actions">
+            <a href="minhas-campanhas.html" class="btn btn-secondary">
+              Cancelar
+            </a>
+
+            <button type="submit" class="btn btn-primary">
+              Criar campanha
+            </button>
+          </div>
+        </form>
+      </section>
+    </main>
+
+    <script src="js/script.js"></script>
+  </body>
+</html>

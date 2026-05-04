@@ -1325,3 +1325,142 @@ textarea:focus {
     transform: scale(2.65);
   }
 }
+
+
+/* =========================================================
+   CRIAR CAMPANHA
+========================================================= */
+
+.create-campaign-card {
+  padding: 34px;
+  border: 1px solid var(--border);
+  border-radius: 34px;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.78), rgba(2, 6, 23, 0.9)),
+    radial-gradient(circle at top right, var(--cyan-soft), transparent 42%);
+
+  backdrop-filter: blur(22px);
+}
+
+.players-picker-header {
+  margin: 24px 0 18px;
+}
+
+.players-picker-header h2 {
+  font-size: 28px;
+}
+
+.players-picker-header p {
+  color: var(--muted);
+  margin-top: 6px;
+}
+
+.players-picker-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.player-check-card {
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 18px;
+
+  display: flex;
+  align-items: center;
+  gap: 12px;
+
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text);
+
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.player-check-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(34, 211, 238, 0.45);
+}
+
+.player-check-card input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--cyan);
+}
+
+.player-check-card span {
+  font-weight: 800;
+}
+
+.create-campaign-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+/* =========================================================
+   GERENCIAR CAMPANHAS
+========================================================= */
+
+.campaign-card-wrapper {
+  padding: 0;
+  overflow: hidden;
+}
+
+.campaign-main-action {
+  width: 100%;
+  min-height: 230px;
+  padding: 26px;
+  border: none;
+
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 20px;
+
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.campaign-management-actions {
+  padding: 0 26px 26px;
+}
+
+.campaign-danger-btn,
+.campaign-leave-btn {
+  width: 100%;
+  padding: 13px 16px;
+
+  border-radius: 16px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.25s;
+}
+
+.campaign-danger-btn {
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+}
+
+.campaign-danger-btn:hover {
+  background: rgba(239, 68, 68, 0.18);
+  transform: translateY(-2px);
+}
+
+.campaign-leave-btn {
+  border: 1px solid rgba(251, 191, 36, 0.35);
+  background: rgba(251, 191, 36, 0.1);
+  color: #fde68a;
+}
+
+.campaign-leave-btn:hover {
+  background: rgba(251, 191, 36, 0.18);
+  transform: translateY(-2px);
+}

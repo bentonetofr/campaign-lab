@@ -10,18 +10,11 @@
   <body class="my-campaigns-page">
     <div class="background-glow"></div>
 
-    <header class="header">
-      <div class="header-container">
+    <header class="header header-center">
+      <div class="header-container-center">
         <a href="index.html" class="logo">
           <img src="img/logo.png" alt="Campaign Lab" />
         </a>
-
-        <nav class="nav">
-          <a href="#campanhas">Campanhas</a>
-          <a href="#resumo">Resumo</a>
-        </nav>
-
-        <button class="header-cta" id="logoutBtn">Sair</button>
       </div>
     </header>
 
@@ -32,8 +25,16 @@
           <h1>Minhas Campanhas</h1>
           <p>
             Bem-vindo, <strong id="userNameView">---</strong>. Escolha uma mesa
-            abaixo para acessar sua interface.
+            abaixo ou crie uma nova campanha.
           </p>
+
+          <div class="hero-actions">
+            <a href="criar-campanha.html" class="btn btn-primary">
+              Criar nova campanha
+            </a>
+
+            <button class="btn btn-secondary" id="logoutBtn">Sair</button>
+          </div>
         </div>
 
         <div class="altherium-dashboard" id="resumo">
