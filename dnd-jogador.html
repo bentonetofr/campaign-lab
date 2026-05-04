@@ -24,13 +24,22 @@
           <p class="tag">Sistema D&D</p>
           <h1 class="campaign-title-view" id="dndCampaignNameView">Campanha</h1>
           <h2 class="master-panel-subtitle">Ficha do Personagem</h2>
-          <p>Jogador: <strong id="dndPlayerNameView">---</strong>. Sua ficha salva automaticamente.</p>
+          <p>
+            Jogador: <strong id="dndPlayerNameView">---</strong>. Sua ficha
+            salva automaticamente.
+          </p>
         </div>
 
         <div class="altherium-dashboard">
-          <div class="altherium-status-card"><span>Personagem</span><strong id="dndCharacterMini">---</strong></div>
-          <div class="altherium-status-card"><span>Classe</span><strong id="dndClassMini">---</strong></div>
-          <div class="altherium-status-card"><span>Iniciativa</span><strong id="dndInitiativeMini">--</strong></div>
+          <div class="altherium-status-card">
+            <span>Personagem</span><strong id="dndCharacterMini">---</strong>
+          </div>
+          <div class="altherium-status-card">
+            <span>Classe</span><strong id="dndClassMini">---</strong>
+          </div>
+          <div class="altherium-status-card">
+            <span>Iniciativa</span><strong id="dndInitiativeMini">--</strong>
+          </div>
         </div>
       </section>
 
@@ -39,7 +48,10 @@
           <div>
             <p class="tag">Registro de D&D</p>
             <h2>Ficha de Personagem</h2>
-            <p>Inspirada na ficha original, com campos digitais e cálculos automáticos.</p>
+            <p>
+              Inspirada na ficha original, com campos digitais e cálculos
+              automáticos.
+            </p>
           </div>
 
           <button class="altherium-btn" id="saveDndSheet">Salvar ficha</button>
@@ -51,103 +63,258 @@
               <div class="dnd-banner"><h3>Dungeons & Dragons</h3></div>
 
               <div class="dnd-identity-grid">
-                <label>Nome do personagem <input name="characterName" type="text" /></label>
-                <label>Classe & Nível <input name="classLevel" type="text" placeholder="Ex: Ladino 3" /></label>
+                <label
+                  >Nome do personagem <input name="characterName" type="text"
+                /></label>
+                <label
+                  >Classe & Nível
+                  <input
+                    name="classLevel"
+                    type="text"
+                    placeholder="Ex: Ladino 3"
+                /></label>
                 <label>Raça <input name="race" type="text" /></label>
-                <label>Antecedente <input name="background" type="text" /></label>
-                <label>Alinhamento <input name="alignment" type="text" /></label>
-                <label>Experiência <input name="experience" type="number" min="0" /></label>
+                <label
+                  >Antecedente <input name="background" type="text"
+                /></label>
+                <label
+                  >Alinhamento <input name="alignment" type="text"
+                /></label>
+                <label
+                  >Experiência <input name="experience" type="number" min="0"
+                /></label>
               </div>
 
               <div class="dnd-main-grid">
                 <div class="dnd-abilities-column">
-                  <label class="dnd-ability-card"><span>Força</span><input name="strScore" type="number" /><strong id="strModView">0</strong></label>
-                  <label class="dnd-ability-card"><span>Destreza</span><input name="dexScore" type="number" /><strong id="dexModView">0</strong></label>
-                  <label class="dnd-ability-card"><span>Constituição</span><input name="conScore" type="number" /><strong id="conModView">0</strong></label>
-                  <label class="dnd-ability-card"><span>Inteligência</span><input name="intScore" type="number" /><strong id="intModView">0</strong></label>
-                  <label class="dnd-ability-card"><span>Sabedoria</span><input name="wisScore" type="number" /><strong id="wisModView">0</strong></label>
-                  <label class="dnd-ability-card"><span>Carisma</span><input name="chaScore" type="number" /><strong id="chaModView">0</strong></label>
+                  <label class="dnd-ability-card"
+                    ><span>Força</span
+                    ><input name="strScore" type="number" /><strong
+                      id="strModView"
+                      >0</strong
+                    ></label
+                  >
+                  <label class="dnd-ability-card"
+                    ><span>Destreza</span
+                    ><input name="dexScore" type="number" /><strong
+                      id="dexModView"
+                      >0</strong
+                    ></label
+                  >
+                  <label class="dnd-ability-card"
+                    ><span>Constituição</span
+                    ><input name="conScore" type="number" /><strong
+                      id="conModView"
+                      >0</strong
+                    ></label
+                  >
+                  <label class="dnd-ability-card"
+                    ><span>Inteligência</span
+                    ><input name="intScore" type="number" /><strong
+                      id="intModView"
+                      >0</strong
+                    ></label
+                  >
+                  <label class="dnd-ability-card"
+                    ><span>Sabedoria</span
+                    ><input name="wisScore" type="number" /><strong
+                      id="wisModView"
+                      >0</strong
+                    ></label
+                  >
+                  <label class="dnd-ability-card"
+                    ><span>Carisma</span
+                    ><input name="chaScore" type="number" /><strong
+                      id="chaModView"
+                      >0</strong
+                    ></label
+                  >
                 </div>
 
                 <div class="dnd-middle-column">
                   <div class="dnd-box">
                     <h3>Testes de resistência</h3>
                     <div class="dnd-list">
-                      <label><span>Força</span><input name="saveStr" type="text" /></label>
-                      <label><span>Destreza</span><input name="saveDex" type="text" /></label>
-                      <label><span>Constituição</span><input name="saveCon" type="text" /></label>
-                      <label><span>Inteligência</span><input name="saveInt" type="text" /></label>
-                      <label><span>Sabedoria</span><input name="saveWis" type="text" /></label>
-                      <label><span>Carisma</span><input name="saveCha" type="text" /></label>
+                      <label
+                        ><span>Força</span><input name="saveStr" type="text"
+                      /></label>
+                      <label
+                        ><span>Destreza</span><input name="saveDex" type="text"
+                      /></label>
+                      <label
+                        ><span>Constituição</span
+                        ><input name="saveCon" type="text"
+                      /></label>
+                      <label
+                        ><span>Inteligência</span
+                        ><input name="saveInt" type="text"
+                      /></label>
+                      <label
+                        ><span>Sabedoria</span
+                        ><input name="saveWis" type="text"
+                      /></label>
+                      <label
+                        ><span>Carisma</span><input name="saveCha" type="text"
+                      /></label>
                     </div>
                   </div>
 
                   <div class="dnd-box">
                     <h3>Perícias</h3>
                     <div class="dnd-list two-cols">
-                      <label><span>Acrobacia</span><input name="skillAcrobatics" type="text" /></label>
-                      <label><span>Arcanismo</span><input name="skillArcana" type="text" /></label>
-                      <label><span>Atletismo</span><input name="skillAthletics" type="text" /></label>
-                      <label><span>Enganação</span><input name="skillDeception" type="text" /></label>
-                      <label><span>Furtividade</span><input name="skillStealth" type="text" /></label>
-                      <label><span>História</span><input name="skillHistory" type="text" /></label>
-                      <label><span>Intuição</span><input name="skillInsight" type="text" /></label>
-                      <label><span>Intimidação</span><input name="skillIntimidation" type="text" /></label>
-                      <label><span>Investigação</span><input name="skillInvestigation" type="text" /></label>
-                      <label><span>Lidar Animais</span><input name="skillAnimalHandling" type="text" /></label>
-                      <label><span>Medicina</span><input name="skillMedicine" type="text" /></label>
-                      <label><span>Natureza</span><input name="skillNature" type="text" /></label>
-                      <label><span>Percepção</span><input name="skillPerception" type="text" /></label>
-                      <label><span>Performance</span><input name="skillPerformance" type="text" /></label>
-                      <label><span>Persuasão</span><input name="skillPersuasion" type="text" /></label>
-                      <label><span>Prestidigitação</span><input name="skillSleightOfHand" type="text" /></label>
-                      <label><span>Religião</span><input name="skillReligion" type="text" /></label>
-                      <label><span>Sobrevivência</span><input name="skillSurvival" type="text" /></label>
+                      <label
+                        ><span>Acrobacia</span
+                        ><input name="skillAcrobatics" type="text"
+                      /></label>
+                      <label
+                        ><span>Arcanismo</span
+                        ><input name="skillArcana" type="text"
+                      /></label>
+                      <label
+                        ><span>Atletismo</span
+                        ><input name="skillAthletics" type="text"
+                      /></label>
+                      <label
+                        ><span>Enganação</span
+                        ><input name="skillDeception" type="text"
+                      /></label>
+                      <label
+                        ><span>Furtividade</span
+                        ><input name="skillStealth" type="text"
+                      /></label>
+                      <label
+                        ><span>História</span
+                        ><input name="skillHistory" type="text"
+                      /></label>
+                      <label
+                        ><span>Intuição</span
+                        ><input name="skillInsight" type="text"
+                      /></label>
+                      <label
+                        ><span>Intimidação</span
+                        ><input name="skillIntimidation" type="text"
+                      /></label>
+                      <label
+                        ><span>Investigação</span
+                        ><input name="skillInvestigation" type="text"
+                      /></label>
+                      <label
+                        ><span>Lidar Animais</span
+                        ><input name="skillAnimalHandling" type="text"
+                      /></label>
+                      <label
+                        ><span>Medicina</span
+                        ><input name="skillMedicine" type="text"
+                      /></label>
+                      <label
+                        ><span>Natureza</span
+                        ><input name="skillNature" type="text"
+                      /></label>
+                      <label
+                        ><span>Percepção</span
+                        ><input name="skillPerception" type="text"
+                      /></label>
+                      <label
+                        ><span>Performance</span
+                        ><input name="skillPerformance" type="text"
+                      /></label>
+                      <label
+                        ><span>Persuasão</span
+                        ><input name="skillPersuasion" type="text"
+                      /></label>
+                      <label
+                        ><span>Prestidigitação</span
+                        ><input name="skillSleightOfHand" type="text"
+                      /></label>
+                      <label
+                        ><span>Religião</span
+                        ><input name="skillReligion" type="text"
+                      /></label>
+                      <label
+                        ><span>Sobrevivência</span
+                        ><input name="skillSurvival" type="text"
+                      /></label>
                     </div>
                   </div>
                 </div>
 
                 <div class="dnd-right-column">
                   <div class="dnd-stats-grid">
-                    <label><span>CA</span><input name="armorClass" type="number" /></label>
-                    <label><span>Iniciativa</span><input name="initiative" type="text" /></label>
-                    <label><span>Velocidade</span><input name="speed" type="text" /></label>
-                    <label><span>Bônus prof.</span><input name="proficiencyBonus" type="text" /></label>
+                    <label
+                      ><span>CA</span><input name="armorClass" type="number"
+                    /></label>
+                    <label
+                      ><span>Iniciativa</span
+                      ><input name="initiative" type="text"
+                    /></label>
+                    <label
+                      ><span>Velocidade</span><input name="speed" type="text"
+                    /></label>
+                    <label
+                      ><span>Bônus prof.</span
+                      ><input name="proficiencyBonus" type="text"
+                    /></label>
                   </div>
 
                   <div class="initiative-sheet-box dnd-initiative-box">
                     <label>
                       <span>Iniciativa de combate</span>
-                      <input type="number" name="combatInitiative" placeholder="0" />
+                      <input
+                        type="number"
+                        name="combatInitiative"
+                        placeholder="0"
+                      />
                     </label>
-                    <p>Esse valor entra automaticamente na ordem de iniciativa do mestre.</p>
+                    <p>
+                      Esse valor entra automaticamente na ordem de iniciativa do
+                      mestre.
+                    </p>
                   </div>
 
                   <div class="dnd-hp-box">
                     <h3>Pontos de vida</h3>
                     <div class="dnd-hp-row">
-                      <label>Atual <input name="hpCurrent" type="number" min="0" /></label>
+                      <label
+                        >Atual <input name="hpCurrent" type="number" min="0"
+                      /></label>
                       <span>/</span>
-                      <label>Máximo <input name="hpMax" type="number" min="0" /></label>
+                      <label
+                        >Máximo <input name="hpMax" type="number" min="0"
+                      /></label>
                     </div>
 
                     <div class="dnd-hp-bar"><div id="dndHpBarFill"></div></div>
-                    <label>PV temporários <input name="hpTemp" type="number" min="0" /></label>
+                    <label
+                      >PV temporários
+                      <input name="hpTemp" type="number" min="0"
+                    /></label>
                   </div>
 
                   <div class="dnd-box">
                     <h3>Dados de vida</h3>
                     <div class="dnd-list">
-                      <label><span>Dado total</span><input name="hitDiceTotal" type="text" /></label>
-                      <label><span>Restantes</span><input name="hitDiceRemaining" type="text" /></label>
+                      <label
+                        ><span>Dado total</span
+                        ><input name="hitDiceTotal" type="text"
+                      /></label>
+                      <label
+                        ><span>Restantes</span
+                        ><input name="hitDiceRemaining" type="text"
+                      /></label>
                     </div>
                   </div>
 
                   <div class="dnd-box">
                     <h3>Testes contra morte</h3>
                     <div class="dnd-list">
-                      <label><span>Sucessos</span><input name="deathSuccesses" type="text" /></label>
-                      <label><span>Falhas</span><input name="deathFailures" type="text" /></label>
+                      <label
+                        ><span>Sucessos</span
+                        ><input name="deathSuccesses" type="text"
+                      /></label>
+                      <label
+                        ><span>Falhas</span
+                        ><input name="deathFailures" type="text"
+                      /></label>
                     </div>
                   </div>
                 </div>
@@ -157,22 +324,45 @@
                 <div class="dnd-box">
                   <h3>Ataques & Magia</h3>
                   <div class="dnd-attack-table">
-                    <div><span>Nome</span><span>Bônus</span><span>Dano / Tipo</span></div>
-                    <label><input name="attack1Name" type="text" /><input name="attack1Bonus" type="text" /><input name="attack1Damage" type="text" /></label>
-                    <label><input name="attack2Name" type="text" /><input name="attack2Bonus" type="text" /><input name="attack2Damage" type="text" /></label>
-                    <label><input name="attack3Name" type="text" /><input name="attack3Bonus" type="text" /><input name="attack3Damage" type="text" /></label>
+                    <div>
+                      <span>Nome</span><span>Bônus</span
+                      ><span>Dano / Tipo</span>
+                    </div>
+                    <label
+                      ><input name="attack1Name" type="text" /><input
+                        name="attack1Bonus"
+                        type="text" /><input name="attack1Damage" type="text"
+                    /></label>
+                    <label
+                      ><input name="attack2Name" type="text" /><input
+                        name="attack2Bonus"
+                        type="text" /><input name="attack2Damage" type="text"
+                    /></label>
+                    <label
+                      ><input name="attack3Name" type="text" /><input
+                        name="attack3Bonus"
+                        type="text" /><input name="attack3Damage" type="text"
+                    /></label>
                   </div>
                 </div>
 
-                <div class="dnd-box"><h3>Equipamento</h3><textarea name="equipment" rows="10"></textarea></div>
-                <div class="dnd-box"><h3>Características</h3><textarea name="features" rows="10"></textarea></div>
+                <div class="dnd-box">
+                  <h3>Equipamento</h3>
+                  <textarea name="equipment" rows="10"></textarea>
+                </div>
+                <div class="dnd-box">
+                  <h3>Características</h3>
+                  <textarea name="features" rows="10"></textarea>
+                </div>
               </div>
             </div>
           </section>
 
           <section class="dnd-paper-page">
             <div class="dnd-frame">
-              <div class="dnd-section-title"><h3>Detalhes do personagem</h3></div>
+              <div class="dnd-section-title">
+                <h3>Detalhes do personagem</h3>
+              </div>
 
               <div class="dnd-details-grid">
                 <label>Idade <input name="age" type="text" /></label>
@@ -185,16 +375,40 @@
               </div>
 
               <div class="dnd-story-grid">
-                <label class="dnd-box dnd-textarea-box"><h3>Traços de personalidade</h3><textarea name="personalityTraits" rows="6"></textarea></label>
-                <label class="dnd-box dnd-textarea-box"><h3>Ideais</h3><textarea name="ideals" rows="6"></textarea></label>
-                <label class="dnd-box dnd-textarea-box"><h3>Laços</h3><textarea name="bonds" rows="6"></textarea></label>
-                <label class="dnd-box dnd-textarea-box"><h3>Defeitos</h3><textarea name="flaws" rows="6"></textarea></label>
-                <label class="dnd-box dnd-textarea-box"><h3>Manias</h3><textarea name="quirks" rows="6"></textarea></label>
-                <label class="dnd-box dnd-textarea-box"><h3>Aparência</h3><textarea name="appearance" rows="6"></textarea></label>
+                <label class="dnd-box dnd-textarea-box"
+                  ><h3>Traços de personalidade</h3>
+                  <textarea name="personalityTraits" rows="6"></textarea>
+                </label>
+                <label class="dnd-box dnd-textarea-box"
+                  ><h3>Ideais</h3>
+                  <textarea name="ideals" rows="6"></textarea>
+                </label>
+                <label class="dnd-box dnd-textarea-box"
+                  ><h3>Laços</h3>
+                  <textarea name="bonds" rows="6"></textarea>
+                </label>
+                <label class="dnd-box dnd-textarea-box"
+                  ><h3>Defeitos</h3>
+                  <textarea name="flaws" rows="6"></textarea>
+                </label>
+                <label class="dnd-box dnd-textarea-box"
+                  ><h3>Manias</h3>
+                  <textarea name="quirks" rows="6"></textarea>
+                </label>
+                <label class="dnd-box dnd-textarea-box"
+                  ><h3>Aparência</h3>
+                  <textarea name="appearance" rows="6"></textarea>
+                </label>
               </div>
 
-              <div class="dnd-box"><h3>Características & Traços adicionais</h3><textarea name="additionalFeatures" rows="10"></textarea></div>
-              <div class="dnd-box"><h3>Inventário</h3><textarea name="inventory" rows="10"></textarea></div>
+              <div class="dnd-box">
+                <h3>Características & Traços adicionais</h3>
+                <textarea name="additionalFeatures" rows="10"></textarea>
+              </div>
+              <div class="dnd-box">
+                <h3>Inventário</h3>
+                <textarea name="inventory" rows="10"></textarea>
+              </div>
             </div>
           </section>
 
@@ -203,10 +417,19 @@
               <div class="dnd-section-title"><h3>Magias</h3></div>
 
               <div class="dnd-spell-header">
-                <label>Classe mágica <input name="spellcastingClass" type="text" /></label>
-                <label>Habilidade de conjuração <input name="spellAbility" type="text" /></label>
-                <label>CD de resistência <input name="spellSaveDc" type="text" /></label>
-                <label>Bônus de ataque <input name="spellAttackBonus" type="text" /></label>
+                <label
+                  >Classe mágica <input name="spellcastingClass" type="text"
+                /></label>
+                <label
+                  >Habilidade de conjuração
+                  <input name="spellAbility" type="text"
+                /></label>
+                <label
+                  >CD de resistência <input name="spellSaveDc" type="text"
+                /></label>
+                <label
+                  >Bônus de ataque <input name="spellAttackBonus" type="text"
+                /></label>
               </div>
 
               <div class="dnd-spell-slots">
@@ -225,9 +448,17 @@
               </div>
 
               <div class="dnd-spells-grid">
-                <label>Truques <textarea name="cantrips" rows="10"></textarea></label>
-                <label>Magias preparadas / conhecidas <textarea name="preparedSpells" rows="10"></textarea></label>
-                <label>Magias e efeitos <textarea name="spellNotes" rows="14"></textarea></label>
+                <label
+                  >Truques <textarea name="cantrips" rows="10"></textarea>
+                </label>
+                <label
+                  >Magias preparadas / conhecidas
+                  <textarea name="preparedSpells" rows="10"></textarea>
+                </label>
+                <label
+                  >Magias e efeitos
+                  <textarea name="spellNotes" rows="14"></textarea>
+                </label>
               </div>
             </div>
           </section>
@@ -235,6 +466,8 @@
       </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
     <script src="js/script.js"></script>
   </body>
 </html>

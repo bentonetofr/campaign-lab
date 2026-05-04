@@ -24,7 +24,10 @@
           <p class="tag">Sistema Altherium</p>
           <h1 class="campaign-title-view" id="campaignNameView">Campanha</h1>
           <h2 class="master-panel-subtitle">Ficha do Personagem</h2>
-          <p>Jogador: <strong id="playerNameView">---</strong>. Sua ficha salva automaticamente.</p>
+          <p>
+            Jogador: <strong id="playerNameView">---</strong>. Sua ficha salva
+            automaticamente.
+          </p>
         </div>
 
         <div class="altherium-dashboard">
@@ -50,10 +53,15 @@
           <div>
             <p class="tag">Registro rúnico</p>
             <h2>Ficha de Altherium</h2>
-            <p>Inspirada na ficha original, com campos digitais e cálculos automáticos.</p>
+            <p>
+              Inspirada na ficha original, com campos digitais e cálculos
+              automáticos.
+            </p>
           </div>
 
-          <button class="altherium-btn" id="savePlayerSheet">Salvar ficha</button>
+          <button class="altherium-btn" id="savePlayerSheet">
+            Salvar ficha
+          </button>
         </div>
 
         <form id="playerSheetForm" class="altherium-rune-sheet">
@@ -62,7 +70,11 @@
               <div class="rune-page-header">
                 <label>
                   <span>Nome</span>
-                  <input type="text" name="characterName" placeholder="Nome do personagem" />
+                  <input
+                    type="text"
+                    name="characterName"
+                    placeholder="Nome do personagem"
+                  />
                 </label>
 
                 <label>
@@ -72,7 +84,11 @@
 
                 <label>
                   <span>Genesis</span>
-                  <input type="text" name="genesis" placeholder="Origem, linhagem ou chamado" />
+                  <input
+                    type="text"
+                    name="genesis"
+                    placeholder="Origem, linhagem ou chamado"
+                  />
                 </label>
               </div>
 
@@ -105,34 +121,88 @@
               <div class="initiative-sheet-box">
                 <label>
                   <span>Iniciativa</span>
-                  <input type="number" name="combatInitiative" placeholder="0" />
+                  <input
+                    type="number"
+                    name="combatInitiative"
+                    placeholder="0"
+                  />
                 </label>
-                <p>Esse valor entra automaticamente na ordem de iniciativa do mestre.</p>
+                <p>
+                  Esse valor entra automaticamente na ordem de iniciativa do
+                  mestre.
+                </p>
               </div>
 
               <div class="rune-attributes-table">
-                <label><span>Fúria</span><input type="number" name="furia" /></label>
-                <label><span>Destino</span><input type="number" name="destino" /></label>
-                <label><span>Espírito</span><input type="number" name="espirito" /></label>
-                <label><span>Impulso</span><input type="number" name="impulso" /></label>
-                <label><span>Estratégia</span><input type="number" name="estrategia" /></label>
-                <label><span>Rúnico</span><input type="number" name="runico" /></label>
+                <label
+                  ><span>Fúria</span><input type="number" name="furia"
+                /></label>
+                <label
+                  ><span>Destino</span><input type="number" name="destino"
+                /></label>
+                <label
+                  ><span>Espírito</span><input type="number" name="espirito"
+                /></label>
+                <label
+                  ><span>Impulso</span><input type="number" name="impulso"
+                /></label>
+                <label
+                  ><span>Estratégia</span
+                  ><input type="number" name="estrategia"
+                /></label>
+                <label
+                  ><span>Rúnico</span><input type="number" name="runico"
+                /></label>
               </div>
 
               <div class="rune-body-table">
-                <label><span>Pernas</span><small>(1-3)</small><input type="text" name="bodyLegs" placeholder="DB" /></label>
-                <label><span>Braços</span><small>(4-6)</small><input type="text" name="bodyArms" placeholder="DB" /></label>
-                <label><span>Tronco</span><small>(7-9)</small><input type="text" name="bodyTorso" placeholder="DB" /></label>
-                <label><span>Cabeça</span><small>(10)</small><input type="text" name="bodyHead" placeholder="DB" /></label>
+                <label
+                  ><span>Pernas</span><small>(1-3)</small
+                  ><input type="text" name="bodyLegs" placeholder="DB"
+                /></label>
+                <label
+                  ><span>Braços</span><small>(4-6)</small
+                  ><input type="text" name="bodyArms" placeholder="DB"
+                /></label>
+                <label
+                  ><span>Tronco</span><small>(7-9)</small
+                  ><input type="text" name="bodyTorso" placeholder="DB"
+                /></label>
+                <label
+                  ><span>Cabeça</span><small>(10)</small
+                  ><input type="text" name="bodyHead" placeholder="DB"
+                /></label>
               </div>
 
               <div class="rune-weapons-table">
                 <h3>Armas</h3>
-                <div class="rune-weapon-head"><span>Nome</span><span>Dano</span><span>Alcance</span></div>
-                <div class="rune-weapon-row"><input type="text" name="weapon1Name" /><input type="text" name="weapon1Damage" /><input type="text" name="weapon1Range" /></div>
-                <div class="rune-weapon-row"><input type="text" name="weapon2Name" /><input type="text" name="weapon2Damage" /><input type="text" name="weapon2Range" /></div>
-                <div class="rune-weapon-row"><input type="text" name="weapon3Name" /><input type="text" name="weapon3Damage" /><input type="text" name="weapon3Range" /></div>
-                <div class="rune-weapon-row"><input type="text" name="weapon4Name" /><input type="text" name="weapon4Damage" /><input type="text" name="weapon4Range" /></div>
+                <div class="rune-weapon-head">
+                  <span>Nome</span><span>Dano</span><span>Alcance</span>
+                </div>
+                <div class="rune-weapon-row">
+                  <input type="text" name="weapon1Name" /><input
+                    type="text"
+                    name="weapon1Damage"
+                  /><input type="text" name="weapon1Range" />
+                </div>
+                <div class="rune-weapon-row">
+                  <input type="text" name="weapon2Name" /><input
+                    type="text"
+                    name="weapon2Damage"
+                  /><input type="text" name="weapon2Range" />
+                </div>
+                <div class="rune-weapon-row">
+                  <input type="text" name="weapon3Name" /><input
+                    type="text"
+                    name="weapon3Damage"
+                  /><input type="text" name="weapon3Range" />
+                </div>
+                <div class="rune-weapon-row">
+                  <input type="text" name="weapon4Name" /><input
+                    type="text"
+                    name="weapon4Damage"
+                  /><input type="text" name="weapon4Range" />
+                </div>
               </div>
             </div>
           </section>
@@ -141,35 +211,111 @@
             <div class="rune-frame">
               <div class="rune-section-title">
                 <h3>Domínios</h3>
-                <p>Os atributos-base aparecem fixos. Preencha o dado ou bônus.</p>
+                <p>
+                  Os atributos-base aparecem fixos. Preencha o dado ou bônus.
+                </p>
               </div>
 
               <div class="rune-domains-table">
-                <div class="rune-domain-head"><span>Domínios</span><span>Atributos</span><span>Dados</span></div>
-                <label><span>Brutalidade</span><small>Fúria</small><input type="text" name="domain_brutalidade" /></label>
-                <label><span>Crime</span><small>Estratégia</small><input type="text" name="domain_crime" /></label>
-                <label><span>Determinação</span><small>Espírito</small><input type="text" name="domain_determinacao" /></label>
-                <label><span>Direção</span><small>Impulso</small><input type="text" name="domain_direcao" /></label>
-                <label><span>Esconder</span><small>Estratégia</small><input type="text" name="domain_esconder" /></label>
-                <label><span>Furtividade</span><small>Impulso</small><input type="text" name="domain_furtividade" /></label>
-                <label><span>Iniciativa</span><small>Impulso</small><input type="text" name="domain_iniciativa" /></label>
-                <label><span>Intimidação</span><small>Fúria</small><input type="text" name="domain_intimidacao" /></label>
-                <label><span>Investigação</span><small>Estratégia</small><input type="text" name="domain_investigacao" /></label>
-                <label><span>Leveza</span><small>Impulso</small><input type="text" name="domain_leveza" /></label>
-                <label><span>Luta</span><small>Fúria</small><input type="text" name="domain_luta" /></label>
-                <label><span>Medicina</span><small>Estratégia</small><input type="text" name="domain_medicina" /></label>
-                <label><span>Percepção</span><small>Destino</small><input type="text" name="domain_percepcao" /></label>
-                <label><span>Persuasão</span><small>Destino</small><input type="text" name="domain_persuasao" /></label>
-                <label><span>Precisão</span><small>Impulso</small><input type="text" name="domain_precisao" /></label>
-                <label><span>Pressentimento</span><small>Destino</small><input type="text" name="domain_pressentimento" /></label>
-                <label><span>Reflexo</span><small>Impulso</small><input type="text" name="domain_reflexo" /></label>
-                <label><span>Religião</span><small>Destino</small><input type="text" name="domain_religiao" /></label>
-                <label><span>Resiliência</span><small>Espírito</small><input type="text" name="domain_resiliencia" /></label>
-                <label><span>Runologia</span><small>Rúnico</small><input type="text" name="domain_runologia" /></label>
-                <label><span>Saberes</span><small>Estratégia</small><input type="text" name="domain_saberes" /></label>
-                <label><span>Sobrevivência</span><small>Estratégia</small><input type="text" name="domain_sobrevivencia" /></label>
-                <label><span>Tática</span><small>Estratégia</small><input type="text" name="domain_tatica" /></label>
-                <label><span>Vontade</span><small>Espírito</small><input type="text" name="domain_vontade" /></label>
+                <div class="rune-domain-head">
+                  <span>Domínios</span><span>Atributos</span><span>Dados</span>
+                </div>
+                <label
+                  ><span>Brutalidade</span><small>Fúria</small
+                  ><input type="text" name="domain_brutalidade"
+                /></label>
+                <label
+                  ><span>Crime</span><small>Estratégia</small
+                  ><input type="text" name="domain_crime"
+                /></label>
+                <label
+                  ><span>Determinação</span><small>Espírito</small
+                  ><input type="text" name="domain_determinacao"
+                /></label>
+                <label
+                  ><span>Direção</span><small>Impulso</small
+                  ><input type="text" name="domain_direcao"
+                /></label>
+                <label
+                  ><span>Esconder</span><small>Estratégia</small
+                  ><input type="text" name="domain_esconder"
+                /></label>
+                <label
+                  ><span>Furtividade</span><small>Impulso</small
+                  ><input type="text" name="domain_furtividade"
+                /></label>
+                <label
+                  ><span>Iniciativa</span><small>Impulso</small
+                  ><input type="text" name="domain_iniciativa"
+                /></label>
+                <label
+                  ><span>Intimidação</span><small>Fúria</small
+                  ><input type="text" name="domain_intimidacao"
+                /></label>
+                <label
+                  ><span>Investigação</span><small>Estratégia</small
+                  ><input type="text" name="domain_investigacao"
+                /></label>
+                <label
+                  ><span>Leveza</span><small>Impulso</small
+                  ><input type="text" name="domain_leveza"
+                /></label>
+                <label
+                  ><span>Luta</span><small>Fúria</small
+                  ><input type="text" name="domain_luta"
+                /></label>
+                <label
+                  ><span>Medicina</span><small>Estratégia</small
+                  ><input type="text" name="domain_medicina"
+                /></label>
+                <label
+                  ><span>Percepção</span><small>Destino</small
+                  ><input type="text" name="domain_percepcao"
+                /></label>
+                <label
+                  ><span>Persuasão</span><small>Destino</small
+                  ><input type="text" name="domain_persuasao"
+                /></label>
+                <label
+                  ><span>Precisão</span><small>Impulso</small
+                  ><input type="text" name="domain_precisao"
+                /></label>
+                <label
+                  ><span>Pressentimento</span><small>Destino</small
+                  ><input type="text" name="domain_pressentimento"
+                /></label>
+                <label
+                  ><span>Reflexo</span><small>Impulso</small
+                  ><input type="text" name="domain_reflexo"
+                /></label>
+                <label
+                  ><span>Religião</span><small>Destino</small
+                  ><input type="text" name="domain_religiao"
+                /></label>
+                <label
+                  ><span>Resiliência</span><small>Espírito</small
+                  ><input type="text" name="domain_resiliencia"
+                /></label>
+                <label
+                  ><span>Runologia</span><small>Rúnico</small
+                  ><input type="text" name="domain_runologia"
+                /></label>
+                <label
+                  ><span>Saberes</span><small>Estratégia</small
+                  ><input type="text" name="domain_saberes"
+                /></label>
+                <label
+                  ><span>Sobrevivência</span><small>Estratégia</small
+                  ><input type="text" name="domain_sobrevivencia"
+                /></label>
+                <label
+                  ><span>Tática</span><small>Estratégia</small
+                  ><input type="text" name="domain_tatica"
+                /></label>
+                <label
+                  ><span>Vontade</span><small>Espírito</small
+                  ><input type="text" name="domain_vontade"
+                /></label>
               </div>
             </div>
           </section>
@@ -202,17 +348,31 @@
 
           <section class="rune-paper-page">
             <div class="rune-frame">
-              <div class="rune-section-title centered"><h3>- Triunfos -</h3></div>
-              <textarea class="rune-triumphs-area" name="triumphs" rows="16" placeholder="Escreva aqui seus triunfos, cartas, efeitos especiais e poderes."></textarea>
+              <div class="rune-section-title centered">
+                <h3>- Triunfos -</h3>
+              </div>
+              <textarea
+                class="rune-triumphs-area"
+                name="triumphs"
+                rows="16"
+                placeholder="Escreva aqui seus triunfos, cartas, efeitos especiais e poderes."
+              ></textarea>
 
               <div class="rune-section-title"><h3>Anotações</h3></div>
-              <textarea class="rune-triumphs-area" name="notes" rows="8" placeholder="História, maldições, condições, objetivos e observações."></textarea>
+              <textarea
+                class="rune-triumphs-area"
+                name="notes"
+                rows="8"
+                placeholder="História, maldições, condições, objetivos e observações."
+              ></textarea>
             </div>
           </section>
         </form>
       </section>
     </main>
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="js/supabase-config.js"></script>
     <script src="js/script.js"></script>
   </body>
 </html>
