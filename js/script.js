@@ -3096,9 +3096,20 @@ function positionPlayerCharacterPortraitField(form, portraitField) {
   if (!form || !portraitField) return;
 
   const isSmallScreen = window.innerWidth < 1100;
+  const panelWidth = 250;
+  const topOffset = 116;
+  const sideGap = 18;
+  const sheetReference = getCharacterSheetReferenceElement(form);
 
+  form.style.setProperty("position", "relative", "important");
   portraitField.style.setProperty("box-sizing", "border-box", "important");
   portraitField.style.setProperty("display", "flex", "important");
+  portraitField.style.setProperty("width", `${panelWidth}px`, "important");
+  portraitField.style.setProperty("max-width", `${panelWidth}px`, "important");
+  portraitField.style.setProperty("min-width", "0", "important");
+  portraitField.style.setProperty("margin", "0", "important");
+  portraitField.style.setProperty("z-index", "999999", "important");
+  portraitField.style.setProperty("transform", "none", "important");
 
   if (isSmallScreen) {
     portraitField.style.setProperty("position", "relative", "important");
@@ -3110,25 +3121,18 @@ function positionPlayerCharacterPortraitField(form, portraitField) {
     portraitField.style.setProperty("max-width", "720px", "important");
     portraitField.style.setProperty("margin", "0 auto 24px", "important");
     portraitField.style.setProperty("z-index", "20", "important");
-    portraitField.style.setProperty("transform", "none", "important");
     return;
   }
 
-  const panelWidth = 260;
-  const topOffset = 116;
-  const rightOffset = 30;
-
-  portraitField.style.setProperty("position", "fixed", "important");
-  portraitField.style.setProperty("top", `${topOffset}px`, "important");
-  portraitField.style.setProperty("right", `${rightOffset}px`, "important");
-  portraitField.style.setProperty("left", "auto", "important");
-  portraitField.style.setProperty("bottom", "auto", "important");
-  portraitField.style.setProperty("width", `${panelWidth}px`, "important");
-  portraitField.style.setProperty("max-width", `${panelWidth}px`, "important");
-  portraitField.style.setProperty("min-width", "0", "important");
-  portraitField.style.setProperty("margin", "0", "important");
-  portraitField.style.setProperty("z-index", "999999", "important");
-  portraitField.style.setProperty("transform", "none", "important");
+  positionScopedFloatingElement({
+    element: portraitField,
+    container: form,
+    horizontalReference: sheetReference,
+    side: "right",
+    gap: sideGap,
+    width: panelWidth,
+    topOffset,
+  });
 }
 
 function injectCharacterPortraitFloatingRightStyles() {
@@ -3140,10 +3144,15 @@ function injectCharacterPortraitFloatingRightStyles() {
 
   style.textContent = `
     @media (min-width: 1100px) {
+      #playerSheetForm,
+      #dndPlayerSheetForm {
+        position: relative !important;
+      }
+
       #playerSheetForm > .character-portrait-field,
       #dndPlayerSheetForm > .character-portrait-field {
-        width: 260px !important;
-        max-width: 260px !important;
+        width: 250px !important;
+        max-width: 250px !important;
         margin: 0 !important;
         padding: 18px !important;
         flex-direction: column !important;
@@ -3200,6 +3209,7 @@ function injectCharacterPortraitFloatingRightStyles() {
 
 
 
+
 /* =========================================================
    BOTÃO SALVAR FICHA FIXO À ESQUERDA
 ========================================================= */
@@ -3250,11 +3260,31 @@ function positionFloatingSheetSaveButtons() {
   if (!buttons.length) return;
 
   const isSmallScreen = window.innerWidth < 1100;
+  const buttonWidth = 220;
+  const topOffset = 116;
+  const sideGap = 18;
 
   buttons.forEach((button) => {
-    button.classList.add("sheet-save-floating-button");
+    const wrapper = getFloatingSheetSaveScope(button);
+    const sheetReference = wrapper ? getCharacterSheetReferenceElement(wrapper) : null;
 
-    if (isSmallScreen) {
+    button.classList.add("sheet-save-floating-button");
+    button.type = "button";
+
+    if (wrapper) {
+      wrapper.style.setProperty("position", "relative", "important");
+
+      /*
+        O botão original fica na toolbar, fora do form.
+        Para o position:absolute seguir a ficha de verdade,
+        o botão precisa virar filho do form da ficha.
+      */
+      if (button.parentElement !== wrapper) {
+        wrapper.insertAdjacentElement("afterbegin", button);
+      }
+    }
+
+    if (isSmallScreen || !wrapper) {
       button.style.setProperty("position", "relative", "important");
       button.style.setProperty("top", "auto", "important");
       button.style.setProperty("left", "auto", "important");
@@ -3265,22 +3295,95 @@ function positionFloatingSheetSaveButtons() {
       button.style.setProperty("margin", "16px 0 0", "important");
       button.style.setProperty("z-index", "20", "important");
       button.style.setProperty("transform", "none", "important");
+      button.style.setProperty("display", "inline-flex", "important");
       return;
     }
 
-    button.style.setProperty("position", "fixed", "important");
-    button.style.setProperty("top", "116px", "important");
-    button.style.setProperty("left", "30px", "important");
-    button.style.setProperty("right", "auto", "important");
-    button.style.setProperty("bottom", "auto", "important");
-    button.style.setProperty("width", "240px", "important");
-    button.style.setProperty("max-width", "240px", "important");
-    button.style.setProperty("margin", "0", "important");
-    button.style.setProperty("z-index", "999999", "important");
-    button.style.setProperty("transform", "none", "important");
+    positionScopedFloatingElement({
+      element: button,
+      container: wrapper,
+      horizontalReference: sheetReference,
+      side: "left",
+      gap: sideGap,
+      width: buttonWidth,
+      topOffset,
+    });
   });
 }
 
+function getFloatingSheetSaveScope(button) {
+  if (!button) return null;
+
+  return (
+    document.getElementById("playerSheetForm") ||
+    document.getElementById("dndPlayerSheetForm") ||
+    button.closest("#playerSheetForm") ||
+    button.closest("#dndPlayerSheetForm")
+  );
+}
+
+function positionScopedFloatingElement(config) {
+  const {
+    element,
+    container,
+    horizontalReference,
+    side,
+    absoluteSideValue,
+    gap = 18,
+    width,
+    topOffset,
+  } = config;
+
+  if (!element || !container) return;
+
+  const containerRect = container.getBoundingClientRect();
+  const referenceRect = horizontalReference
+    ? horizontalReference.getBoundingClientRect()
+    : containerRect;
+  const elementHeight = Math.max(element.offsetHeight || 0, 80);
+  const containerHeight = Math.max(
+    container.scrollHeight || containerRect.height || 0,
+    elementHeight
+  );
+  const containerDocumentTop = window.scrollY + containerRect.top;
+  const desiredTop = window.scrollY + topOffset - containerDocumentTop;
+  const maxAbsoluteTop = Math.max(0, containerHeight - elementHeight);
+  const safeTop = Math.max(0, Math.min(maxAbsoluteTop, desiredTop));
+
+  let leftValue;
+
+  if (horizontalReference) {
+    const referenceLeftInsideContainer = referenceRect.left - containerRect.left;
+
+    if (side === "left") {
+      leftValue = referenceLeftInsideContainer - width - gap;
+    } else {
+      leftValue = referenceLeftInsideContainer + referenceRect.width + gap;
+    }
+  } else if (side === "left") {
+    leftValue = typeof absoluteSideValue === "number" ? absoluteSideValue : -width - gap;
+  } else {
+    const containerWidth = containerRect.width || container.offsetWidth || 0;
+    const rightValue = typeof absoluteSideValue === "number" ? absoluteSideValue : -width - gap;
+    leftValue = containerWidth - width - rightValue;
+  }
+
+  element.style.setProperty("position", "absolute", "important");
+  element.style.setProperty("top", `${safeTop}px`, "important");
+  element.style.setProperty("left", `${leftValue}px`, "important");
+  element.style.setProperty("right", "auto", "important");
+  element.style.removeProperty("bottom");
+
+  element.style.setProperty("width", `${width}px`, "important");
+  element.style.setProperty("max-width", `${width}px`, "important");
+  element.style.setProperty("margin", "0", "important");
+  element.style.setProperty("z-index", "999999", "important");
+  element.style.setProperty("display", "flex", "important");
+  element.style.setProperty("opacity", "1", "important");
+  element.style.setProperty("visibility", "visible", "important");
+  element.style.setProperty("pointer-events", "auto", "important");
+  element.style.setProperty("transform", "none", "important");
+}
 function injectFloatingSheetSaveButtonStyles() {
   const oldStyle = document.getElementById("floating-sheet-save-button-style");
   if (oldStyle) oldStyle.remove();
@@ -3289,22 +3392,24 @@ function injectFloatingSheetSaveButtonStyles() {
   style.id = "floating-sheet-save-button-style";
 
   style.textContent = `
+    .altherium-sheet-wrapper,
+    .dnd-sheet-wrapper {
+      position: relative !important;
+    }
+
     @media (min-width: 1100px) {
       html body.altherium-player-page #savePlayerSheet,
       html body.dnd-player-page #saveDndSheet,
       html body .sheet-save-floating-button {
-        position: fixed !important;
-        top: 116px !important;
-        left: 30px !important;
-        right: auto !important;
-        bottom: auto !important;
-        width: 240px !important;
-        max-width: 240px !important;
+        width: 220px !important;
+        max-width: 220px !important;
         min-height: 58px !important;
         margin: 0 !important;
         z-index: 999999 !important;
         border-radius: 20px !important;
         transform: none !important;
+        align-items: center !important;
+        justify-content: center !important;
         box-shadow:
           0 18px 44px rgba(0, 0, 0, 0.34),
           0 0 32px rgba(34, 211, 238, 0.22) !important;
@@ -3337,6 +3442,7 @@ function injectFloatingSheetSaveButtonStyles() {
 
   document.head.appendChild(style);
 }
+
 
 async function uploadCharacterPortraitFromInput(input, file) {
   const form = input.closest("form");

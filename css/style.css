@@ -8988,3 +8988,110 @@ html body .dnd-sheet-modal-box .character-floating-portrait-panel {
     transform: none !important;
   }
 }
+
+/* =========================================================
+   PAINÉIS LATERAIS PRESOS SOMENTE NA ÁREA DA FICHA
+   O JS alterna entre absolute e fixed para limitar o scroll
+   ao container da ficha, sem seguir a página inteira.
+========================================================= */
+
+.altherium-sheet-wrapper,
+.dnd-sheet-wrapper,
+#playerSheetForm,
+#dndPlayerSheetForm {
+  position: relative !important;
+}
+
+@media (min-width: 1100px) {
+  html body #playerSheetForm > .character-portrait-field,
+  html body #dndPlayerSheetForm > .character-portrait-field {
+    width: 260px !important;
+    max-width: 260px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 14px !important;
+    text-align: center !important;
+    z-index: 999999 !important;
+  }
+
+  html body.altherium-player-page #savePlayerSheet,
+  html body.dnd-player-page #saveDndSheet,
+  html body .sheet-save-floating-button {
+    width: 240px !important;
+    max-width: 240px !important;
+    min-height: 58px !important;
+    margin: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    z-index: 999999 !important;
+  }
+}
+
+@media (max-width: 1099px) {
+  html body #playerSheetForm > .character-portrait-field,
+  html body #dndPlayerSheetForm > .character-portrait-field,
+  html body.altherium-player-page #savePlayerSheet,
+  html body.dnd-player-page #saveDndSheet,
+  html body .sheet-save-floating-button {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+  }
+}
+
+/* =========================================================
+   AJUSTE FINAL - BLOCOS LATERAIS MAIS PRÓXIMOS DA FICHA
+   A posição exata é calculada no script.js usando a primeira página da ficha
+   como referência horizontal.
+========================================================= */
+
+@media (min-width: 1100px) {
+  html body #playerSheetForm,
+  html body #dndPlayerSheetForm {
+    position: relative !important;
+  }
+
+  html body #playerSheetForm > .character-portrait-field,
+  html body #dndPlayerSheetForm > .character-portrait-field {
+    width: 250px !important;
+    max-width: 250px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 18px !important;
+    z-index: 999999 !important;
+  }
+
+  html body.altherium-player-page #savePlayerSheet,
+  html body.dnd-player-page #saveDndSheet,
+  html body .sheet-save-floating-button {
+    width: 220px !important;
+    max-width: 220px !important;
+    min-height: 58px !important;
+    margin: 0 !important;
+    z-index: 999999 !important;
+  }
+}
+
+@media (max-width: 1099px) {
+  html body #playerSheetForm > .character-portrait-field,
+  html body #dndPlayerSheetForm > .character-portrait-field,
+  html body.altherium-player-page #savePlayerSheet,
+  html body.dnd-player-page #saveDndSheet,
+  html body .sheet-save-floating-button {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    left: auto !important;
+    transform: none !important;
+  }
+}
