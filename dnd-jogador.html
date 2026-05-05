@@ -467,6 +467,399 @@
       </section>
     </main>
 
+    <!-- ROLADOR DE DADOS DA CAMPANHA -->
+    <aside
+      class="campaign-dice-widget"
+      id="campaignDiceWidget"
+      data-dice-system="D&D"
+      aria-label="Rolador de dados da campanha"
+    >
+      <div class="campaign-dice-head">
+        <button
+          type="button"
+          class="campaign-dice-toggle"
+          data-dice-toggle
+          aria-expanded="false"
+        >
+          <span>Rolador de dados</span>
+          <strong>⚄</strong>
+        </button>
+      </div>
+
+      <div class="campaign-dice-body">
+        <div class="campaign-dice-quick-grid">
+          <button
+            type="button"
+            class="campaign-dice-quick-btn"
+            data-dice-formula="1d4"
+            data-dice-label="D4"
+          >
+            D4
+          </button>
+          <button
+            type="button"
+            class="campaign-dice-quick-btn"
+            data-dice-formula="1d6"
+            data-dice-label="D6"
+          >
+            D6
+          </button>
+          <button
+            type="button"
+            class="campaign-dice-quick-btn"
+            data-dice-formula="1d8"
+            data-dice-label="D8"
+          >
+            D8
+          </button>
+          <button
+            type="button"
+            class="campaign-dice-quick-btn"
+            data-dice-formula="1d10"
+            data-dice-label="D10"
+          >
+            D10
+          </button>
+          <button
+            type="button"
+            class="campaign-dice-quick-btn"
+            data-dice-formula="1d12"
+            data-dice-label="D12"
+          >
+            D12
+          </button>
+          <button
+            type="button"
+            class="campaign-dice-quick-btn"
+            data-dice-formula="1d20"
+            data-dice-label="D20"
+          >
+            D20
+          </button>
+          <button
+            type="button"
+            class="campaign-dice-quick-btn"
+            data-dice-formula="1d100"
+            data-dice-label="D100"
+          >
+            D100
+          </button>
+        </div>
+
+        <div
+          class="campaign-dice-auto-box campaign-dice-auto-box--dnd"
+          data-dice-system-only="D&D"
+        >
+          <span>Atributos de D&D</span>
+          <p class="campaign-dice-auto-help">
+            Teste padrão: <strong>1d20</strong> + modificador calculado pelo
+            valor do atributo.
+          </p>
+          <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+strMod"
+              data-dice-label="Força"
+            >
+              Força<small>atributo</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+dexMod"
+              data-dice-label="Destreza"
+            >
+              Destreza<small>atributo</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+conMod"
+              data-dice-label="Constituição"
+            >
+              Constituição<small>atributo</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+intMod"
+              data-dice-label="Inteligência"
+            >
+              Inteligência<small>atributo</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+wisMod"
+              data-dice-label="Sabedoria"
+            >
+              Sabedoria<small>atributo</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+chaMod"
+              data-dice-label="Carisma"
+            >
+              Carisma<small>atributo</small>
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="campaign-dice-auto-box campaign-dice-auto-box--dnd"
+          data-dice-system-only="D&D"
+        >
+          <span>Perícias de D&D</span>
+          <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillAcrobatics"
+              data-dice-label="Acrobacia"
+            >
+              Acrobacia<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillArcana"
+              data-dice-label="Arcanismo"
+            >
+              Arcanismo<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillAthletics"
+              data-dice-label="Atletismo"
+            >
+              Atletismo<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillDeception"
+              data-dice-label="Enganação"
+            >
+              Enganação<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillStealth"
+              data-dice-label="Furtividade"
+            >
+              Furtividade<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillHistory"
+              data-dice-label="História"
+            >
+              História<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillInsight"
+              data-dice-label="Intuição"
+            >
+              Intuição<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillIntimidation"
+              data-dice-label="Intimidação"
+            >
+              Intimidação<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillInvestigation"
+              data-dice-label="Investigação"
+            >
+              Investigação<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillAnimalHandling"
+              data-dice-label="Lidar Animais"
+            >
+              Lidar Animais<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillMedicine"
+              data-dice-label="Medicina"
+            >
+              Medicina<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillNature"
+              data-dice-label="Natureza"
+            >
+              Natureza<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillPerception"
+              data-dice-label="Percepção"
+            >
+              Percepção<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillPerformance"
+              data-dice-label="Performance"
+            >
+              Performance<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillPersuasion"
+              data-dice-label="Persuasão"
+            >
+              Persuasão<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillSleightOfHand"
+              data-dice-label="Prestidigitação"
+            >
+              Prestidigitação<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillReligion"
+              data-dice-label="Religião"
+            >
+              Religião<small>perícia</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+skillSurvival"
+              data-dice-label="Sobrevivência"
+            >
+              Sobrevivência<small>perícia</small>
+            </button>
+          </div>
+        </div>
+
+        <div
+          class="campaign-dice-auto-box campaign-dice-auto-box--dnd"
+          data-dice-system-only="D&D"
+        >
+          <span>Testes de resistência</span>
+          <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+saveStr"
+              data-dice-label="Res. Força"
+            >
+              Res. Força<small>resistência</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+saveDex"
+              data-dice-label="Res. Destreza"
+            >
+              Res. Destreza<small>resistência</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+saveCon"
+              data-dice-label="Res. Constituição"
+            >
+              Res. Constituição<small>resistência</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+saveInt"
+              data-dice-label="Res. Inteligência"
+            >
+              Res. Inteligência<small>resistência</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+saveWis"
+              data-dice-label="Res. Sabedoria"
+            >
+              Res. Sabedoria<small>resistência</small>
+            </button>
+            <button
+              type="button"
+              class="campaign-dice-auto-btn"
+              data-dice-formula="1d20+saveCha"
+              data-dice-label="Res. Carisma"
+            >
+              Res. Carisma<small>resistência</small>
+            </button>
+          </div>
+        </div>
+
+        <form class="campaign-dice-custom-form" data-dice-custom-form>
+          <label>
+            <span>Fórmula personalizada</span>
+            <input
+              type="text"
+              name="diceFormula"
+              value="1d20"
+              placeholder="Ex: 1d20+strMod, 1d20+skillPerception, 1d20+saveDex"
+              autocomplete="off"
+            />
+          </label>
+
+          <label>
+            <span>Nome da rolagem</span>
+            <input
+              type="text"
+              name="diceLabel"
+              value="Rolagem personalizada"
+              placeholder="Ex: Ataque, dano, percepção"
+              autocomplete="off"
+            />
+          </label>
+
+          <button type="submit" class="campaign-dice-roll-btn">Rolar</button>
+        </form>
+
+        <div class="campaign-dice-last-result" id="campaignDiceLastResult">
+          <span>Resultado</span>
+          <strong>--</strong>
+          <p>Faça uma rolagem para aparecer aqui.</p>
+        </div>
+
+        <div class="campaign-dice-history-head">
+          <h3>Histórico</h3>
+          <button type="button" data-dice-refresh>Atualizar</button>
+        </div>
+
+        <div class="campaign-dice-history" id="campaignDiceHistory">
+          <div class="campaign-dice-empty">Carregando rolagens...</div>
+        </div>
+      </div>
+    </aside>
+
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/script.js"></script>

@@ -220,6 +220,7 @@ const DND_SKILLS = [
 let profilesCache = [];
 let campaignsCache = [];
 let realtimeChannel = null;
+let diceRealtimeChannel = null;
 let saveTimer = null;
 
 /* =========================================================
@@ -271,6 +272,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       updateSheet: updateCampaignSheet,
     });
     await setupAltheriumBestiary();
+    await setupCampaignDiceRoller("Altherium");
     setupAddPlayersToCampaign({
       modalId: "altheriumModal",
       titleId: "altheriumModalTitle",
@@ -286,6 +288,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await protectPage("Altherium", "Jogador");
     await setupPlayerInfo("playerNameView", "campaignNameView");
     await setupAltheriumPlayerSheet();
+    await setupCampaignDiceRoller("Altherium");
     subscribeCampaignRealtime(loadSheetIntoPlayerForm);
   }
 
@@ -301,6 +304,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       getSheet: getOrCreateDndSheet,
       updateSheet: updateDndSheet,
     });
+    await setupCampaignDiceRoller("D&D");
     setupAddPlayersToCampaign({
       modalId: "dndModal",
       titleId: "dndModalTitle",
@@ -316,6 +320,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await protectPage("D&D", "Jogador");
     await setupPlayerInfo("dndPlayerNameView", "dndCampaignNameView");
     await setupDndPlayerSheet();
+    await setupCampaignDiceRoller("D&D");
     subscribeCampaignRealtime(loadDndSheetIntoPlayerForm);
   }
 
@@ -2611,6 +2616,706 @@ async function clearInitiative(config) {
   await renderInitiativeBoard(config);
 }
 
+
+/* =========================================================
+   ROLAGEM DE DADOS DA CAMPANHA
+========================================================= */
+
+async function setupCampaignDiceRoller(system) {
+  const campaignId = getCurrentCampaignId();
+  const user = getLoggedUserFromSession();
+
+  if (!campaignId || !user || !DB) return;
+
+  ensureCampaignDiceRoller(system);
+  setupCampaignDiceWidgetPositioning();
+  bindCampaignDiceRollerEvents(system);
+  positionCampaignDiceWidgetNearPortrait();
+  await renderCampaignDiceHistory();
+  subscribeDiceRollsRealtime();
+}
+
+function ensureCampaignDiceRoller(system) {
+  const widget = document.getElementById("campaignDiceWidget");
+
+  if (!widget) return;
+
+  widget.dataset.diceSystem = system;
+
+  const isOpen = localStorage.getItem("campaignLabDiceOpen") === "true";
+  widget.classList.toggle("campaign-dice-widget--open", isOpen);
+
+  const toggleButton = widget.querySelector("[data-dice-toggle]");
+  if (toggleButton) {
+    toggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+  }
+
+  widget.querySelectorAll("[data-dice-system-only]").forEach((block) => {
+    const allowedSystem = block.dataset.diceSystemOnly;
+    block.hidden = Boolean(allowedSystem && allowedSystem !== system);
+  });
+}
+
+
+function setupCampaignDiceWidgetPositioning() {
+  if (window.campaignDiceWidgetPositioningReady) {
+    positionCampaignDiceWidgetNearPortrait();
+    return;
+  }
+
+  window.campaignDiceWidgetPositioningReady = true;
+
+  const refreshDiceWidgetPosition = () => {
+    if (window.campaignDiceWidgetPositionFrame) {
+      cancelAnimationFrame(window.campaignDiceWidgetPositionFrame);
+    }
+
+    window.campaignDiceWidgetPositionFrame = requestAnimationFrame(() => {
+      positionCampaignDiceWidgetNearPortrait();
+    });
+  };
+
+  window.addEventListener("resize", refreshDiceWidgetPosition);
+  window.addEventListener("scroll", refreshDiceWidgetPosition, { passive: true });
+
+  refreshDiceWidgetPosition();
+
+  let tries = 0;
+  const interval = setInterval(() => {
+    positionCampaignDiceWidgetNearPortrait();
+    tries += 1;
+    if (tries >= 30) clearInterval(interval);
+  }, 250);
+}
+
+function positionCampaignDiceWidgetNearPortrait() {
+  const widget = document.getElementById("campaignDiceWidget");
+  if (!widget) return;
+
+  const isPlayerPage = Boolean(
+    document.body.classList.contains("altherium-player-page") ||
+      document.body.classList.contains("dnd-player-page")
+  );
+
+  const form =
+    document.getElementById("playerSheetForm") ||
+    document.getElementById("dndPlayerSheetForm");
+
+  const portraitField = form
+    ? form.querySelector("[data-character-portrait-field]")
+    : null;
+
+  if (!isPlayerPage || !form || !portraitField || window.innerWidth < 1100) {
+    resetCampaignDiceWidgetPosition(widget);
+    return;
+  }
+
+  const portraitWidth =
+    Number.parseFloat(portraitField.style.width) ||
+    portraitField.offsetWidth ||
+    250;
+
+  const portraitHeight = portraitField.offsetHeight || 320;
+  const portraitTop =
+    Number.parseFloat(portraitField.style.top) ||
+    portraitField.offsetTop ||
+    0;
+
+  const portraitLeft =
+    Number.parseFloat(portraitField.style.left) ||
+    portraitField.offsetLeft ||
+    0;
+
+  const isOpen = widget.classList.contains("campaign-dice-widget--open");
+  const safeViewportWidth = Math.max(320, window.innerWidth - 48);
+  const closedWidth = portraitWidth;
+  const openWidth = Math.min(
+    560,
+    safeViewportWidth,
+    Math.max(500, portraitWidth + 280)
+  );
+  const widgetWidth = isOpen ? openWidth : closedWidth;
+  const gap = 14;
+
+  if (widget.parentElement !== form) {
+    form.appendChild(widget);
+  }
+
+  form.style.setProperty("position", "relative", "important");
+
+  widget.classList.add("campaign-dice-widget--near-portrait");
+  widget.style.setProperty("position", "absolute", "important");
+  widget.style.setProperty("right", "auto", "important");
+  widget.style.setProperty("bottom", "auto", "important");
+  widget.style.setProperty("width", `${widgetWidth}px`, "important");
+  widget.style.setProperty("max-width", `${widgetWidth}px`, "important");
+  widget.style.setProperty("margin", "0", "important");
+  widget.style.setProperty("z-index", "999998", "important");
+  widget.style.setProperty("display", "flex", "important");
+  widget.style.setProperty("transform", "none", "important");
+
+  const widgetHeight = widget.offsetHeight || (isOpen ? 520 : 46);
+  const formHeight = Math.max(form.scrollHeight || 0, portraitTop + portraitHeight + widgetHeight + gap);
+
+  let top = portraitTop + portraitHeight + gap;
+  const maxTop = Math.max(0, formHeight - widgetHeight);
+  top = Math.max(0, Math.min(top, maxTop));
+
+  let left = isOpen
+    ? portraitLeft + portraitWidth - widgetWidth
+    : portraitLeft + portraitWidth / 2 - widgetWidth / 2;
+
+  const formWidth = form.getBoundingClientRect().width || form.offsetWidth || 0;
+  const minLeft = -520;
+  const maxLeft = Math.max(minLeft, formWidth + 520 - widgetWidth);
+  left = Math.max(minLeft, Math.min(left, maxLeft));
+
+  widget.style.setProperty("top", `${top}px`, "important");
+  widget.style.setProperty("left", `${left}px`, "important");
+}
+
+function resetCampaignDiceWidgetPosition(widget = document.getElementById("campaignDiceWidget")) {
+  if (!widget) return;
+
+  widget.classList.remove("campaign-dice-widget--near-portrait");
+  widget.style.removeProperty("position");
+  widget.style.removeProperty("left");
+  widget.style.removeProperty("top");
+  widget.style.removeProperty("right");
+  widget.style.removeProperty("bottom");
+  widget.style.removeProperty("width");
+  widget.style.removeProperty("max-width");
+  widget.style.removeProperty("transform");
+}
+
+
+function bindCampaignDiceRollerEvents(system) {
+  const widget = document.getElementById("campaignDiceWidget");
+  if (!widget || widget.dataset.diceReady === "true") return;
+
+  widget.dataset.diceReady = "true";
+
+  widget.addEventListener("click", async (event) => {
+    const toggleButton = event.target.closest("[data-dice-toggle]");
+    const refreshButton = event.target.closest("[data-dice-refresh]");
+    const rollButton = event.target.closest("[data-dice-formula]");
+
+    if (toggleButton) {
+      widget.classList.toggle("campaign-dice-widget--open");
+
+      const isOpen = widget.classList.contains("campaign-dice-widget--open");
+      localStorage.setItem("campaignLabDiceOpen", isOpen ? "true" : "false");
+      toggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      positionCampaignDiceWidgetNearPortrait();
+      return;
+    }
+
+    if (refreshButton) {
+      await renderCampaignDiceHistory();
+      return;
+    }
+
+    if (rollButton) {
+      await handleCampaignDiceRoll({
+        system,
+        formula: rollButton.dataset.diceFormula,
+        label: rollButton.dataset.diceLabel,
+      });
+    }
+  });
+
+  widget.addEventListener("submit", async (event) => {
+    const form = event.target.closest("[data-dice-custom-form]");
+    if (!form) return;
+
+    event.preventDefault();
+
+    await handleCampaignDiceRoll({
+      system,
+      formula: form.elements.diceFormula.value,
+      label: form.elements.diceLabel.value || "Rolagem personalizada",
+    });
+  });
+}
+
+async function handleCampaignDiceRoll({ system, formula, label }) {
+  const campaignId = getCurrentCampaignId();
+  const user = getLoggedUserFromSession();
+
+  if (!campaignId || !user || !formula) return;
+
+  const context = getCampaignDiceContext(system);
+  const result = rollCampaignDiceFormula(formula, context.variables);
+
+  if (!result.ok) {
+    showCampaignDiceLocalResult({
+      total: "--",
+      label: label || "Erro na rolagem",
+      formula,
+      message: result.error || "Não consegui ler essa fórmula.",
+      error: true,
+    });
+    return;
+  }
+
+  showCampaignDiceLocalResult({
+    total: result.total,
+    label: label || "Rolagem",
+    formula,
+    message: result.summary,
+  });
+
+  const row = {
+    campaign_id: String(campaignId),
+    user_id: String(user.id),
+    system,
+    character_name: context.characterName || user.nome || user.name || user.id,
+    roll_label: label || "Rolagem",
+    roll_formula: formula,
+    total: result.total,
+    details: {
+      summary: result.summary,
+      parts: result.parts,
+      variables: result.usedVariables,
+      resolvedFormula: result.resolvedFormula,
+    },
+  };
+
+  const { error } = await DB.from("dice_rolls").insert(row);
+
+  if (error) {
+    console.error("Erro ao salvar rolagem:", error);
+    showCampaignDiceLocalResult({
+      total: result.total,
+      label: label || "Rolagem feita, mas não salva",
+      formula,
+      message: "A rolagem funcionou, mas a tabela dice_rolls ainda não está criada no Supabase.",
+      error: true,
+    });
+    return;
+  }
+
+  await renderCampaignDiceHistory();
+}
+
+function getCampaignDiceContext(system) {
+  const user = getLoggedUserFromSession();
+  const form = getCampaignDiceActiveSheetForm();
+
+  const variables = {};
+  let characterName = user ? user.nome : "Mestre";
+
+  function addVariable(name, value) {
+    if (!name) return;
+    variables[normalizeCampaignDiceToken(name)] = getCampaignDiceNumber(value);
+  }
+
+  if (form) {
+    Array.from(form.elements).forEach((element) => {
+      if (!element.name) return;
+      addVariable(element.name, element.value);
+    });
+
+    if (form.elements.characterName && form.elements.characterName.value.trim()) {
+      characterName = form.elements.characterName.value.trim();
+    }
+  }
+
+  if (system === "Altherium") {
+    addAltheriumDiceVariables(form, addVariable);
+  }
+
+  if (system === "D&D") {
+    addDndDiceVariables(form, addVariable);
+  }
+
+  return { variables, characterName, hasSheetForm: Boolean(form) };
+}
+
+function getCampaignDiceActiveSheetForm() {
+  return (
+    document.getElementById("playerSheetForm") ||
+    document.getElementById("dndPlayerSheetForm") ||
+    null
+  );
+}
+
+function addAltheriumDiceVariables(form, addVariable) {
+  const attributeFields = {
+    furia: "furia",
+    destino: "destino",
+    espirito: "espirito",
+    impulso: "impulso",
+    estrategia: "estrategia",
+    runico: "runico",
+  };
+
+  Object.entries(attributeFields).forEach(([token, fieldName]) => {
+    const value = getFormValue(form, fieldName);
+    addVariable(token, value);
+  });
+
+  addVariable("fúria", getFormValue(form, "furia"));
+  addVariable("espírito", getFormValue(form, "espirito"));
+  addVariable("estratégia", getFormValue(form, "estrategia"));
+  addVariable("rúnico", getFormValue(form, "runico"));
+
+  ALTHERIUM_DOMAINS.forEach((domain) => {
+    const domainValue = getFormValue(form, `domain_${domain.key}`);
+    const attributeToken = getAltheriumAttributeToken(domain.attr);
+    const attributeValue = getFormValue(form, attributeToken);
+
+    addVariable(domain.label, domainValue);
+    addVariable(domain.key, domainValue);
+    addVariable(`domain_${domain.key}`, domainValue);
+    addVariable(`pericia_${domain.key}`, domainValue);
+    addVariable(`${domain.key}_atributo`, attributeValue);
+    addVariable(`${domain.key}_bonus`, attributeValue);
+  });
+}
+
+function addDndDiceVariables(form, addVariable) {
+  const abilities = [
+    { score: "strScore", save: "saveStr", mod: "strMod", label: "Força", aliases: ["forca", "força"] },
+    { score: "dexScore", save: "saveDex", mod: "dexMod", label: "Destreza", aliases: ["destreza"] },
+    { score: "conScore", save: "saveCon", mod: "conMod", label: "Constituição", aliases: ["constituicao", "constituição"] },
+    { score: "intScore", save: "saveInt", mod: "intMod", label: "Inteligência", aliases: ["inteligencia", "inteligência"] },
+    { score: "wisScore", save: "saveWis", mod: "wisMod", label: "Sabedoria", aliases: ["sabedoria"] },
+    { score: "chaScore", save: "saveCha", mod: "chaMod", label: "Carisma", aliases: ["carisma"] },
+  ];
+
+  abilities.forEach((ability) => {
+    const abilityMod = getDndAbilityModifierFromForm(form, ability.score);
+    const saveValue = getFormValue(form, ability.save);
+
+    addVariable(ability.mod, abilityMod);
+    addVariable(ability.label, abilityMod);
+
+    ability.aliases.forEach((alias) => {
+      addVariable(alias, abilityMod);
+    });
+
+    addVariable(ability.save, saveValue);
+    addVariable(`resistencia_${normalizeCampaignDiceToken(ability.label)}`, saveValue);
+  });
+
+  addVariable("initiative", getFormValue(form, "initiative"));
+  addVariable("iniciativa", getFormValue(form, "initiative"));
+  addVariable("combatInitiative", getFormValue(form, "combatInitiative"));
+  addVariable("iniciativa_combate", getFormValue(form, "combatInitiative"));
+
+  DND_SKILLS.forEach(([key, label]) => {
+    const value = getFormValue(form, key);
+    addVariable(label, value);
+    addVariable(key, value);
+    addVariable(`pericia_${key.replace(/^skill/, "").toLowerCase()}`, value);
+  });
+}
+
+function getAltheriumAttributeToken(attributeLabel) {
+  const token = normalizeCampaignDiceToken(attributeLabel);
+
+  const map = {
+    furia: "furia",
+    destino: "destino",
+    espirito: "espirito",
+    impulso: "impulso",
+    estrategia: "estrategia",
+    runico: "runico",
+  };
+
+  return map[token] || token;
+}
+
+function getDndAbilityModifierFromForm(form, scoreName) {
+  if (!form || !form.elements || !form.elements[scoreName]) return 0;
+
+  const raw = String(form.elements[scoreName].value || "").trim();
+  if (!raw) return 0;
+
+  const score = Number(raw.replace(",", "."));
+  if (!Number.isFinite(score)) return 0;
+
+  return Math.floor((score - 10) / 2);
+}
+
+function getFormValue(form, name) {
+  if (!form || !form.elements || !form.elements[name]) return "0";
+  return form.elements[name].value || "0";
+}
+
+function normalizeCampaignDiceToken(value) {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .replace(/[^a-z0-9_]/g, "");
+}
+
+function getCampaignDiceNumber(value) {
+  const cleaned = String(value || "0")
+    .replace(",", ".")
+    .replace("+", "")
+    .trim();
+
+  const number = Number(cleaned);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function rollCampaignDiceFormula(formula, variables = {}) {
+  const originalFormula = String(formula || "").trim();
+
+  if (!originalFormula) {
+    return { ok: false, error: "Digite uma fórmula de rolagem." };
+  }
+
+  const compactFormula = originalFormula.replace(/\s+/g, "");
+  const terms = compactFormula.match(/[+-]?[^+-]+/g) || [];
+
+  if (!terms.length) {
+    return { ok: false, error: "Fórmula inválida." };
+  }
+
+  const parts = [];
+  const usedVariables = [];
+  const resolvedParts = [];
+  let total = 0;
+
+  for (const rawTerm of terms) {
+    let sign = 1;
+    let token = rawTerm;
+
+    if (token.startsWith("+")) token = token.slice(1);
+    if (token.startsWith("-")) {
+      sign = -1;
+      token = token.slice(1);
+    }
+
+    if (!token) continue;
+
+    const diceMatch = token.match(/^(\d*)d(\d+)$/i);
+
+    if (diceMatch) {
+      const count = Math.max(1, Math.min(100, Number(diceMatch[1] || "1")));
+      const sides = Math.max(2, Math.min(1000, Number(diceMatch[2])));
+      const rolls = Array.from({ length: count }, () => getCampaignDiceRandomInt(sides));
+      const subtotal = rolls.reduce((sum, value) => sum + value, 0) * sign;
+
+      total += subtotal;
+      parts.push({ type: "dice", raw: `${sign < 0 ? "-" : "+"}${count}d${sides}`, rolls, subtotal });
+      resolvedParts.push(`${sign < 0 ? "-" : "+"}${rolls.join("+")}`);
+      continue;
+    }
+
+    if (/^\d+(\.\d+)?$/.test(token)) {
+      const value = Number(token) * sign;
+      total += value;
+      parts.push({ type: "number", raw: `${sign < 0 ? "-" : "+"}${token}`, value });
+      resolvedParts.push(`${value >= 0 ? "+" : ""}${value}`);
+      continue;
+    }
+
+    const variableKey = normalizeCampaignDiceToken(token);
+
+    if (Object.prototype.hasOwnProperty.call(variables, variableKey)) {
+      const variableValue = Number(variables[variableKey]) || 0;
+      const value = variableValue * sign;
+      total += value;
+      usedVariables.push({ name: token, value: variableValue });
+      parts.push({ type: "variable", raw: `${sign < 0 ? "-" : "+"}${token}`, name: token, value });
+      resolvedParts.push(`${value >= 0 ? "+" : ""}${value}`);
+      continue;
+    }
+
+    return {
+      ok: false,
+      error: `Não encontrei o valor de "${token}" na ficha.`,
+    };
+  }
+
+  const normalizedTotal = Number.isInteger(total) ? total : Number(total.toFixed(2));
+  const summary = parts
+    .map((part) => {
+      if (part.type === "dice") return `${part.raw.replace(/^\+/, "")}: [${part.rolls.join(", ")}]`;
+      if (part.type === "variable") return `${part.raw.replace(/^\+/, "")}: ${part.value}`;
+      return `${part.raw.replace(/^\+/, "")}`;
+    })
+    .join(" • ");
+
+  return {
+    ok: true,
+    total: normalizedTotal,
+    parts,
+    usedVariables,
+    summary,
+    resolvedFormula: resolvedParts.join("").replace(/^\+/, ""),
+  };
+}
+
+function getCampaignDiceRandomInt(sides) {
+  const max = Math.floor(Number(sides) || 20);
+
+  if (window.crypto && window.crypto.getRandomValues) {
+    const array = new Uint32Array(1);
+    window.crypto.getRandomValues(array);
+    return (array[0] % max) + 1;
+  }
+
+  return Math.floor(Math.random() * max) + 1;
+}
+
+function showCampaignDiceLocalResult({ total, label, formula, message, error = false }) {
+  const resultBox = document.getElementById("campaignDiceLastResult");
+
+  showCampaignDiceFloatingResult({
+    total,
+    label,
+    formula,
+    message,
+    error,
+  });
+
+  if (!resultBox) return;
+
+  resultBox.classList.toggle("campaign-dice-last-result--error", Boolean(error));
+  resultBox.innerHTML = `
+    <span>${escapeHtml(label || "Resultado")}</span>
+    <strong>${escapeHtml(total)}</strong>
+    <p>${escapeHtml(formula || "")} ${message ? `• ${escapeHtml(message)}` : ""}</p>
+  `;
+}
+
+function showCampaignDiceFloatingResult({ total, label, formula, message, error = false, characterName = "" }) {
+  const layer = getCampaignDiceToastLayer();
+  if (!layer) return;
+
+  const toast = document.createElement("article");
+  toast.className = `campaign-dice-toast${error ? " campaign-dice-toast--error" : ""}`;
+
+  toast.innerHTML = `
+    <div class="campaign-dice-toast-content">
+      <div class="campaign-dice-toast-info">
+        <span>${escapeHtml(characterName || label || "Resultado")}</span>
+        <strong>${escapeHtml(label || "Rolagem")}</strong>
+        <code>${escapeHtml(formula || "")}</code>
+        ${message ? `<p>${escapeHtml(message)}</p>` : ""}
+      </div>
+
+      <div class="campaign-dice-toast-total">
+        ${escapeHtml(total)}
+      </div>
+    </div>
+  `;
+
+  layer.prepend(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add("campaign-dice-toast--visible");
+  });
+
+  const removeToast = () => {
+    toast.classList.remove("campaign-dice-toast--visible");
+    window.setTimeout(() => toast.remove(), 260);
+  };
+
+  window.setTimeout(removeToast, 5000);
+}
+
+function getCampaignDiceToastLayer() {
+  let layer = document.getElementById("campaignDiceToastLayer");
+
+  if (layer) return layer;
+
+  layer = document.createElement("div");
+  layer.id = "campaignDiceToastLayer";
+  layer.className = "campaign-dice-toast-layer";
+  document.body.appendChild(layer);
+
+  return layer;
+}
+
+async function renderCampaignDiceHistory() {
+  const history = document.getElementById("campaignDiceHistory");
+  const campaignId = getCurrentCampaignId();
+
+  if (!history || !campaignId || !DB) return;
+
+  const { data, error } = await DB
+    .from("dice_rolls")
+    .select("id, campaign_id, user_id, system, character_name, roll_label, roll_formula, total, details, created_at")
+    .eq("campaign_id", String(campaignId))
+    .order("created_at", { ascending: false })
+    .limit(20);
+
+  if (error) {
+    console.error("Erro ao carregar rolagens:", error);
+    history.innerHTML = `
+      <div class="campaign-dice-empty campaign-dice-empty--error">
+        Crie a tabela dice_rolls no Supabase para ativar o histórico.
+      </div>
+    `;
+    return;
+  }
+
+  if (!data || !data.length) {
+    history.innerHTML = `
+      <div class="campaign-dice-empty">
+        Nenhuma rolagem ainda.
+      </div>
+    `;
+    return;
+  }
+
+  history.innerHTML = data.map(renderCampaignDiceHistoryItem).join("");
+}
+
+function renderCampaignDiceHistoryItem(row) {
+  const details = row.details || {};
+  const date = row.created_at ? new Date(row.created_at) : null;
+  const time = date
+    ? date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    : "--:--";
+
+  return `
+    <article class="campaign-dice-history-item">
+      <div class="campaign-dice-history-top">
+        <strong>${escapeHtml(row.character_name || "Jogador")}</strong>
+        <span>${escapeHtml(time)}</span>
+      </div>
+
+      <div class="campaign-dice-history-middle">
+        <div>
+          <p>${escapeHtml(row.roll_label || "Rolagem")}</p>
+          <code>${escapeHtml(row.roll_formula || "")}</code>
+        </div>
+
+        <b>${escapeHtml(row.total)}</b>
+      </div>
+
+      <small>${escapeHtml(details.summary || "")}</small>
+    </article>
+  `;
+}
+
+function subscribeDiceRollsRealtime() {
+  const campaignId = getCurrentCampaignId();
+
+  if (!campaignId || !DB) return;
+
+  if (diceRealtimeChannel) DB.removeChannel(diceRealtimeChannel);
+
+  diceRealtimeChannel = DB
+    .channel(`dice-rolls-${campaignId}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "dice_rolls", filter: `campaign_id=eq.${campaignId}` },
+      async () => {
+        await renderCampaignDiceHistory();
+      }
+    )
+    .subscribe();
+}
+
 /* =========================================================
    REALTIME
 ========================================================= */
@@ -3630,6 +4335,8 @@ function refreshCharacterPortraitFloatingPanels() {
     const field = form.querySelector("[data-character-portrait-field]");
     if (field) ensureCharacterPortraitFloatingLayout(form, field);
   });
+
+  positionCampaignDiceWidgetNearPortrait();
 }
 
 /* =========================================================
@@ -6000,3 +6707,275 @@ function setupCampaignLabNumberControls() {
   });
 }
 
+
+/* =========================================================
+   PATCH - ROLADOR EM MODAL CENTRAL
+   Mantém o botão perto da imagem, mas abre o painel grande
+   no centro da página.
+========================================================= */
+
+function ensureCampaignDiceRoller(system) {
+  const widget = document.getElementById("campaignDiceWidget");
+
+  if (!widget) return;
+
+  widget.dataset.diceSystem = system;
+  widget.classList.remove("campaign-dice-widget--open", "campaign-dice-widget--modal");
+  document.body.classList.remove("campaign-dice-modal-open");
+  localStorage.removeItem("campaignLabDiceOpen");
+
+  const toggleButton = widget.querySelector("[data-dice-toggle]");
+  if (toggleButton) {
+    toggleButton.setAttribute("aria-expanded", "false");
+  }
+
+  widget.querySelectorAll("[data-dice-system-only]").forEach((block) => {
+    const allowedSystem = block.dataset.diceSystemOnly;
+    block.hidden = Boolean(allowedSystem && allowedSystem !== system);
+  });
+}
+
+function setCampaignDiceWidgetOpen(widget, open) {
+  if (!widget) return;
+
+  widget.classList.toggle("campaign-dice-widget--open", open);
+  widget.classList.toggle("campaign-dice-widget--modal", open);
+  document.body.classList.toggle("campaign-dice-modal-open", open);
+
+  const toggleButton = widget.querySelector("[data-dice-toggle]");
+  if (toggleButton) {
+    toggleButton.setAttribute("aria-expanded", open ? "true" : "false");
+  }
+
+  if (!open) {
+    localStorage.removeItem("campaignLabDiceOpen");
+  }
+
+  positionCampaignDiceWidgetNearPortrait();
+}
+
+function setupCampaignDiceWidgetPositioning() {
+  if (window.campaignDiceWidgetPositioningReady) {
+    positionCampaignDiceWidgetNearPortrait();
+    return;
+  }
+
+  window.campaignDiceWidgetPositioningReady = true;
+
+  const refreshDiceWidgetPosition = () => {
+    if (window.campaignDiceWidgetPositionFrame) {
+      cancelAnimationFrame(window.campaignDiceWidgetPositionFrame);
+    }
+
+    window.campaignDiceWidgetPositionFrame = requestAnimationFrame(() => {
+      positionCampaignDiceWidgetNearPortrait();
+    });
+  };
+
+  window.addEventListener("resize", refreshDiceWidgetPosition);
+  window.addEventListener("scroll", refreshDiceWidgetPosition, { passive: true });
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+
+    const widget = document.getElementById("campaignDiceWidget");
+    if (widget && widget.classList.contains("campaign-dice-widget--open")) {
+      setCampaignDiceWidgetOpen(widget, false);
+    }
+  });
+
+  document.addEventListener("click", (event) => {
+    const widget = document.getElementById("campaignDiceWidget");
+    if (!widget || !widget.classList.contains("campaign-dice-widget--open")) return;
+
+    if (event.target.closest("#campaignDiceWidget")) return;
+
+    setCampaignDiceWidgetOpen(widget, false);
+  });
+
+  refreshDiceWidgetPosition();
+
+  let tries = 0;
+  const interval = setInterval(() => {
+    positionCampaignDiceWidgetNearPortrait();
+    tries += 1;
+    if (tries >= 30) clearInterval(interval);
+  }, 250);
+}
+
+function positionCampaignDiceWidgetNearPortrait() {
+  const widget = document.getElementById("campaignDiceWidget");
+  if (!widget) return;
+
+  const isOpen = widget.classList.contains("campaign-dice-widget--open");
+
+  if (isOpen) {
+    if (widget.parentElement !== document.body) {
+      document.body.appendChild(widget);
+    }
+
+    document.body.classList.add("campaign-dice-modal-open");
+    widget.classList.add("campaign-dice-widget--modal");
+
+    widget.style.setProperty("position", "fixed", "important");
+    widget.style.setProperty("left", "50%", "important");
+    widget.style.setProperty("top", "50%", "important");
+    widget.style.setProperty("right", "auto", "important");
+    widget.style.setProperty("bottom", "auto", "important");
+    widget.style.setProperty("width", "min(540px, calc(100vw - 32px))", "important");
+    widget.style.setProperty("max-width", "min(540px, calc(100vw - 32px))", "important");
+    widget.style.setProperty("max-height", "min(84vh, 720px)", "important");
+    widget.style.setProperty("transform", "translate(-50%, -50%)", "important");
+    widget.style.setProperty("z-index", "1000001", "important");
+    widget.style.setProperty("display", "flex", "important");
+    widget.style.setProperty("margin", "0", "important");
+    return;
+  }
+
+  document.body.classList.remove("campaign-dice-modal-open");
+  widget.classList.remove("campaign-dice-widget--modal");
+
+  const isPlayerPage = Boolean(
+    document.body.classList.contains("altherium-player-page") ||
+      document.body.classList.contains("dnd-player-page")
+  );
+
+  const form =
+    document.getElementById("playerSheetForm") ||
+    document.getElementById("dndPlayerSheetForm");
+
+  const portraitField = form
+    ? form.querySelector("[data-character-portrait-field]")
+    : null;
+
+  if (!isPlayerPage || !form || !portraitField || window.innerWidth < 1100) {
+    resetCampaignDiceWidgetPosition(widget);
+    return;
+  }
+
+  const portraitWidth =
+    Number.parseFloat(portraitField.style.width) ||
+    portraitField.offsetWidth ||
+    250;
+
+  const portraitHeight = portraitField.offsetHeight || 320;
+  const portraitTop =
+    Number.parseFloat(portraitField.style.top) ||
+    portraitField.offsetTop ||
+    0;
+
+  const portraitLeft =
+    Number.parseFloat(portraitField.style.left) ||
+    portraitField.offsetLeft ||
+    0;
+
+  const closedWidth = portraitWidth;
+  const widgetWidth = closedWidth;
+  const gap = 14;
+
+  if (widget.parentElement !== form) {
+    form.appendChild(widget);
+  }
+
+  form.style.setProperty("position", "relative", "important");
+
+  widget.classList.add("campaign-dice-widget--near-portrait");
+  widget.style.setProperty("position", "absolute", "important");
+  widget.style.setProperty("right", "auto", "important");
+  widget.style.setProperty("bottom", "auto", "important");
+  widget.style.setProperty("width", `${widgetWidth}px`, "important");
+  widget.style.setProperty("max-width", `${widgetWidth}px`, "important");
+  widget.style.removeProperty("max-height");
+  widget.style.setProperty("margin", "0", "important");
+  widget.style.setProperty("z-index", "999998", "important");
+  widget.style.setProperty("display", "flex", "important");
+  widget.style.setProperty("transform", "none", "important");
+
+  const widgetHeight = widget.offsetHeight || 54;
+  const formHeight = Math.max(
+    form.scrollHeight || 0,
+    portraitTop + portraitHeight + widgetHeight + gap
+  );
+
+  let top = portraitTop + portraitHeight + gap;
+  const maxTop = Math.max(0, formHeight - widgetHeight);
+  top = Math.max(0, Math.min(top, maxTop));
+
+  let left = portraitLeft + portraitWidth / 2 - widgetWidth / 2;
+
+  const formWidth = form.getBoundingClientRect().width || form.offsetWidth || 0;
+  const minLeft = -520;
+  const maxLeft = Math.max(minLeft, formWidth + 520 - widgetWidth);
+  left = Math.max(minLeft, Math.min(left, maxLeft));
+
+  widget.style.setProperty("top", `${top}px`, "important");
+  widget.style.setProperty("left", `${left}px`, "important");
+}
+
+function resetCampaignDiceWidgetPosition(widget = document.getElementById("campaignDiceWidget")) {
+  if (!widget) return;
+
+  document.body.classList.remove("campaign-dice-modal-open");
+  widget.classList.remove("campaign-dice-widget--near-portrait", "campaign-dice-widget--modal");
+  widget.style.removeProperty("position");
+  widget.style.removeProperty("left");
+  widget.style.removeProperty("top");
+  widget.style.removeProperty("right");
+  widget.style.removeProperty("bottom");
+  widget.style.removeProperty("width");
+  widget.style.removeProperty("max-width");
+  widget.style.removeProperty("max-height");
+  widget.style.removeProperty("margin");
+  widget.style.removeProperty("z-index");
+  widget.style.removeProperty("display");
+  widget.style.removeProperty("transform");
+}
+
+function bindCampaignDiceRollerEvents(system) {
+  const widget = document.getElementById("campaignDiceWidget");
+  if (!widget || widget.dataset.diceReady === "true") return;
+
+  widget.dataset.diceReady = "true";
+
+  widget.addEventListener("click", async (event) => {
+    const toggleButton = event.target.closest("[data-dice-toggle]");
+    const refreshButton = event.target.closest("[data-dice-refresh]");
+    const rollButton = event.target.closest("[data-dice-formula]");
+
+    if (toggleButton) {
+      event.stopPropagation();
+      const isOpen = !widget.classList.contains("campaign-dice-widget--open");
+      setCampaignDiceWidgetOpen(widget, isOpen);
+      return;
+    }
+
+    if (refreshButton) {
+      event.stopPropagation();
+      await renderCampaignDiceHistory();
+      return;
+    }
+
+    if (rollButton) {
+      event.stopPropagation();
+      await handleCampaignDiceRoll({
+        system,
+        formula: rollButton.dataset.diceFormula,
+        label: rollButton.dataset.diceLabel,
+      });
+    }
+  });
+
+  widget.addEventListener("submit", async (event) => {
+    const form = event.target.closest("[data-dice-custom-form]");
+    if (!form) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    await handleCampaignDiceRoll({
+      system,
+      formula: form.elements.diceFormula.value,
+      label: form.elements.diceLabel.value || "Rolagem personalizada",
+    });
+  });
+}
