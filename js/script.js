@@ -2368,7 +2368,7 @@ async function renderInitiativeBoard(config) {
 
       return `
         <div class="initiative-row ${isActive ? "active" : ""}" data-initiative-index="${index}" data-player-id="${escapeHtml(item.playerId)}">
-          <div class="initiative-position">${index + 1}</div>
+          ${renderInitiativeCharacterAvatar(item, index)}
 
           <div class="initiative-character">
             <strong>${escapeHtml(item.characterName)}</strong>
@@ -2382,6 +2382,35 @@ async function renderInitiativeBoard(config) {
     .join("");
 }
 
+function getInitiativeCharacterAvatarUrl(item = {}) {
+  return (
+    item.characterPortraitUrl ||
+    item.characterAvatarUrl ||
+    item.portraitUrl ||
+    item.avatarUrl ||
+    ""
+  );
+}
+
+function renderInitiativeCharacterAvatar(item = {}, index = 0) {
+  const avatarUrl = getInitiativeCharacterAvatarUrl(item);
+  const characterName = escapeHtml(item.characterName || `Personagem ${index + 1}`);
+
+  if (avatarUrl) {
+    return `
+      <div class="initiative-position initiative-position--avatar">
+        <img src="${escapeHtml(avatarUrl)}" alt="${characterName}" loading="lazy" />
+      </div>
+    `;
+  }
+
+  return `
+    <div class="initiative-position initiative-position--fallback">
+      <span>${index + 1}</span>
+    </div>
+  `;
+}
+
 async function getInitiativeOrderedCharacters(config, campaign) {
   const playerIds = getCampaignPlayerIds(campaign);
   const initiativeList = [];
@@ -2393,6 +2422,8 @@ async function getInitiativeOrderedCharacters(config, campaign) {
     initiativeList.push({
       playerId,
       characterName: sheet.characterName || sheet.personagem || sheet.ownerName || "Personagem sem nome",
+      characterAvatarUrl: sheet.characterAvatarUrl || "",
+      characterPortraitUrl: sheet.characterPortraitUrl || sheet.characterAvatarUrl || "",
       initiativeNumber:
         initiativeValue === "" || initiativeValue === undefined || initiativeValue === null
           ? null
