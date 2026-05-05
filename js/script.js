@@ -7042,3 +7042,507 @@ function bindCampaignDiceRollerEvents(system) {
     });
   });
 }
+
+
+/* =========================================================
+   PATCH - ROLAGEM PÚBLICA / ESCONDIDA + RESULTADO PARA A MESA
+   - Rolagem aberta aparece para todos da campanha.
+   - Rolagem escondida fica visível apenas para o mestre.
+   - O mestre recebe resultados no canto inferior esquerdo.
+========================================================= */
+
+function ensureCampaignDiceRoller(system) {
+  const widget = document.getElementById("campaignDiceWidget");
+
+  if (!widget) return;
+
+  widget.dataset.diceSystem = system;
+  widget.classList.remove("campaign-dice-widget--open", "campaign-dice-widget--modal");
+  document.body.classList.remove("campaign-dice-modal-open");
+  localStorage.removeItem("campaignLabDiceOpen");
+
+  ensureCampaignDicePrivacyToggle(widget);
+  updateCampaignDicePrivacyToggle(widget);
+
+  const toggleButton = widget.querySelector("[data-dice-toggle]");
+  if (toggleButton) {
+    toggleButton.setAttribute("aria-expanded", "false");
+  }
+
+  widget.querySelectorAll("[data-dice-system-only]").forEach((block) => {
+    const allowedSystem = block.dataset.diceSystemOnly;
+    block.hidden = Boolean(allowedSystem && allowedSystem !== system);
+  });
+}
+
+function ensureCampaignDicePrivacyToggle(widget) {
+  if (!widget || widget.querySelector("[data-dice-hidden-toggle]")) return;
+
+  const quickGrid = widget.querySelector(".campaign-dice-quick-grid");
+  const form = widget.querySelector("[data-dice-custom-form]");
+  const reference = form || quickGrid;
+
+  const privacyBox = document.createElement("div");
+  privacyBox.className = "campaign-dice-privacy-box";
+  privacyBox.innerHTML = `
+    <button
+      type="button"
+      class="campaign-dice-hidden-toggle"
+      data-dice-hidden-toggle
+      aria-pressed="false"
+    >
+      <span class="campaign-dice-hidden-toggle__icon">👁</span>
+      <span class="campaign-dice-hidden-toggle__text">
+        <strong>Rolagem aberta</strong>
+        <small>Todos da mesa veem o resultado.</small>
+      </span>
+    </button>
+  `;
+
+  if (reference && reference.parentNode) {
+    reference.parentNode.insertBefore(privacyBox, reference === form ? form : quickGrid.nextSibling);
+    return;
+  }
+
+  const body = widget.querySelector(".campaign-dice-body");
+  if (body) body.prepend(privacyBox);
+}
+
+function bindCampaignDiceRollerEvents(system) {
+  const widget = document.getElementById("campaignDiceWidget");
+  if (!widget || widget.dataset.diceReady === "true") return;
+
+  widget.dataset.diceReady = "true";
+
+  widget.addEventListener("click", async (event) => {
+    const toggleButton = event.target.closest("[data-dice-toggle]");
+    const hiddenToggle = event.target.closest("[data-dice-hidden-toggle]");
+    const refreshButton = event.target.closest("[data-dice-refresh]");
+    const rollButton = event.target.closest("[data-dice-formula]");
+
+    if (toggleButton) {
+      event.stopPropagation();
+      const isOpen = !widget.classList.contains("campaign-dice-widget--open");
+      setCampaignDiceWidgetOpen(widget, isOpen);
+      return;
+    }
+
+    if (hiddenToggle) {
+      event.preventDefault();
+      event.stopPropagation();
+      setCampaignDiceHiddenMode(!isCampaignDiceHiddenModeEnabled());
+      updateCampaignDicePrivacyToggle(widget);
+      return;
+    }
+
+    if (refreshButton) {
+      event.stopPropagation();
+      await renderCampaignDiceHistory();
+      return;
+    }
+
+    if (rollButton) {
+      event.stopPropagation();
+      await handleCampaignDiceRoll({
+        system,
+        formula: rollButton.dataset.diceFormula,
+        label: rollButton.dataset.diceLabel,
+      });
+    }
+  });
+
+  widget.addEventListener("submit", async (event) => {
+    const form = event.target.closest("[data-dice-custom-form]");
+    if (!form) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    await handleCampaignDiceRoll({
+      system,
+      formula: form.elements.diceFormula.value,
+      label: form.elements.diceLabel.value || "Rolagem personalizada",
+    });
+  });
+}
+
+function getCampaignDiceHiddenStorageKey() {
+  const user = getLoggedUserFromSession();
+  const campaignId = getCurrentCampaignId() || "sem-campanha";
+  const userId = user && user.id ? user.id : "sem-usuario";
+
+  return `campaign-lab-dice-hidden-mode-${campaignId}-${userId}`;
+}
+
+function isCampaignDiceHiddenModeEnabled() {
+  return localStorage.getItem(getCampaignDiceHiddenStorageKey()) === "true";
+}
+
+function setCampaignDiceHiddenMode(enabled) {
+  localStorage.setItem(getCampaignDiceHiddenStorageKey(), enabled ? "true" : "false");
+}
+
+function updateCampaignDicePrivacyToggle(widget = document.getElementById("campaignDiceWidget")) {
+  if (!widget) return;
+
+  const button = widget.querySelector("[data-dice-hidden-toggle]");
+  if (!button) return;
+
+  const enabled = isCampaignDiceHiddenModeEnabled();
+  button.classList.toggle("is-hidden-mode", enabled);
+  button.setAttribute("aria-pressed", enabled ? "true" : "false");
+
+  const icon = button.querySelector(".campaign-dice-hidden-toggle__icon");
+  const title = button.querySelector(".campaign-dice-hidden-toggle__text strong");
+  const help = button.querySelector(".campaign-dice-hidden-toggle__text small");
+
+  if (icon) icon.textContent = enabled ? "🙈" : "👁";
+  if (title) title.textContent = enabled ? "Rolagem escondida" : "Rolagem aberta";
+  if (help) help.textContent = enabled
+    ? "Só o mestre vê o resultado."
+    : "Todos da mesa veem o resultado.";
+}
+
+async function handleCampaignDiceRoll({ system, formula, label }) {
+  const campaignId = getCurrentCampaignId();
+  const user = getLoggedUserFromSession();
+
+  if (!campaignId || !user || !formula) return;
+
+  playCampaignDiceRollSound();
+
+  const isHidden = isCampaignDiceHiddenModeEnabled();
+  const isMaster = await isCurrentUserCampaignMaster();
+  const context = getCampaignDiceContext(system);
+  const result = rollCampaignDiceFormula(formula, context.variables);
+
+  if (!result.ok) {
+    showCampaignDiceLocalResult({
+      total: "--",
+      label: label || "Erro na rolagem",
+      formula,
+      message: result.error || "Não consegui ler essa fórmula.",
+      error: true,
+      position: "right",
+    });
+    return;
+  }
+
+  if (isHidden && !isMaster) {
+    showCampaignDiceLocalResult({
+      total: "??",
+      label: "Rolagem escondida",
+      formula: "Enviada ao mestre",
+      message: "O resultado não aparece para os jogadores.",
+      hidden: true,
+      position: "right",
+    });
+  } else {
+    showCampaignDiceLocalResult({
+      total: result.total,
+      label: label || "Rolagem",
+      formula,
+      message: result.summary,
+      hidden: isHidden,
+      position: isMaster ? "left" : "right",
+    });
+  }
+
+  const row = {
+    campaign_id: String(campaignId),
+    user_id: String(user.id),
+    system,
+    character_name: context.characterName || user.nome || user.name || user.id,
+    roll_label: label || "Rolagem",
+    roll_formula: formula,
+    total: result.total,
+    details: {
+      summary: result.summary,
+      parts: result.parts,
+      variables: result.usedVariables,
+      resolvedFormula: result.resolvedFormula,
+      hidden: isHidden,
+      isHidden: isHidden,
+      visibility: isHidden ? "master" : "table",
+      rollOwnerId: String(user.id),
+    },
+  };
+
+  const { error } = await DB.from("dice_rolls").insert(row);
+
+  if (error) {
+    console.error("Erro ao salvar rolagem:", error);
+    showCampaignDiceLocalResult({
+      total: isHidden && !isMaster ? "??" : result.total,
+      label: label || "Rolagem feita, mas não salva",
+      formula,
+      message: "A rolagem funcionou, mas a tabela dice_rolls ainda não está criada no Supabase.",
+      error: true,
+      position: "right",
+    });
+    return;
+  }
+
+  await renderCampaignDiceHistory();
+}
+
+function showCampaignDiceLocalResult({
+  total,
+  label,
+  formula,
+  message,
+  error = false,
+  hidden = false,
+  position = "right",
+}) {
+  const resultBox = document.getElementById("campaignDiceLastResult");
+
+  showCampaignDiceFloatingResult({
+    total,
+    label,
+    formula,
+    message,
+    error,
+    hidden,
+    position,
+  });
+
+  if (!resultBox) return;
+
+  resultBox.classList.toggle("campaign-dice-last-result--error", Boolean(error));
+  resultBox.classList.toggle("campaign-dice-last-result--hidden", Boolean(hidden));
+  resultBox.innerHTML = `
+    <span>${escapeHtml(label || "Resultado")}</span>
+    <strong>${escapeHtml(total)}</strong>
+    <p>${escapeHtml(formula || "")} ${message ? `• ${escapeHtml(message)}` : ""}</p>
+  `;
+}
+
+function showCampaignDiceFloatingResult({
+  total,
+  label,
+  formula,
+  message,
+  error = false,
+  characterName = "",
+  hidden = false,
+  position = "right",
+}) {
+  const layer = getCampaignDiceToastLayer(position);
+  if (!layer) return;
+
+  const toast = document.createElement("article");
+  toast.className = `campaign-dice-toast${error ? " campaign-dice-toast--error" : ""}${hidden ? " campaign-dice-toast--hidden" : ""}`;
+
+  toast.innerHTML = `
+    <div class="campaign-dice-toast-content">
+      <div class="campaign-dice-toast-info">
+        <span>${escapeHtml(characterName || label || "Resultado")}</span>
+        <strong>${hidden ? "🔒 " : ""}${escapeHtml(label || "Rolagem")}</strong>
+        <code>${escapeHtml(formula || "")}</code>
+        ${message ? `<p>${escapeHtml(message)}</p>` : ""}
+      </div>
+
+      <div class="campaign-dice-toast-total">
+        ${escapeHtml(total)}
+      </div>
+    </div>
+  `;
+
+  layer.prepend(toast);
+
+  requestAnimationFrame(() => {
+    toast.classList.add("campaign-dice-toast--visible");
+  });
+
+  const removeToast = () => {
+    toast.classList.remove("campaign-dice-toast--visible");
+    window.setTimeout(() => toast.remove(), 260);
+  };
+
+  window.setTimeout(removeToast, 5000);
+}
+
+function getCampaignDiceToastLayer(position = "right") {
+  const safePosition = position === "left" ? "left" : "right";
+  const layerId = safePosition === "left" ? "campaignDiceToastLayerLeft" : "campaignDiceToastLayerRight";
+
+  let layer = document.getElementById(layerId);
+
+  if (layer) return layer;
+
+  layer = document.createElement("div");
+  layer.id = layerId;
+  layer.className = `campaign-dice-toast-layer campaign-dice-toast-layer--${safePosition}`;
+  document.body.appendChild(layer);
+
+  return layer;
+}
+
+async function renderCampaignDiceHistory() {
+  const history = document.getElementById("campaignDiceHistory");
+  const campaignId = getCurrentCampaignId();
+
+  if (!history || !campaignId || !DB) return;
+
+  const isMaster = await isCurrentUserCampaignMaster();
+
+  const { data, error } = await DB
+    .from("dice_rolls")
+    .select("id, campaign_id, user_id, system, character_name, roll_label, roll_formula, total, details, created_at")
+    .eq("campaign_id", String(campaignId))
+    .order("created_at", { ascending: false })
+    .limit(35);
+
+  if (error) {
+    console.error("Erro ao carregar rolagens:", error);
+    history.innerHTML = `
+      <div class="campaign-dice-empty campaign-dice-empty--error">
+        Crie a tabela dice_rolls no Supabase para ativar o histórico.
+      </div>
+    `;
+    return;
+  }
+
+  const visibleRows = (data || []).filter((row) => {
+    if (!isCampaignDiceRowHidden(row)) return true;
+    return isMaster;
+  }).slice(0, 20);
+
+  if (!visibleRows.length) {
+    history.innerHTML = `
+      <div class="campaign-dice-empty">
+        Nenhuma rolagem visível ainda.
+      </div>
+    `;
+    return;
+  }
+
+  history.innerHTML = visibleRows.map((row) => renderCampaignDiceHistoryItem(row, isMaster)).join("");
+}
+
+function renderCampaignDiceHistoryItem(row, isMaster = false) {
+  const details = getCampaignDiceRowDetails(row);
+  const isHidden = isCampaignDiceRowHidden(row);
+  const date = row.created_at ? new Date(row.created_at) : null;
+  const time = date
+    ? date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    : "--:--";
+
+  return `
+    <article class="campaign-dice-history-item${isHidden ? " campaign-dice-history-item--hidden" : ""}">
+      <div class="campaign-dice-history-top">
+        <strong>${escapeHtml(row.character_name || "Jogador")}</strong>
+        <span>${isHidden && isMaster ? "🔒 Escondida • " : ""}${escapeHtml(time)}</span>
+      </div>
+
+      <div class="campaign-dice-history-middle">
+        <div>
+          <p>${isHidden ? "🔒 " : ""}${escapeHtml(row.roll_label || "Rolagem")}</p>
+          <code>${escapeHtml(row.roll_formula || "")}</code>
+        </div>
+
+        <b>${escapeHtml(row.total)}</b>
+      </div>
+
+      <small>${escapeHtml(details.summary || "")}</small>
+    </article>
+  `;
+}
+
+function subscribeDiceRollsRealtime() {
+  const campaignId = getCurrentCampaignId();
+
+  if (!campaignId || !DB) return;
+
+  if (diceRealtimeChannel) DB.removeChannel(diceRealtimeChannel);
+
+  diceRealtimeChannel = DB
+    .channel(`dice-rolls-${campaignId}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "dice_rolls", filter: `campaign_id=eq.${campaignId}` },
+      async (payload) => {
+        await renderCampaignDiceHistory();
+
+        if (payload.eventType === "INSERT" && payload.new) {
+          await showCampaignDiceRealtimeResult(payload.new);
+        }
+      }
+    )
+    .subscribe();
+}
+
+async function showCampaignDiceRealtimeResult(row) {
+  const user = getLoggedUserFromSession();
+  const isMaster = await isCurrentUserCampaignMaster();
+  const isHidden = isCampaignDiceRowHidden(row);
+  const rowUserId = row && row.user_id ? String(row.user_id) : "";
+  const currentUserId = user && user.id ? String(user.id) : "";
+  const isOwnRoll = currentUserId && rowUserId === currentUserId;
+
+  if (isHidden && !isMaster) return;
+  if (isOwnRoll) return;
+
+  const details = getCampaignDiceRowDetails(row);
+  const position = isMaster || document.body.classList.contains("altherium-page") || document.body.classList.contains("dnd-master-page")
+    ? "left"
+    : "left";
+
+  showCampaignDiceFloatingResult({
+    total: row.total,
+    label: row.roll_label || "Rolagem",
+    formula: row.roll_formula || "",
+    message: isHidden ? "Rolagem escondida enviada ao mestre." : details.summary || "",
+    characterName: row.character_name || "Jogador",
+    hidden: isHidden,
+    position,
+  });
+}
+
+function getCampaignDiceRowDetails(row) {
+  if (!row || !row.details) return {};
+
+  if (typeof row.details === "string") {
+    try {
+      return JSON.parse(row.details) || {};
+    } catch (error) {
+      return {};
+    }
+  }
+
+  return row.details || {};
+}
+
+function isCampaignDiceRowHidden(row) {
+  const details = getCampaignDiceRowDetails(row);
+
+  return Boolean(
+    details.hidden === true ||
+      details.isHidden === true ||
+      details.visibility === "master" ||
+      details.visibility === "hidden" ||
+      details.visibility === "gm"
+  );
+}
+
+async function isCurrentUserCampaignMaster() {
+  const user = getLoggedUserFromSession();
+
+  if (
+    document.body.classList.contains("altherium-page") ||
+    document.body.classList.contains("dnd-master-page")
+  ) {
+    return true;
+  }
+
+  const profile = String(sessionStorage.getItem("profile") || sessionStorage.getItem("perfil") || "").toLowerCase();
+  if (profile === "mestre") return true;
+
+  if (!user) return false;
+
+  const campaign = await getCurrentCampaign(false);
+  if (!campaign) return false;
+
+  return String(campaign.mestreId || campaign.master_id || "") === String(user.id || "");
+}
