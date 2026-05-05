@@ -7465,3 +7465,114 @@ body > .header-logout-area .header-logout-button__text {
   appearance: textfield !important;
   -moz-appearance: textfield !important;
 }
+
+/* =========================================================
+   INICIATIVA - BOTÕES LIMPAR E PRÓXIMO JUNTOS
+========================================================= */
+
+/*
+  Deixa o botão Limpar iniciativa perto do botão Próximo
+  e transforma o Limpar iniciativa em botão vermelho.
+*/
+
+/* Header/área onde ficam os botões da iniciativa */
+.altherium-panel-header:has(#clearInitiativeBtn),
+.altherium-panel-header:has(#clearDndInitiativeBtn) {
+  justify-content: flex-end !important;
+  align-items: center !important;
+  gap: 12px !important;
+}
+
+/* Caso exista um texto/título antes dos botões, ele continua à esquerda */
+.altherium-panel-header:has(#clearInitiativeBtn) > div:first-child,
+.altherium-panel-header:has(#clearDndInitiativeBtn) > div:first-child {
+  margin-right: auto !important;
+}
+
+/* Botão Limpar iniciativa - Altherium */
+#clearInitiativeBtn {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+
+  border: 1px solid rgba(239, 68, 68, 0.55) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(248, 113, 113, 0.96),
+    rgba(220, 38, 38, 0.96)
+  ) !important;
+  color: #160506 !important;
+
+  box-shadow:
+    0 0 24px rgba(239, 68, 68, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+#clearInitiativeBtn:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(248, 113, 113, 0.9) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(252, 165, 165, 0.98),
+    rgba(239, 68, 68, 0.98)
+  ) !important;
+  color: #160506 !important;
+  box-shadow:
+    0 16px 34px rgba(239, 68, 68, 0.18),
+    0 0 34px rgba(239, 68, 68, 0.26) !important;
+}
+
+/* Botão Limpar iniciativa - D&D */
+#clearDndInitiativeBtn {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+
+  border: 1px solid rgba(239, 68, 68, 0.55) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(248, 113, 113, 0.96),
+    rgba(220, 38, 38, 0.96)
+  ) !important;
+  color: #160506 !important;
+
+  box-shadow:
+    0 0 24px rgba(239, 68, 68, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+#clearDndInitiativeBtn:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(248, 113, 113, 0.9) !important;
+  background: linear-gradient(
+    135deg,
+    rgba(252, 165, 165, 0.98),
+    rgba(239, 68, 68, 0.98)
+  ) !important;
+  color: #160506 !important;
+  box-shadow:
+    0 16px 34px rgba(239, 68, 68, 0.18),
+    0 0 34px rgba(239, 68, 68, 0.26) !important;
+}
+
+/* Botão Próximo perto do Limpar */
+#initiativeBoardNextTurnBtn,
+#dndInitiativeBoardNextTurnBtn,
+.initiative-next-btn {
+  margin-left: 0 !important;
+  margin-right: 0 !important;
+}
+
+/* Mobile: botões um embaixo do outro */
+@media (max-width: 700px) {
+  .altherium-panel-header:has(#clearInitiativeBtn),
+  .altherium-panel-header:has(#clearDndInitiativeBtn) {
+    align-items: stretch !important;
+  }
+
+  #clearInitiativeBtn,
+  #clearDndInitiativeBtn,
+  #initiativeBoardNextTurnBtn,
+  #dndInitiativeBoardNextTurnBtn,
+  .initiative-next-btn {
+    width: 100% !important;
+  }
+}

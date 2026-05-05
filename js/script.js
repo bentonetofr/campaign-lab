@@ -2117,11 +2117,153 @@ function updateDndAutoNumbers() {
    INICIATIVA
 ========================================================= */
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 async function setupInitiativeBoard(config) {
+  await ensureInitiativeNextButton(config);
   await renderInitiativeBoard(config);
 
   const clearButton = document.getElementById(config.clearButtonId);
-  if (clearButton) clearButton.addEventListener("click", () => clearInitiative(config));
+  if (clearButton && !clearButton.dataset.clearInitiativeReady) {
+    clearButton.dataset.clearInitiativeReady = "true";
+    clearButton.addEventListener("click", () => clearInitiative(config));
+  }
+
+  const nextButton = getInitiativeNextButton(config);
+  if (nextButton && !nextButton.dataset.nextInitiativeReady) {
+    nextButton.dataset.nextInitiativeReady = "true";
+    nextButton.addEventListener("click", () => goToNextInitiativeTurn(config));
+  }
+}
+
+async function ensureInitiativeNextButton(config) {
+  const clearButton = document.getElementById(config.clearButtonId);
+  const board = document.getElementById(config.boardId);
+
+  if (!clearButton || !board) return;
+
+  const nextButtonId = getInitiativeNextButtonId(config);
+  let nextButton = document.getElementById(nextButtonId);
+
+  if (!nextButton) {
+    nextButton = document.createElement("button");
+    nextButton.type = "button";
+    nextButton.id = nextButtonId;
+    nextButton.className = "altherium-btn initiative-next-btn";
+    nextButton.textContent = "Próximo";
+
+    clearButton.insertAdjacentElement("afterend", nextButton);
+  }
+
+  injectInitiativeNextButtonStyles();
+}
+
+function getInitiativeNextButton(config) {
+  return document.getElementById(getInitiativeNextButtonId(config));
+}
+
+function getInitiativeNextButtonId(config) {
+  return `${config.boardId}NextTurnBtn`;
+}
+
+function injectInitiativeNextButtonStyles() {
+  if (document.getElementById("initiative-next-button-style")) return;
+
+  const style = document.createElement("style");
+  style.id = "initiative-next-button-style";
+
+  style.textContent = `
+    .initiative-next-btn {
+      margin-left: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.34) !important;
+      background:
+        linear-gradient(135deg, rgba(34, 211, 238, 0.94), rgba(6, 182, 212, 0.94)) !important;
+      color: #020617 !important;
+      box-shadow:
+        0 0 24px rgba(34, 211, 238, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+    }
+
+    .initiative-next-btn:hover {
+      transform: translateY(-2px);
+      box-shadow:
+        0 16px 34px rgba(34, 211, 238, 0.18),
+        0 0 34px rgba(34, 211, 238, 0.26) !important;
+    }
+
+    .initiative-next-btn:disabled {
+      opacity: 0.45;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none !important;
+    }
+
+    .dnd-master-page .initiative-next-btn {
+      border-color: rgba(239, 68, 68, 0.34) !important;
+      background:
+        linear-gradient(135deg, rgba(248, 113, 113, 0.96), rgba(220, 38, 38, 0.96)) !important;
+      color: #160506 !important;
+      box-shadow:
+        0 0 24px rgba(239, 68, 68, 0.2),
+        inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+    }
+
+    @media (max-width: 700px) {
+      .initiative-next-btn {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 10px;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
 }
 
 async function renderInitiativeBoard(config) {
@@ -2130,6 +2272,10 @@ async function renderInitiativeBoard(config) {
 
   if (!board) return;
 
+  await ensureInitiativeNextButton(config);
+
+  const nextButton = getInitiativeNextButton(config);
+
   if (!campaign) {
     board.innerHTML = `
       <div class="altherium-empty">
@@ -2137,21 +2283,60 @@ async function renderInitiativeBoard(config) {
         <p>Volte para suas campanhas e entre novamente.</p>
       </div>
     `;
+
+    if (nextButton) nextButton.disabled = true;
     return;
   }
 
-  const playerIds = getCampaignPlayerIds(campaign);
+  const initiativeList = await getInitiativeOrderedCharacters(config, campaign);
 
-  if (!playerIds.length) {
+  if (!initiativeList.length) {
     board.innerHTML = `
       <div class="altherium-empty">
         <h3>Nenhum personagem na iniciativa</h3>
         <p>Adicione jogadores à campanha para montar a ordem.</p>
       </div>
     `;
+
+    if (nextButton) nextButton.disabled = true;
+    await saveInitiativeTurnState(config, campaign, 0, "");
     return;
   }
 
+  const currentTurnIndex = await getCurrentInitiativeTurnIndex(
+    config,
+    campaign,
+    initiativeList.length,
+    initiativeList
+  );
+
+  if (nextButton) {
+    nextButton.disabled = initiativeList.length <= 1;
+  }
+
+  board.innerHTML = initiativeList
+    .map((item, index) => {
+      const value = item.initiativeNumber === null ? "--" : item.initiativeNumber;
+      const isActive = index === currentTurnIndex;
+
+      return `
+        <div class="initiative-row ${isActive ? "active" : ""}" data-initiative-index="${index}" data-player-id="${escapeHtml(item.playerId)}">
+          <div class="initiative-position">${index + 1}</div>
+
+          <div class="initiative-character">
+            <strong>${escapeHtml(item.characterName)}</strong>
+            <span>${isActive ? "Turno atual" : "Aguardando turno"}</span>
+          </div>
+
+          <div class="initiative-value">${value}</div>
+        </div>
+      `;
+    })
+    .join("");
+}
+
+async function getInitiativeOrderedCharacters(config, campaign) {
+  const playerIds = getCampaignPlayerIds(campaign);
   const initiativeList = [];
 
   for (const playerId of playerIds) {
@@ -2175,24 +2360,157 @@ async function renderInitiativeBoard(config) {
     return b.initiativeNumber - a.initiativeNumber;
   });
 
-  board.innerHTML = initiativeList
-    .map((item, index) => {
-      const value = item.initiativeNumber === null ? "--" : item.initiativeNumber;
+  return initiativeList;
+}
 
-      return `
-        <div class="initiative-row ${index === 0 ? "active" : ""}">
-          <div class="initiative-position">${index + 1}</div>
+async function goToNextInitiativeTurn(config) {
+  const campaign = await getCurrentCampaign(true);
+  if (!campaign) return;
 
-          <div class="initiative-character">
-            <strong>${escapeHtml(item.characterName)}</strong>
-            <span>${index === 0 ? "Turno atual" : "Aguardando turno"}</span>
-          </div>
+  const initiativeList = await getInitiativeOrderedCharacters(config, campaign);
 
-          <div class="initiative-value">${value}</div>
-        </div>
-      `;
-    })
-    .join("");
+  if (!initiativeList.length) return;
+
+  const currentIndex = await getCurrentInitiativeTurnIndex(
+    config,
+    campaign,
+    initiativeList.length,
+    initiativeList
+  );
+
+  const nextIndex = (currentIndex + 1) % initiativeList.length;
+  const nextCharacter = initiativeList[nextIndex];
+
+  await saveInitiativeTurnState(
+    config,
+    campaign,
+    nextIndex,
+    nextCharacter ? nextCharacter.playerId : ""
+  );
+
+  await renderInitiativeBoard(config);
+}
+
+async function getCurrentInitiativeTurnIndex(config, campaign, totalCharacters, initiativeList = []) {
+  if (totalCharacters <= 0) return 0;
+
+  const fallbackIndex = getLocalInitiativeTurnIndex(config, campaign, totalCharacters);
+
+  if (!DB) return fallbackIndex;
+
+  const { data, error } = await DB
+    .from("campaign_initiative_state")
+    .select("current_turn_index, current_player_id")
+    .eq("campaign_id", String(campaign.id))
+    .eq("system", config.system || "Sistema")
+    .maybeSingle();
+
+  if (error) {
+    console.error("Erro ao carregar turno da iniciativa no Supabase:", error);
+    return fallbackIndex;
+  }
+
+  if (!data) {
+    const firstCharacter = initiativeList[0];
+
+    await saveInitiativeTurnState(
+      config,
+      campaign,
+      0,
+      firstCharacter ? firstCharacter.playerId : ""
+    );
+
+    return 0;
+  }
+
+  if (data.current_player_id && initiativeList.length) {
+    const playerIndex = initiativeList.findIndex((item) => item.playerId === data.current_player_id);
+
+    if (playerIndex >= 0) {
+      if (playerIndex !== Number(data.current_turn_index)) {
+        await saveInitiativeTurnState(config, campaign, playerIndex, data.current_player_id);
+      }
+
+      return playerIndex;
+    }
+  }
+
+  const savedIndex = Number(data.current_turn_index);
+
+  if (!Number.isFinite(savedIndex) || savedIndex < 0 || savedIndex >= totalCharacters) {
+    const firstCharacter = initiativeList[0];
+
+    await saveInitiativeTurnState(
+      config,
+      campaign,
+      0,
+      firstCharacter ? firstCharacter.playerId : ""
+    );
+
+    return 0;
+  }
+
+  return savedIndex;
+}
+
+function getLocalInitiativeTurnIndex(config, campaign, totalCharacters) {
+  const key = getInitiativeTurnStorageKey(config, campaign);
+  const savedIndex = Number(localStorage.getItem(key));
+
+  if (!Number.isFinite(savedIndex) || savedIndex < 0) {
+    localStorage.setItem(key, "0");
+    return 0;
+  }
+
+  if (totalCharacters <= 0) {
+    localStorage.setItem(key, "0");
+    return 0;
+  }
+
+  if (savedIndex >= totalCharacters) {
+    localStorage.setItem(key, "0");
+    return 0;
+  }
+
+  return savedIndex;
+}
+
+async function saveInitiativeTurnState(config, campaign, index, playerId = "") {
+  const safeIndex = Math.max(0, Number(index) || 0);
+  const safePlayerId = playerId ? String(playerId) : "";
+
+  setLocalInitiativeTurnIndex(config, campaign, safeIndex);
+
+  if (!DB || !campaign || !campaign.id) return;
+
+  const { error } = await DB
+    .from("campaign_initiative_state")
+    .upsert(
+      {
+        campaign_id: String(campaign.id),
+        system: config.system || "Sistema",
+        current_turn_index: safeIndex,
+        current_player_id: safePlayerId,
+        updated_at: new Date().toISOString(),
+      },
+      { onConflict: "campaign_id,system" }
+    );
+
+  if (error) {
+    console.error("Erro ao salvar turno da iniciativa no Supabase:", error);
+  }
+}
+
+function setLocalInitiativeTurnIndex(config, campaign, index) {
+  const key = getInitiativeTurnStorageKey(config, campaign);
+  localStorage.setItem(key, String(Math.max(0, Number(index) || 0)));
+}
+
+function getInitiativeTurnStorageKey(config, campaign) {
+  const campaignId = campaign && campaign.id ? campaign.id : "sem-campanha";
+  const system = config.system || "Sistema";
+
+  return `campaign-lab-current-initiative-${system}-${campaignId}`;
 }
 
 async function clearInitiative(config) {
@@ -2211,6 +2529,7 @@ async function clearInitiative(config) {
     });
   }
 
+  await saveInitiativeTurnState(config, campaign, 0, "");
   await renderInitiativeBoard(config);
 }
 
@@ -2261,6 +2580,13 @@ function subscribeCampaignRealtime(callback) {
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: "altherium_bestiary", filter: `campaign_id=eq.${campaignId}` },
+      async () => {
+        await callback();
+      }
+    )
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "campaign_initiative_state", filter: `campaign_id=eq.${campaignId}` },
       async () => {
         await callback();
       }
