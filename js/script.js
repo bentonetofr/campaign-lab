@@ -7199,7 +7199,7 @@ function updateCampaignDicePrivacyToggle(widget = document.getElementById("campa
   if (icon) icon.textContent = enabled ? "🙈" : "👁";
   if (title) title.textContent = enabled ? "Rolagem escondida" : "Rolagem aberta";
   if (help) help.textContent = enabled
-    ? "Só o mestre vê o resultado."
+    ? "Só você e o mestre veem o resultado."
     : "Todos da mesa veem o resultado.";
 }
 
@@ -7228,25 +7228,18 @@ async function handleCampaignDiceRoll({ system, formula, label }) {
     return;
   }
 
-  if (isHidden && !isMaster) {
-    showCampaignDiceLocalResult({
-      total: "??",
-      label: "Rolagem escondida",
-      formula: "Enviada ao mestre",
-      message: "O resultado não aparece para os jogadores.",
-      hidden: true,
-      position: "right",
-    });
-  } else {
-    showCampaignDiceLocalResult({
-      total: result.total,
-      label: label || "Rolagem",
-      formula,
-      message: result.summary,
-      hidden: isHidden,
-      position: isMaster ? "left" : "right",
-    });
-  }
+  const ownerHiddenMessage = isHidden
+    ? "Rolagem escondida. Só você e o mestre veem este resultado."
+    : result.summary;
+
+  showCampaignDiceLocalResult({
+    total: result.total,
+    label: label || (isHidden ? "Rolagem escondida" : "Rolagem"),
+    formula,
+    message: ownerHiddenMessage,
+    hidden: isHidden,
+    position: isMaster ? "left" : "right",
+  });
 
   const row = {
     campaign_id: String(campaignId),
@@ -7263,7 +7256,7 @@ async function handleCampaignDiceRoll({ system, formula, label }) {
       resolvedFormula: result.resolvedFormula,
       hidden: isHidden,
       isHidden: isHidden,
-      visibility: isHidden ? "master" : "table",
+      visibility: isHidden ? "owner-master" : "table",
       rollOwnerId: String(user.id),
     },
   };
@@ -7273,19 +7266,19 @@ async function handleCampaignDiceRoll({ system, formula, label }) {
   if (error) {
     console.error("Erro ao salvar rolagem:", error);
     showCampaignDiceLocalResult({
-      total: isHidden && !isMaster ? "??" : result.total,
+      total: result.total,
       label: label || "Rolagem feita, mas não salva",
       formula,
       message: "A rolagem funcionou, mas a tabela dice_rolls ainda não está criada no Supabase.",
       error: true,
-      position: "right",
+      hidden: isHidden,
+      position: isMaster ? "left" : "right",
     });
     return;
   }
 
   await renderCampaignDiceHistory();
 }
-
 function showCampaignDiceLocalResult({
   total,
   label,
@@ -7382,6 +7375,8 @@ function getCampaignDiceToastLayer(position = "right") {
 async function renderCampaignDiceHistory() {
   const history = document.getElementById("campaignDiceHistory");
   const campaignId = getCurrentCampaignId();
+  const user = getLoggedUserFromSession();
+  const currentUserId = user && user.id ? String(user.id) : "";
 
   if (!history || !campaignId || !DB) return;
 
@@ -7405,8 +7400,7 @@ async function renderCampaignDiceHistory() {
   }
 
   const visibleRows = (data || []).filter((row) => {
-    if (!isCampaignDiceRowHidden(row)) return true;
-    return isMaster;
+    return canCurrentUserSeeCampaignDiceRow(row, isMaster, currentUserId);
   }).slice(0, 20);
 
   if (!visibleRows.length) {
@@ -7418,22 +7412,28 @@ async function renderCampaignDiceHistory() {
     return;
   }
 
-  history.innerHTML = visibleRows.map((row) => renderCampaignDiceHistoryItem(row, isMaster)).join("");
+  history.innerHTML = visibleRows
+    .map((row) => renderCampaignDiceHistoryItem(row, isMaster, currentUserId))
+    .join("");
 }
 
-function renderCampaignDiceHistoryItem(row, isMaster = false) {
+function renderCampaignDiceHistoryItem(row, isMaster = false, currentUserId = "") {
   const details = getCampaignDiceRowDetails(row);
   const isHidden = isCampaignDiceRowHidden(row);
+  const isOwnRoll = isCampaignDiceRowOwner(row, currentUserId);
   const date = row.created_at ? new Date(row.created_at) : null;
   const time = date
     ? date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
     : "--:--";
+  const hiddenBadge = isHidden
+    ? `${isOwnRoll && !isMaster ? "🔒 Sua rolagem escondida" : "🔒 Escondida"} • `
+    : "";
 
   return `
     <article class="campaign-dice-history-item${isHidden ? " campaign-dice-history-item--hidden" : ""}">
       <div class="campaign-dice-history-top">
         <strong>${escapeHtml(row.character_name || "Jogador")}</strong>
-        <span>${isHidden && isMaster ? "🔒 Escondida • " : ""}${escapeHtml(time)}</span>
+        <span>${hiddenBadge}${escapeHtml(time)}</span>
       </div>
 
       <div class="campaign-dice-history-middle">
@@ -7449,7 +7449,6 @@ function renderCampaignDiceHistoryItem(row, isMaster = false) {
     </article>
   `;
 }
-
 function subscribeDiceRollsRealtime() {
   const campaignId = getCurrentCampaignId();
 
@@ -7477,11 +7476,11 @@ async function showCampaignDiceRealtimeResult(row) {
   const user = getLoggedUserFromSession();
   const isMaster = await isCurrentUserCampaignMaster();
   const isHidden = isCampaignDiceRowHidden(row);
-  const rowUserId = row && row.user_id ? String(row.user_id) : "";
+  const rowUserId = getCampaignDiceRowOwnerId(row);
   const currentUserId = user && user.id ? String(user.id) : "";
   const isOwnRoll = currentUserId && rowUserId === currentUserId;
 
-  if (isHidden && !isMaster) return;
+  if (isHidden && !isMaster && !isOwnRoll) return;
   if (isOwnRoll) return;
 
   const details = getCampaignDiceRowDetails(row);
@@ -7493,13 +7492,12 @@ async function showCampaignDiceRealtimeResult(row) {
     total: row.total,
     label: row.roll_label || "Rolagem",
     formula: row.roll_formula || "",
-    message: isHidden ? "Rolagem escondida enviada ao mestre." : details.summary || "",
+    message: isHidden ? "Rolagem escondida. Só o jogador e o mestre podem ver." : details.summary || "",
     characterName: row.character_name || "Jogador",
     hidden: isHidden,
     position,
   });
 }
-
 function getCampaignDiceRowDetails(row) {
   if (!row || !row.details) return {};
 
@@ -7514,18 +7512,46 @@ function getCampaignDiceRowDetails(row) {
   return row.details || {};
 }
 
+function getCampaignDiceRowOwnerId(row) {
+  const details = getCampaignDiceRowDetails(row);
+
+  return String(
+    (row && row.user_id) ||
+      details.rollOwnerId ||
+      details.ownerId ||
+      details.playerId ||
+      ""
+  );
+}
+
+function isCampaignDiceRowOwner(row, userId) {
+  if (!row || !userId) return false;
+
+  return getCampaignDiceRowOwnerId(row) === String(userId);
+}
+
+function canCurrentUserSeeCampaignDiceRow(row, isMaster = false, currentUserId = "") {
+  if (!isCampaignDiceRowHidden(row)) return true;
+  if (isMaster) return true;
+
+  return isCampaignDiceRowOwner(row, currentUserId);
+}
+
 function isCampaignDiceRowHidden(row) {
   const details = getCampaignDiceRowDetails(row);
+  const visibility = String(details.visibility || "").toLowerCase();
 
   return Boolean(
     details.hidden === true ||
       details.isHidden === true ||
-      details.visibility === "master" ||
-      details.visibility === "hidden" ||
-      details.visibility === "gm"
+      visibility === "master" ||
+      visibility === "hidden" ||
+      visibility === "gm" ||
+      visibility === "owner-master" ||
+      visibility === "owner_master" ||
+      visibility === "private"
   );
 }
-
 async function isCurrentUserCampaignMaster() {
   const user = getLoggedUserFromSession();
 
