@@ -2320,6 +2320,7 @@ const ALTHERIUM_BOSS_DIFFICULTIES = {
 };
 
 async function setupAltheriumBestiary() {
+  injectAltheriumEnemyDeleteButtonStyles();
   const form = getFirstElement([
     "bossForm",
     "bestiaryForm",
@@ -2343,7 +2344,12 @@ async function setupAltheriumBestiary() {
     });
   }
 
-  const generateButton = document.getElementById("generateBossBtn");
+  const generateButton = getFirstElement([
+    "generateBossBtn",
+    "generateEnemyBtn",
+    "gerarInimigoBtn",
+  ]);
+
   if (generateButton && !generateButton.dataset.bestiaryReady) {
     generateButton.dataset.bestiaryReady = "true";
     generateButton.addEventListener("click", generateAltheriumBoss);
@@ -2353,6 +2359,40 @@ async function setupAltheriumBestiary() {
   if (refreshButton && !refreshButton.dataset.bestiaryReady) {
     refreshButton.dataset.bestiaryReady = "true";
     refreshButton.addEventListener("click", renderAltheriumBestiary);
+  }
+
+  const deleteContainers = [
+    getFirstElement(["generatedEnemiesList", "monsterGrid", "generated-enemies-list"]),
+    getFirstElement(["bestiaryResult", "bossResult", "boss-result", "altheriumBossResult"]),
+  ].filter(Boolean);
+
+  deleteContainers.forEach((container) => {
+    if (container.dataset.deleteReady) return;
+
+    container.dataset.deleteReady = "true";
+
+    container.addEventListener("click", async (event) => {
+      const deleteButton = event.target.closest("[data-delete-enemy-id]");
+      if (!deleteButton) return;
+
+      const enemyId = deleteButton.dataset.deleteEnemyId;
+      const shouldDelete = window.confirm("Deseja excluir este inimigo do bestiário?");
+      if (!shouldDelete) return;
+
+      await deleteAltheriumGeneratedEnemy(enemyId);
+    });
+  });
+
+  const clearEnemiesButton = document.getElementById("clearGeneratedEnemiesBtn");
+  if (clearEnemiesButton && !clearEnemiesButton.dataset.clearReady) {
+    clearEnemiesButton.dataset.clearReady = "true";
+
+    clearEnemiesButton.addEventListener("click", async () => {
+      const shouldClear = window.confirm("Deseja excluir todos os inimigos gerados?");
+      if (!shouldClear) return;
+
+      await clearAltheriumGeneratedEnemies();
+    });
   }
 
   await renderAltheriumBestiary();
@@ -2366,17 +2406,24 @@ async function renderAltheriumBestiary() {
   renderAltheriumPartyStats(party);
   renderAltheriumBestiaryPlayers(party);
   renderAltheriumBossPreview(party);
+  await renderAltheriumGeneratedEnemiesList();
+  await updateAltheriumMonsterCount();
 }
 
 async function generateAltheriumBoss() {
   const party = await getAltheriumPartyCombatData();
   const bossConfig = getAltheriumBossFormConfig();
   const boss = calculateAltheriumBoss(party, bossConfig);
+  const savedEnemy = canSaveAltheriumBoss(boss)
+    ? await saveAltheriumGeneratedEnemy(boss)
+    : null;
 
   renderAltheriumPartyStats(party);
   renderAltheriumBestiaryPlayers(party);
   renderAltheriumBossPreview(party, boss);
-  renderAltheriumBossResult(boss);
+  renderAltheriumBossResult(boss, savedEnemy ? savedEnemy.id : "");
+  await renderAltheriumGeneratedEnemiesList();
+  await updateAltheriumMonsterCount();
 }
 
 async function getAltheriumPartyCombatData() {
@@ -2672,7 +2719,7 @@ function renderAltheriumBossPreview(party, boss = null) {
   `;
 }
 
-function renderAltheriumBossResult(boss) {
+function renderAltheriumBossResult(boss, savedEnemyId = "") {
   const container = getFirstElement([
     "bestiaryResult",
     "bossResult",
@@ -2702,7 +2749,20 @@ function renderAltheriumBossResult(boss) {
           <h2>${escapeHtml(boss.name)}</h2>
         </div>
 
-        <strong class="boss-result-card__hp">PV ${formatCombatNumber(boss.bossHp)}</strong>
+        <div class="boss-result-card__header-actions">
+          <strong class="boss-result-card__hp">PV ${formatCombatNumber(boss.bossHp)}</strong>
+          ${
+            savedEnemyId
+              ? `<button
+                  type="button"
+                  class="altherium-btn btn-remove-player"
+                  data-delete-enemy-id="${savedEnemyId}"
+                >
+                  Excluir inimigo
+                </button>`
+              : ""
+          }
+        </div>
       </div>
 
       <div class="boss-result-grid">
@@ -2767,6 +2827,303 @@ function renderAltheriumBossResult(boss) {
       </div>
     </article>
   `;
+}
+
+
+async function saveAltheriumGeneratedEnemy(boss) {
+  const campaign = boss.party.campaign || (await getCurrentCampaign(true));
+  const enemies = getStoredAltheriumEnemies(campaign);
+  const enemy = buildAltheriumEnemyRecord(boss);
+
+  enemies.unshift(enemy);
+  saveStoredAltheriumEnemies(campaign, enemies);
+
+  return enemy;
+}
+
+function canSaveAltheriumBoss(boss) {
+  const party = boss.party;
+
+  return Boolean(
+    party &&
+      party.players.length &&
+      party.totalDamageAverage > 0 &&
+      party.averageHp > 0 &&
+      boss.bossHp > 0
+  );
+}
+
+function buildAltheriumEnemyRecord(boss) {
+  const now = new Date();
+
+  return {
+    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    name: boss.name,
+    difficultyKey: boss.difficultyKey,
+    difficultyLabel: boss.difficultyLabel,
+    bossHp: boss.bossHp,
+    rounds: boss.rounds,
+    minDamage: boss.minDamage,
+    maxDamage: boss.maxDamage,
+    recommendedDamage: boss.recommendedDamage,
+    recommendedDice: boss.recommendedDice,
+    minDice: boss.minDice,
+    maxDice: boss.maxDice,
+    averageHp: boss.party.averageHp,
+    totalDamageAverage: boss.party.totalDamageAverage,
+    validPlayersCount: boss.party.validPlayers.length,
+    createdAt: now.toISOString(),
+  };
+}
+
+async function renderAltheriumGeneratedEnemiesList() {
+  const container = getFirstElement([
+    "generatedEnemiesList",
+    "monsterGrid",
+    "generated-enemies-list",
+  ]);
+
+  if (!container) return;
+
+  const campaign = await getCurrentCampaign(true);
+  const enemies = getStoredAltheriumEnemies(campaign);
+
+  if (!enemies.length) {
+    container.innerHTML = `
+      <div class="altherium-empty">
+        <h3>Nenhum inimigo cadastrado</h3>
+        <p>Gere um inimigo para ele aparecer nesta lista.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = enemies
+    .map(
+      (enemy) => `
+        <article class="boss-result-card generated-enemy-card">
+          <div class="boss-result-card__header">
+            <div>
+              <span class="boss-result-card__tag">${escapeHtml(enemy.difficultyLabel)}</span>
+              <h2>${escapeHtml(enemy.name)}</h2>
+            </div>
+
+            <div class="boss-result-card__header-actions">
+              <strong class="boss-result-card__hp">PV ${formatCombatNumber(enemy.bossHp)}</strong>
+
+              <button
+                type="button"
+                class="altherium-btn btn-remove-player"
+                data-delete-enemy-id="${escapeHtml(enemy.id)}"
+              >
+                Excluir inimigo
+              </button>
+            </div>
+          </div>
+
+          <div class="boss-result-grid">
+            <div>
+              <span>Rodadas</span>
+              <strong>${formatCombatNumber(enemy.rounds)}</strong>
+            </div>
+
+            <div>
+              <span>Dano recomendado</span>
+              <strong>${escapeHtml(enemy.recommendedDice.formula)}</strong>
+            </div>
+
+            <div>
+              <span>Faixa de dano</span>
+              <strong>${formatCombatNumber(enemy.minDamage)} - ${formatCombatNumber(enemy.maxDamage)}</strong>
+            </div>
+
+            <div>
+              <span>Jogadores usados</span>
+              <strong>${formatCombatNumber(enemy.validPlayersCount)}</strong>
+            </div>
+          </div>
+        </article>
+      `
+    )
+    .join("");
+}
+
+async function deleteAltheriumGeneratedEnemy(enemyId) {
+  const campaign = await getCurrentCampaign(true);
+  const enemies = getStoredAltheriumEnemies(campaign);
+  const filteredEnemies = enemies.filter((enemy) => enemy.id !== enemyId);
+
+  saveStoredAltheriumEnemies(campaign, filteredEnemies);
+
+  await renderAltheriumGeneratedEnemiesList();
+  await updateAltheriumMonsterCount();
+
+  const currentResult = getFirstElement([
+    "bestiaryResult",
+    "bossResult",
+    "boss-result",
+    "altheriumBossResult",
+  ]);
+
+  const deletedButton = currentResult
+    ? [...currentResult.querySelectorAll("[data-delete-enemy-id]")].find(
+        (button) => button.dataset.deleteEnemyId === enemyId
+      )
+    : null;
+
+  if (deletedButton) {
+    currentResult.innerHTML = `
+      <div class="altherium-empty">
+        <h3>Inimigo excluído</h3>
+        <p>O inimigo foi removido do bestiário da campanha.</p>
+      </div>
+    `;
+  }
+}
+
+async function clearAltheriumGeneratedEnemies() {
+  const campaign = await getCurrentCampaign(true);
+
+  saveStoredAltheriumEnemies(campaign, []);
+
+  await renderAltheriumGeneratedEnemiesList();
+  await updateAltheriumMonsterCount();
+
+  const result = getFirstElement([
+    "bestiaryResult",
+    "bossResult",
+    "boss-result",
+    "altheriumBossResult",
+  ]);
+
+  if (result) {
+    result.innerHTML = `
+      <div class="altherium-empty">
+        <h3>Bestiário limpo</h3>
+        <p>Todos os inimigos gerados foram removidos.</p>
+      </div>
+    `;
+  }
+}
+
+function getStoredAltheriumEnemies(campaign) {
+  try {
+    const rawEnemies = localStorage.getItem(getAltheriumEnemiesStorageKey(campaign));
+    const enemies = rawEnemies ? JSON.parse(rawEnemies) : [];
+
+    return Array.isArray(enemies) ? enemies : [];
+  } catch (error) {
+    console.error("Erro ao carregar inimigos do bestiário:", error);
+    return [];
+  }
+}
+
+function saveStoredAltheriumEnemies(campaign, enemies) {
+  try {
+    localStorage.setItem(
+      getAltheriumEnemiesStorageKey(campaign),
+      JSON.stringify(enemies.slice(0, 50))
+    );
+  } catch (error) {
+    console.error("Erro ao salvar inimigos do bestiário:", error);
+  }
+}
+
+function getAltheriumEnemiesStorageKey(campaign) {
+  const campaignId = campaign ? campaign.id : "sem-campanha";
+
+  return `campaign-lab-altherium-enemies-${campaignId}`;
+}
+
+async function updateAltheriumMonsterCount() {
+  const counter = document.getElementById("monsterCount");
+  if (!counter) return;
+
+  const campaign = await getCurrentCampaign(true);
+  const enemies = getStoredAltheriumEnemies(campaign);
+
+  counter.textContent = enemies.length;
+}
+
+
+
+function injectAltheriumEnemyDeleteButtonStyles() {
+  if (document.getElementById("altherium-enemy-delete-button-style")) return;
+
+  const style = document.createElement("style");
+  style.id = "altherium-enemy-delete-button-style";
+
+  style.textContent = `
+    .boss-result-card__header-actions {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      justify-content: flex-start;
+      gap: 12px;
+      flex-shrink: 0;
+    }
+
+    .boss-result-card__header-actions .boss-result-card__hp {
+      margin: 0;
+    }
+
+    .boss-result-card__header-actions button[data-delete-enemy-id] {
+      width: auto;
+      min-width: 150px;
+      min-height: 42px;
+      padding: 0 18px;
+
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+
+      border: 1px solid rgba(239, 68, 68, 0.55);
+      border-radius: 999px;
+
+      background: rgba(239, 68, 68, 0.1);
+      color: #fecaca;
+
+      font-size: 13px;
+      font-weight: 900;
+      line-height: 1;
+      text-align: center;
+      white-space: nowrap;
+
+      box-shadow: none;
+      cursor: pointer;
+      transition: 0.25s ease;
+    }
+
+    .boss-result-card__header-actions button[data-delete-enemy-id]:hover {
+      transform: translateY(-2px);
+      border-color: rgba(239, 68, 68, 0.9);
+      background: rgba(239, 68, 68, 0.2);
+      color: #ffffff;
+      box-shadow: 0 12px 28px rgba(239, 68, 68, 0.18);
+    }
+
+    .boss-result-card__header-actions button[data-delete-enemy-id]:active {
+      transform: translateY(0);
+    }
+
+    @media (max-width: 760px) {
+      .boss-result-card__header-actions {
+        width: 100%;
+        align-items: stretch;
+      }
+
+      .boss-result-card__header-actions .boss-result-card__hp {
+        width: 100%;
+        text-align: center;
+      }
+
+      .boss-result-card__header-actions button[data-delete-enemy-id] {
+        width: 100%;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
 }
 
 function getDamageAverageFromExpression(expression) {
@@ -2876,4 +3233,6 @@ function getFirstElement(ids) {
 
   return null;
 }
+
+
 
