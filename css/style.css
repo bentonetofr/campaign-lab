@@ -8869,3 +8869,55 @@ select[name="root"] {
 #dndClassMini {
   text-transform: none !important;
 }
+
+/* =========================================================
+   ALTHERIUM - FICHA MAIS LARGA COMO A FICHA DE D&D
+========================================================= */
+
+/*
+  Antes a ficha de Altherium usava max-width menor.
+  Agora ela usa a mesma largura base da ficha de D&D.
+*/
+
+.altherium-sheet-wrapper,
+.player-sheet-form,
+.altherium-rune-sheet {
+  width: 100% !important;
+}
+
+.altherium-rune-sheet .rune-paper-page,
+#playerSheetForm .rune-paper-page,
+.altherium-sheet-wrapper .rune-paper-page {
+  width: 100% !important;
+  max-width: 1160px !important;
+}
+
+/* Mantém o conteúdo interno confortável na largura maior */
+.altherium-rune-sheet .rune-frame,
+#playerSheetForm .rune-frame,
+.altherium-sheet-wrapper .rune-frame {
+  width: 100% !important;
+}
+
+/* No modal do mestre, Altherium também fica mais largo */
+.altherium-sheet-modal-box .master-rune-sheet .rune-paper-page {
+  max-width: 1160px !important;
+}
+
+/* Em telas grandes, a primeira página de Altherium aproveita melhor a largura */
+@media (min-width: 1180px) {
+  .altherium-rune-sheet .rune-paper-page,
+  #playerSheetForm .rune-paper-page,
+  .altherium-sheet-wrapper .rune-paper-page {
+    max-width: 1160px !important;
+  }
+}
+
+/* Responsivo: no celular continua ocupando a tela sem estourar */
+@media (max-width: 760px) {
+  .altherium-rune-sheet .rune-paper-page,
+  #playerSheetForm .rune-paper-page,
+  .altherium-sheet-wrapper .rune-paper-page {
+    max-width: 100% !important;
+  }
+}
