@@ -227,6 +227,7 @@ let saveTimer = null;
 ========================================================= */
 
 document.addEventListener("DOMContentLoaded", async () => {
+  setupCampaignLabNumberControls();
   setupHeaderBackButton();
   setupAltheriumRootDynamicControls();
   if (!DB) {
@@ -3698,10 +3699,20 @@ function setupHeaderBackButton() {
 
   if (currentPage === "index.html") return;
 
-  const header = document.querySelector(".header, header");
+  /*
+    Os botões ficam presos no body, não dentro do header.
+    Assim o Logout usa a largura real da tela, e não o limite interno
+    do header/logo/container.
+  */
+  document
+    .querySelectorAll(".header-nav-actions, .header-back-area, .header-logout-area")
+    .forEach((element) => element.remove());
 
-  if (!header) return;
-  if (header.querySelector(".header-back-button")) return;
+  const backArea = document.createElement("div");
+  backArea.className = "header-back-area";
+
+  const logoutArea = document.createElement("div");
+  logoutArea.className = "header-logout-area";
 
   const backButton = document.createElement("button");
   backButton.type = "button";
@@ -3741,7 +3752,27 @@ function setupHeaderBackButton() {
     window.location.href = "index.html";
   });
 
-  header.appendChild(backButton);
+  const logoutButton = document.createElement("button");
+  logoutButton.type = "button";
+  logoutButton.className = "header-logout-button";
+  logoutButton.setAttribute("aria-label", "Sair da conta");
+  logoutButton.title = "Logout";
+
+  logoutButton.innerHTML = `
+    <span class="header-logout-button__icon">⏻</span>
+    <span class="header-logout-button__text">Logout</span>
+  `;
+
+  logoutButton.addEventListener("click", () => {
+    sessionStorage.clear();
+    window.location.href = "index.html";
+  });
+
+  backArea.appendChild(backButton);
+  logoutArea.appendChild(logoutButton);
+
+  document.body.appendChild(backArea);
+  document.body.appendChild(logoutArea);
 }
 
 /* =========================================================
@@ -3827,3 +3858,139 @@ function setupRootCustomSelect() {
 document.addEventListener("DOMContentLoaded", () => {
   setupRootCustomSelect();
 });
+
+
+/* =========================================================
+   CONTROLES PREMIUM DE NÚMERO - FICHA D&D
+========================================================= */
+
+function setupCampaignLabNumberControls() {
+  if (window.campaignLabNumberControlsReady) return;
+
+  window.campaignLabNumberControlsReady = true;
+
+  function upgradeAllNumberInputs() {
+    const numberInputs = document.querySelectorAll(
+      [
+        ".dnd-character-sheet input[type='number']",
+        ".master-dnd-sheet input[type='number']",
+        ".dnd-player-page input[type='number']",
+        ".dnd-master-page .altherium-modal input[type='number']"
+      ].join(",")
+    );
+
+    numberInputs.forEach(upgradeNumberInput);
+  }
+
+  function upgradeNumberInput(input) {
+    if (!input || input.dataset.numberControlReady === "true") return;
+    if (input.closest(".number-control")) return;
+
+    input.dataset.numberControlReady = "true";
+
+    const wrapper = document.createElement("div");
+    wrapper.className = "number-control dnd-number-control";
+
+    input.parentNode.insertBefore(wrapper, input);
+    wrapper.appendChild(input);
+
+    const buttons = document.createElement("div");
+    buttons.className = "number-control-buttons dnd-number-control-buttons";
+
+    const upButton = document.createElement("button");
+    upButton.type = "button";
+    upButton.className = "number-control-btn dnd-number-control-btn up";
+    upButton.innerHTML = "<span>⌃</span>";
+    upButton.setAttribute("aria-label", "Aumentar valor");
+
+    const downButton = document.createElement("button");
+    downButton.type = "button";
+    downButton.className = "number-control-btn dnd-number-control-btn down";
+    downButton.innerHTML = "<span>⌄</span>";
+    downButton.setAttribute("aria-label", "Diminuir valor");
+
+    buttons.appendChild(upButton);
+    buttons.appendChild(downButton);
+    wrapper.appendChild(buttons);
+
+    upButton.addEventListener("click", () => {
+      changeNumberInputValue(input, 1);
+    });
+
+    downButton.addEventListener("click", () => {
+      changeNumberInputValue(input, -1);
+    });
+
+    input.addEventListener("input", () => {
+      updateNumberButtons(input, upButton, downButton);
+    });
+
+    input.addEventListener("change", () => {
+      updateNumberButtons(input, upButton, downButton);
+    });
+
+    updateNumberButtons(input, upButton, downButton);
+  }
+
+  function changeNumberInputValue(input, direction) {
+    if (input.disabled || input.readOnly) return;
+
+    const step = getNumberAttribute(input, "step", 1);
+    const min = getNumberAttribute(input, "min", null);
+    const max = getNumberAttribute(input, "max", null);
+
+    const currentValue =
+      input.value === "" ? (min !== null ? min : 0) : Number(input.value);
+
+    let newValue = currentValue + step * direction;
+
+    if (min !== null) newValue = Math.max(min, newValue);
+    if (max !== null) newValue = Math.min(max, newValue);
+
+    input.value = formatNumberControlValue(newValue, step);
+
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function updateNumberButtons(input, upButton, downButton) {
+    const min = getNumberAttribute(input, "min", null);
+    const max = getNumberAttribute(input, "max", null);
+    const value = Number(input.value);
+    const hasValue = input.value !== "" && Number.isFinite(value);
+
+    upButton.disabled =
+      input.disabled || input.readOnly || (hasValue && max !== null && value >= max);
+
+    downButton.disabled =
+      input.disabled || input.readOnly || (hasValue && min !== null && value <= min);
+  }
+
+  function getNumberAttribute(input, attribute, fallback) {
+    const value = input.getAttribute(attribute);
+
+    if (value === null || value === "" || value === "any") return fallback;
+
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+  }
+
+  function formatNumberControlValue(value, step) {
+    if (Number.isInteger(step)) return String(Math.round(value));
+
+    const decimalPlaces = String(step).split(".")[1]?.length || 0;
+    return value.toFixed(decimalPlaces);
+  }
+
+  upgradeAllNumberInputs();
+
+  const observer = new MutationObserver(() => {
+    upgradeAllNumberInputs();
+  });
+
+  observer.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+}
+

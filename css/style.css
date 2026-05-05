@@ -8921,3 +8921,750 @@ select[name="root"] {
     max-width: 100% !important;
   }
 }
+
+/* =========================================================
+   HEADER - VOLTAR MAIS À DIREITA E LOGOUT SEPARADO
+========================================================= */
+
+/*
+  Layout final:
+  [logout]     [voltar]
+  O botão Voltar fica mais para a direita para não grudar no logout.
+*/
+
+.header,
+.header-center {
+  position: sticky !important;
+}
+
+.header-center .logo,
+.header .logo,
+.header-container-center,
+.header-container {
+  position: relative !important;
+  z-index: 1 !important;
+}
+
+.header-nav-actions {
+  position: absolute !important;
+  left: clamp(18px, 3vw, 46px) !important;
+  top: 50% !important;
+  z-index: 9000 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+
+  /* aqui cria o espaço real entre logout e voltar */
+  gap: 18px !important;
+
+  transform: translateY(-50%) !important;
+  pointer-events: auto !important;
+}
+
+/* Logout fica como botão pequeno/redondo à esquerda */
+.header-logout-button {
+  order: 1 !important;
+
+  width: 42px !important;
+  min-width: 42px !important;
+  max-width: 42px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  max-height: 42px !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  border-radius: 999px !important;
+  border: 1px solid rgba(248, 113, 113, 0.52) !important;
+
+  background: #120812 !important;
+  color: #fca5a5 !important;
+
+  font-family: "Quantico", sans-serif !important;
+
+  cursor: pointer !important;
+  transition: 0.22s ease !important;
+
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.08),
+    0 0 18px rgba(248, 113, 113, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+/* Voltar fica mais para a direita */
+.header-back-button {
+  order: 2 !important;
+
+  height: 46px !important;
+  min-height: 46px !important;
+  max-height: 46px !important;
+  min-width: 128px !important;
+
+  padding: 0 18px 0 10px !important;
+  margin: 0 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 9px !important;
+  flex: 0 0 auto !important;
+
+  border-radius: 999px !important;
+  border: 1px solid rgba(34, 211, 238, 0.6) !important;
+
+  background: #020617 !important;
+  color: #f8fafc !important;
+
+  font-family: "Quantico", sans-serif !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.4px !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+
+  cursor: pointer !important;
+  transition: 0.22s ease !important;
+
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.1),
+    0 0 22px rgba(34, 211, 238, 0.14),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.header-back-button__icon {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  border-radius: 999px !important;
+
+  background: rgba(34, 211, 238, 0.16) !important;
+  color: #67e8f9 !important;
+
+  font-family: "Quantico", sans-serif !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+.header-logout-button__icon {
+  width: 24px !important;
+  height: 24px !important;
+  min-width: 24px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  border-radius: 999px !important;
+
+  background: rgba(248, 113, 113, 0.14) !important;
+  color: #fca5a5 !important;
+
+  font-family: "Quantico", sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+.header-logout-button__text {
+  display: none !important;
+}
+
+.header-back-button__text {
+  display: inline-block !important;
+  transform: translateY(0) !important;
+}
+
+.header-back-button:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(34, 211, 238, 0.9) !important;
+  background: #062133 !important;
+  color: #ffffff !important;
+
+  box-shadow:
+    0 0 26px rgba(34, 211, 238, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.header-logout-button:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(248, 113, 113, 0.9) !important;
+  background: #2a0d13 !important;
+  color: #ffffff !important;
+
+  box-shadow:
+    0 0 24px rgba(248, 113, 113, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+
+.header-back-button:active,
+.header-logout-button:active {
+  transform: translateY(0) scale(0.98) !important;
+}
+
+/* Mobile: mantém separado, mas só com ícones */
+@media (max-width: 760px) {
+  .header-nav-actions {
+    left: 10px !important;
+    gap: 12px !important;
+  }
+
+  .header-logout-button,
+  .header-back-button {
+    width: 40px !important;
+    min-width: 40px !important;
+    max-width: 40px !important;
+    height: 40px !important;
+    min-height: 40px !important;
+    max-height: 40px !important;
+
+    padding: 0 !important;
+  }
+
+  .header-back-button__text {
+    display: none !important;
+  }
+
+  .header-back-button__icon,
+  .header-logout-button__icon {
+    width: 26px !important;
+    height: 26px !important;
+    min-width: 26px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .header-nav-actions {
+    left: 8px !important;
+    gap: 9px !important;
+  }
+
+  .header-logout-button,
+  .header-back-button {
+    width: 36px !important;
+    min-width: 36px !important;
+    max-width: 36px !important;
+    height: 36px !important;
+    min-height: 36px !important;
+    max-height: 36px !important;
+  }
+
+  .header-back-button__icon,
+  .header-logout-button__icon {
+    width: 23px !important;
+    height: 23px !important;
+    min-width: 23px !important;
+  }
+}
+
+/* =========================================================
+   AJUSTE FINO - LOGOUT MAIS À DIREITA
+========================================================= */
+
+/*
+  Deixa o botão Logout mais próximo do canto direito,
+  equivalente ao Voltar no canto esquerdo.
+*/
+
+.header-logout-area {
+  right: clamp(6px, 1.6vw, 18px) !important;
+}
+
+.header-back-area {
+  left: clamp(6px, 1.6vw, 18px) !important;
+}
+
+@media (max-width: 760px) {
+  .header-logout-area {
+    right: 8px !important;
+  }
+
+  .header-back-area {
+    left: 8px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .header-logout-area {
+    right: 6px !important;
+  }
+
+  .header-back-area {
+    left: 6px !important;
+  }
+}
+
+/* =========================================================
+   HEADER - VOLTAR E LOGOUT PRESOS NA TELA
+========================================================= */
+
+/*
+  Correção definitiva:
+  o JS agora coloca .header-back-area e .header-logout-area direto no body.
+  Por isso usamos position: fixed, preso na largura real da janela.
+*/
+
+body > .header-back-area,
+body > .header-logout-area {
+  position: fixed !important;
+  top: 46px !important;
+  z-index: 999999 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  transform: translateY(-50%) !important;
+  pointer-events: auto !important;
+}
+
+body > .header-back-area {
+  left: 28px !important;
+}
+
+body > .header-logout-area {
+  right: 28px !important;
+}
+
+/* desativa o wrapper antigo, caso tenha ficado de algum teste anterior */
+.header-nav-actions {
+  display: none !important;
+}
+
+body > .header-back-area .header-back-button,
+body > .header-logout-area .header-logout-button {
+  margin: 0 !important;
+
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  border-radius: 999px !important;
+
+  font-family: "Quantico", sans-serif !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+
+  transition: 0.22s ease !important;
+}
+
+/* botão voltar */
+body > .header-back-area .header-back-button {
+  width: auto !important;
+  min-width: 128px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  max-height: 46px !important;
+
+  padding: 0 18px 0 10px !important;
+  gap: 9px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.68) !important;
+  background: #020617 !important;
+  color: #f8fafc !important;
+
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.4px !important;
+  text-transform: uppercase !important;
+
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.1),
+    0 0 22px rgba(34, 211, 238, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+/* botão logout no canto direito */
+body > .header-logout-area .header-logout-button {
+  width: 46px !important;
+  min-width: 46px !important;
+  max-width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  max-height: 46px !important;
+
+  padding: 0 !important;
+  gap: 0 !important;
+
+  border: 1px solid rgba(248, 113, 113, 0.68) !important;
+  background: #120812 !important;
+  color: #f8fafc !important;
+
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.08),
+    0 0 20px rgba(248, 113, 113, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+body > .header-back-area .header-back-button__icon,
+body > .header-logout-area .header-logout-button__icon {
+  display: grid !important;
+  place-items: center !important;
+
+  border-radius: 999px !important;
+
+  font-family: "Quantico", sans-serif !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+body > .header-back-area .header-back-button__icon {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+
+  background: rgba(34, 211, 238, 0.16) !important;
+  color: #67e8f9 !important;
+
+  font-size: 24px !important;
+}
+
+body > .header-logout-area .header-logout-button__icon {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+
+  background: rgba(248, 113, 113, 0.14) !important;
+  color: #fca5a5 !important;
+
+  font-size: 13px !important;
+}
+
+/* mostra texto só no voltar */
+body > .header-back-area .header-back-button__text {
+  display: inline-block !important;
+  color: #f8fafc !important;
+}
+
+body > .header-logout-area .header-logout-button__text {
+  display: none !important;
+}
+
+body > .header-back-area .header-back-button:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(34, 211, 238, 0.95) !important;
+  background: #062133 !important;
+  color: #ffffff !important;
+}
+
+body > .header-logout-area .header-logout-button:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(248, 113, 113, 0.95) !important;
+  background: #2a0d13 !important;
+  color: #ffffff !important;
+}
+
+body > .header-back-area .header-back-button:active,
+body > .header-logout-area .header-logout-button:active {
+  transform: translateY(0) scale(0.98) !important;
+}
+
+/* Responsivo */
+@media (max-width: 760px) {
+  body > .header-back-area,
+  body > .header-logout-area {
+    top: 41px !important;
+  }
+
+  body > .header-back-area {
+    left: 10px !important;
+  }
+
+  body > .header-logout-area {
+    right: 10px !important;
+  }
+
+  body > .header-back-area .header-back-button,
+  body > .header-logout-area .header-logout-button {
+    width: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  body > .header-back-area .header-back-button__text,
+  body > .header-logout-area .header-logout-button__text {
+    display: none !important;
+  }
+
+  body > .header-back-area .header-back-button__icon,
+  body > .header-logout-area .header-logout-button__icon {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  body > .header-back-area,
+  body > .header-logout-area {
+    top: 36px !important;
+  }
+
+  body > .header-back-area {
+    left: 8px !important;
+  }
+
+  body > .header-logout-area {
+    right: 8px !important;
+  }
+
+  body > .header-back-area .header-back-button,
+  body > .header-logout-area .header-logout-button {
+    width: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+  }
+
+  body > .header-back-area .header-back-button__icon,
+  body > .header-logout-area .header-logout-button__icon {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
+  }
+}
+
+/* =========================================================
+   HEADER - AJUSTE FINAL SEM MOVIMENTO E DISTÂNCIA IGUAL
+========================================================= */
+
+/*
+  Ajuste pedido:
+  - remove a animação de subir/descer dos botões
+  - Voltar fica a 28px da borda esquerda
+  - Logout fica a 28px da borda direita
+*/
+
+body > .header-back-area {
+  left: 28px !important;
+}
+
+body > .header-logout-area {
+  right: 28px !important;
+}
+
+/* Remove qualquer movimento vertical no hover */
+body > .header-back-area .header-back-button,
+body > .header-logout-area .header-logout-button {
+  transition:
+    border-color 0.22s ease,
+    background 0.22s ease,
+    color 0.22s ease,
+    box-shadow 0.22s ease !important;
+}
+
+body > .header-back-area .header-back-button:hover,
+body > .header-logout-area .header-logout-button:hover,
+body > .header-back-area .header-back-button:active,
+body > .header-logout-area .header-logout-button:active {
+  transform: none !important;
+}
+
+/* Mantém somente mudança de cor no hover */
+body > .header-back-area .header-back-button:hover {
+  border-color: rgba(34, 211, 238, 0.95) !important;
+  background: #062133 !important;
+  color: #ffffff !important;
+}
+
+body > .header-logout-area .header-logout-button:hover {
+  border-color: rgba(248, 113, 113, 0.95) !important;
+  background: #2a0d13 !important;
+  color: #ffffff !important;
+}
+
+/* Responsivo com distância equivalente dos dois lados */
+@media (max-width: 760px) {
+  body > .header-back-area {
+    left: 10px !important;
+  }
+
+  body > .header-logout-area {
+    right: 10px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  body > .header-back-area {
+    left: 8px !important;
+  }
+
+  body > .header-logout-area {
+    right: 8px !important;
+  }
+}
+
+/* =========================================================
+   HEADER - REMOVER MOVIMENTO DO BOTÃO VOLTAR
+========================================================= */
+
+/*
+  Correção definitiva:
+  remove o translateY do container e do botão.
+  Assim o botão Voltar não desce nem sobe ao passar o mouse.
+*/
+
+body > .header-back-area {
+  position: fixed !important;
+  top: 23px !important;
+  left: 28px !important;
+  right: auto !important;
+  z-index: 999999 !important;
+
+  transform: none !important;
+  transition: none !important;
+}
+
+body > .header-logout-area {
+  position: fixed !important;
+  top: 23px !important;
+  right: 28px !important;
+  left: auto !important;
+  z-index: 999999 !important;
+
+  transform: none !important;
+  transition: none !important;
+}
+
+body > .header-back-area:hover,
+body > .header-logout-area:hover,
+body > .header-back-area:active,
+body > .header-logout-area:active {
+  transform: none !important;
+}
+
+body > .header-back-area .header-back-button,
+body > .header-back-area .header-back-button:hover,
+body > .header-back-area .header-back-button:active,
+body > .header-back-area .header-back-button:focus,
+body > .header-back-area .header-back-button:focus-visible {
+  transform: none !important;
+  translate: none !important;
+  top: auto !important;
+  bottom: auto !important;
+}
+
+body > .header-logout-area .header-logout-button,
+body > .header-logout-area .header-logout-button:hover,
+body > .header-logout-area .header-logout-button:active,
+body > .header-logout-area .header-logout-button:focus,
+body > .header-logout-area .header-logout-button:focus-visible {
+  transform: none !important;
+  translate: none !important;
+  top: auto !important;
+  bottom: auto !important;
+}
+
+/* Sobrescreve qualquer regra antiga criada antes */
+.header-back-button:hover,
+.header-back-button:active,
+.header-back-button:focus,
+.header-back-button:focus-visible,
+.header-logout-button:hover,
+.header-logout-button:active,
+.header-logout-button:focus,
+.header-logout-button:focus-visible {
+  transform: none !important;
+  translate: none !important;
+}
+
+/* Mantém só a mudança visual no hover, sem movimento */
+body > .header-back-area .header-back-button:hover {
+  border-color: rgba(34, 211, 238, 0.95) !important;
+  background: #062133 !important;
+  color: #ffffff !important;
+}
+
+body > .header-logout-area .header-logout-button:hover {
+  border-color: rgba(248, 113, 113, 0.95) !important;
+  background: #2a0d13 !important;
+  color: #ffffff !important;
+}
+
+@media (max-width: 760px) {
+  body > .header-back-area {
+    top: 20px !important;
+    left: 10px !important;
+  }
+
+  body > .header-logout-area {
+    top: 20px !important;
+    right: 10px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  body > .header-back-area {
+    top: 17px !important;
+    left: 8px !important;
+  }
+
+  body > .header-logout-area {
+    top: 17px !important;
+    right: 8px !important;
+  }
+}
+
+/* =========================================================
+   HEADER - AJUSTE DE ALTURA DOS BOTÕES
+========================================================= */
+
+/*
+  Mantém o botão sem animação de movimento,
+  mas desce ele para ficar melhor centralizado no header.
+*/
+
+body > .header-back-area {
+  top: 57px !important;
+  transform: none !important;
+}
+
+body > .header-logout-area {
+  top: 32px !important;
+  transform: none !important;
+}
+
+body > .header-back-area .header-back-button,
+body > .header-back-area .header-back-button:hover,
+body > .header-back-area .header-back-button:active,
+body > .header-back-area .header-back-button:focus,
+body > .header-back-area .header-back-button:focus-visible,
+body > .header-logout-area .header-logout-button,
+body > .header-logout-area .header-logout-button:hover,
+body > .header-logout-area .header-logout-button:active,
+body > .header-logout-area .header-logout-button:focus,
+body > .header-logout-area .header-logout-button:focus-visible {
+  transform: none !important;
+  translate: none !important;
+}
+
+@media (max-width: 760px) {
+  body > .header-back-area,
+  body > .header-logout-area {
+    top: 26px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  body > .header-back-area,
+  body > .header-logout-area {
+    top: 23px !important;
+  }
+}
