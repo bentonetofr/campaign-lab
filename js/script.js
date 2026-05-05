@@ -221,6 +221,9 @@ let profilesCache = [];
 let campaignsCache = [];
 let realtimeChannel = null;
 let diceRealtimeChannel = null;
+let campaignPresenceChannel = null;
+let campaignPresenceState = {};
+let campaignPresenceReady = false;
 let saveTimer = null;
 
 /* =========================================================
@@ -262,6 +265,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (document.body.classList.contains("altherium-page")) {
     await protectPage("Altherium", "Mestre");
     await setupMasterCampaignName();
+    await setupCampaignPresence();
+    await setupOnlinePlayersInfoPanel();
     await setupMasterPlayersRealtime("playersGrid", "onlineCount");
     await setupAltheriumMasterSheets();
     await setupInitiativeBoard({
@@ -287,6 +292,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (document.body.classList.contains("altherium-player-page")) {
     await protectPage("Altherium", "Jogador");
     await setupPlayerInfo("playerNameView", "campaignNameView");
+    await setupCampaignPresence();
+    await setupOnlinePlayersInfoPanel();
     await setupAltheriumPlayerSheet();
     await setupCampaignDiceRoller("Altherium");
     subscribeCampaignRealtime(loadSheetIntoPlayerForm);
@@ -295,6 +302,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (document.body.classList.contains("dnd-master-page")) {
     await protectPage("D&D", "Mestre");
     await setupMasterCampaignName();
+    await setupCampaignPresence();
+    await setupOnlinePlayersInfoPanel();
     await setupMasterPlayersRealtime("dndPlayersGrid", "dndPlayerCount");
     await setupDndMasterSheets();
     await setupInitiativeBoard({
@@ -319,6 +328,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (document.body.classList.contains("dnd-player-page")) {
     await protectPage("D&D", "Jogador");
     await setupPlayerInfo("dndPlayerNameView", "dndCampaignNameView");
+    await setupCampaignPresence();
+    await setupOnlinePlayersInfoPanel();
     await setupDndPlayerSheet();
     await setupCampaignDiceRoller("D&D");
     subscribeCampaignRealtime(loadDndSheetIntoPlayerForm);
@@ -873,6 +884,7 @@ async function renderCampaignPlayers(gridIdOrElement, counterIdOrElement) {
       </div>
     `;
     if (counter) counter.textContent = "0";
+    await renderCampaignOnlinePlayersPanel();
     return;
   }
 
@@ -881,7 +893,9 @@ async function renderCampaignPlayers(gridIdOrElement, counterIdOrElement) {
     .map((playerId) => profiles.find((profile) => profile.id === playerId))
     .filter(Boolean);
 
-  if (counter) counter.textContent = players.length;
+  if (counter) counter.textContent = getCampaignOnlinePlayerIds(campaign).length;
+
+  await renderCampaignOnlinePlayersPanel(campaign, profiles);
 
   if (!players.length) {
     grid.innerHTML = `
@@ -894,15 +908,17 @@ async function renderCampaignPlayers(gridIdOrElement, counterIdOrElement) {
   }
 
   grid.innerHTML = players
-    .map(
-      (player) => `
-        <div class="altherium-card player-profile-card">
+    .map((player) => {
+      const isOnline = isCampaignUserOnline(player.id);
+
+      return `
+        <div class="altherium-card player-profile-card ${isOnline ? "player-profile-card--online" : "player-profile-card--offline"}">
           <div class="player-profile-card__header">
             ${getProfileAvatarHtml(player, "small")}
             <h3>${escapeHtml(player.name)}</h3>
           </div>
 
-          <p>Status: Jogador da campanha</p>
+          <p>Status: ${isOnline ? "Online na mesa" : "Offline"}</p>
 
           <div class="altherium-actions">
             <button onclick="removePlayerFromCampaign('${campaign.id}', '${player.id}')">
@@ -910,9 +926,338 @@ async function renderCampaignPlayers(gridIdOrElement, counterIdOrElement) {
             </button>
           </div>
         </div>
-      `
-    )
+      `;
+    })
     .join("");
+}
+
+async function setupCampaignPresence() {
+  if (!DB || typeof DB.channel !== "function") return;
+
+  const user = getLoggedUserFromSession();
+  const campaignId = getCurrentCampaignId();
+
+  if (!user || !campaignId) return;
+
+  if (campaignPresenceChannel) {
+    try {
+      DB.removeChannel(campaignPresenceChannel);
+    } catch (error) {
+      console.warn("Não foi possível limpar o canal de presença anterior.", error);
+    }
+  }
+
+  campaignPresenceState = {};
+  campaignPresenceReady = false;
+
+  campaignPresenceChannel = DB.channel(`campaign-presence-${campaignId}`, {
+    config: {
+      presence: {
+        key: String(user.id),
+      },
+    },
+  });
+
+  const refreshPresenceUi = async () => {
+    if (!campaignPresenceChannel || typeof campaignPresenceChannel.presenceState !== "function") return;
+
+    campaignPresenceReady = true;
+    campaignPresenceState = campaignPresenceChannel.presenceState() || {};
+
+    await updateCampaignOnlineCounters();
+    await renderCampaignOnlinePlayersPanel();
+  };
+
+  campaignPresenceChannel
+    .on("presence", { event: "sync" }, refreshPresenceUi)
+    .on("presence", { event: "join" }, refreshPresenceUi)
+    .on("presence", { event: "leave" }, refreshPresenceUi)
+    .subscribe(async (status) => {
+      if (status !== "SUBSCRIBED") return;
+
+      await campaignPresenceChannel.track({
+        user_id: String(user.id),
+        name: user.nome || user.name || user.id,
+        profile: sessionStorage.getItem("profile") || "",
+        system: sessionStorage.getItem("system") || "",
+        campaign_id: campaignId,
+        online_at: new Date().toISOString(),
+      });
+
+      await refreshPresenceUi();
+    });
+}
+
+async function setupOnlinePlayersInfoPanel() {
+  const existingPanel = document.getElementById("campaignOnlinePanel");
+
+  if (existingPanel) {
+    await renderCampaignOnlinePlayersPanel();
+    return;
+  }
+
+  const isPlayerPage =
+    document.body.classList.contains("altherium-player-page") ||
+    document.body.classList.contains("dnd-player-page");
+
+  const panel = createCampaignOnlinePlayersPanel(isPlayerPage ? "player" : "master");
+
+  if (isPlayerPage) {
+    insertOnlinePlayersPanelOnPlayerPage(panel);
+    await renderCampaignOnlinePlayersPanel();
+    return;
+  }
+
+  const dashboard = document.querySelector(".altherium-dashboard");
+
+  if (!dashboard) {
+    insertOnlinePlayersPanelFallback(panel);
+    await renderCampaignOnlinePlayersPanel();
+    return;
+  }
+
+  const hero = dashboard.closest(".altherium-hero");
+  if (hero) hero.classList.add("altherium-hero--with-online-panel");
+
+  dashboard.insertAdjacentElement("afterend", panel);
+  await renderCampaignOnlinePlayersPanel();
+}
+
+function createCampaignOnlinePlayersPanel(variant = "master") {
+  const panel = document.createElement("aside");
+  panel.className = `campaign-online-panel campaign-online-panel--${variant}`;
+  panel.id = "campaignOnlinePanel";
+  panel.innerHTML = `
+    <div class="campaign-online-panel__header">
+      <div>
+        <span>${variant === "player" ? "Mesa ativa" : "Painel da mesa"}</span>
+        <h3>Jogadores online</h3>
+      </div>
+      <strong id="campaignOnlineTotal">0</strong>
+    </div>
+
+    <div class="campaign-online-panel__list" id="campaignOnlineList">
+      <div class="campaign-online-empty">
+        Carregando jogadores online...
+      </div>
+    </div>
+  `;
+
+  return panel;
+}
+
+function insertOnlinePlayersPanelOnPlayerPage(panel) {
+  const slot = document.getElementById("playerOnlinePanelSlot") || document.getElementById("campaignOnlinePanelSlot");
+
+  if (slot) {
+    slot.innerHTML = "";
+    slot.appendChild(panel);
+    return;
+  }
+
+  const playerForm =
+    document.getElementById("playerSheetForm") ||
+    document.getElementById("dndPlayerSheetForm");
+
+  const playerSection =
+    playerForm?.closest(".player-sheet-section") ||
+    playerForm?.closest(".altherium-section") ||
+    playerForm?.parentElement;
+
+  const dashboard = document.querySelector(".altherium-dashboard");
+  const hero = document.querySelector(".altherium-hero");
+  const main = document.querySelector(".altherium-main") || document.querySelector("main") || document.body;
+
+  panel.classList.add("campaign-online-panel--player-page");
+
+  if (hero && dashboard && hero.contains(dashboard)) {
+    hero.classList.add("altherium-hero--player-online-side");
+    panel.classList.add("campaign-online-panel--player-side");
+    dashboard.insertAdjacentElement("afterend", panel);
+    return;
+  }
+
+  if (hero && hero.parentElement) {
+    hero.classList.add("altherium-hero--player-online-panel");
+    hero.insertAdjacentElement("afterend", panel);
+    return;
+  }
+
+  if (playerSection && playerSection.parentElement) {
+    playerSection.insertAdjacentElement("beforebegin", panel);
+    return;
+  }
+
+  main.insertBefore(panel, main.firstChild);
+}
+
+function insertOnlinePlayersPanelFallback(panel) {
+  const hero = document.querySelector(".altherium-hero");
+  const main = document.querySelector(".altherium-main") || document.querySelector("main") || document.body;
+
+  panel.classList.add("campaign-online-panel--fallback");
+
+  if (hero && hero.parentElement) {
+    hero.insertAdjacentElement("afterend", panel);
+    return;
+  }
+
+  main.insertBefore(panel, main.firstChild);
+}
+
+async function renderCampaignOnlinePlayersPanel(campaignParam = null, profilesParam = null) {
+  const panel = document.getElementById("campaignOnlinePanel");
+  const list = document.getElementById("campaignOnlineList");
+  const total = document.getElementById("campaignOnlineTotal");
+
+  if (!panel || !list) return;
+
+  const campaign = campaignParam || (await getCurrentCampaign(false));
+
+  if (!campaign) {
+    if (total) total.textContent = "0";
+    list.innerHTML = `
+      <div class="campaign-online-empty">
+        Campanha não encontrada.
+      </div>
+    `;
+    return;
+  }
+
+  const profiles = profilesParam || (await getProfiles());
+  const playerIds = getCampaignPlayerIds(campaign).map(String);
+  const onlinePlayerIds = getCampaignOnlinePlayerIds(campaign);
+
+  if (total) total.textContent = String(onlinePlayerIds.length);
+
+  if (!onlinePlayerIds.length) {
+    list.innerHTML = `
+      <div class="campaign-online-empty">
+        Nenhum jogador online agora.
+      </div>
+    `;
+    return;
+  }
+
+  const sheetMap = await getCampaignOnlineSheetMap(campaign.id, campaign.sistema || campaign.system);
+
+  list.innerHTML = onlinePlayerIds
+    .map((playerId) => {
+      const profile = profiles.find((item) => String(item.id) === String(playerId));
+      const presence = getCampaignPresenceForUser(playerId);
+      const sheet = sheetMap.get(String(playerId)) || {};
+      const characterName = sheet.characterName || sheet.name || "Personagem sem nome";
+      const extraInfo = getCampaignOnlineExtraInfo(sheet, campaign.sistema || campaign.system);
+
+      return `
+        <article class="campaign-online-player-card">
+          <div class="campaign-online-player-card__top">
+            ${profile ? getProfileAvatarHtml(profile, "tiny") : ""}
+            <div>
+              <strong>${escapeHtml(profile ? profile.name : playerId)}</strong>
+              <span>${escapeHtml(characterName)}</span>
+            </div>
+            <i title="Online agora"></i>
+          </div>
+
+          <div class="campaign-online-player-card__meta">
+            <span>${escapeHtml(extraInfo)}</span>
+            <span>${escapeHtml(formatCampaignPresenceTime(presence?.online_at))}</span>
+          </div>
+        </article>
+      `;
+    })
+    .join("");
+}
+
+async function getCampaignOnlineSheetMap(campaignId, system) {
+  const table = system === "D&D" ? "dnd_sheets" : "altherium_sheets";
+  const map = new Map();
+
+  if (!campaignId || !DB) return map;
+
+  const { data, error } = await DB
+    .from(table)
+    .select("user_id, data")
+    .eq("campaign_id", campaignId);
+
+  if (error) {
+    console.error(error);
+    return map;
+  }
+
+  (data || []).forEach((row) => {
+    map.set(String(row.user_id), row.data || {});
+  });
+
+  return map;
+}
+
+function getCampaignOnlineExtraInfo(sheet, system) {
+  if (system === "D&D") {
+    return sheet.classLevel || sheet.race || "Ficha D&D";
+  }
+
+  return sheet.root || sheet.raiz || sheet.classLevel || "Ficha Altherium";
+}
+
+function getCampaignPresenceForUser(userId) {
+  const entries = Object.values(campaignPresenceState || {}).flat();
+  return entries.find((entry) => String(entry.user_id || "") === String(userId)) || null;
+}
+
+function getCampaignPresenceOnlineUserIds() {
+  const entries = Object.values(campaignPresenceState || {}).flat();
+  const ids = new Set();
+
+  entries.forEach((entry) => {
+    if (entry && entry.user_id) ids.add(String(entry.user_id));
+  });
+
+  return Array.from(ids);
+}
+
+function getCampaignOnlinePlayerIds(campaign) {
+  if (!campaign) return [];
+
+  const playerIds = getCampaignPlayerIds(campaign).map(String);
+  const onlineIds = getCampaignPresenceOnlineUserIds();
+
+  if (!campaignPresenceReady) return [];
+
+  return playerIds.filter((playerId) => onlineIds.includes(String(playerId)));
+}
+
+function isCampaignUserOnline(userId) {
+  return getCampaignPresenceOnlineUserIds().includes(String(userId));
+}
+
+async function updateCampaignOnlineCounters() {
+  const campaign = await getCurrentCampaign(false);
+  if (!campaign) return;
+
+  const onlineCount = String(getCampaignOnlinePlayerIds(campaign).length);
+
+  const altheriumCounter = document.getElementById("onlineCount");
+  const dndCounter = document.getElementById("dndPlayerCount");
+
+  if (altheriumCounter) altheriumCounter.textContent = onlineCount;
+  if (dndCounter) dndCounter.textContent = onlineCount;
+
+  const panelTotal = document.getElementById("campaignOnlineTotal");
+  if (panelTotal) panelTotal.textContent = onlineCount;
+}
+
+function formatCampaignPresenceTime(value) {
+  if (!value) return "Agora";
+
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return "Agora";
+
+  return `Entrou ${date.toLocaleTimeString("pt-BR", {
+    hour: "2-digit",
+    minute: "2-digit",
+  })}`;
 }
 
 /* =========================================================
@@ -4671,6 +5016,7 @@ async function refreshCurrentMasterPanel() {
       updateSheet: updateCampaignSheet,
     });
     await renderAltheriumBestiary();
+    await renderCampaignOnlinePlayersPanel();
   }
 
   if (document.body.classList.contains("dnd-master-page")) {
@@ -4683,6 +5029,7 @@ async function refreshCurrentMasterPanel() {
       getSheet: getOrCreateDndSheet,
       updateSheet: updateDndSheet,
     });
+    await renderCampaignOnlinePlayersPanel();
   }
 
   await setupMasterCampaignName();
@@ -5199,6 +5546,14 @@ async function setupAltheriumBestiary() {
     container.dataset.deleteReady = "true";
 
     container.addEventListener("click", async (event) => {
+      const saveButton = event.target.closest("[data-save-enemy-details-id]");
+      if (saveButton) {
+        const enemyId = saveButton.dataset.saveEnemyDetailsId;
+        const card = saveButton.closest("[data-enemy-edit-card]");
+        await saveAltheriumEnemyEditableDetails(enemyId, card);
+        return;
+      }
+
       const deleteButton = event.target.closest("[data-delete-enemy-id]");
       if (!deleteButton) return;
 
@@ -5207,6 +5562,14 @@ async function setupAltheriumBestiary() {
       if (!shouldDelete) return;
 
       await deleteAltheriumGeneratedEnemy(enemyId);
+    });
+
+    container.addEventListener("input", (event) => {
+      const input = event.target.closest("[data-enemy-field]");
+      if (!input) return;
+
+      const card = input.closest("[data-enemy-edit-card]");
+      setAltheriumEnemyEditableStatus(card, "Alterações não salvas.", "warning");
     });
   });
 
@@ -5568,6 +5931,11 @@ function renderAltheriumBossResult(boss, savedEnemyId = "") {
     return;
   }
 
+  const detailBoxesHtml = renderAltheriumEnemyDetailBoxes({
+    ...boss,
+    id: savedEnemyId,
+  });
+
   container.innerHTML = `
     <article class="boss-result-card">
       <div class="boss-result-card__header">
@@ -5643,6 +6011,8 @@ function renderAltheriumBossResult(boss, savedEnemyId = "") {
         </div>
       </div>
 
+      ${detailBoxesHtml}
+
       <div class="boss-formula-box">
         <h3>Fórmula usada</h3>
         <p>
@@ -5657,6 +6027,497 @@ function renderAltheriumBossResult(boss, savedEnemyId = "") {
 }
 
 
+function buildAltheriumEnemyGeneratedDetails(enemy) {
+  const difficultyKey = normalizeBossDifficulty(enemy.difficultyKey || enemy.difficultyLabel || "medio");
+  const scale = getAltheriumEnemyScale(enemy);
+  const recommendedDice = enemy.recommendedDice || { formula: "0", average: 0 };
+  const minDice = enemy.minDice || recommendedDice;
+  const maxDice = enemy.maxDice || recommendedDice;
+  const bossHp = Math.max(0, Math.round(Number(enemy.bossHp) || 0));
+  const minDamage = formatCombatNumber(enemy.minDamage || 0);
+  const maxDamage = formatCombatNumber(enemy.maxDamage || 0);
+  const recommendedDamage = formatCombatNumber(enemy.recommendedDamage || recommendedDice.average || 0);
+  const treasureValue = Math.max(100, Math.round((bossHp || 25) * (difficultyKey === "forte" ? 5 : difficultyKey === "fraco" ? 2 : 3)));
+  const rareMaterial = difficultyKey === "forte" ? "Material raro" : difficultyKey === "fraco" ? "Material comum" : "Material incomum";
+
+  return {
+    weapons: [
+      {
+        name: "Ataque principal",
+        value: recommendedDice.formula || "0",
+        description: `Dano médio aproximado de ${recommendedDamage}. Use como ataque padrão do inimigo.`,
+      },
+      {
+        name: "Ataque leve",
+        value: minDice.formula || recommendedDice.formula || "0",
+        description: `Opção segura para pressionar sem explodir o dano. Faixa baixa: ${minDamage}.`,
+      },
+      {
+        name: "Ataque pesado",
+        value: maxDice.formula || recommendedDice.formula || "0",
+        description: `Opção perigosa para momentos importantes. Faixa alta: ${maxDamage}.`,
+      },
+    ],
+
+    items: [
+      {
+        name: "Espólio sugerido",
+        value: `${treasureValue} Hacksilvers`,
+        description: "Recompensa base caso o grupo derrote este inimigo.",
+      },
+      {
+        name: rareMaterial,
+        value: difficultyKey === "forte" ? "1 peça especial" : "1 peça aproveitável",
+        description: "Pode virar componente de criação, venda ou melhoria de equipamento.",
+      },
+      {
+        name: "Item tático",
+        value: "Defina na cena",
+        description: "Poção, relíquia, chave, mapa, munição ou objeto ligado ao encontro.",
+      },
+    ],
+
+    powers: [
+      {
+        name: "Pressão de combate",
+        value: "1 vez por rodada",
+        description: "Após atacar, o inimigo força um alvo próximo a escolher entre recuar, defender ou sofrer pressão narrativa.",
+      },
+      {
+        name: "Fúria do boss",
+        value: `+${Math.max(1, scale)} no dano`,
+        description: "Use quando o inimigo estiver abaixo de metade do PV ou quando a luta precisar subir de tensão.",
+      },
+      {
+        name: "Instinto de sobrevivência",
+        value: "Reação",
+        description: "Uma vez por combate, reduz ou evita um efeito que encerraria a ameaça cedo demais.",
+      },
+    ],
+
+    attributes: [
+      { name: "Fúria", value: scale + 3 },
+      { name: "Impulso", value: scale + 1 },
+      { name: "Espírito", value: scale },
+      { name: "Estratégia", value: scale + 1 },
+      { name: "Rúnico", value: Math.max(0, scale - 1) },
+      { name: "Destino", value: Math.max(1, Math.round(scale / 2)) },
+    ],
+
+    skills: [
+      { name: "Luta", value: `+${scale + 4}` },
+      { name: "Reflexo", value: `+${scale + 2}` },
+      { name: "Vigor", value: `+${scale + 3}` },
+      { name: "Percepção", value: `+${scale + 1}` },
+      { name: "Intimidação", value: `+${scale + 3}` },
+      { name: "Sobrevivência", value: `+${scale + 1}` },
+    ],
+  };
+}
+
+function getAltheriumEnemyScale(enemy) {
+  const difficultyKey = normalizeBossDifficulty(enemy.difficultyKey || enemy.difficultyLabel || "medio");
+  const hpScale = Math.min(4, Math.floor((Number(enemy.bossHp) || 0) / 80));
+
+  if (difficultyKey === "forte") return 5 + hpScale;
+  if (difficultyKey === "fraco") return 2 + Math.min(2, hpScale);
+  return 3 + Math.min(3, hpScale);
+}
+
+function getAltheriumEnemyDetailSections(enemy) {
+  const safeEnemy = enemy || {};
+
+  return {
+    weapons: normalizeAltheriumEnemyDetailList(safeEnemy.weapons, []),
+    items: normalizeAltheriumEnemyDetailList(safeEnemy.items, []),
+    powers: normalizeAltheriumEnemyDetailList(safeEnemy.powers, []),
+    attributes: normalizeAltheriumEnemyDetailList(safeEnemy.attributes, []),
+    skills: normalizeAltheriumEnemyDetailList(safeEnemy.skills || safeEnemy.pericias, []),
+  };
+}
+
+function getEmptyAltheriumEnemyEditableDetails() {
+  return {
+    weapons: [],
+    items: [],
+    powers: [],
+    attributes: [],
+    skills: [],
+    weaponsText: "",
+    itemsText: "",
+    powersText: "",
+    attributesText: "",
+    skillsText: "",
+  };
+}
+
+function getAltheriumEnemyEditableFields() {
+  return [
+    {
+      key: "weapons",
+      textKey: "weaponsText",
+      title: "Armas",
+      placeholder: "Exemplo:\nMachado enferrujado — 1d10+3 de dano\nGarras quebradas — 1d8+2 de dano\nArremesso de osso — alcance médio, 1d6+1",
+    },
+    {
+      key: "items",
+      textKey: "itemsText",
+      title: "Itens",
+      placeholder: "Exemplo:\nBolsa com 120 Hacksilvers\nChave enferrujada\nFragmento rúnico instável",
+    },
+    {
+      key: "powers",
+      textKey: "powersText",
+      title: "Poderes",
+      placeholder: "Exemplo:\nGrito de guerra — todos próximos testam Espírito\nSangue fervente — ganha +2 de dano abaixo de metade do PV\nInvestida brutal — avança e ataca o alvo mais próximo",
+    },
+    {
+      key: "attributes",
+      textKey: "attributesText",
+      title: "Atributos",
+      placeholder: "Exemplo:\nFúria: 5\nImpulso: 3\nEspírito: 2\nEstratégia: 1\nRúnico: 0\nDestino: 1",
+    },
+    {
+      key: "skills",
+      textKey: "skillsText",
+      title: "Perícias",
+      placeholder: "Exemplo:\nLuta: +6\nReflexo: +4\nVigor: +5\nPercepção: +2\nIntimidação: +5",
+    },
+  ];
+}
+
+function normalizeAltheriumEnemyDetailList(value, fallback = []) {
+  const source = Array.isArray(value) && value.length ? value : fallback;
+
+  if (Array.isArray(source)) {
+    return source.map(normalizeAltheriumEnemyDetailItem).filter(Boolean);
+  }
+
+  if (source && typeof source === "object") {
+    return Object.entries(source)
+      .map(([name, itemValue]) =>
+        normalizeAltheriumEnemyDetailItem({
+          name,
+          value: itemValue,
+        })
+      )
+      .filter(Boolean);
+  }
+
+  return [];
+}
+
+function normalizeAltheriumEnemyDetailItem(item) {
+  if (item === null || item === undefined || item === "") return null;
+
+  if (typeof item === "string" || typeof item === "number") {
+    return {
+      name: String(item),
+      value: "",
+      description: "",
+    };
+  }
+
+  if (typeof item !== "object") return null;
+
+  return {
+    name: item.name || item.label || item.title || "Detalhe",
+    value: item.value ?? item.detail ?? item.damage ?? item.bonus ?? item.total ?? "",
+    description: item.description || item.note || item.text || "",
+  };
+}
+
+function getAltheriumEnemyFieldText(enemy, field) {
+  if (!enemy || !field) return "";
+
+  const directText = enemy[field.textKey];
+  if (typeof directText === "string") return directText;
+
+  const sections = getAltheriumEnemyDetailSections(enemy);
+  return convertAltheriumEnemyDetailListToText(sections[field.key]);
+}
+
+function convertAltheriumEnemyDetailListToText(items) {
+  if (!Array.isArray(items) || !items.length) return "";
+
+  return items
+    .map((item) => {
+      const name = item && item.name ? String(item.name).trim() : "";
+      const value = item && item.value !== undefined && item.value !== null ? String(item.value).trim() : "";
+      const description = item && item.description ? String(item.description).trim() : "";
+      const parts = [name, value, description].filter(Boolean);
+
+      return parts.join(" — ");
+    })
+    .filter(Boolean)
+    .join("\n");
+}
+
+function parseAltheriumEnemyDetailText(text) {
+  return String(text || "")
+    .split(/\r?\n/)
+    .map((line) => line.trim())
+    .filter(Boolean)
+    .map((line) => {
+      const pipeParts = line.split("|").map((part) => part.trim()).filter(Boolean);
+
+      if (pipeParts.length >= 3) {
+        return {
+          name: pipeParts[0],
+          value: pipeParts[1],
+          description: pipeParts.slice(2).join(" | "),
+        };
+      }
+
+      if (pipeParts.length === 2) {
+        return {
+          name: pipeParts[0],
+          value: pipeParts[1],
+          description: "",
+        };
+      }
+
+      const colonMatch = line.match(/^([^:]+):\s*(.+)$/);
+      if (colonMatch) {
+        return {
+          name: colonMatch[1].trim(),
+          value: colonMatch[2].trim(),
+          description: "",
+        };
+      }
+
+      const dashParts = line.split(/\s+[—-]\s+/).map((part) => part.trim()).filter(Boolean);
+      if (dashParts.length >= 2) {
+        return {
+          name: dashParts[0],
+          value: dashParts[1],
+          description: dashParts.slice(2).join(" — "),
+        };
+      }
+
+      return {
+        name: line,
+        value: "",
+        description: "",
+      };
+    });
+}
+
+function renderAltheriumEnemyDetailBoxes(enemy) {
+  const safeEnemy = enemy || {};
+  const enemyId = safeEnemy.id || "";
+  const fields = getAltheriumEnemyEditableFields();
+  const generatedHints = buildAltheriumEnemyGeneratedDetails(safeEnemy);
+
+  return `
+    <div class="enemy-detail-editor" data-enemy-edit-card="${escapeHtml(enemyId)}">
+      <div class="enemy-detail-editor__head">
+        <div>
+          <h3>Detalhes do inimigo</h3>
+          <p>Preencha as caixas abaixo para cadastrar as informações próprias desse inimigo.</p>
+        </div>
+
+        ${
+          enemyId
+            ? `<button
+                type="button"
+                class="altherium-btn enemy-detail-save-btn"
+                data-save-enemy-details-id="${escapeHtml(enemyId)}"
+              >
+                Salvar campos
+              </button>`
+            : `<span class="enemy-detail-save-warning">Gere e salve o inimigo para editar estes campos.</span>`
+        }
+      </div>
+
+      <div class="enemy-detail-boxes enemy-detail-boxes--editable">
+        ${fields
+          .map((field) =>
+            renderAltheriumEnemyEditableBox({
+              enemy: safeEnemy,
+              enemyId,
+              field,
+              placeholder: field.placeholder || convertAltheriumEnemyDetailListToText(generatedHints[field.key]),
+            })
+          )
+          .join("")}
+      </div>
+
+      <p class="enemy-detail-save-status" data-enemy-save-status></p>
+    </div>
+  `;
+}
+
+function renderAltheriumEnemyEditableBox({ enemy, enemyId, field, placeholder }) {
+  const value = getAltheriumEnemyFieldText(enemy, field);
+
+  return `
+    <section class="enemy-detail-box enemy-detail-box--editable">
+      <label for="enemy-${escapeHtml(enemyId || "novo")}-${escapeHtml(field.key)}">
+        ${escapeHtml(field.title)}
+      </label>
+
+      <textarea
+        id="enemy-${escapeHtml(enemyId || "novo")}-${escapeHtml(field.key)}"
+        data-enemy-field="${escapeHtml(field.key)}"
+        data-enemy-text-key="${escapeHtml(field.textKey)}"
+        placeholder="${escapeHtml(placeholder)}"
+        rows="7"
+        ${enemyId ? "" : "disabled"}
+      >${escapeHtml(value)}</textarea>
+    </section>
+  `;
+}
+
+function getAltheriumEnemyEditableDetailsFromCard(card) {
+  const details = getEmptyAltheriumEnemyEditableDetails();
+  if (!card) return details;
+
+  getAltheriumEnemyEditableFields().forEach((field) => {
+    const input = card.querySelector(`[data-enemy-field="${field.key}"]`);
+    const text = input ? input.value.trim() : "";
+
+    details[field.textKey] = text;
+    details[field.key] = parseAltheriumEnemyDetailText(text);
+  });
+
+  return details;
+}
+
+function setAltheriumEnemyEditableStatus(card, message, type = "") {
+  if (!card) return;
+
+  const status = card.querySelector("[data-enemy-save-status]");
+  if (!status) return;
+
+  status.textContent = message || "";
+  status.dataset.statusType = type || "";
+}
+
+async function saveAltheriumEnemyEditableDetails(enemyId, card) {
+  if (!enemyId) {
+    alert("Gere e salve o inimigo antes de preencher estes campos.");
+    return;
+  }
+
+  if (!DB) {
+    alert("Supabase não carregou. Verifique se o script do Supabase está antes do script.js.");
+    return;
+  }
+
+  const campaign = await getCurrentCampaign(true);
+
+  if (!campaign || !campaign.id) {
+    alert("Campanha não encontrada. Não foi possível salvar os campos do inimigo.");
+    return;
+  }
+
+  const saveButton = card ? card.querySelector("[data-save-enemy-details-id]") : null;
+  if (saveButton) {
+    saveButton.disabled = true;
+    saveButton.textContent = "Salvando...";
+  }
+
+  setAltheriumEnemyEditableStatus(card, "Salvando campos...", "loading");
+
+  const editableDetails = getAltheriumEnemyEditableDetailsFromCard(card);
+
+  const { data: currentRow, error: readError } = await DB
+    .from("altherium_bestiary")
+    .select("*")
+    .eq("id", enemyId)
+    .eq("campaign_id", campaign.id)
+    .single();
+
+  if (readError) {
+    showAltheriumBestiarySupabaseError(
+      "Erro ao buscar o inimigo para salvar os campos.",
+      readError
+    );
+    setAltheriumEnemyEditableStatus(card, "Erro ao salvar os campos.", "error");
+
+    if (saveButton) {
+      saveButton.disabled = false;
+      saveButton.textContent = "Salvar campos";
+    }
+
+    return;
+  }
+
+  const currentEnemy = mapAltheriumEnemyFromDbRow(currentRow);
+  const updatedEnemy = {
+    ...currentEnemy,
+    ...editableDetails,
+    updatedAt: new Date().toISOString(),
+  };
+
+  const { error } = await DB
+    .from("altherium_bestiary")
+    .update({
+      data: updatedEnemy,
+    })
+    .eq("id", enemyId)
+    .eq("campaign_id", campaign.id);
+
+  if (error) {
+    showAltheriumBestiarySupabaseError(
+      "Erro ao salvar os campos do inimigo no Supabase.",
+      error
+    );
+    setAltheriumEnemyEditableStatus(card, "Erro ao salvar os campos.", "error");
+
+    if (saveButton) {
+      saveButton.disabled = false;
+      saveButton.textContent = "Salvar campos";
+    }
+
+    return;
+  }
+
+  setAltheriumEnemyEditableStatus(card, "Campos salvos.", "success");
+
+  if (saveButton) {
+    saveButton.disabled = false;
+    saveButton.textContent = "Salvar campos";
+  }
+
+  await renderAltheriumGeneratedEnemiesList();
+}
+
+function renderAltheriumEnemyDetailBox(title, items, compact = false) {
+  const safeItems = Array.isArray(items) ? items : [];
+
+  if (!safeItems.length) {
+    return `
+      <section class="enemy-detail-box${compact ? " enemy-detail-box--compact" : ""}">
+        <h3>${escapeHtml(title)}</h3>
+        <p class="enemy-detail-empty">Nada cadastrado ainda.</p>
+      </section>
+    `;
+  }
+
+  return `
+    <section class="enemy-detail-box${compact ? " enemy-detail-box--compact" : ""}">
+      <h3>${escapeHtml(title)}</h3>
+      <div class="enemy-detail-list">
+        ${safeItems.map((item) => renderAltheriumEnemyDetailItem(item, compact)).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function renderAltheriumEnemyDetailItem(item, compact = false) {
+  const value = item.value === null || item.value === undefined ? "" : String(item.value);
+  const description = item.description ? String(item.description) : "";
+
+  return `
+    <div class="enemy-detail-item${compact ? " enemy-detail-item--compact" : ""}">
+      <strong>${escapeHtml(item.name || "Detalhe")}</strong>
+      ${value ? `<span>${escapeHtml(value)}</span>` : ""}
+      ${description && !compact ? `<p>${escapeHtml(description)}</p>` : ""}
+    </div>
+  `;
+}
 
 function getSupabaseErrorText(error) {
   if (!error) return "Erro desconhecido.";
@@ -5730,6 +6591,7 @@ function canSaveAltheriumBoss(boss) {
 
 function buildAltheriumEnemyRecord(boss) {
   const now = new Date();
+  const emptyDetails = getEmptyAltheriumEnemyEditableDetails();
 
   return {
     id: "",
@@ -5744,6 +6606,7 @@ function buildAltheriumEnemyRecord(boss) {
     recommendedDice: boss.recommendedDice,
     minDice: boss.minDice,
     maxDice: boss.maxDice,
+    ...emptyDetails,
     averageHp: boss.party.averageHp,
     totalDamageAverage: boss.party.totalDamageAverage,
     validPlayersCount: boss.party.validPlayers.length,
@@ -5945,6 +6808,8 @@ async function renderAltheriumGeneratedEnemiesList() {
               <strong>${formatCombatNumber(enemy.validPlayersCount)}</strong>
             </div>
           </div>
+
+          ${renderAltheriumEnemyDetailBoxes(enemy)}
         </article>
       `
     )
