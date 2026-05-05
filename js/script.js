@@ -67,6 +67,7 @@ let saveTimer = null;
 ========================================================= */
 
 document.addEventListener("DOMContentLoaded", async () => {
+  setupHeaderBackButton();
   if (!DB) {
     alert("Supabase não carregou. Verifique se supabase-config.js está antes do script.js.");
     return;
@@ -3235,4 +3236,58 @@ function getFirstElement(ids) {
 }
 
 
+/* =========================================================
+   BOTÃO VOLTAR NO HEADER - TODAS AS PÁGINAS
+========================================================= */
+
+function setupHeaderBackButton() {
+  const currentPage = window.location.pathname.split("/").pop() || "index.html";
+
+  if (currentPage === "index.html") return;
+
+  const header = document.querySelector(".header, header");
+
+  if (!header) return;
+  if (header.querySelector(".header-back-button")) return;
+
+  const backButton = document.createElement("button");
+  backButton.type = "button";
+  backButton.className = "header-back-button";
+  backButton.setAttribute("aria-label", "Voltar para a página anterior");
+  backButton.title = "Voltar";
+
+  backButton.innerHTML = `
+    <span class="header-back-button__icon">‹</span>
+    <span class="header-back-button__text">Voltar</span>
+  `;
+
+  backButton.addEventListener("click", () => {
+    const clickedPage = window.location.pathname.split("/").pop() || "index.html";
+
+    if (window.history.length > 1) {
+      window.history.back();
+      return;
+    }
+
+    if (
+      clickedPage === "altherium-mestre.html" ||
+      clickedPage === "altherium-jogador.html" ||
+      clickedPage === "dnd-mestre.html" ||
+      clickedPage === "dnd-jogador.html" ||
+      clickedPage === "criar-campanha.html"
+    ) {
+      window.location.href = "minhas-campanhas.html";
+      return;
+    }
+
+    if (clickedPage === "minhas-campanhas.html") {
+      window.location.href = "index.html";
+      return;
+    }
+
+    window.location.href = "index.html";
+  });
+
+  header.appendChild(backButton);
+}
 
