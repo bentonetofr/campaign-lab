@@ -2838,11 +2838,74 @@ function bindCampaignDiceRollerEvents(system) {
   });
 }
 
+
+function playCampaignDiceRollSound() {
+  const volume = 0.45;
+  const customSoundPath = "sounds/dice-roll.mp3";
+
+  try {
+    const audio = new Audio(customSoundPath);
+    audio.volume = volume;
+    audio.currentTime = 0;
+
+    audio.play().catch(() => {
+      playCampaignDiceSyntheticSound(volume);
+    });
+  } catch (error) {
+    playCampaignDiceSyntheticSound(volume);
+  }
+}
+
+function playCampaignDiceSyntheticSound(volume = 0.45) {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    const audioContext = new AudioContextClass();
+    const masterGain = audioContext.createGain();
+    masterGain.gain.setValueAtTime(volume * 0.12, audioContext.currentTime);
+    masterGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.42);
+    masterGain.connect(audioContext.destination);
+
+    const rollTimes = [0, 0.06, 0.12, 0.19, 0.27];
+
+    rollTimes.forEach((delay, index) => {
+      const oscillator = audioContext.createOscillator();
+      const gain = audioContext.createGain();
+
+      oscillator.type = "triangle";
+      oscillator.frequency.setValueAtTime(260 + index * 42, audioContext.currentTime + delay);
+      oscillator.frequency.exponentialRampToValueAtTime(
+        120 + index * 20,
+        audioContext.currentTime + delay + 0.08
+      );
+
+      gain.gain.setValueAtTime(0.0001, audioContext.currentTime + delay);
+      gain.gain.exponentialRampToValueAtTime(0.65, audioContext.currentTime + delay + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + delay + 0.09);
+
+      oscillator.connect(gain);
+      gain.connect(masterGain);
+
+      oscillator.start(audioContext.currentTime + delay);
+      oscillator.stop(audioContext.currentTime + delay + 0.1);
+    });
+
+    setTimeout(() => {
+      audioContext.close().catch(() => {});
+    }, 700);
+  } catch (error) {
+    console.log("Não foi possível tocar o som da rolagem.");
+  }
+}
+
 async function handleCampaignDiceRoll({ system, formula, label }) {
   const campaignId = getCurrentCampaignId();
   const user = getLoggedUserFromSession();
 
   if (!campaignId || !user || !formula) return;
+
+  playCampaignDiceRollSound();
 
   const context = getCampaignDiceContext(system);
   const result = rollCampaignDiceFormula(formula, context.variables);
