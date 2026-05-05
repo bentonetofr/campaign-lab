@@ -3292,7 +3292,38 @@ function renderAltheriumBossResult(boss, savedEnemyId = "") {
 }
 
 
+
+function getSupabaseErrorText(error) {
+  if (!error) return "Erro desconhecido.";
+
+  const parts = [];
+
+  if (error.code) parts.push(`Código: ${error.code}`);
+  if (error.message) parts.push(`Mensagem: ${error.message}`);
+  if (error.details) parts.push(`Detalhes: ${error.details}`);
+  if (error.hint) parts.push(`Dica: ${error.hint}`);
+
+  return parts.length ? parts.join("\n") : JSON.stringify(error, null, 2);
+}
+
+function showAltheriumBestiarySupabaseError(action, error) {
+  const details = getSupabaseErrorText(error);
+
+  console.error(action, error);
+
+  alert(
+    `${action}\n\n${details}\n\n` +
+      "Se aparecer PGRST205 ou tabela não encontrada, rode o SQL da tabela e depois atualize com Ctrl + F5.\n" +
+      "Se aparecer row-level security, desative RLS nessa tabela ou crie políticas."
+  );
+}
+
 async function saveAltheriumGeneratedEnemy(boss) {
+  if (!DB) {
+    alert("Supabase não carregou. Verifique se o script do Supabase está antes do script.js.");
+    return null;
+  }
+
   const campaign = boss.party.campaign || (await getCurrentCampaign(true));
 
   if (!campaign || !campaign.id) {
@@ -3310,9 +3341,9 @@ async function saveAltheriumGeneratedEnemy(boss) {
     .single();
 
   if (error) {
-    console.error("Erro ao salvar inimigo no Supabase:", error);
-    alert(
-      "Erro ao salvar o inimigo no Supabase. Verifique se a tabela altherium_bestiary foi criada."
+    showAltheriumBestiarySupabaseError(
+      "Erro ao salvar o inimigo no Supabase.",
+      error
     );
     return null;
   }
@@ -3570,8 +3601,10 @@ async function deleteAltheriumGeneratedEnemy(enemyId) {
     .eq("campaign_id", campaign.id);
 
   if (error) {
-    console.error("Erro ao excluir inimigo do Supabase:", error);
-    alert("Erro ao excluir inimigo.");
+    showAltheriumBestiarySupabaseError(
+      "Erro ao excluir inimigo do Supabase.",
+      error
+    );
     return;
   }
 
@@ -3615,8 +3648,10 @@ async function clearAltheriumGeneratedEnemies() {
     .eq("campaign_id", campaign.id);
 
   if (error) {
-    console.error("Erro ao limpar bestiário no Supabase:", error);
-    alert("Erro ao limpar o bestiário.");
+    showAltheriumBestiarySupabaseError(
+      "Erro ao limpar bestiário no Supabase.",
+      error
+    );
     return;
   }
 
