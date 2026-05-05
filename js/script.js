@@ -2507,7 +2507,11 @@ function updateDndAutoNumbers() {
   updateDndModView("wisScore", "wisModView");
   updateDndModView("chaScore", "chaModView");
 
-  setBarFill("dndHpBarFill", form.elements.hpCurrent.value, form.elements.hpMax.value);
+  setDndHpBarFillWithTemp(
+    form.elements.hpCurrent?.value,
+    form.elements.hpMax?.value,
+    form.elements.hpTemp?.value
+  );
 }
 
 /* =========================================================
@@ -5086,6 +5090,41 @@ function setBarFill(id, currentValue, maxValue) {
 
   element.style.width = `${percent}%`;
 }
+
+function setDndHpBarFillWithTemp(currentValue, maxValue, tempValue) {
+  const hpFill = document.getElementById("dndHpBarFill");
+  if (!hpFill) return;
+
+  const hpBar = hpFill.closest(".dnd-hp-bar");
+  if (!hpBar) {
+    setBarFill("dndHpBarFill", currentValue, maxValue);
+    return;
+  }
+
+  let tempFill = document.getElementById("dndHpTempBarFill");
+
+  if (!tempFill) {
+    tempFill = document.createElement("div");
+    tempFill.id = "dndHpTempBarFill";
+    tempFill.className = "dnd-hp-temp-bar-fill";
+    hpFill.insertAdjacentElement("afterend", tempFill);
+  }
+
+  const current = Math.max(0, Number(String(currentValue || "0").replace(",", ".")) || 0);
+  const max = Math.max(0, Number(String(maxValue || "0").replace(",", ".")) || 0);
+  const temp = Math.max(0, Number(String(tempValue || "0").replace(",", ".")) || 0);
+
+  const totalLimit = Math.max(max, current + temp, 1);
+  const currentPercent = Math.max(0, Math.min(100, (current / totalLimit) * 100));
+  const tempPercent = Math.max(0, Math.min(100 - currentPercent, (temp / totalLimit) * 100));
+
+  hpBar.classList.add("dnd-hp-bar--with-temp");
+  hpFill.style.width = `${currentPercent}%`;
+  tempFill.style.width = `${tempPercent}%`;
+  tempFill.style.display = temp > 0 ? "block" : "none";
+  tempFill.title = temp > 0 ? `${temp} PV temporários` : "";
+}
+
 
 function updateDndModView(inputName, viewId) {
   const form = document.getElementById("dndPlayerSheetForm");
