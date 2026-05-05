@@ -230,6 +230,8 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupCampaignLabNumberControls();
   setupHeaderBackButton();
   setupAltheriumRootDynamicControls();
+  setupCharacterPortraitControls();
+  setupFloatingSheetSaveButton();
   if (!DB) {
     alert("Supabase não carregou. Verifique se supabase-config.js está antes do script.js.");
     return;
@@ -282,7 +284,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (document.body.classList.contains("altherium-player-page")) {
     await protectPage("Altherium", "Jogador");
-    setupPlayerInfo("playerNameView", "campaignNameView");
+    await setupPlayerInfo("playerNameView", "campaignNameView");
     await setupAltheriumPlayerSheet();
     subscribeCampaignRealtime(loadSheetIntoPlayerForm);
   }
@@ -312,7 +314,7 @@ document.addEventListener("DOMContentLoaded", async () => {
 
   if (document.body.classList.contains("dnd-player-page")) {
     await protectPage("D&D", "Jogador");
-    setupPlayerInfo("dndPlayerNameView", "dndCampaignNameView");
+    await setupPlayerInfo("dndPlayerNameView", "dndCampaignNameView");
     await setupDndPlayerSheet();
     subscribeCampaignRealtime(loadDndSheetIntoPlayerForm);
   }
@@ -394,7 +396,7 @@ async function getProfiles(force = false) {
 
   const { data, error } = await DB
     .from("profiles")
-    .select("id, name")
+    .select("id, name, avatar_url")
     .order("name", { ascending: true });
 
   if (error) {
@@ -530,6 +532,8 @@ async function renderMyCampaignsPage() {
   setText("campaignCount", userCampaigns.length);
   setText("masterCount", campaignsAsMaster.length);
   setText("playerCount", campaignsAsPlayer.length);
+
+  await renderProfileAvatarPanel(user);
 
   renderCampaigns(document.getElementById("masterCampaigns"), campaignsAsMaster);
   renderCampaigns(document.getElementById("playerCampaigns"), campaignsAsPlayer);
@@ -887,8 +891,12 @@ async function renderCampaignPlayers(gridIdOrElement, counterIdOrElement) {
   grid.innerHTML = players
     .map(
       (player) => `
-        <div class="altherium-card">
-          <h3>${player.name}</h3>
+        <div class="altherium-card player-profile-card">
+          <div class="player-profile-card__header">
+            ${getProfileAvatarHtml(player, "small")}
+            <h3>${escapeHtml(player.name)}</h3>
+          </div>
+
           <p>Status: Jogador da campanha</p>
 
           <div class="altherium-actions">
@@ -1101,6 +1109,8 @@ function getDefaultSheet(campaignId, playerId, system) {
     ownerName: "",
     system,
     characterName: "",
+    characterAvatarUrl: "",
+    characterPortraitUrl: "",
     root: "",
     genesis: "",
     pvCurrent: "0",
@@ -1310,9 +1320,12 @@ async function renderMasterSheets() {
 
     cards.push(`
       <button class="sheet-card" data-open-sheet="${playerId}">
-        <div class="sheet-card-top">
-          <span>${player ? player.name : "Jogador"}</span>
-          <strong>${sheet.root || "Sem raíz"}</strong>
+        <div class="sheet-card-top sheet-card-top--character">
+          <span class="sheet-card-player">
+            ${getCharacterPortraitHtml(sheet, "tiny")}
+            <span>${escapeHtml(player ? player.name : "Jogador")}</span>
+          </span>
+          <strong>${escapeHtml(sheet.root || "Sem raíz")}</strong>
         </div>
 
         <h3>${sheet.characterName || "Personagem sem nome"}</h3>
@@ -1363,7 +1376,13 @@ async function openMasterSheetModal(playerId) {
 
 function buildMasterSheetEditor(sheet) {
   return `
-    <div class="altherium-rune-sheet master-rune-sheet">
+    <div class="character-sheet-floating-layout character-sheet-floating-layout--altherium">
+      <aside class="character-floating-portrait-panel">
+        ${buildCharacterPortraitField(sheet, "Altherium")}
+      </aside>
+
+      <div class="character-sheet-floating-main">
+        <div class="altherium-rune-sheet master-rune-sheet">
       <section class="rune-paper-page">
         <div class="rune-frame">
           <div class="rune-page-header">
@@ -1459,6 +1478,8 @@ function buildMasterSheetEditor(sheet) {
           <textarea class="rune-triumphs-area" name="notes" rows="8">${escapeHtml(sheet.notes)}</textarea>
         </div>
       </section>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -1504,23 +1525,27 @@ async function loadSheetIntoPlayerForm() {
 
   const focused = document.activeElement;
 
-  if (focused && form.contains(focused)) {
+  if (focused && form.contains(focused) && !focused.matches("[data-character-portrait-input]")) {
     setupAltheriumRootFeatureSections(form);
     updateAltheriumRootSections(form);
+    updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
     updatePlayerSheetPreview();
     updateResourceBars();
+  refreshCharacterPortraitFloatingPanels();
     return;
   }
 
   const sheet = await getOrCreateCampaignSheet(campaign.id, user.id, campaign.sistema);
 
   setupAltheriumRootFeatureSections(form, sheet);
+  ensureCharacterPortraitFieldInForm(form, sheet, "Altherium");
 
   Object.keys(sheet).forEach((key) => {
     if (form.elements[key]) form.elements[key].value = sheet[key] || "";
   });
 
   setAltheriumRootSelectorValue(form.elements.root, sheet.root);
+  updateCharacterPortraitFields(form, sheet);
   updateAltheriumRootSections(form);
   updatePlayerSheetPreview();
   updateResourceBars();
@@ -1537,6 +1562,7 @@ async function savePlayerSheet(showAlert) {
   updateAltheriumRootSections(form);
 
   await updateCampaignSheet(campaign.id, user.id, Object.fromEntries(new FormData(form)));
+  updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
   updatePlayerSheetPreview();
   updateResourceBars();
 
@@ -1572,6 +1598,8 @@ function getDefaultDndSheet(campaignId, playerId, system) {
     ownerName: "",
     system,
     characterName: "",
+    characterAvatarUrl: "",
+    characterPortraitUrl: "",
     classLevel: "",
     race: "",
     background: "",
@@ -1800,9 +1828,12 @@ async function renderDndMasterSheets() {
 
     cards.push(`
       <button class="sheet-card dnd-sheet-card" data-open-dnd-sheet="${playerId}">
-        <div class="sheet-card-top">
-          <span>${player ? player.name : "Jogador"}</span>
-          <strong>${sheet.classLevel || "Sem classe"}</strong>
+        <div class="sheet-card-top sheet-card-top--character">
+          <span class="sheet-card-player">
+            ${getCharacterPortraitHtml(sheet, "tiny")}
+            <span>${escapeHtml(player ? player.name : "Jogador")}</span>
+          </span>
+          <strong>${escapeHtml(sheet.classLevel || "Sem classe")}</strong>
         </div>
 
         <h3>${sheet.characterName || "Personagem sem nome"}</h3>
@@ -1851,10 +1882,18 @@ async function openDndMasterSheetModal(playerId) {
 
 function buildDndSheetEditor(sheet, isModal = false) {
   return `
-    <div class="dnd-character-sheet ${isModal ? "master-dnd-sheet" : ""}">
+    <div class="character-sheet-floating-layout character-sheet-floating-layout--dnd">
+      <aside class="character-floating-portrait-panel">
+        ${buildCharacterPortraitField(sheet, "D&D")}
+      </aside>
+
+      <div class="character-sheet-floating-main">
+        <div class="dnd-character-sheet ${isModal ? "master-dnd-sheet" : ""}">
       <section class="dnd-paper-page">
         <div class="dnd-frame">
-          <div class="dnd-banner"><h3>Dungeons & Dragons</h3></div>
+          <div class="dnd-banner">
+            <h3>Dungeons & Dragons</h3>
+          </div>
 
           <div class="dnd-identity-grid">
             ${dndInput("Nome do personagem", "characterName", sheet.characterName)}
@@ -2016,6 +2055,8 @@ function buildDndSheetEditor(sheet, isModal = false) {
           </div>
         </div>
       </section>
+        </div>
+      </div>
     </div>
   `;
 }
@@ -2060,18 +2101,23 @@ async function loadDndSheetIntoPlayerForm() {
 
   const focused = document.activeElement;
 
-  if (focused && form.contains(focused)) {
+  if (focused && form.contains(focused) && !focused.matches("[data-character-portrait-input]")) {
+    updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
     updateDndPlayerPreview();
     updateDndAutoNumbers();
+  refreshCharacterPortraitFloatingPanels();
     return;
   }
 
   const sheet = await getOrCreateDndSheet(campaign.id, user.id, campaign.sistema);
 
+  ensureCharacterPortraitFieldInForm(form, sheet, "D&D");
+
   Object.keys(sheet).forEach((key) => {
     if (form.elements[key]) form.elements[key].value = sheet[key] || "";
   });
 
+  updateCharacterPortraitFields(form, sheet);
   updateDndPlayerPreview();
   updateDndAutoNumbers();
 }
@@ -2084,6 +2130,7 @@ async function saveDndPlayerSheet(showAlert) {
   if (!user || !campaign || !form) return;
 
   await updateDndSheet(campaign.id, user.id, Object.fromEntries(new FormData(form)));
+  updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
   updateDndPlayerPreview();
   updateDndAutoNumbers();
 
@@ -2601,6 +2648,1091 @@ function subscribeCampaignRealtime(callback) {
     .subscribe();
 }
 
+
+
+/* =========================================================
+   CORTAR / REDIMENSIONAR IMAGEM ANTES DO UPLOAD
+========================================================= */
+
+function openCampaignLabImageCropper(file, options = {}) {
+  return new Promise((resolve) => {
+    if (!file || !file.type || !file.type.startsWith("image/")) {
+      resolve(null);
+      return;
+    }
+
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const image = new Image();
+
+      image.onload = () => {
+        const cropSize = 360;
+        const outputSize = 720;
+        const mimeType = file.type === "image/png" ? "image/png" : "image/jpeg";
+
+        let minScale = Math.max(cropSize / image.naturalWidth, cropSize / image.naturalHeight);
+        let zoom = 1;
+        let offsetX = 0;
+        let offsetY = 0;
+        let dragging = false;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let startOffsetX = 0;
+        let startOffsetY = 0;
+
+        const modal = document.createElement("div");
+        modal.className = "image-cropper-modal";
+        modal.innerHTML = `
+          <div class="image-cropper-box" role="dialog" aria-modal="true">
+            <div class="image-cropper-header">
+              <div>
+                <span>Editar imagem</span>
+                <h2>${escapeHtml(options.title || "Cortar imagem")}</h2>
+                <p>Arraste a imagem e use o zoom para enquadrar melhor.</p>
+              </div>
+
+              <button type="button" class="image-cropper-close" data-crop-cancel>×</button>
+            </div>
+
+            <div class="image-cropper-stage-wrap">
+              <canvas
+                class="image-cropper-canvas"
+                width="${cropSize}"
+                height="${cropSize}"
+              ></canvas>
+              <div class="image-cropper-circle-mask"></div>
+            </div>
+
+            <div class="image-cropper-controls">
+              <label>
+                <span>Zoom</span>
+                <input
+                  type="range"
+                  min="1"
+                  max="3"
+                  step="0.01"
+                  value="1"
+                  data-crop-zoom
+                />
+              </label>
+
+              <div class="image-cropper-tips">
+                <span>Mouse/toque: arrastar</span>
+                <span>Scroll: zoom</span>
+              </div>
+            </div>
+
+            <div class="image-cropper-actions">
+              <button type="button" class="image-cropper-btn secondary" data-crop-cancel>
+                Cancelar
+              </button>
+
+              <button type="button" class="image-cropper-btn primary" data-crop-confirm>
+                Usar imagem
+              </button>
+            </div>
+          </div>
+        `;
+
+        document.body.appendChild(modal);
+
+        const canvas = modal.querySelector(".image-cropper-canvas");
+        const context = canvas.getContext("2d");
+        const zoomInput = modal.querySelector("[data-crop-zoom]");
+
+        function clampOffsets() {
+          const scale = minScale * zoom;
+          const width = image.naturalWidth * scale;
+          const height = image.naturalHeight * scale;
+
+          const maxOffsetX = Math.max(0, (width - cropSize) / 2);
+          const maxOffsetY = Math.max(0, (height - cropSize) / 2);
+
+          offsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, offsetX));
+          offsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, offsetY));
+        }
+
+        function drawPreview() {
+          clampOffsets();
+
+          const scale = minScale * zoom;
+          const width = image.naturalWidth * scale;
+          const height = image.naturalHeight * scale;
+          const x = cropSize / 2 - width / 2 + offsetX;
+          const y = cropSize / 2 - height / 2 + offsetY;
+
+          context.clearRect(0, 0, cropSize, cropSize);
+          context.fillStyle = "#020617";
+          context.fillRect(0, 0, cropSize, cropSize);
+          context.drawImage(image, x, y, width, height);
+        }
+
+        function getPointerPosition(event) {
+          if (event.touches && event.touches[0]) {
+            return {
+              x: event.touches[0].clientX,
+              y: event.touches[0].clientY,
+            };
+          }
+
+          return {
+            x: event.clientX,
+            y: event.clientY,
+          };
+        }
+
+        function startDrag(event) {
+          event.preventDefault();
+
+          const point = getPointerPosition(event);
+
+          dragging = true;
+          dragStartX = point.x;
+          dragStartY = point.y;
+          startOffsetX = offsetX;
+          startOffsetY = offsetY;
+
+          canvas.classList.add("is-dragging");
+        }
+
+        function moveDrag(event) {
+          if (!dragging) return;
+
+          event.preventDefault();
+
+          const point = getPointerPosition(event);
+
+          offsetX = startOffsetX + (point.x - dragStartX);
+          offsetY = startOffsetY + (point.y - dragStartY);
+
+          drawPreview();
+        }
+
+        function endDrag() {
+          dragging = false;
+          canvas.classList.remove("is-dragging");
+        }
+
+        function changeZoom(newZoom, anchorEvent = null) {
+          const oldZoom = zoom;
+          zoom = Math.max(1, Math.min(3, Number(newZoom) || 1));
+
+          if (anchorEvent) {
+            const ratio = zoom / oldZoom;
+            offsetX *= ratio;
+            offsetY *= ratio;
+          }
+
+          if (zoomInput) zoomInput.value = String(zoom);
+
+          drawPreview();
+        }
+
+        function createCroppedFile() {
+          return new Promise((cropResolve) => {
+            const outputCanvas = document.createElement("canvas");
+            outputCanvas.width = outputSize;
+            outputCanvas.height = outputSize;
+
+            const outputContext = outputCanvas.getContext("2d");
+            const ratio = outputSize / cropSize;
+            const scale = minScale * zoom * ratio;
+            const width = image.naturalWidth * scale;
+            const height = image.naturalHeight * scale;
+            const x = outputSize / 2 - width / 2 + offsetX * ratio;
+            const y = outputSize / 2 - height / 2 + offsetY * ratio;
+
+            outputContext.fillStyle = "#020617";
+            outputContext.fillRect(0, 0, outputSize, outputSize);
+            outputContext.drawImage(image, x, y, width, height);
+
+            outputCanvas.toBlob(
+              (blob) => {
+                if (!blob) {
+                  cropResolve(null);
+                  return;
+                }
+
+                const extension = mimeType === "image/png" ? "png" : "jpg";
+                const baseName = String(file.name || "imagem")
+                  .replace(/\.[^/.]+$/, "")
+                  .replace(/[^a-zA-Z0-9_-]/g, "-");
+
+                const croppedFile = new File(
+                  [blob],
+                  `${baseName}-cortada.${extension}`,
+                  { type: mimeType }
+                );
+
+                cropResolve(croppedFile);
+              },
+              mimeType,
+              0.92
+            );
+          });
+        }
+
+        function closeModal(result) {
+          modal.remove();
+          resolve(result);
+        }
+
+        canvas.addEventListener("mousedown", startDrag);
+        window.addEventListener("mousemove", moveDrag);
+        window.addEventListener("mouseup", endDrag);
+
+        canvas.addEventListener("touchstart", startDrag, { passive: false });
+        window.addEventListener("touchmove", moveDrag, { passive: false });
+        window.addEventListener("touchend", endDrag);
+
+        canvas.addEventListener("wheel", (event) => {
+          event.preventDefault();
+
+          const direction = event.deltaY > 0 ? -0.08 : 0.08;
+          changeZoom(zoom + direction, event);
+        });
+
+        if (zoomInput) {
+          zoomInput.addEventListener("input", () => {
+            changeZoom(zoomInput.value);
+          });
+        }
+
+        modal.querySelectorAll("[data-crop-cancel]").forEach((button) => {
+          button.addEventListener("click", () => closeModal(null));
+        });
+
+        const confirmButton = modal.querySelector("[data-crop-confirm]");
+        if (confirmButton) {
+          confirmButton.addEventListener("click", async () => {
+            confirmButton.disabled = true;
+            confirmButton.textContent = "Processando...";
+
+            const cropped = await createCroppedFile();
+            closeModal(cropped);
+          });
+        }
+
+        modal.addEventListener("click", (event) => {
+          if (event.target === modal) closeModal(null);
+        });
+
+        window.addEventListener(
+          "keydown",
+          function handleEscape(event) {
+            if (event.key === "Escape" && document.body.contains(modal)) {
+              event.preventDefault();
+              window.removeEventListener("keydown", handleEscape);
+              closeModal(null);
+            }
+          },
+          { once: false }
+        );
+
+        drawPreview();
+      };
+
+      image.onerror = () => {
+        alert("Não foi possível carregar essa imagem.");
+        resolve(null);
+      };
+
+      image.src = reader.result;
+    };
+
+    reader.onerror = () => {
+      alert("Não foi possível ler essa imagem.");
+      resolve(null);
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+/* =========================================================
+   FOTO DO PERSONAGEM
+========================================================= */
+
+const CHARACTER_PORTRAIT_BUCKET = "character-portraits";
+const CHARACTER_PORTRAIT_MAX_SIZE = 5 * 1024 * 1024;
+
+function setupCharacterPortraitControls() {
+  injectCharacterPortraitFloatingRightStyles();
+
+  if (window.characterPortraitControlsReady) return;
+
+  window.characterPortraitControlsReady = true;
+
+  document.addEventListener("change", async (event) => {
+    const input = event.target.closest("[data-character-portrait-input]");
+    if (!input) return;
+
+    const file = input.files && input.files[0];
+    if (!file) return;
+
+    await uploadCharacterPortraitFromInput(input, file);
+    input.value = "";
+  });
+
+  const refreshPortraitPanelPosition = () => {
+    if (window.characterPortraitRefreshFrame) {
+      cancelAnimationFrame(window.characterPortraitRefreshFrame);
+    }
+
+    window.characterPortraitRefreshFrame = requestAnimationFrame(() => {
+      refreshCharacterPortraitFloatingPanels();
+    });
+  };
+
+  window.addEventListener("resize", refreshPortraitPanelPosition);
+  window.addEventListener("scroll", refreshPortraitPanelPosition, { passive: true });
+}
+
+
+function buildCharacterPortraitField(sheet = {}, system = "Altherium") {
+  const imageUrl = getCharacterPortraitUrl(sheet);
+
+  return `
+    <div class="character-portrait-field character-portrait-field--side" data-character-portrait-field>
+      <input
+        type="hidden"
+        name="characterAvatarUrl"
+        value="${escapeHtml(imageUrl)}"
+        data-character-portrait-url
+      />
+
+      <input
+        type="hidden"
+        name="characterPortraitUrl"
+        value="${escapeHtml(imageUrl)}"
+        data-character-portrait-url-secondary
+      />
+
+      <div class="character-portrait-field__preview" data-character-portrait-preview>
+        ${getCharacterPortraitHtml(sheet, "large")}
+      </div>
+
+      <div class="character-portrait-field__content">
+        <span>Imagem do personagem</span>
+        <strong>${escapeHtml(sheet.characterName || "Personagem")}</strong>
+        <p>Essa imagem aparece para o mestre na área de personagens.</p>
+
+        <label class="character-portrait-upload-btn">
+          Escolher imagem
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+            data-character-portrait-input
+            data-character-system="${escapeHtml(system)}"
+            hidden
+          />
+        </label>
+      </div>
+    </div>
+  `;
+}
+
+function isPlayerCharacterSheetForm(form) {
+  return Boolean(
+    form &&
+      (form.id === "playerSheetForm" || form.id === "dndPlayerSheetForm")
+  );
+}
+
+function getCharacterSheetElement(form) {
+  if (!form) return null;
+
+  if (form.matches(".altherium-rune-sheet, .dnd-character-sheet")) {
+    return form;
+  }
+
+  return form.querySelector(".altherium-rune-sheet, .dnd-character-sheet");
+}
+
+function getCharacterSheetReferenceElement(form) {
+  if (!form) return null;
+
+  return (
+    form.querySelector(".rune-paper-page, .dnd-paper-page") ||
+    getCharacterSheetElement(form) ||
+    form
+  );
+}
+
+function ensureCharacterPortraitFieldInForm(form, sheet = {}, system = "Altherium") {
+  if (!form) return;
+
+  let field = form.querySelector("[data-character-portrait-field]");
+
+  if (!field) {
+    form.insertAdjacentHTML("afterbegin", buildCharacterPortraitField(sheet, system));
+    field = form.querySelector("[data-character-portrait-field]");
+  }
+
+  if (!field) return;
+
+  field.classList.remove("character-portrait-force-right");
+  field.classList.add("character-portrait-field--side");
+
+  ensureCharacterPortraitFloatingLayout(form, field);
+  updateCharacterPortraitFields(form, sheet);
+}
+
+function ensureCharacterPortraitFloatingLayout(form, field = null) {
+  if (!form) return;
+
+  injectCharacterPortraitFloatingRightStyles();
+
+  const portraitField = field || form.querySelector("[data-character-portrait-field]");
+  if (!portraitField) return;
+
+  if (isPlayerCharacterSheetForm(form)) {
+    positionPlayerCharacterPortraitField(form, portraitField);
+  }
+}
+
+function positionPlayerCharacterPortraitField(form, portraitField) {
+  if (!form || !portraitField) return;
+
+  const isSmallScreen = window.innerWidth < 1100;
+
+  portraitField.style.setProperty("box-sizing", "border-box", "important");
+  portraitField.style.setProperty("display", "flex", "important");
+
+  if (isSmallScreen) {
+    portraitField.style.setProperty("position", "relative", "important");
+    portraitField.style.setProperty("top", "auto", "important");
+    portraitField.style.setProperty("right", "auto", "important");
+    portraitField.style.setProperty("bottom", "auto", "important");
+    portraitField.style.setProperty("left", "auto", "important");
+    portraitField.style.setProperty("width", "min(720px, 100%)", "important");
+    portraitField.style.setProperty("max-width", "720px", "important");
+    portraitField.style.setProperty("margin", "0 auto 24px", "important");
+    portraitField.style.setProperty("z-index", "20", "important");
+    portraitField.style.setProperty("transform", "none", "important");
+    return;
+  }
+
+  const panelWidth = 260;
+  const topOffset = 116;
+  const rightOffset = 30;
+
+  portraitField.style.setProperty("position", "fixed", "important");
+  portraitField.style.setProperty("top", `${topOffset}px`, "important");
+  portraitField.style.setProperty("right", `${rightOffset}px`, "important");
+  portraitField.style.setProperty("left", "auto", "important");
+  portraitField.style.setProperty("bottom", "auto", "important");
+  portraitField.style.setProperty("width", `${panelWidth}px`, "important");
+  portraitField.style.setProperty("max-width", `${panelWidth}px`, "important");
+  portraitField.style.setProperty("min-width", "0", "important");
+  portraitField.style.setProperty("margin", "0", "important");
+  portraitField.style.setProperty("z-index", "999999", "important");
+  portraitField.style.setProperty("transform", "none", "important");
+}
+
+function injectCharacterPortraitFloatingRightStyles() {
+  const oldStyle = document.getElementById("character-portrait-floating-right-style");
+  if (oldStyle) oldStyle.remove();
+
+  const style = document.createElement("style");
+  style.id = "character-portrait-floating-right-style";
+
+  style.textContent = `
+    @media (min-width: 1100px) {
+      #playerSheetForm > .character-portrait-field,
+      #dndPlayerSheetForm > .character-portrait-field {
+        width: 260px !important;
+        max-width: 260px !important;
+        margin: 0 !important;
+        padding: 18px !important;
+        flex-direction: column !important;
+        align-items: center !important;
+        text-align: center !important;
+      }
+
+      #playerSheetForm > .character-portrait-field .character-portrait-field__content,
+      #dndPlayerSheetForm > .character-portrait-field .character-portrait-field__content {
+        text-align: center !important;
+      }
+
+      #playerSheetForm > .character-portrait-field .character-portrait-upload-btn,
+      #dndPlayerSheetForm > .character-portrait-field .character-portrait-upload-btn {
+        width: 100% !important;
+      }
+    }
+
+    @media (max-width: 1099px) {
+      #playerSheetForm > .character-portrait-field,
+      #dndPlayerSheetForm > .character-portrait-field {
+        position: relative !important;
+        top: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        left: auto !important;
+        width: min(720px, 100%) !important;
+        max-width: 720px !important;
+        margin: 0 auto 24px !important;
+        z-index: 20 !important;
+      }
+    }
+
+    .rune-page-header > .character-portrait-field,
+    .dnd-banner > .character-portrait-field {
+      display: none !important;
+    }
+
+    .altherium-modal .character-floating-portrait-panel,
+    .altherium-sheet-modal-box .character-floating-portrait-panel,
+    .dnd-sheet-modal-box .character-floating-portrait-panel {
+      position: sticky !important;
+      top: 0 !important;
+      right: auto !important;
+      left: auto !important;
+      bottom: auto !important;
+      z-index: 20 !important;
+      transform: none !important;
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+
+
+/* =========================================================
+   BOTÃO SALVAR FICHA FIXO À ESQUERDA
+========================================================= */
+
+function setupFloatingSheetSaveButton() {
+  injectFloatingSheetSaveButtonStyles();
+
+  if (window.floatingSheetSaveButtonReady) {
+    positionFloatingSheetSaveButtons();
+    return;
+  }
+
+  window.floatingSheetSaveButtonReady = true;
+
+  const refreshSaveButtonPosition = () => {
+    if (window.floatingSheetSaveButtonFrame) {
+      cancelAnimationFrame(window.floatingSheetSaveButtonFrame);
+    }
+
+    window.floatingSheetSaveButtonFrame = requestAnimationFrame(() => {
+      positionFloatingSheetSaveButtons();
+    });
+  };
+
+  window.addEventListener("resize", refreshSaveButtonPosition);
+  window.addEventListener("scroll", refreshSaveButtonPosition, { passive: true });
+
+  refreshSaveButtonPosition();
+
+  let tries = 0;
+  const interval = setInterval(() => {
+    positionFloatingSheetSaveButtons();
+    tries += 1;
+
+    if (tries >= 20) clearInterval(interval);
+  }, 250);
+}
+
+function getFloatingSheetSaveButtons() {
+  return [
+    document.getElementById("savePlayerSheet"),
+    document.getElementById("saveDndSheet"),
+  ].filter(Boolean);
+}
+
+function positionFloatingSheetSaveButtons() {
+  const buttons = getFloatingSheetSaveButtons();
+  if (!buttons.length) return;
+
+  const isSmallScreen = window.innerWidth < 1100;
+
+  buttons.forEach((button) => {
+    button.classList.add("sheet-save-floating-button");
+
+    if (isSmallScreen) {
+      button.style.setProperty("position", "relative", "important");
+      button.style.setProperty("top", "auto", "important");
+      button.style.setProperty("left", "auto", "important");
+      button.style.setProperty("right", "auto", "important");
+      button.style.setProperty("bottom", "auto", "important");
+      button.style.setProperty("width", "100%", "important");
+      button.style.setProperty("max-width", "100%", "important");
+      button.style.setProperty("margin", "16px 0 0", "important");
+      button.style.setProperty("z-index", "20", "important");
+      button.style.setProperty("transform", "none", "important");
+      return;
+    }
+
+    button.style.setProperty("position", "fixed", "important");
+    button.style.setProperty("top", "116px", "important");
+    button.style.setProperty("left", "30px", "important");
+    button.style.setProperty("right", "auto", "important");
+    button.style.setProperty("bottom", "auto", "important");
+    button.style.setProperty("width", "240px", "important");
+    button.style.setProperty("max-width", "240px", "important");
+    button.style.setProperty("margin", "0", "important");
+    button.style.setProperty("z-index", "999999", "important");
+    button.style.setProperty("transform", "none", "important");
+  });
+}
+
+function injectFloatingSheetSaveButtonStyles() {
+  const oldStyle = document.getElementById("floating-sheet-save-button-style");
+  if (oldStyle) oldStyle.remove();
+
+  const style = document.createElement("style");
+  style.id = "floating-sheet-save-button-style";
+
+  style.textContent = `
+    @media (min-width: 1100px) {
+      html body.altherium-player-page #savePlayerSheet,
+      html body.dnd-player-page #saveDndSheet,
+      html body .sheet-save-floating-button {
+        position: fixed !important;
+        top: 116px !important;
+        left: 30px !important;
+        right: auto !important;
+        bottom: auto !important;
+        width: 240px !important;
+        max-width: 240px !important;
+        min-height: 58px !important;
+        margin: 0 !important;
+        z-index: 999999 !important;
+        border-radius: 20px !important;
+        transform: none !important;
+        box-shadow:
+          0 18px 44px rgba(0, 0, 0, 0.34),
+          0 0 32px rgba(34, 211, 238, 0.22) !important;
+      }
+
+      html body.altherium-player-page #savePlayerSheet:hover,
+      html body.dnd-player-page #saveDndSheet:hover,
+      html body .sheet-save-floating-button:hover {
+        transform: translateY(-2px) !important;
+      }
+    }
+
+    @media (max-width: 1099px) {
+      html body.altherium-player-page #savePlayerSheet,
+      html body.dnd-player-page #saveDndSheet,
+      html body .sheet-save-floating-button {
+        position: relative !important;
+        top: auto !important;
+        left: auto !important;
+        right: auto !important;
+        bottom: auto !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 16px 0 0 !important;
+        z-index: 20 !important;
+        transform: none !important;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+async function uploadCharacterPortraitFromInput(input, file) {
+  const form = input.closest("form");
+
+  if (!form) {
+    alert("Formulário da ficha não encontrado.");
+    return;
+  }
+
+  if (!DB || !DB.storage) {
+    alert("Supabase Storage não carregou.");
+    return;
+  }
+
+  if (!file.type || !file.type.startsWith("image/")) {
+    alert("Escolha um arquivo de imagem.");
+    return;
+  }
+
+  if (file.size > CHARACTER_PORTRAIT_MAX_SIZE) {
+    alert("A imagem precisa ter no máximo 5MB.");
+    return;
+  }
+
+  const croppedFile = await openCampaignLabImageCropper(file, {
+    title: "Cortar imagem do personagem",
+  });
+
+  if (!croppedFile) return;
+
+  file = croppedFile;
+
+  const user = getLoggedUserFromSession();
+  const campaign = await getCurrentCampaign(true);
+
+  if (!user || !campaign) {
+    alert("Campanha ou usuário não encontrado.");
+    return;
+  }
+
+  const system = input.dataset.characterSystem || sessionStorage.getItem("system") || "Sistema";
+  const uploadButton = input.closest(".character-portrait-upload-btn");
+  const oldText = uploadButton ? uploadButton.childNodes[0].textContent.trim() : "";
+
+  if (uploadButton) {
+    uploadButton.childNodes[0].textContent = "Enviando...";
+    uploadButton.classList.add("is-loading");
+  }
+
+  const extension = getFileExtension(file.name, file.type);
+  const safeCampaignId = String(campaign.id).replace(/[^a-zA-Z0-9_-]/g, "-");
+  const safeUserId = String(user.id).replace(/[^a-zA-Z0-9_-]/g, "-");
+  const safeSystem = String(system).replace(/[^a-zA-Z0-9_-]/g, "-");
+  const filePath = `${safeCampaignId}/${safeSystem}/${safeUserId}/portrait-${Date.now()}.${extension}`;
+
+  const { error: uploadError } = await DB.storage
+    .from(CHARACTER_PORTRAIT_BUCKET)
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: true,
+      contentType: file.type,
+    });
+
+  if (uploadError) {
+    console.error("Erro ao enviar imagem do personagem:", uploadError);
+    alert(
+      "Erro ao enviar imagem do personagem. Verifique se o bucket character-portraits foi criado."
+    );
+
+    if (uploadButton) {
+      uploadButton.childNodes[0].textContent = oldText || "Escolher imagem";
+      uploadButton.classList.remove("is-loading");
+    }
+
+    return;
+  }
+
+  const { data: publicData } = DB.storage
+    .from(CHARACTER_PORTRAIT_BUCKET)
+    .getPublicUrl(filePath);
+
+  const imageUrl = `${publicData.publicUrl}?v=${Date.now()}`;
+
+  const urlInput = form.querySelector("[data-character-portrait-url]");
+  const secondaryUrlInput = form.querySelector("[data-character-portrait-url-secondary]");
+
+  if (urlInput) urlInput.value = imageUrl;
+  if (secondaryUrlInput) secondaryUrlInput.value = imageUrl;
+
+  updateCharacterPortraitFields(form, {
+    ...Object.fromEntries(new FormData(form)),
+    characterAvatarUrl: imageUrl,
+    characterPortraitUrl: imageUrl,
+  });
+
+  if (form.id === "playerSheetForm") {
+    await savePlayerSheet(false);
+  } else if (form.id === "dndPlayerSheetForm") {
+    await saveDndPlayerSheet(false);
+  } else if (form.id === "altheriumForm" && form.dataset.mode === "edit-sheet") {
+    await saveSheetFromModal(false);
+  } else if (form.id === "dndForm" && form.dataset.mode === "edit-dnd-sheet") {
+    await saveDndSheetFromModal(false);
+  }
+
+  if (uploadButton) {
+    uploadButton.childNodes[0].textContent = oldText || "Escolher imagem";
+    uploadButton.classList.remove("is-loading");
+  }
+}
+
+function updateCharacterPortraitFields(form, sheet = {}) {
+  if (!form) return;
+
+  const existingField = form.querySelector("[data-character-portrait-field]");
+  if (existingField) ensureCharacterPortraitFloatingLayout(form, existingField);
+
+  const imageUrl = getCharacterPortraitUrl(sheet);
+  const preview = form.querySelector("[data-character-portrait-preview]");
+  const urlInput = form.querySelector("[data-character-portrait-url]");
+  const secondaryUrlInput = form.querySelector("[data-character-portrait-url-secondary]");
+
+  if (urlInput && imageUrl) urlInput.value = imageUrl;
+  if (secondaryUrlInput && imageUrl) secondaryUrlInput.value = imageUrl;
+
+  if (preview) {
+    preview.innerHTML = getCharacterPortraitHtml(sheet, "large");
+  }
+}
+
+function getCharacterPortraitUrl(sheet = {}) {
+  return sheet.characterAvatarUrl || sheet.characterPortraitUrl || sheet.character_image_url || "";
+}
+
+function getCharacterPortraitHtml(sheet = {}, size = "small") {
+  const name = sheet.characterName || sheet.personagem || sheet.ownerName || "Personagem";
+  const imageUrl = getCharacterPortraitUrl(sheet);
+  const initials = getProfileInitials(name);
+
+  return `
+    <span class="character-portrait character-portrait--${size}" title="${escapeHtml(name)}">
+      <span class="character-portrait__fallback">${escapeHtml(initials)}</span>
+      ${
+        imageUrl
+          ? `<img src="${escapeHtml(imageUrl)}" alt="Imagem de ${escapeHtml(name)}" loading="lazy" />`
+          : ""
+      }
+    </span>
+  `;
+}
+
+function refreshCharacterPortraitFloatingPanels() {
+  document.querySelectorAll("form").forEach((form) => {
+    const field = form.querySelector("[data-character-portrait-field]");
+    if (field) ensureCharacterPortraitFloatingLayout(form, field);
+  });
+}
+
+/* =========================================================
+   AVATAR / FOTO DE PERFIL
+========================================================= */
+
+const PROFILE_AVATAR_BUCKET = "profile-avatars";
+const PROFILE_AVATAR_MAX_SIZE = 5 * 1024 * 1024;
+
+async function renderProfileAvatarPanel(user) {
+  if (!document.body.classList.contains("my-campaigns-page")) return;
+  if (!user) return;
+
+  const profile = await getProfileById(user.id, true);
+
+  const oldPanel = document.getElementById("profileAvatarPanel");
+  if (oldPanel) oldPanel.remove();
+
+  const panel = document.createElement("section");
+  panel.id = "profileAvatarPanel";
+  panel.className = "profile-avatar-panel";
+
+  panel.innerHTML = `
+    <div class="profile-avatar-panel__left">
+      ${getProfileAvatarHtml(profile || user, "large")}
+
+      <div>
+        <span>Meu perfil</span>
+        <h2>${escapeHtml(profile?.name || user.nome || user.name || user.id)}</h2>
+        <p>Essa imagem aparece nos players logados e nos cards das fichas.</p>
+      </div>
+    </div>
+
+    <div class="profile-avatar-panel__actions">
+      <label class="profile-avatar-upload-btn" for="profileAvatarInput">
+        Escolher imagem
+      </label>
+
+      <input
+        id="profileAvatarInput"
+        type="file"
+        accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+        hidden
+      />
+    </div>
+  `;
+
+  const target =
+    document.querySelector(".campaigns-area") ||
+    document.querySelector(".altherium-main") ||
+    document.querySelector("main");
+
+  if (target && target.parentNode) {
+    target.parentNode.insertBefore(panel, target);
+  } else {
+    document.body.appendChild(panel);
+  }
+
+  const input = panel.querySelector("#profileAvatarInput");
+
+  if (input) {
+    input.addEventListener("change", async () => {
+      const file = input.files && input.files[0];
+
+      if (!file) return;
+
+      await uploadCurrentUserProfileAvatar(file, user, panel);
+      input.value = "";
+    });
+  }
+}
+
+async function uploadCurrentUserProfileAvatar(file, user, panel) {
+  if (!DB || !DB.storage) {
+    alert("Supabase Storage não carregou.");
+    return;
+  }
+
+  if (!file.type || !file.type.startsWith("image/")) {
+    alert("Escolha um arquivo de imagem.");
+    return;
+  }
+
+  if (file.size > PROFILE_AVATAR_MAX_SIZE) {
+    alert("A imagem precisa ter no máximo 5MB.");
+    return;
+  }
+
+  const croppedFile = await openCampaignLabImageCropper(file, {
+    title: "Cortar foto de perfil",
+  });
+
+  if (!croppedFile) return;
+
+  file = croppedFile;
+
+  const uploadButton = panel ? panel.querySelector(".profile-avatar-upload-btn") : null;
+  const oldButtonText = uploadButton ? uploadButton.textContent : "";
+
+  if (uploadButton) {
+    uploadButton.textContent = "Enviando...";
+    uploadButton.classList.add("is-loading");
+  }
+
+  const extension = getFileExtension(file.name, file.type);
+  const safeUserId = String(user.id).replace(/[^a-zA-Z0-9_-]/g, "-");
+  const filePath = `${safeUserId}/avatar-${Date.now()}.${extension}`;
+
+  const { error: uploadError } = await DB.storage
+    .from(PROFILE_AVATAR_BUCKET)
+    .upload(filePath, file, {
+      cacheControl: "3600",
+      upsert: true,
+      contentType: file.type,
+    });
+
+  if (uploadError) {
+    console.error("Erro ao enviar avatar:", uploadError);
+    alert(
+      "Erro ao enviar imagem. Verifique se o bucket profile-avatars foi criado no Supabase."
+    );
+
+    if (uploadButton) {
+      uploadButton.textContent = oldButtonText || "Escolher imagem";
+      uploadButton.classList.remove("is-loading");
+    }
+
+    return;
+  }
+
+  const { data: publicData } = DB.storage
+    .from(PROFILE_AVATAR_BUCKET)
+    .getPublicUrl(filePath);
+
+  const avatarUrl = `${publicData.publicUrl}?v=${Date.now()}`;
+
+  const { error: updateError } = await DB
+    .from("profiles")
+    .update({ avatar_url: avatarUrl })
+    .eq("id", user.id);
+
+  if (updateError) {
+    console.error("Erro ao salvar avatar no profile:", updateError);
+    alert("Imagem enviada, mas houve erro ao salvar o link no perfil.");
+
+    if (uploadButton) {
+      uploadButton.textContent = oldButtonText || "Escolher imagem";
+      uploadButton.classList.remove("is-loading");
+    }
+
+    return;
+  }
+
+  profilesCache = await getProfiles(true);
+
+  await renderMyCampaignsPage();
+
+  if (uploadButton) {
+    uploadButton.textContent = oldButtonText || "Escolher imagem";
+    uploadButton.classList.remove("is-loading");
+  }
+}
+
+function getFileExtension(fileName, mimeType = "") {
+  const nameExtension = String(fileName || "").split(".").pop().toLowerCase();
+
+  if (["png", "jpg", "jpeg", "webp", "gif"].includes(nameExtension)) {
+    return nameExtension === "jpeg" ? "jpg" : nameExtension;
+  }
+
+  if (mimeType.includes("png")) return "png";
+  if (mimeType.includes("webp")) return "webp";
+  if (mimeType.includes("gif")) return "gif";
+
+  return "jpg";
+}
+
+async function getProfileById(profileId, force = false) {
+  const profiles = await getProfiles(force);
+  return profiles.find((profile) => profile.id === profileId) || null;
+}
+
+function getProfileAvatarHtml(profile, size = "small") {
+  const safeProfile = profile || {};
+  const name = safeProfile.name || safeProfile.nome || safeProfile.id || "?";
+  const initials = getProfileInitials(name);
+  const avatarUrl = safeProfile.avatar_url || safeProfile.avatarUrl || "";
+
+  return `
+    <span class="profile-avatar profile-avatar--${size}" title="${escapeHtml(name)}">
+      <span class="profile-avatar__fallback">${escapeHtml(initials)}</span>
+      ${
+        avatarUrl
+          ? `<img src="${escapeHtml(avatarUrl)}" alt="Avatar de ${escapeHtml(name)}" loading="lazy" />`
+          : ""
+      }
+    </span>
+  `;
+}
+
+function getProfileInitials(name) {
+  const cleanName = String(name || "?").trim();
+
+  if (!cleanName) return "?";
+
+  const parts = cleanName.split(/\s+/).filter(Boolean);
+
+  if (parts.length >= 2) {
+    return `${parts[0][0]}${parts[1][0]}`.toUpperCase();
+  }
+
+  return cleanName.slice(0, 2).toUpperCase();
+}
+
+async function renderInlineAvatarNearElement(elementId, profileId) {
+  const element = document.getElementById(elementId);
+  if (!element || !profileId) return;
+
+  const profile = await getProfileById(profileId);
+  if (!profile) return;
+
+  const wrapperClass = "inline-player-avatar-wrap";
+  const parent = element.parentElement;
+
+  if (!parent) return;
+
+  if (parent.classList.contains(wrapperClass)) {
+    const oldAvatar = parent.querySelector(".profile-avatar");
+    if (oldAvatar) oldAvatar.outerHTML = getProfileAvatarHtml(profile, "tiny");
+    return;
+  }
+
+  const wrapper = document.createElement("span");
+  wrapper.className = wrapperClass;
+  wrapper.innerHTML = getProfileAvatarHtml(profile, "tiny");
+
+  parent.insertBefore(wrapper, element);
+  wrapper.appendChild(element);
+}
+
 /* =========================================================
    MODAL / REFRESH / HELPERS
 ========================================================= */
@@ -2654,7 +3786,7 @@ async function setupMasterCampaignName() {
   setText("masterCampaignName", campaignName || "Campanha não identificada");
 }
 
-function setupPlayerInfo(playerElementId, campaignElementId) {
+async function setupPlayerInfo(playerElementId, campaignElementId) {
   const user = getLoggedUserFromSession();
   const campaignName = sessionStorage.getItem("campaignName");
 

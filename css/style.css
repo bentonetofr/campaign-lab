@@ -7467,6 +7467,1007 @@ body > .header-logout-area .header-logout-button__text {
 }
 
 /* =========================================================
+   AVATAR / FOTO DE PERFIL
+========================================================= */
+
+.profile-avatar-panel {
+  width: min(1180px, 86%);
+  margin: -22px auto 44px;
+  padding: 24px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  border-radius: 28px;
+
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.94)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    );
+
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.28),
+    0 0 50px rgba(34, 211, 238, 0.08);
+}
+
+.profile-avatar-panel__left {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  min-width: 0;
+}
+
+.profile-avatar-panel__left
+  span:not(.profile-avatar):not(.profile-avatar__fallback) {
+  display: inline-flex;
+  margin-bottom: 6px;
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.profile-avatar-panel__left h2 {
+  margin: 0 0 6px;
+  color: var(--text);
+  font-size: clamp(26px, 3vw, 42px);
+  line-height: 1;
+}
+
+.profile-avatar-panel__left p {
+  color: var(--text-soft);
+  line-height: 1.5;
+}
+
+.profile-avatar-panel__actions {
+  flex-shrink: 0;
+}
+
+.profile-avatar-upload-btn {
+  min-height: 46px;
+  padding: 0 20px;
+  border: 1px solid rgba(34, 211, 238, 0.44);
+  border-radius: 999px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(34, 211, 238, 0.1);
+  color: var(--cyan);
+
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.profile-avatar-upload-btn:hover,
+.profile-avatar-upload-btn.is-loading {
+  transform: translateY(-2px);
+  border-color: rgba(34, 211, 238, 0.82);
+  background: rgba(34, 211, 238, 0.16);
+  color: #ffffff;
+  box-shadow: 0 16px 38px rgba(34, 211, 238, 0.14);
+}
+
+.profile-avatar {
+  position: relative;
+  flex-shrink: 0;
+
+  display: inline-grid;
+  place-items: center;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(34, 211, 238, 0.52);
+  border-radius: 999px;
+
+  background:
+    radial-gradient(circle at top, rgba(34, 211, 238, 0.22), transparent 52%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.98));
+
+  color: #67e8f9;
+  font-family: "Quantico", sans-serif;
+  font-weight: 900;
+  text-transform: uppercase;
+
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.08),
+    0 0 24px rgba(34, 211, 238, 0.16);
+}
+
+.profile-avatar--tiny {
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  font-size: 11px;
+}
+
+.profile-avatar--small {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+  font-size: 14px;
+}
+
+.profile-avatar--large {
+  width: 76px;
+  height: 76px;
+  min-width: 76px;
+  font-size: 22px;
+}
+
+.profile-avatar__fallback {
+  position: relative;
+  z-index: 1;
+}
+
+.profile-avatar img {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  display: block;
+}
+
+.player-profile-card__header,
+.sheet-card-player,
+.inline-player-avatar-wrap {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.player-profile-card__header {
+  margin-bottom: 8px;
+}
+
+.player-profile-card__header h3 {
+  margin: 0;
+}
+
+.sheet-card-player > span:last-child,
+.inline-player-avatar-wrap > span:last-child {
+  min-width: 0;
+}
+
+@media (max-width: 760px) {
+  .profile-avatar-panel {
+    width: calc(100% - 28px);
+    margin: -10px auto 34px;
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .profile-avatar-panel__left {
+    align-items: flex-start;
+  }
+
+  .profile-avatar-panel__actions,
+  .profile-avatar-upload-btn {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   FOTO DO PERSONAGEM
+========================================================= */
+
+.character-portrait-field {
+  width: 100%;
+  margin: 0 auto 24px;
+  padding: 18px;
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  border-radius: 26px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 18px;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.78), rgba(2, 6, 23, 0.92)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    );
+
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.22),
+    0 0 34px rgba(34, 211, 238, 0.06);
+}
+
+.dnd-banner .character-portrait-field {
+  max-width: 720px;
+  margin: 18px auto 0;
+}
+
+.character-portrait-field__preview {
+  flex-shrink: 0;
+}
+
+.character-portrait-field__content {
+  min-width: 0;
+  text-align: left;
+}
+
+.character-portrait-field__content > span {
+  display: inline-flex;
+  margin-bottom: 8px;
+  color: #22d3ee;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+}
+
+.character-portrait-field__content > strong {
+  display: block;
+  margin-bottom: 7px;
+  color: #f8fafc;
+  font-family: "Quantico", sans-serif;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.altherium-rune-sheet .character-portrait-field__content > strong,
+.master-rune-sheet .character-portrait-field__content > strong {
+  font-family: "Caesar Dressing", cursive !important;
+}
+
+.dnd-character-sheet .character-portrait-field__content > strong,
+.master-dnd-sheet .character-portrait-field__content > strong {
+  font-family: "Aboreto", serif !important;
+}
+
+.character-portrait-field__content > p {
+  margin-bottom: 12px;
+  color: #94a3b8;
+  font-family: "Inter", sans-serif !important;
+  font-size: 14px;
+  line-height: 1.45;
+}
+
+.character-portrait-upload-btn {
+  width: fit-content;
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(34, 211, 238, 0.42);
+  border-radius: 999px;
+
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(34, 211, 238, 0.1);
+  color: #67e8f9;
+
+  font-family: "Quantico", sans-serif !important;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.character-portrait-upload-btn:hover,
+.character-portrait-upload-btn.is-loading {
+  transform: translateY(-2px);
+  border-color: rgba(34, 211, 238, 0.82);
+  background: rgba(34, 211, 238, 0.16);
+  color: #ffffff;
+  box-shadow: 0 14px 32px rgba(34, 211, 238, 0.12);
+}
+
+.character-portrait {
+  position: relative;
+  flex-shrink: 0;
+
+  display: inline-grid;
+  place-items: center;
+
+  overflow: hidden;
+
+  border: 1px solid rgba(34, 211, 238, 0.55);
+  border-radius: 999px;
+
+  background:
+    radial-gradient(circle at top, rgba(34, 211, 238, 0.22), transparent 52%),
+    linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.98));
+
+  color: #67e8f9;
+  font-family: "Quantico", sans-serif !important;
+  font-weight: 900;
+  text-transform: uppercase;
+
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.08),
+    0 0 24px rgba(34, 211, 238, 0.16);
+}
+
+.character-portrait--tiny {
+  width: 38px;
+  height: 38px;
+  min-width: 38px;
+  font-size: 11px;
+}
+
+.character-portrait--small {
+  width: 54px;
+  height: 54px;
+  min-width: 54px;
+  font-size: 15px;
+}
+
+.character-portrait--large {
+  width: 104px;
+  height: 104px;
+  min-width: 104px;
+  font-size: 26px;
+}
+
+.character-portrait__fallback {
+  position: relative;
+  z-index: 1;
+}
+
+.character-portrait img {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+
+  width: 100%;
+  height: 100%;
+
+  object-fit: cover;
+  display: block;
+}
+
+.sheet-card-top--character .sheet-card-player {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.sheet-card-top--character .sheet-card-player > span:last-child {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+@media (max-width: 760px) {
+  .character-portrait-field {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .character-portrait-field__content {
+    text-align: center;
+  }
+
+  .character-portrait-upload-btn {
+    width: 100%;
+  }
+
+  .character-portrait--large {
+    width: 88px;
+    height: 88px;
+    min-width: 88px;
+  }
+}
+
+/* =========================================================
+   MODAL PARA CORTAR / REDIMENSIONAR IMAGEM
+========================================================= */
+
+.image-cropper-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 1000000;
+
+  padding: 20px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  background: rgba(0, 0, 0, 0.78);
+  backdrop-filter: blur(12px);
+}
+
+.image-cropper-box {
+  width: min(620px, 100%);
+  max-height: calc(100vh - 40px);
+  overflow-y: auto;
+
+  padding: 26px;
+  border: 1px solid rgba(34, 211, 238, 0.24);
+  border-radius: 30px;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.98)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.14),
+      transparent 42%
+    );
+
+  box-shadow:
+    0 34px 120px rgba(0, 0, 0, 0.58),
+    0 0 60px rgba(34, 211, 238, 0.1);
+}
+
+.image-cropper-header {
+  margin-bottom: 20px;
+
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+}
+
+.image-cropper-header span {
+  display: inline-flex;
+  margin-bottom: 8px;
+
+  color: #22d3ee;
+
+  font-family: "Quantico", sans-serif;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.image-cropper-header h2 {
+  margin: 0 0 8px;
+
+  color: #f8fafc;
+
+  font-family: "Quantico", sans-serif;
+  font-size: clamp(28px, 4vw, 44px);
+  line-height: 1;
+}
+
+.image-cropper-header p {
+  color: #94a3b8;
+  line-height: 1.45;
+}
+
+.image-cropper-close {
+  width: 44px;
+  height: 44px;
+  min-width: 44px;
+
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 14px;
+
+  display: grid;
+  place-items: center;
+
+  background: rgba(255, 255, 255, 0.05);
+  color: #f8fafc;
+
+  font-size: 28px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.image-cropper-close:hover {
+  border-color: rgba(34, 211, 238, 0.45);
+  background: rgba(34, 211, 238, 0.12);
+}
+
+.image-cropper-stage-wrap {
+  position: relative;
+
+  width: min(360px, 82vw);
+  height: min(360px, 82vw);
+  margin: 0 auto 22px;
+
+  border-radius: 26px;
+  overflow: hidden;
+
+  border: 1px solid rgba(34, 211, 238, 0.38);
+  background: #020617;
+
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.06),
+    0 22px 60px rgba(0, 0, 0, 0.36),
+    0 0 38px rgba(34, 211, 238, 0.12);
+}
+
+.image-cropper-canvas {
+  width: 100%;
+  height: 100%;
+
+  display: block;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+}
+
+.image-cropper-canvas.is-dragging {
+  cursor: grabbing;
+}
+
+.image-cropper-circle-mask {
+  position: absolute;
+  inset: 18px;
+  pointer-events: none;
+
+  border: 2px solid rgba(255, 255, 255, 0.86);
+  border-radius: 999px;
+
+  box-shadow:
+    0 0 0 999px rgba(2, 6, 23, 0.26),
+    0 0 28px rgba(34, 211, 238, 0.22);
+}
+
+.image-cropper-controls {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.image-cropper-controls label {
+  margin: 0;
+
+  display: grid;
+  grid-template-columns: 72px 1fr;
+  align-items: center;
+  gap: 14px;
+}
+
+.image-cropper-controls label span {
+  color: #e2e8f0;
+  font-weight: 900;
+}
+
+.image-cropper-controls input[type="range"] {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  accent-color: #22d3ee;
+}
+
+.image-cropper-tips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.image-cropper-tips span {
+  padding: 7px 10px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 999px;
+
+  background: rgba(255, 255, 255, 0.04);
+  color: #94a3b8;
+
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.image-cropper-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+}
+
+.image-cropper-btn {
+  min-height: 46px;
+  padding: 0 18px;
+
+  border-radius: 999px;
+
+  font-family: "Quantico", sans-serif;
+  font-weight: 900;
+
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.image-cropper-btn.secondary {
+  border: 1px solid rgba(148, 163, 184, 0.24);
+  background: rgba(255, 255, 255, 0.05);
+  color: #e2e8f0;
+}
+
+.image-cropper-btn.primary {
+  border: 1px solid rgba(34, 211, 238, 0.46);
+  background: linear-gradient(135deg, #22d3ee, #06b6d4);
+  color: #020617;
+}
+
+.image-cropper-btn:hover {
+  transform: translateY(-2px);
+}
+
+.image-cropper-btn:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
+}
+
+@media (max-width: 640px) {
+  .image-cropper-modal {
+    padding: 10px;
+  }
+
+  .image-cropper-box {
+    padding: 20px;
+    border-radius: 24px;
+  }
+
+  .image-cropper-header {
+    align-items: flex-start;
+  }
+
+  .image-cropper-actions {
+    flex-direction: column;
+  }
+
+  .image-cropper-btn {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   FOTO DO PERSONAGEM - PAINEL LATERAL FORA DA FICHA
+========================================================= */
+
+.character-sheet-floating-layout {
+  width: min(1500px, calc(100% - 28px));
+  margin: 0 auto;
+
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 260px;
+  align-items: start;
+  gap: 24px;
+}
+
+.character-sheet-floating-main {
+  min-width: 0;
+  grid-column: 1;
+}
+
+.character-floating-portrait-panel {
+  grid-column: 2;
+  position: sticky;
+  top: 116px;
+  z-index: 20;
+
+  align-self: start;
+  min-width: 0;
+}
+
+.character-floating-portrait-panel .character-portrait-field,
+.character-portrait-field--side {
+  width: 100% !important;
+  max-width: 260px !important;
+  margin: 0 !important;
+  padding: 18px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: flex-start !important;
+  gap: 14px !important;
+
+  text-align: center !important;
+
+  border-radius: 28px !important;
+  border-color: rgba(34, 211, 238, 0.34) !important;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.96)),
+    radial-gradient(circle at top, rgba(34, 211, 238, 0.16), transparent 54%) !important;
+
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.34),
+    0 0 44px rgba(34, 211, 238, 0.1) !important;
+}
+
+.character-floating-portrait-panel .character-portrait-field__content,
+.character-portrait-field--side .character-portrait-field__content {
+  width: 100%;
+  text-align: center !important;
+}
+
+.character-floating-portrait-panel .character-portrait-field__content > span,
+.character-portrait-field--side .character-portrait-field__content > span {
+  justify-content: center;
+  margin-bottom: 8px;
+}
+
+.character-floating-portrait-panel .character-portrait-field__content > strong,
+.character-portrait-field--side .character-portrait-field__content > strong {
+  display: -webkit-box;
+  overflow: hidden;
+
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+
+  font-size: 20px;
+  line-height: 1.05;
+}
+
+.character-floating-portrait-panel .character-portrait-field__content > p,
+.character-portrait-field--side .character-portrait-field__content > p {
+  max-width: 210px;
+  margin: 0 auto 12px;
+  font-size: 12px;
+}
+
+.character-floating-portrait-panel .character-portrait-upload-btn,
+.character-portrait-field--side .character-portrait-upload-btn {
+  width: 100%;
+  min-height: 44px;
+}
+
+.character-floating-portrait-panel .character-portrait--large,
+.character-portrait-field--side .character-portrait--large {
+  width: 118px;
+  height: 118px;
+  min-width: 118px;
+  font-size: 28px;
+}
+
+/* Remove qualquer bloco antigo que tenha ficado dentro do header/banner da folha */
+.rune-page-header > .character-portrait-field,
+.dnd-banner > .character-portrait-field {
+  display: none !important;
+}
+
+/* Modais grandes também usam o painel lateral */
+.altherium-modal .character-sheet-floating-layout {
+  width: min(1420px, 100%);
+}
+
+/* Telas médias: painel fica acima da ficha para não esmagar a página */
+@media (max-width: 1180px) {
+  .character-sheet-floating-layout {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .character-sheet-floating-main,
+  .character-floating-portrait-panel {
+    grid-column: 1;
+  }
+
+  .character-floating-portrait-panel {
+    position: relative;
+    top: auto;
+    order: -1;
+  }
+
+  .character-floating-portrait-panel .character-portrait-field,
+  .character-portrait-field--side {
+    width: min(720px, 100%) !important;
+    max-width: 720px !important;
+    margin: 0 auto !important;
+
+    flex-direction: row !important;
+    text-align: left !important;
+  }
+
+  .character-floating-portrait-panel .character-portrait-field__content,
+  .character-portrait-field--side .character-portrait-field__content {
+    text-align: left !important;
+  }
+
+  .character-floating-portrait-panel .character-portrait-field__content > span,
+  .character-portrait-field--side .character-portrait-field__content > span {
+    justify-content: flex-start;
+  }
+
+  .character-floating-portrait-panel .character-portrait-field__content > p,
+  .character-portrait-field--side .character-portrait-field__content > p {
+    max-width: none;
+    margin-left: 0;
+    margin-right: 0;
+  }
+
+  .character-floating-portrait-panel .character-portrait-upload-btn,
+  .character-portrait-field--side .character-portrait-upload-btn {
+    width: fit-content;
+  }
+}
+
+@media (max-width: 760px) {
+  .character-sheet-floating-layout {
+    width: calc(100% - 20px);
+  }
+
+  .character-floating-portrait-panel .character-portrait-field,
+  .character-portrait-field--side {
+    flex-direction: column !important;
+    text-align: center !important;
+  }
+
+  .character-floating-portrait-panel .character-portrait-field__content,
+  .character-portrait-field--side .character-portrait-field__content {
+    text-align: center !important;
+  }
+
+  .character-floating-portrait-panel .character-portrait-field__content > span,
+  .character-portrait-field--side .character-portrait-field__content > span {
+    justify-content: center;
+  }
+
+  .character-floating-portrait-panel .character-portrait-upload-btn,
+  .character-portrait-field--side .character-portrait-upload-btn {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   FORÇAR IMAGEM DO PERSONAGEM NO LADO DIREITO
+========================================================= */
+
+@media (min-width: 721px) {
+  html body .character-sheet-floating-layout {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    padding-right: 340px !important;
+    display: block !important;
+    grid-template-columns: none !important;
+  }
+
+  html body .character-sheet-floating-main {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html body .character-floating-portrait-panel {
+    position: fixed !important;
+    top: 150px !important;
+    right: 30px !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: 270px !important;
+    max-width: 270px !important;
+    min-width: 0 !important;
+    z-index: 999999 !important;
+    grid-column: auto !important;
+    order: 0 !important;
+    transform: none !important;
+  }
+
+  html body .character-floating-portrait-panel .character-portrait-field,
+  html body .character-portrait-field--side {
+    width: 270px !important;
+    max-width: 270px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+}
+
+@media (max-width: 720px) {
+  html body .character-sheet-floating-layout {
+    width: calc(100% - 20px) !important;
+    padding-right: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  html body .character-floating-portrait-panel {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    z-index: 20 !important;
+    order: -1 !important;
+    transform: none !important;
+  }
+
+  html body .character-floating-portrait-panel .character-portrait-field,
+  html body .character-portrait-field--side {
+    width: min(720px, 100%) !important;
+    max-width: 720px !important;
+    margin: 0 auto !important;
+  }
+}
+
+html body .rune-page-header > .character-portrait-field,
+html body .dnd-banner > .character-portrait-field {
+  display: none !important;
+}
+
+/* =========================================================
+   D&D - BOTÃO PRÓXIMO DA INICIATIVA AZUL
+========================================================= */
+
+/*
+  Mantém o botão Limpar iniciativa vermelho.
+  Deixa apenas o botão Próximo da iniciativa de D&D azul.
+*/
+
+.dnd-master-page #dndInitiativeBoardNextTurnBtn,
+.dnd-master-page .initiative-next-btn {
+  border: 1px solid rgba(34, 211, 238, 0.34) !important;
+
+  background: linear-gradient(
+    135deg,
+    rgba(34, 211, 238, 0.94),
+    rgba(6, 182, 212, 0.94)
+  ) !important;
+
+  color: #020617 !important;
+
+  box-shadow:
+    0 0 24px rgba(34, 211, 238, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+.dnd-master-page #dndInitiativeBoardNextTurnBtn:hover,
+.dnd-master-page .initiative-next-btn:hover {
+  transform: translateY(-2px) !important;
+
+  border-color: rgba(34, 211, 238, 0.75) !important;
+
+  background: linear-gradient(
+    135deg,
+    rgba(103, 232, 249, 0.98),
+    rgba(6, 182, 212, 0.98)
+  ) !important;
+
+  color: #020617 !important;
+
+  box-shadow:
+    0 16px 34px rgba(34, 211, 238, 0.18),
+    0 0 34px rgba(34, 211, 238, 0.26) !important;
+}
+
+.dnd-master-page #dndInitiativeBoardNextTurnBtn:disabled,
+.dnd-master-page .initiative-next-btn:disabled {
+  opacity: 0.45 !important;
+  cursor: not-allowed !important;
+  transform: none !important;
+  box-shadow: none !important;
+}
+
+/* Garante que o limpar iniciativa de D&D continue vermelho */
+#clearDndInitiativeBtn {
+  border: 1px solid rgba(239, 68, 68, 0.55) !important;
+
+  background: linear-gradient(
+    135deg,
+    rgba(248, 113, 113, 0.96),
+    rgba(220, 38, 38, 0.96)
+  ) !important;
+
+  color: #160506 !important;
+
+  box-shadow:
+    0 0 24px rgba(239, 68, 68, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+
+/* =========================================================
    INICIATIVA - BOTÕES LIMPAR E PRÓXIMO JUNTOS
 ========================================================= */
 
@@ -7578,71 +8579,412 @@ body > .header-logout-area .header-logout-button__text {
 }
 
 /* =========================================================
-   D&D - BOTÃO PRÓXIMO DA INICIATIVA AZUL
+   DEFINITIVO - IMAGEM DO PERSONAGEM FIXA À DIREITA
 ========================================================= */
 
-/*
-  Mantém o botão Limpar iniciativa vermelho.
-  Deixa apenas o botão Próximo da iniciativa de D&D azul.
-*/
+@media (min-width: 721px) {
+  html body .character-sheet-floating-layout {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    padding-right: 360px !important;
+    display: block !important;
+    grid-template-columns: none !important;
+  }
 
-.dnd-master-page #dndInitiativeBoardNextTurnBtn,
-.dnd-master-page .initiative-next-btn {
-  border: 1px solid rgba(34, 211, 238, 0.34) !important;
+  html body .character-sheet-floating-main {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
 
-  background: linear-gradient(
-    135deg,
-    rgba(34, 211, 238, 0.94),
-    rgba(6, 182, 212, 0.94)
-  ) !important;
+  html body .character-floating-portrait-panel {
+    position: fixed !important;
+    top: 150px !important;
+    right: 30px !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: 270px !important;
+    max-width: 270px !important;
+    min-width: 0 !important;
+    z-index: 999999 !important;
+    grid-column: auto !important;
+    order: 0 !important;
+    transform: none !important;
+  }
 
-  color: #020617 !important;
+  html body .character-floating-portrait-panel > .character-portrait-field,
+  html body .character-portrait-force-right {
+    width: 270px !important;
+    max-width: 270px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
 
-  box-shadow:
-    0 0 24px rgba(34, 211, 238, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  html body form > .character-portrait-field.character-portrait-force-right,
+  html
+    body
+    form
+    .rune-page-header
+    > .character-portrait-field.character-portrait-force-right,
+  html
+    body
+    form
+    .dnd-banner
+    > .character-portrait-field.character-portrait-force-right {
+    position: fixed !important;
+    top: 150px !important;
+    right: 30px !important;
+    left: auto !important;
+    bottom: auto !important;
+    display: flex !important;
+    z-index: 999999 !important;
+  }
 }
 
-.dnd-master-page #dndInitiativeBoardNextTurnBtn:hover,
-.dnd-master-page .initiative-next-btn:hover {
-  transform: translateY(-2px) !important;
+@media (max-width: 720px) {
+  html body .character-sheet-floating-layout {
+    width: calc(100% - 20px) !important;
+    padding-right: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
 
-  border-color: rgba(34, 211, 238, 0.75) !important;
+  html body .character-floating-portrait-panel {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    z-index: 20 !important;
+    order: -1 !important;
+    transform: none !important;
+  }
 
-  background: linear-gradient(
-    135deg,
-    rgba(103, 232, 249, 0.98),
-    rgba(6, 182, 212, 0.98)
-  ) !important;
-
-  color: #020617 !important;
-
-  box-shadow:
-    0 16px 34px rgba(34, 211, 238, 0.18),
-    0 0 34px rgba(34, 211, 238, 0.26) !important;
+  html body .character-floating-portrait-panel .character-portrait-field,
+  html body .character-portrait-force-right {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    width: min(720px, 100%) !important;
+    max-width: 720px !important;
+    margin: 0 auto !important;
+  }
 }
 
-.dnd-master-page #dndInitiativeBoardNextTurnBtn:disabled,
-.dnd-master-page .initiative-next-btn:disabled {
-  opacity: 0.45 !important;
-  cursor: not-allowed !important;
+/* =========================================================
+   DEFINITIVO - IMAGEM DO PERSONAGEM RENTE À FICHA
+========================================================= */
+
+@media (min-width: 980px) {
+  html body .character-sheet-floating-layout {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 auto !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    display: block !important;
+    grid-template-columns: none !important;
+  }
+
+  html body .character-sheet-floating-main {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  html body .character-floating-portrait-panel {
+    position: fixed !important;
+    top: 116px !important;
+    left: 48px !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 260px !important;
+    max-width: 260px !important;
+    min-width: 0 !important;
+    z-index: 999999 !important;
+    grid-column: auto !important;
+    order: 0 !important;
+    transform: none !important;
+  }
+
+  html body .character-floating-portrait-panel > .character-portrait-field,
+  html body .character-floating-portrait-panel .character-portrait-field,
+  html body .character-portrait-field--side,
+  html body .character-portrait-force-right {
+    width: 260px !important;
+    max-width: 260px !important;
+    margin: 0 !important;
+    box-sizing: border-box !important;
+  }
+
+  html body form > .character-portrait-field.character-portrait-force-right,
+  html
+    body
+    form
+    .rune-page-header
+    > .character-portrait-field.character-portrait-force-right,
+  html
+    body
+    form
+    .dnd-banner
+    > .character-portrait-field.character-portrait-force-right {
+    position: fixed !important;
+    top: 116px !important;
+    left: 48px !important;
+    right: auto !important;
+    bottom: auto !important;
+    display: flex !important;
+    z-index: 999999 !important;
+  }
+}
+
+@media (max-width: 979px) {
+  html body .character-sheet-floating-layout {
+    width: calc(100% - 20px) !important;
+    padding-left: 0 !important;
+    padding-right: 0 !important;
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+  }
+
+  html body .character-floating-portrait-panel {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    z-index: 20 !important;
+    order: -1 !important;
+    transform: none !important;
+  }
+
+  html body .character-floating-portrait-panel .character-portrait-field,
+  html body .character-portrait-force-right {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    width: min(720px, 100%) !important;
+    max-width: 720px !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* =========================================================
+   CORREÇÃO FINAL - PAINEL DA IMAGEM DO PERSONAGEM
+   Fica rente ao lado esquerdo da ficha nas páginas do jogador.
+   A posição lateral exata é calculada pelo script.js.
+========================================================= */
+
+@media (min-width: 1100px) {
+  html body #playerSheetForm > .character-portrait-field,
+  html body #dndPlayerSheetForm > .character-portrait-field {
+    width: 260px !important;
+    max-width: 260px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 14px !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+    z-index: 999999 !important;
+  }
+
+  html
+    body
+    #playerSheetForm
+    > .character-portrait-field
+    .character-portrait-field__content,
+  html
+    body
+    #dndPlayerSheetForm
+    > .character-portrait-field
+    .character-portrait-field__content {
+    width: 100% !important;
+    text-align: center !important;
+  }
+
+  html
+    body
+    #playerSheetForm
+    > .character-portrait-field
+    .character-portrait-field__content
+    > span,
+  html
+    body
+    #dndPlayerSheetForm
+    > .character-portrait-field
+    .character-portrait-field__content
+    > span {
+    justify-content: center !important;
+  }
+
+  html
+    body
+    #playerSheetForm
+    > .character-portrait-field
+    .character-portrait-upload-btn,
+  html
+    body
+    #dndPlayerSheetForm
+    > .character-portrait-field
+    .character-portrait-upload-btn {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 1099px) {
+  html body #playerSheetForm > .character-portrait-field,
+  html body #dndPlayerSheetForm > .character-portrait-field {
+    position: relative !important;
+    inset: auto !important;
+    width: min(720px, 100%) !important;
+    max-width: 720px !important;
+    margin: 0 auto 24px !important;
+    z-index: 20 !important;
+  }
+}
+
+html body .altherium-modal .character-floating-portrait-panel,
+html body .altherium-sheet-modal-box .character-floating-portrait-panel,
+html body .dnd-sheet-modal-box .character-floating-portrait-panel {
+  position: sticky !important;
+  top: 0 !important;
+  left: auto !important;
+  right: auto !important;
+  bottom: auto !important;
+  z-index: 20 !important;
   transform: none !important;
-  box-shadow: none !important;
 }
 
-/* Garante que o limpar iniciativa de D&D continue vermelho */
-#clearDndInitiativeBtn {
-  border: 1px solid rgba(239, 68, 68, 0.55) !important;
+/* =========================================================
+   CORREÇÃO FINAL - PAINEL DA IMAGEM DO PERSONAGEM À DIREITA
+   Este bloco vence as regras antigas que colocavam o painel à esquerda.
+========================================================= */
 
-  background: linear-gradient(
-    135deg,
-    rgba(248, 113, 113, 0.96),
-    rgba(220, 38, 38, 0.96)
-  ) !important;
+@media (min-width: 1100px) {
+  html body #playerSheetForm > .character-portrait-field,
+  html body #dndPlayerSheetForm > .character-portrait-field {
+    position: fixed !important;
+    top: 116px !important;
+    right: 30px !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: 260px !important;
+    max-width: 260px !important;
+    min-width: 0 !important;
+    margin: 0 !important;
+    padding: 18px !important;
+    z-index: 999999 !important;
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: center !important;
+    justify-content: flex-start !important;
+    gap: 14px !important;
+    text-align: center !important;
+    box-sizing: border-box !important;
+    transform: none !important;
+  }
 
-  color: #160506 !important;
+  html
+    body
+    #playerSheetForm
+    > .character-portrait-field
+    .character-portrait-field__content,
+  html
+    body
+    #dndPlayerSheetForm
+    > .character-portrait-field
+    .character-portrait-field__content {
+    width: 100% !important;
+    text-align: center !important;
+  }
 
-  box-shadow:
-    0 0 24px rgba(239, 68, 68, 0.2),
-    inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+  html
+    body
+    #playerSheetForm
+    > .character-portrait-field
+    .character-portrait-upload-btn,
+  html
+    body
+    #dndPlayerSheetForm
+    > .character-portrait-field
+    .character-portrait-upload-btn {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 1099px) {
+  html body #playerSheetForm > .character-portrait-field,
+  html body #dndPlayerSheetForm > .character-portrait-field {
+    position: relative !important;
+    top: auto !important;
+    right: auto !important;
+    left: auto !important;
+    bottom: auto !important;
+    width: min(720px, 100%) !important;
+    max-width: 720px !important;
+    margin: 0 auto 24px !important;
+    z-index: 20 !important;
+  }
+}
+
+/* =========================================================
+   BOTÃO SALVAR FICHA FIXO À ESQUERDA
+   Altherium e D&D - páginas do jogador
+========================================================= */
+
+@media (min-width: 1100px) {
+  html body.altherium-player-page #savePlayerSheet,
+  html body.dnd-player-page #saveDndSheet,
+  html body .sheet-save-floating-button {
+    position: fixed !important;
+    top: 116px !important;
+    left: 30px !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 240px !important;
+    max-width: 240px !important;
+    min-height: 58px !important;
+    margin: 0 !important;
+    z-index: 999999 !important;
+    border-radius: 20px !important;
+    transform: none !important;
+    box-shadow:
+      0 18px 44px rgba(0, 0, 0, 0.34),
+      0 0 32px rgba(34, 211, 238, 0.22) !important;
+  }
+
+  html body.altherium-player-page #savePlayerSheet:hover,
+  html body.dnd-player-page #saveDndSheet:hover,
+  html body .sheet-save-floating-button:hover {
+    transform: translateY(-2px) !important;
+  }
+}
+
+@media (max-width: 1099px) {
+  html body.altherium-player-page #savePlayerSheet,
+  html body.dnd-player-page #saveDndSheet,
+  html body .sheet-save-floating-button {
+    position: relative !important;
+    top: auto !important;
+    left: auto !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    margin: 16px 0 0 !important;
+    z-index: 20 !important;
+    transform: none !important;
+  }
 }
