@@ -2260,6 +2260,13 @@ function subscribeCampaignRealtime(callback) {
     )
     .on(
       "postgres_changes",
+      { event: "*", schema: "public", table: "altherium_bestiary", filter: `campaign_id=eq.${campaignId}` },
+      async () => {
+        await callback();
+      }
+    )
+    .on(
+      "postgres_changes",
       { event: "*", schema: "public", table: "dnd_sheets", filter: `campaign_id=eq.${campaignId}` },
       async () => {
         await callback();
@@ -3287,13 +3294,30 @@ function renderAltheriumBossResult(boss, savedEnemyId = "") {
 
 async function saveAltheriumGeneratedEnemy(boss) {
   const campaign = boss.party.campaign || (await getCurrentCampaign(true));
-  const enemies = getStoredAltheriumEnemies(campaign);
+
+  if (!campaign || !campaign.id) {
+    alert("Campanha não encontrada. Não foi possível salvar o inimigo.");
+    return null;
+  }
+
   const enemy = buildAltheriumEnemyRecord(boss);
+  const row = mapAltheriumEnemyToDbRow(campaign, enemy);
 
-  enemies.unshift(enemy);
-  saveStoredAltheriumEnemies(campaign, enemies);
+  const { data, error } = await DB
+    .from("altherium_bestiary")
+    .insert(row)
+    .select("*")
+    .single();
 
-  return enemy;
+  if (error) {
+    console.error("Erro ao salvar inimigo no Supabase:", error);
+    alert(
+      "Erro ao salvar o inimigo no Supabase. Verifique se a tabela altherium_bestiary foi criada."
+    );
+    return null;
+  }
+
+  return mapAltheriumEnemyFromDbRow(data);
 }
 
 function canSaveAltheriumBoss(boss) {
@@ -3312,7 +3336,7 @@ function buildAltheriumEnemyRecord(boss) {
   const now = new Date();
 
   return {
-    id: `${Date.now()}-${Math.random().toString(16).slice(2)}`,
+    id: "",
     name: boss.name,
     difficultyKey: boss.difficultyKey,
     difficultyLabel: boss.difficultyLabel,
@@ -3331,6 +3355,134 @@ function buildAltheriumEnemyRecord(boss) {
   };
 }
 
+function mapAltheriumEnemyToDbRow(campaign, enemy) {
+  return {
+    campaign_id: campaign.id,
+
+    name: enemy.name || "Boss de Altherium",
+
+    difficulty_key: enemy.difficultyKey || "medio",
+    difficulty_label: enemy.difficultyLabel || "Boss médio",
+
+    boss_hp: Math.max(0, Math.round(Number(enemy.bossHp) || 0)),
+    rounds: Math.max(1, Math.round(Number(enemy.rounds) || 1)),
+
+    min_damage: Number(enemy.minDamage) || 0,
+    max_damage: Number(enemy.maxDamage) || 0,
+    recommended_damage: Number(enemy.recommendedDamage) || 0,
+
+    recommended_dice: enemy.recommendedDice || {},
+    min_dice: enemy.minDice || {},
+    max_dice: enemy.maxDice || {},
+
+    average_hp: Number(enemy.averageHp) || 0,
+    total_damage_average: Number(enemy.totalDamageAverage) || 0,
+    valid_players_count: Math.max(0, Math.round(Number(enemy.validPlayersCount) || 0)),
+
+    data: enemy || {},
+  };
+}
+
+function mapAltheriumEnemyFromDbRow(row) {
+  const extraData = row.data || {};
+
+  return {
+    ...extraData,
+
+    id: row.id || extraData.id || "",
+    name: row.name || extraData.name || "Boss de Altherium",
+
+    difficultyKey: row.difficulty_key || extraData.difficultyKey || "medio",
+    difficultyLabel: row.difficulty_label || extraData.difficultyLabel || "Boss médio",
+
+    bossHp: row.boss_hp ?? extraData.bossHp ?? 0,
+    rounds: row.rounds ?? extraData.rounds ?? 1,
+
+    minDamage: row.min_damage ?? extraData.minDamage ?? 0,
+    maxDamage: row.max_damage ?? extraData.maxDamage ?? 0,
+    recommendedDamage: row.recommended_damage ?? extraData.recommendedDamage ?? 0,
+
+    recommendedDice: row.recommended_dice || extraData.recommendedDice || { formula: "0", average: 0 },
+    minDice: row.min_dice || extraData.minDice || { formula: "0", average: 0 },
+    maxDice: row.max_dice || extraData.maxDice || { formula: "0", average: 0 },
+
+    averageHp: row.average_hp ?? extraData.averageHp ?? 0,
+    totalDamageAverage: row.total_damage_average ?? extraData.totalDamageAverage ?? 0,
+    validPlayersCount: row.valid_players_count ?? extraData.validPlayersCount ?? 0,
+
+    createdAt: row.created_at || extraData.createdAt || "",
+    updatedAt: row.updated_at || extraData.updatedAt || "",
+  };
+}
+
+async function getAltheriumBestiaryEnemies(campaign) {
+  if (!campaign || !campaign.id) return [];
+
+  await migrateLocalAltheriumEnemiesToSupabase(campaign);
+
+  const { data, error } = await DB
+    .from("altherium_bestiary")
+    .select("*")
+    .eq("campaign_id", campaign.id)
+    .order("created_at", { ascending: false });
+
+  if (error) {
+    console.error("Erro ao carregar inimigos do Supabase:", error);
+    return [];
+  }
+
+  return (data || []).map(mapAltheriumEnemyFromDbRow);
+}
+
+async function migrateLocalAltheriumEnemiesToSupabase(campaign) {
+  if (!campaign || !campaign.id) return;
+
+  const storageKey = getAltheriumEnemiesStorageKey(campaign);
+  const rawEnemies = localStorage.getItem(storageKey);
+
+  if (!rawEnemies) return;
+
+  let localEnemies = [];
+
+  try {
+    localEnemies = JSON.parse(rawEnemies);
+  } catch (error) {
+    console.error("Erro ao ler inimigos antigos do localStorage:", error);
+    return;
+  }
+
+  if (!Array.isArray(localEnemies) || !localEnemies.length) {
+    localStorage.removeItem(storageKey);
+    return;
+  }
+
+  const rows = localEnemies.slice(0, 50).map((enemy) => {
+    const migratedEnemy = {
+      ...enemy,
+      oldLocalId: enemy.id,
+      migratedFromLocalStorage: true,
+      migratedAt: new Date().toISOString(),
+    };
+
+    return mapAltheriumEnemyToDbRow(campaign, migratedEnemy);
+  });
+
+  const { error } = await DB.from("altherium_bestiary").insert(rows);
+
+  if (error) {
+    console.error("Erro ao migrar inimigos antigos para o Supabase:", error);
+    return;
+  }
+
+  localStorage.removeItem(storageKey);
+}
+
+function getAltheriumEnemiesStorageKey(campaign) {
+  const campaignId = campaign ? campaign.id : "sem-campanha";
+
+  return `campaign-lab-altherium-enemies-${campaignId}`;
+}
+
 async function renderAltheriumGeneratedEnemiesList() {
   const container = getFirstElement([
     "generatedEnemiesList",
@@ -3341,7 +3493,7 @@ async function renderAltheriumGeneratedEnemiesList() {
   if (!container) return;
 
   const campaign = await getCurrentCampaign(true);
-  const enemies = getStoredAltheriumEnemies(campaign);
+  const enemies = await getAltheriumBestiaryEnemies(campaign);
 
   if (!enemies.length) {
     container.innerHTML = `
@@ -3384,7 +3536,7 @@ async function renderAltheriumGeneratedEnemiesList() {
 
             <div>
               <span>Dano recomendado</span>
-              <strong>${escapeHtml(enemy.recommendedDice.formula)}</strong>
+              <strong>${escapeHtml(enemy.recommendedDice.formula || "0")}</strong>
             </div>
 
             <div>
@@ -3405,10 +3557,23 @@ async function renderAltheriumGeneratedEnemiesList() {
 
 async function deleteAltheriumGeneratedEnemy(enemyId) {
   const campaign = await getCurrentCampaign(true);
-  const enemies = getStoredAltheriumEnemies(campaign);
-  const filteredEnemies = enemies.filter((enemy) => enemy.id !== enemyId);
 
-  saveStoredAltheriumEnemies(campaign, filteredEnemies);
+  if (!campaign || !campaign.id) {
+    alert("Campanha não encontrada.");
+    return;
+  }
+
+  const { error } = await DB
+    .from("altherium_bestiary")
+    .delete()
+    .eq("id", enemyId)
+    .eq("campaign_id", campaign.id);
+
+  if (error) {
+    console.error("Erro ao excluir inimigo do Supabase:", error);
+    alert("Erro ao excluir inimigo.");
+    return;
+  }
 
   await renderAltheriumGeneratedEnemiesList();
   await updateAltheriumMonsterCount();
@@ -3439,7 +3604,21 @@ async function deleteAltheriumGeneratedEnemy(enemyId) {
 async function clearAltheriumGeneratedEnemies() {
   const campaign = await getCurrentCampaign(true);
 
-  saveStoredAltheriumEnemies(campaign, []);
+  if (!campaign || !campaign.id) {
+    alert("Campanha não encontrada.");
+    return;
+  }
+
+  const { error } = await DB
+    .from("altherium_bestiary")
+    .delete()
+    .eq("campaign_id", campaign.id);
+
+  if (error) {
+    console.error("Erro ao limpar bestiário no Supabase:", error);
+    alert("Erro ao limpar o bestiário.");
+    return;
+  }
 
   await renderAltheriumGeneratedEnemiesList();
   await updateAltheriumMonsterCount();
@@ -3461,43 +3640,29 @@ async function clearAltheriumGeneratedEnemies() {
   }
 }
 
-function getStoredAltheriumEnemies(campaign) {
-  try {
-    const rawEnemies = localStorage.getItem(getAltheriumEnemiesStorageKey(campaign));
-    const enemies = rawEnemies ? JSON.parse(rawEnemies) : [];
-
-    return Array.isArray(enemies) ? enemies : [];
-  } catch (error) {
-    console.error("Erro ao carregar inimigos do bestiário:", error);
-    return [];
-  }
-}
-
-function saveStoredAltheriumEnemies(campaign, enemies) {
-  try {
-    localStorage.setItem(
-      getAltheriumEnemiesStorageKey(campaign),
-      JSON.stringify(enemies.slice(0, 50))
-    );
-  } catch (error) {
-    console.error("Erro ao salvar inimigos do bestiário:", error);
-  }
-}
-
-function getAltheriumEnemiesStorageKey(campaign) {
-  const campaignId = campaign ? campaign.id : "sem-campanha";
-
-  return `campaign-lab-altherium-enemies-${campaignId}`;
-}
-
 async function updateAltheriumMonsterCount() {
   const counter = document.getElementById("monsterCount");
   if (!counter) return;
 
   const campaign = await getCurrentCampaign(true);
-  const enemies = getStoredAltheriumEnemies(campaign);
 
-  counter.textContent = enemies.length;
+  if (!campaign || !campaign.id) {
+    counter.textContent = "0";
+    return;
+  }
+
+  const { count, error } = await DB
+    .from("altherium_bestiary")
+    .select("id", { count: "exact", head: true })
+    .eq("campaign_id", campaign.id);
+
+  if (error) {
+    console.error("Erro ao contar inimigos do Supabase:", error);
+    counter.textContent = "0";
+    return;
+  }
+
+  counter.textContent = count || 0;
 }
 
 
@@ -3699,11 +3864,8 @@ function setupHeaderBackButton() {
 
   if (currentPage === "index.html") return;
 
-  /*
-    Os botões ficam presos no body, não dentro do header.
-    Assim o Logout usa a largura real da tela, e não o limite interno
-    do header/logo/container.
-  */
+  injectHeaderButtonFixedStyles();
+
   document
     .querySelectorAll(".header-nav-actions, .header-back-area, .header-logout-area")
     .forEach((element) => element.remove());
@@ -3773,6 +3935,220 @@ function setupHeaderBackButton() {
 
   document.body.appendChild(backArea);
   document.body.appendChild(logoutArea);
+
+  forceHeaderButtonLayout(backArea, logoutArea, backButton, logoutButton);
+}
+
+function injectHeaderButtonFixedStyles() {
+  const oldStyle = document.getElementById("campaign-lab-header-buttons-fixed-style");
+  if (oldStyle) oldStyle.remove();
+
+  const style = document.createElement("style");
+  style.id = "campaign-lab-header-buttons-fixed-style";
+
+  style.textContent = `
+    body > .header-back-area,
+    body > .header-logout-area {
+      position: fixed !important;
+      top: 46px !important;
+      z-index: 999999 !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      transform: translateY(-50%) !important;
+      pointer-events: auto !important;
+    }
+
+    body > .header-back-area {
+      left: 28px !important;
+      right: auto !important;
+    }
+
+    body > .header-logout-area {
+      right: 28px !important;
+      left: auto !important;
+    }
+
+    .header-nav-actions {
+      display: none !important;
+    }
+
+    body > .header-back-area .header-back-button,
+    body > .header-logout-area .header-logout-button,
+    body > .header-back-area .header-back-button:hover,
+    body > .header-logout-area .header-logout-button:hover,
+    body > .header-back-area .header-back-button:active,
+    body > .header-logout-area .header-logout-button:active {
+      transform: none !important;
+    }
+
+    body > .header-back-area .header-back-button {
+      width: auto !important;
+      min-width: 128px !important;
+      height: 46px !important;
+      padding: 0 18px 0 10px !important;
+      gap: 9px !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 999px !important;
+      border: 1px solid rgba(34, 211, 238, 0.68) !important;
+      background: #020617 !important;
+      color: #f8fafc !important;
+      font-family: "Quantico", sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 700 !important;
+      line-height: 1 !important;
+      letter-spacing: 0.4px !important;
+      text-transform: uppercase !important;
+      cursor: pointer !important;
+      transition: border-color 0.22s ease, background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease !important;
+      box-shadow:
+        0 0 0 1px rgba(34, 211, 238, 0.1),
+        0 0 22px rgba(34, 211, 238, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+    }
+
+    body > .header-logout-area .header-logout-button {
+      width: 46px !important;
+      min-width: 46px !important;
+      max-width: 46px !important;
+      height: 46px !important;
+      min-height: 46px !important;
+      max-height: 46px !important;
+      padding: 0 !important;
+      gap: 0 !important;
+      display: inline-flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      border-radius: 999px !important;
+      border: 1px solid rgba(248, 113, 113, 0.68) !important;
+      background: #120812 !important;
+      color: #f8fafc !important;
+      cursor: pointer !important;
+      transition: border-color 0.22s ease, background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease !important;
+      box-shadow:
+        0 0 0 1px rgba(248, 113, 113, 0.08),
+        0 0 20px rgba(248, 113, 113, 0.16),
+        inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+    }
+
+    body > .header-back-area .header-back-button__icon,
+    body > .header-logout-area .header-logout-button__icon {
+      width: 30px !important;
+      height: 30px !important;
+      min-width: 30px !important;
+      display: grid !important;
+      place-items: center !important;
+      border-radius: 999px !important;
+      font-family: "Quantico", sans-serif !important;
+      font-weight: 900 !important;
+      line-height: 1 !important;
+    }
+
+    body > .header-back-area .header-back-button__icon {
+      background: rgba(34, 211, 238, 0.16) !important;
+      color: #67e8f9 !important;
+      font-size: 24px !important;
+    }
+
+    body > .header-logout-area .header-logout-button__icon {
+      background: rgba(248, 113, 113, 0.14) !important;
+      color: #fca5a5 !important;
+      font-size: 13px !important;
+    }
+
+    body > .header-back-area .header-back-button__text {
+      display: inline-block !important;
+      color: #f8fafc !important;
+    }
+
+    body > .header-logout-area .header-logout-button__text {
+      display: none !important;
+    }
+
+    body > .header-back-area .header-back-button:hover {
+      border-color: rgba(34, 211, 238, 0.95) !important;
+      background: #062133 !important;
+      color: #ffffff !important;
+    }
+
+    body > .header-logout-area .header-logout-button:hover {
+      border-color: rgba(248, 113, 113, 0.95) !important;
+      background: #2a0d13 !important;
+      color: #ffffff !important;
+    }
+
+    @media (max-width: 760px) {
+      body > .header-back-area,
+      body > .header-logout-area {
+        top: 41px !important;
+      }
+
+      body > .header-back-area {
+        left: 10px !important;
+      }
+
+      body > .header-logout-area {
+        right: 10px !important;
+      }
+
+      body > .header-back-area .header-back-button,
+      body > .header-logout-area .header-logout-button {
+        width: 42px !important;
+        min-width: 42px !important;
+        max-width: 42px !important;
+        height: 42px !important;
+        min-height: 42px !important;
+        max-height: 42px !important;
+        padding: 0 !important;
+        gap: 0 !important;
+      }
+
+      body > .header-back-area .header-back-button__text,
+      body > .header-logout-area .header-logout-button__text {
+        display: none !important;
+      }
+
+      body > .header-back-area .header-back-button__icon,
+      body > .header-logout-area .header-logout-button__icon {
+        width: 28px !important;
+        height: 28px !important;
+        min-width: 28px !important;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+function forceHeaderButtonLayout(backArea, logoutArea, backButton, logoutButton) {
+  backArea.style.setProperty("position", "fixed", "important");
+  backArea.style.setProperty("top", "46px", "important");
+  backArea.style.setProperty("left", "28px", "important");
+  backArea.style.setProperty("right", "auto", "important");
+  backArea.style.setProperty("z-index", "999999", "important");
+  backArea.style.setProperty("transform", "translateY(-50%)", "important");
+
+  logoutArea.style.setProperty("position", "fixed", "important");
+  logoutArea.style.setProperty("top", "46px", "important");
+  logoutArea.style.setProperty("right", "28px", "important");
+  logoutArea.style.setProperty("left", "auto", "important");
+  logoutArea.style.setProperty("z-index", "999999", "important");
+  logoutArea.style.setProperty("transform", "translateY(-50%)", "important");
+
+  backButton.style.setProperty("transform", "none", "important");
+  logoutButton.style.setProperty("transform", "none", "important");
+
+  ["mouseenter", "mouseover", "mousemove", "mouseleave", "mousedown", "mouseup"].forEach((eventName) => {
+    backButton.addEventListener(eventName, () => {
+      backButton.style.setProperty("transform", "none", "important");
+    });
+
+    logoutButton.addEventListener(eventName, () => {
+      logoutButton.style.setProperty("transform", "none", "important");
+    });
+  });
 }
 
 /* =========================================================
