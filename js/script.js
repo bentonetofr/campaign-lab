@@ -36,6 +36,166 @@ const ALTHERIUM_DOMAINS = [
   ["vontade", "Vontade", "Espírito"],
 ].map(([key, label, attr]) => ({ key, label, attr }));
 
+const ALTHERIUM_ROOT_OPTIONS = [
+  { value: "", label: "Selecione a raíz" },
+  { value: "Berserk", label: "Berserk" },
+  { value: "Runaskin", label: "Runaskin" },
+  { value: "Pilar", label: "Pilar" },
+];
+
+const PILAR_TRIUMPH_GROUPS = [
+  {
+    cards: 1,
+    triumphs: [
+      {
+        name: "Fio do Destino",
+        action: "Ação Bônus",
+        description: "Adicione -20 a um teste relacionado à sorte ou evento imprevisto. Já que o dado de sorte é 1d100.",
+      },
+      {
+        name: "Língua de Ferro",
+        action: "Ação Bônus",
+        description: "Adicione +1d10 ao teste de Intimidação ou Persuasão.",
+      },
+      {
+        name: "Mira do Capitão",
+        action: "Ação Bônus",
+        description: "Conceda +1d10 em um teste de ataque de um aliado no próximo ataque.",
+      },
+      {
+        name: "Olhar de Lodin",
+        action: "Ação Bônus",
+        description: "Você recebe +2 em Investigação durante a cena.",
+      },
+      {
+        name: "Punhal na Sombra",
+        action: "Ação Bônus",
+        description: "Quando atacar oculto, adicione +4 de dano.",
+      },
+      {
+        name: "Rastro dos Deuses",
+        action: "Ação Bônus",
+        description: "Adicione +1d10 a um teste de Investigação.",
+      },
+      {
+        name: "Toque do Ermitão",
+        action: "Ação Bônus",
+        description: "Ao tocar ou inspecionar um material ou substância desconhecida, você identifica sua natureza e usos possíveis instantaneamente.",
+      },
+    ],
+  },
+  {
+    cards: 2,
+    triumphs: [
+      {
+        name: "Fúria Moldada",
+        action: "Ação Bônus",
+        description: "Numa rolagem que normalmente usa Fúria, você pode substituir Fúria por outro atributo à sua escolha para esse teste.",
+      },
+      {
+        name: "Ladrão de Sorte",
+        action: "Ação Bônus",
+        description: "Escolha um aliado ou inimigo que acabou de rolar. Transfira o resultado dele para você.",
+      },
+      {
+        name: "Sangue Ardente",
+        action: "Ação Bônus",
+        description: "Em testes que usam Fúria, adicione +1d10.",
+      },
+      {
+        name: "Sopro de Níðhöggr",
+        action: "Ação Bônus",
+        description: "Escolha um inimigo. No próximo teste importante dele, aplique -1d10 ao teste dele.",
+      },
+      {
+        name: "Voz de Mjörr",
+        action: "Ação Bônus",
+        description: "Por uma cena, você recebe +4 em testes sociais, como Persuasão, Enganação e Intimidação, quando fala com presença firme.",
+      },
+      {
+        name: "Passo Fantasma",
+        action: "Ação Bônus",
+        description: "Durante este turno você se move sem ser notado. Ganha +4 em Furtividade e não provoca ataques de oportunidade por movimento.",
+      },
+      {
+        name: "Olhos do Augúrio",
+        action: "Ação Bônus",
+        description: "Marque um alvo por até a cena inteira. Enquanto marcado, você recebe +1d10 na próxima ação direta.",
+      },
+    ],
+  },
+  {
+    cards: 3,
+    triumphs: [
+      {
+        name: "Bênção de Hamingja",
+        action: "Ação Bônus",
+        description: "Quando fizer um teste importante, você pode rerrolar os dados e escolher o resultado melhor.",
+      },
+      {
+        name: "Chama Inspiradora",
+        action: "Ação Bônus",
+        description: "Escolha um aliado. Ele adiciona +2 a um atributo para um teste específico. Aplica-se a um único teste.",
+      },
+      {
+        name: "Conselho dos Caçadores",
+        action: "Ação Bônus",
+        description: "Enquanto você coordena uma investigação em grupo, todos ganham +4 em testes de Investigação nessa cena.",
+      },
+      {
+        name: "Guarda de Skaldir",
+        action: "Ação Bônus",
+        description: "Por uma cena, aliados próximos recebem +4 em Impulso.",
+      },
+      {
+        name: "Mão Precisa",
+        action: "Ação Bônus",
+        description: "Escolha uma rolagem importante. Todos os dados nessa rolagem têm mínimo 5. Resultados 1 a 4 contam como 5.",
+      },
+      {
+        name: "Ouvido do Julgador",
+        action: "Ação Bônus",
+        description: "Ao ouvir alguém falar por até 1 minuto, você identifica variações que denunciam mentira. O mestre confirma ou nega.",
+      },
+      {
+        name: "Retorno do Baralho",
+        action: "Ação Bônus",
+        description: "Você recupera 1d20+3 cartas do descarte para a sua mão.",
+      },
+      {
+        name: "Teia de Urðr",
+        action: "Ação Bônus",
+        description: "Uma vez por cena, anule um evento recente. Substitua um teste anterior de um aliado ou oponente por uma nova rolagem. O mestre aplica consequências narrativas.",
+      },
+      {
+        name: "Sombra Antecipada",
+        action: "Ação Bônus",
+        description: "Escolha um inimigo visível. Você recebe uma visão lúgubre do próximo ato dele. Ele deve declarar se irá atacar, recuar ou usar habilidade especial.",
+      },
+      {
+        name: "Trilha do Presságio",
+        action: "Ação Bônus",
+        description: "Até o fim do turno, seu deslocamento dobra.",
+      },
+    ],
+  },
+  {
+    cards: 4,
+    triumphs: [
+      {
+        name: "Ecos do Acontecido",
+        action: "Ação Bônus",
+        description: "Ao investigar um local por atenção ou tempo, você reconstrói eventos recentes. Receba +4 em Investigação e revele até 3 detalhes relevantes escolhidos pelo mestre.",
+      },
+      {
+        name: "Instinto Ancestral",
+        action: "Ação Bônus",
+        description: "Antes de tomar uma ação decisiva, role com vantagem narrativa. Receba +2 no teste e um breve insight do mestre sobre a probabilidade.",
+      },
+    ],
+  },
+];
+
 const DND_SKILLS = [
   ["skillAcrobatics", "Acrobacia"],
   ["skillArcana", "Arcanismo"],
@@ -68,6 +228,7 @@ let saveTimer = null;
 
 document.addEventListener("DOMContentLoaded", async () => {
   setupHeaderBackButton();
+  setupAltheriumRootDynamicControls();
   if (!DB) {
     alert("Supabase não carregou. Verifique se supabase-config.js está antes do script.js.");
     return;
@@ -947,6 +1108,11 @@ function getDefaultSheet(campaignId, playerId, system) {
     peMax: "0",
     prCurrent: "0",
     prMax: "0",
+    nr: "0",
+    nrCurrent: "0",
+    nrMax: "0",
+    pilarCardsCurrent: "0",
+    pilarCardsMax: "0",
     combatInitiative: "",
     furia: "0",
     destino: "0",
@@ -1091,6 +1257,13 @@ async function setupAltheriumMasterSheets() {
 
     form.addEventListener("input", () => {
       if (form.dataset.mode !== "edit-sheet") return;
+      updateAltheriumRootSections(form);
+      saveDebounced(() => saveSheetFromModal(false));
+    });
+
+    form.addEventListener("change", () => {
+      if (form.dataset.mode !== "edit-sheet") return;
+      updateAltheriumRootSections(form);
       saveDebounced(() => saveSheetFromModal(false));
     });
   }
@@ -1174,6 +1347,7 @@ async function openMasterSheetModal(playerId) {
 
   modalTitle.textContent = `Ficha de ${sheet.ownerName}`;
   formFields.innerHTML = buildMasterSheetEditor(sheet);
+  setupAltheriumRootFeatureSections(form, sheet);
 
   form.dataset.mode = "edit-sheet";
   form.dataset.playerId = playerId;
@@ -1193,7 +1367,7 @@ function buildMasterSheetEditor(sheet) {
         <div class="rune-frame">
           <div class="rune-page-header">
             ${textInput("Nome", "characterName", sheet.characterName)}
-            ${textInput("Raíz", "root", sheet.root)}
+            ${rootSelectInput("Raíz", "root", sheet.root)}
             ${textInput("Genesis", "genesis", sheet.genesis)}
           </div>
 
@@ -1276,7 +1450,10 @@ function buildMasterSheetEditor(sheet) {
       <section class="rune-paper-page">
         <div class="rune-frame">
           <div class="rune-section-title centered"><h3>- Triunfos -</h3></div>
-          <textarea class="rune-triumphs-area" name="triumphs" rows="14">${escapeHtml(sheet.triumphs)}</textarea>
+          ${buildAltheriumRootDynamicSections(sheet)}
+          <div class="normal-triumphs-box" data-hide-when-root="pilar">
+            <textarea class="rune-triumphs-area" name="triumphs" rows="14">${escapeHtml(sheet.triumphs)}</textarea>
+          </div>
           <div class="rune-section-title"><h3>Anotações</h3></div>
           <textarea class="rune-triumphs-area" name="notes" rows="8">${escapeHtml(sheet.notes)}</textarea>
         </div>
@@ -1312,6 +1489,7 @@ async function setupAltheriumPlayerSheet() {
   await loadSheetIntoPlayerForm();
 
   form.addEventListener("input", () => savePlayerSheet(false));
+  form.addEventListener("change", () => savePlayerSheet(false));
 
   if (saveButton) saveButton.addEventListener("click", () => savePlayerSheet(true));
 }
@@ -1326,6 +1504,8 @@ async function loadSheetIntoPlayerForm() {
   const focused = document.activeElement;
 
   if (focused && form.contains(focused)) {
+    setupAltheriumRootFeatureSections(form);
+    updateAltheriumRootSections(form);
     updatePlayerSheetPreview();
     updateResourceBars();
     return;
@@ -1333,10 +1513,14 @@ async function loadSheetIntoPlayerForm() {
 
   const sheet = await getOrCreateCampaignSheet(campaign.id, user.id, campaign.sistema);
 
+  setupAltheriumRootFeatureSections(form, sheet);
+
   Object.keys(sheet).forEach((key) => {
     if (form.elements[key]) form.elements[key].value = sheet[key] || "";
   });
 
+  setAltheriumRootSelectorValue(form.elements.root, sheet.root);
+  updateAltheriumRootSections(form);
   updatePlayerSheetPreview();
   updateResourceBars();
 }
@@ -1347,6 +1531,9 @@ async function savePlayerSheet(showAlert) {
   const form = document.getElementById("playerSheetForm");
 
   if (!user || !campaign || !form) return;
+
+  setupAltheriumRootFeatureSections(form);
+  updateAltheriumRootSections(form);
 
   await updateCampaignSheet(campaign.id, user.id, Object.fromEntries(new FormData(form)));
   updatePlayerSheetPreview();
@@ -2201,6 +2388,272 @@ function escapeHtml(value) {
     .replaceAll('"', "&quot;")
     .replaceAll("<", "&lt;")
     .replaceAll(">", "&gt;");
+}
+
+
+function setupAltheriumRootDynamicControls() {
+  if (window.altheriumRootDynamicControlsReady) return;
+
+  window.altheriumRootDynamicControlsReady = true;
+
+  document.addEventListener("change", (event) => {
+    if (!event.target.matches("[name='root']")) return;
+
+    const form = event.target.closest("form");
+    updateAltheriumRootSections(form);
+  });
+
+  document.addEventListener("input", (event) => {
+    if (!event.target.matches("[name='root']")) return;
+
+    const form = event.target.closest("form");
+    updateAltheriumRootSections(form);
+  });
+}
+
+function setupAltheriumRootFeatureSections(form, sheet = {}) {
+  if (!form) return;
+
+  enhanceAltheriumRootSelector(form, sheet.root);
+  ensureAltheriumRootFeatureSections(form, sheet);
+  updateAltheriumRootSections(form);
+}
+
+function enhanceAltheriumRootSelector(form, rootValue = "") {
+  if (!form || !form.elements.root) return;
+
+  const currentField = form.elements.root;
+
+  if (currentField.tagName === "SELECT") {
+    ensureAltheriumRootOptions(currentField);
+    setAltheriumRootSelectorValue(currentField, currentField.value || rootValue);
+    currentField.dataset.rootSelector = "true";
+    return;
+  }
+
+  const select = document.createElement("select");
+  select.name = currentField.name;
+  select.className = `${currentField.className || ""} altherium-root-select`.trim();
+  select.dataset.rootSelector = "true";
+
+  ensureAltheriumRootOptions(select);
+  setAltheriumRootSelectorValue(select, currentField.value || rootValue);
+
+  currentField.replaceWith(select);
+}
+
+function ensureAltheriumRootOptions(select) {
+  if (!select || select.dataset.rootOptionsReady) return;
+
+  select.innerHTML = ALTHERIUM_ROOT_OPTIONS
+    .map((option) => `<option value="${escapeHtml(option.value)}">${escapeHtml(option.label)}</option>`)
+    .join("");
+
+  select.dataset.rootOptionsReady = "true";
+}
+
+function setAltheriumRootSelectorValue(field, value) {
+  if (!field) return;
+
+  const normalized = normalizeAltheriumRoot(value);
+  const rootValue = getAltheriumRootValue(normalized, value);
+
+  field.value = rootValue;
+}
+
+function getAltheriumRootValue(normalized, originalValue = "") {
+  if (normalized === "berserk") return "Berserk";
+  if (normalized === "runaskin") return "Runaskin";
+  if (normalized === "pilar") return "Pilar";
+
+  return originalValue || "";
+}
+
+function ensureAltheriumRootFeatureSections(form, sheet = {}) {
+  if (!form) return;
+
+  /*
+    Importante:
+    Antes essa função colocava NR e Triunfos de Pilar logo depois de .rune-resource-list.
+    Isso fazia essas partes aparecerem no começo da ficha.
+    Agora, se o HTML já tem #runaskinNrBox ou #pilarTriumphsBox, não injetamos nada.
+  */
+  if (form.querySelector("#runaskinNrBox") || form.querySelector("#pilarTriumphsBox")) return;
+  if (form.querySelector("[data-root-dynamic-zone]")) return;
+
+  const triumphTextarea = form.querySelector("textarea[name='triumphs']");
+  if (!triumphTextarea) return;
+
+  const normalTriumphsBox = triumphTextarea.closest(".normal-triumphs-box");
+  const target = normalTriumphsBox || triumphTextarea;
+
+  target.insertAdjacentHTML("beforebegin", buildAltheriumRootDynamicSections(sheet));
+}
+
+function updateAltheriumRootSections(form) {
+  if (!form) return;
+
+  const rootField = form.elements.root;
+  const root = normalizeAltheriumRoot(rootField ? rootField.value : "");
+
+  form.querySelectorAll("[data-root-section]").forEach((section) => {
+    const shouldShow = section.dataset.rootSection === root;
+
+    section.hidden = !shouldShow;
+    section.classList.toggle("active", shouldShow);
+  });
+
+  const runaskinBox = form.querySelector("#runaskinNrBox");
+  if (runaskinBox && !runaskinBox.matches("[data-root-section]")) {
+    const showRunaskin = root === "runaskin";
+
+    runaskinBox.classList.toggle("active", showRunaskin);
+    runaskinBox.classList.toggle("show", showRunaskin);
+    runaskinBox.style.display = showRunaskin ? "grid" : "none";
+  }
+
+  const pilarBox = form.querySelector("#pilarTriumphsBox");
+  if (pilarBox && !pilarBox.matches("[data-root-section]")) {
+    const showPilar = root === "pilar";
+
+    pilarBox.classList.toggle("active", showPilar);
+    pilarBox.classList.toggle("show", showPilar);
+    pilarBox.style.display = showPilar ? "block" : "none";
+  }
+
+  const normalTriumphsBox = form.querySelector("#normalTriumphsBox, .normal-triumphs-box");
+  if (normalTriumphsBox) {
+    const hideNormalTriumphs = root === "pilar";
+
+    normalTriumphsBox.classList.toggle("hidden-by-root", hideNormalTriumphs);
+    normalTriumphsBox.style.display = hideNormalTriumphs ? "none" : "block";
+  }
+}
+
+function normalizeAltheriumRoot(value) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  if (normalized.includes("bers")) return "berserk";
+  if (normalized.includes("runa")) return "runaskin";
+  if (normalized.includes("pilar")) return "pilar";
+
+  return "";
+}
+
+function rootSelectInput(label, name, value) {
+  const normalizedValue = getAltheriumRootValue(normalizeAltheriumRoot(value), value);
+
+  return `
+    <label class="altherium-root-field">
+      <span>${label}</span>
+      <select name="${name}" data-root-selector="true">
+        ${ALTHERIUM_ROOT_OPTIONS
+          .map(
+            (option) => `
+              <option value="${escapeHtml(option.value)}" ${option.value === normalizedValue ? "selected" : ""}>
+                ${escapeHtml(option.label)}
+              </option>
+            `
+          )
+          .join("")}
+      </select>
+    </label>
+  `;
+}
+
+function buildAltheriumRootDynamicSections(sheet = {}) {
+  return `
+    <div class="altherium-root-dynamic-zone" data-root-dynamic-zone>
+      <section class="altherium-root-section runaskin-root-section runaskin-nr-mini" data-root-section="runaskin" hidden>
+        <label class="runaskin-nr-mini-field">
+          <span>NR</span>
+          <input
+            type="number"
+            min="0"
+            name="nr"
+            value="${escapeHtml(sheet.nr || sheet.nrCurrent || "0")}"
+            placeholder="0"
+          />
+        </label>
+      </section>
+
+      <section class="altherium-root-section pilar-root-section" data-root-section="pilar" hidden>
+        <div class="pilar-card-counter">
+          <div>
+            <span>Cartas do Pilar</span>
+            <strong>Controle de cartas</strong>
+            <p>Controle as cartas disponíveis e o limite máximo do personagem Pilar.</p>
+          </div>
+
+          <div class="pilar-card-counter-values">
+            <label>
+              <span>Atual</span>
+              <input
+                type="number"
+                min="0"
+                name="pilarCardsCurrent"
+                value="${escapeHtml(sheet.pilarCardsCurrent || sheet.pilarCards || "0")}"
+                placeholder="0"
+              />
+            </label>
+
+            <span class="pilar-card-counter-divider">/</span>
+
+            <label>
+              <span>Máximo</span>
+              <input
+                type="number"
+                min="0"
+                name="pilarCardsMax"
+                value="${escapeHtml(sheet.pilarCardsMax || "0")}"
+                placeholder="0"
+              />
+            </label>
+          </div>
+        </div>
+
+        <div class="pilar-triumphs-groups">
+          ${PILAR_TRIUMPH_GROUPS.map(buildPilarTriumphGroup).join("")}
+        </div>
+      </section>
+    </div>
+  `;
+}
+
+function buildPilarTriumphGroup(group) {
+  return `
+    <div class="pilar-triumph-group">
+      <div class="pilar-triumph-group__header">
+        <span>${group.cards} 🂡</span>
+        <strong>${group.cards === 1 ? "1 carta" : `${group.cards} cartas`}</strong>
+      </div>
+
+      <div class="pilar-triumph-list">
+        ${group.triumphs.map((triumph) => buildPilarTriumphCard(triumph, group.cards)).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function buildPilarTriumphCard(triumph, cards) {
+  return `
+    <details class="pilar-triumph-card">
+      <summary>
+        <span>${escapeHtml(triumph.name)}</span>
+        <strong>${cards} 🂡</strong>
+        <em>⌄</em>
+      </summary>
+
+      <div class="pilar-triumph-card__content">
+        <small>${escapeHtml(triumph.action)}</small>
+        <p>${escapeHtml(triumph.description)}</p>
+      </div>
+    </details>
+  `;
 }
 
 function textInput(label, name, value) {
@@ -3291,3 +3744,86 @@ function setupHeaderBackButton() {
   header.appendChild(backButton);
 }
 
+/* =========================================================
+   RAIZ - SELECT CUSTOMIZADO
+========================================================= */
+
+function setupRootCustomSelect() {
+  const nativeSelect = document.getElementById("rootSelect");
+  const trigger = document.getElementById("rootCustomTrigger");
+  const menu = document.getElementById("rootCustomMenu");
+
+  if (!nativeSelect || !trigger || !menu) return;
+
+  const label = trigger.querySelector(".root-custom-trigger__label");
+  const options = Array.from(menu.querySelectorAll(".root-custom-option"));
+
+  function formatRootLabel(value) {
+    if (value === "berserk") return "BERSERK";
+    if (value === "runaskin") return "RUNASKIN";
+    if (value === "pilar") return "PILAR";
+    return "Selecione a raiz";
+  }
+
+  function syncUI(value) {
+    label.textContent = formatRootLabel(value);
+
+    options.forEach((option) => {
+      option.classList.toggle("active", option.dataset.rootValue === value);
+    });
+  }
+
+  function openMenu() {
+    trigger.classList.add("open");
+    menu.classList.add("open");
+    trigger.setAttribute("aria-expanded", "true");
+  }
+
+  function closeMenu() {
+    trigger.classList.remove("open");
+    menu.classList.remove("open");
+    trigger.setAttribute("aria-expanded", "false");
+  }
+
+  function toggleMenu() {
+    if (menu.classList.contains("open")) {
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  }
+
+  trigger.addEventListener("click", toggleMenu);
+
+  options.forEach((option) => {
+    option.addEventListener("click", () => {
+      const value = option.dataset.rootValue || "";
+
+      nativeSelect.value = value;
+      syncUI(value);
+      closeMenu();
+
+      nativeSelect.dispatchEvent(new Event("change", { bubbles: true }));
+      nativeSelect.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+  });
+
+  document.addEventListener("click", (event) => {
+    const wrapper = document.querySelector("[data-root-custom-select]");
+    if (!wrapper) return;
+
+    if (!wrapper.contains(event.target)) {
+      closeMenu();
+    }
+  });
+
+  nativeSelect.addEventListener("change", () => {
+    syncUI(nativeSelect.value);
+  });
+
+  syncUI(nativeSelect.value);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  setupRootCustomSelect();
+});

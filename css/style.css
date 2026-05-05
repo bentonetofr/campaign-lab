@@ -6318,3 +6318,2103 @@ header {
     font-size: 28px;
   }
 }
+
+/* =========================================================
+   RAÍZES DINÂMICAS - ALTHERIUM
+   Berserk: padrão | Runaskin: NR | Pilar: Triunfos
+========================================================= */
+
+.altherium-root-field select,
+.altherium-rune-sheet select[name="root"],
+#playerSheetForm select[name="root"],
+#altheriumForm select[name="root"] {
+  width: 100%;
+  min-height: 52px;
+  padding: 0 18px;
+  border: 1px solid rgba(34, 211, 238, 0.32);
+  border-radius: 16px;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.98)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    );
+  color: #f8fafc;
+  outline: none;
+  cursor: pointer;
+  font-weight: 900;
+  text-align: center;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.altherium-root-field select:focus,
+.altherium-rune-sheet select[name="root"]:focus,
+#playerSheetForm select[name="root"]:focus,
+#altheriumForm select[name="root"]:focus {
+  border-color: rgba(34, 211, 238, 0.75);
+  box-shadow:
+    0 0 0 4px rgba(34, 211, 238, 0.12),
+    0 0 30px rgba(34, 211, 238, 0.1);
+}
+
+.altherium-root-dynamic-zone {
+  grid-column: 1 / -1;
+  width: 100%;
+  margin: 18px 0 28px;
+}
+
+.altherium-root-section[hidden] {
+  display: none !important;
+}
+
+.altherium-root-section {
+  width: 100%;
+  padding: 24px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(2, 6, 23, 0.92)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    );
+  box-shadow:
+    0 18px 56px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
+}
+
+.altherium-root-section .rune-section-title {
+  margin-bottom: 18px;
+}
+
+.altherium-root-section .rune-section-title h3 {
+  color: #f8fafc;
+  font-size: clamp(32px, 4vw, 54px);
+  line-height: 1;
+  text-shadow: 0 0 24px rgba(34, 211, 238, 0.16);
+}
+
+.altherium-root-section .rune-section-title p {
+  margin-top: 8px;
+  color: #94a3b8;
+  font-size: 16px;
+  line-height: 1.5;
+}
+
+.runaskin-nr-card {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.runaskin-nr-card label {
+  padding: 20px;
+  border: 1px solid rgba(34, 211, 238, 0.18);
+  border-radius: 20px;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 31, 50, 0.94),
+    rgba(10, 20, 36, 0.98)
+  );
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.runaskin-nr-card span {
+  color: #22d3ee;
+  text-transform: uppercase;
+  text-align: center;
+  font-weight: 900;
+  letter-spacing: 1px;
+}
+
+.runaskin-nr-card input {
+  min-height: 64px;
+  border: 1px solid rgba(34, 211, 238, 0.26);
+  border-radius: 18px;
+  background: rgba(2, 6, 23, 0.88);
+  color: #f8fafc;
+  font-size: 34px;
+  font-weight: 900;
+  text-align: center;
+  outline: none;
+}
+
+.pilar-triumphs-groups {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 18px;
+}
+
+.pilar-triumph-group {
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 22px;
+  background: linear-gradient(
+    180deg,
+    rgba(18, 31, 50, 0.86),
+    rgba(10, 20, 36, 0.96)
+  );
+}
+
+.pilar-triumph-group__header {
+  padding: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+  background: linear-gradient(
+    135deg,
+    rgba(34, 211, 238, 0.18),
+    rgba(2, 6, 23, 0.2)
+  );
+}
+
+.pilar-triumph-group__header span {
+  min-width: 64px;
+  min-height: 44px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  border-radius: 999px;
+  color: #67e8f9;
+  background: rgba(34, 211, 238, 0.08);
+  font-size: 22px;
+  font-weight: 900;
+}
+
+.pilar-triumph-group__header strong {
+  color: #f8fafc;
+  font-size: 22px;
+  text-transform: uppercase;
+}
+
+.pilar-triumph-list {
+  padding: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pilar-triumph-card {
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+  overflow: hidden;
+}
+
+.pilar-triumph-card summary {
+  min-height: 56px;
+  padding: 12px 14px;
+  display: grid;
+  grid-template-columns: 1fr auto auto;
+  align-items: center;
+  gap: 12px;
+  color: #f8fafc;
+  cursor: pointer;
+  list-style: none;
+}
+
+.pilar-triumph-card summary::-webkit-details-marker {
+  display: none;
+}
+
+.pilar-triumph-card summary span {
+  color: #f8fafc;
+  font-size: 18px;
+  font-weight: 900;
+  line-height: 1.15;
+}
+
+.pilar-triumph-card summary strong {
+  padding: 6px 9px;
+  border: 1px solid rgba(34, 211, 238, 0.26);
+  border-radius: 999px;
+  color: #67e8f9;
+  background: rgba(34, 211, 238, 0.08);
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.pilar-triumph-card summary em {
+  width: 28px;
+  height: 28px;
+  display: grid;
+  place-items: center;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.1);
+  color: #67e8f9;
+  font-style: normal;
+  font-size: 20px;
+  line-height: 1;
+  transition: 0.2s ease;
+}
+
+.pilar-triumph-card[open] summary em {
+  transform: rotate(180deg);
+  background: rgba(34, 211, 238, 0.2);
+}
+
+.pilar-triumph-card__content {
+  padding: 0 14px 16px;
+  color: #cbd5e1;
+}
+
+.pilar-triumph-card__content small {
+  display: inline-flex;
+  margin-bottom: 8px;
+  padding: 6px 9px;
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.08);
+  color: #67e8f9;
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.pilar-triumph-card__content p {
+  color: #cbd5e1;
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+@media (max-width: 1100px) {
+  .pilar-triumphs-groups {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 760px) {
+  .altherium-root-section {
+    padding: 18px;
+  }
+
+  .runaskin-nr-card {
+    grid-template-columns: 1fr;
+  }
+
+  .pilar-triumph-card summary {
+    grid-template-columns: 1fr auto;
+  }
+
+  .pilar-triumph-card summary em {
+    grid-column: 2;
+  }
+}
+
+/* =========================================================
+   CORREÇÃO VISUAL DA RAIZ - FEITO SOMENTE PELO CSS
+   Aplica estilo premium ao select nativo e às opções
+========================================================= */
+
+/* Campo raiz dentro da ficha */
+.rune-page-header label:has(select[name="root"]),
+.rune-page-header .root-field {
+  width: 100% !important;
+  position: relative !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  gap: 10px !important;
+
+  padding: 18px !important;
+  border: 1px solid rgba(34, 211, 238, 0.32) !important;
+  border-radius: 24px !important;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.94)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    ) !important;
+
+  box-shadow:
+    0 18px 46px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 32px rgba(34, 211, 238, 0.08) !important;
+}
+
+/* Título RAIZ */
+.rune-page-header label:has(select[name="root"]) > span,
+.root-field-label {
+  margin: 0 !important;
+
+  display: block !important;
+
+  color: #f8fafc !important;
+  font-size: clamp(28px, 4vw, 46px) !important;
+  font-weight: 900 !important;
+  line-height: 0.95 !important;
+  letter-spacing: 1.4px !important;
+
+  text-align: center !important;
+  text-transform: uppercase !important;
+
+  text-shadow:
+    0 0 22px rgba(34, 211, 238, 0.18),
+    0 0 50px rgba(34, 211, 238, 0.08) !important;
+}
+
+/* Select nativo estilizado */
+select[name="root"],
+#rootSelect,
+.root-native-select {
+  position: relative !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+
+  width: 100% !important;
+  height: 64px !important;
+  min-height: 64px !important;
+
+  margin: 0 !important;
+  padding: 0 58px 0 22px !important;
+
+  display: block !important;
+
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.55) !important;
+  border-radius: 20px !important;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.99)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.18),
+      transparent 42%
+    ) !important;
+
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 1px !important;
+  text-align: center !important;
+  text-align-last: center !important;
+  text-transform: uppercase !important;
+
+  cursor: pointer !important;
+  outline: none !important;
+
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.06),
+    0 14px 34px rgba(0, 0, 0, 0.24),
+    0 0 26px rgba(34, 211, 238, 0.1) !important;
+
+  transition: 0.25s ease !important;
+}
+
+/* Seta customizada do select */
+.rune-page-header label:has(select[name="root"])::after,
+.root-field::after {
+  content: "⌄" !important;
+
+  position: absolute !important;
+  right: 32px !important;
+  top: calc(50% + 22px) !important;
+  z-index: 5 !important;
+
+  width: 34px !important;
+  height: 34px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.35) !important;
+  border-radius: 999px !important;
+
+  background: rgba(34, 211, 238, 0.12) !important;
+  color: #67e8f9 !important;
+
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  pointer-events: none !important;
+
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.12) !important;
+}
+
+/* Hover e foco */
+select[name="root"]:hover,
+#rootSelect:hover,
+.root-native-select:hover {
+  border-color: rgba(34, 211, 238, 0.9) !important;
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.12),
+    0 18px 42px rgba(0, 0, 0, 0.28),
+    0 0 34px rgba(34, 211, 238, 0.18) !important;
+}
+
+select[name="root"]:focus,
+#rootSelect:focus,
+.root-native-select:focus {
+  border-color: rgba(34, 211, 238, 1) !important;
+  box-shadow:
+    0 0 0 4px rgba(34, 211, 238, 0.14),
+    0 18px 42px rgba(0, 0, 0, 0.28),
+    0 0 36px rgba(34, 211, 238, 0.24) !important;
+}
+
+/* Opções do select */
+select[name="root"] option,
+#rootSelect option,
+.root-native-select option {
+  background: #020617 !important;
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1px !important;
+
+  padding: 18px !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+}
+
+/* Placeholder do select */
+select[name="root"] option[value=""],
+#rootSelect option[value=""],
+.root-native-select option[value=""] {
+  color: #94a3b8 !important;
+  background: #020617 !important;
+}
+
+/* Remove o seletor custom antigo caso esteja no HTML.
+   Como agora é só CSS, o select nativo fica visível e funcional. */
+.root-custom-select {
+  display: none !important;
+}
+
+/* Caso o HTML antigo ainda esteja com input de texto em vez de select,
+   pelo menos deixa o campo com o mesmo visual premium. */
+input[name="root"] {
+  height: 64px !important;
+  min-height: 64px !important;
+
+  padding: 0 22px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.55) !important;
+  border-radius: 20px !important;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.99)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.18),
+      transparent 42%
+    ) !important;
+
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1px !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.06),
+    0 14px 34px rgba(0, 0, 0, 0.24),
+    0 0 26px rgba(34, 211, 238, 0.1) !important;
+}
+
+/* Caixa Runaskin e Pilar escondem por padrão.
+   O JS mostra quando a raiz correta é selecionada. */
+.root-extra-box {
+  display: none;
+}
+
+/* Quando o JS adicionar classe active */
+.root-extra-box.active,
+.root-extra-box.is-active,
+.root-extra-box.show {
+  display: block !important;
+}
+
+/* Visual premium das caixas especiais */
+.root-extra-box--runaskin,
+.root-extra-box--pilar {
+  margin: 24px 0 !important;
+  padding: 24px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.28) !important;
+  border-radius: 28px !important;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.94)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.14),
+      transparent 42%
+    ) !important;
+
+  box-shadow:
+    0 20px 54px rgba(0, 0, 0, 0.26),
+    0 0 38px rgba(34, 211, 238, 0.08) !important;
+}
+
+.root-extra-header span {
+  display: inline-flex !important;
+  margin-bottom: 10px !important;
+  padding: 8px 12px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.28) !important;
+  border-radius: 999px !important;
+
+  background: rgba(34, 211, 238, 0.08) !important;
+  color: #22d3ee !important;
+
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.4px !important;
+  text-transform: uppercase !important;
+}
+
+.root-extra-header h3 {
+  color: #f8fafc !important;
+  font-size: clamp(28px, 4vw, 46px) !important;
+  line-height: 1 !important;
+  margin-bottom: 8px !important;
+}
+
+.root-extra-header p {
+  color: #94a3b8 !important;
+  line-height: 1.5 !important;
+}
+
+/* Triunfos de Pilar */
+.pilar-triumphs-section {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 18px !important;
+}
+
+.pilar-card-group {
+  padding: 18px !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 22px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+}
+
+.pilar-card-group h4 {
+  margin-bottom: 14px !important;
+  color: #22d3ee !important;
+  font-size: 30px !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+.pilar-triumph-card {
+  margin-bottom: 10px !important;
+  border: 1px solid rgba(34, 211, 238, 0.16) !important;
+  border-radius: 16px !important;
+  overflow: hidden !important;
+  background: rgba(2, 6, 23, 0.55) !important;
+}
+
+.pilar-triumph-card summary {
+  min-height: 50px !important;
+  padding: 14px 44px 14px 16px !important;
+
+  position: relative !important;
+
+  color: #f8fafc !important;
+  font-size: 18px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.6px !important;
+  text-transform: uppercase !important;
+
+  cursor: pointer !important;
+  list-style: none !important;
+}
+
+.pilar-triumph-card summary::-webkit-details-marker {
+  display: none !important;
+}
+
+.pilar-triumph-card summary::after {
+  content: "⌄" !important;
+  position: absolute !important;
+  right: 14px !important;
+  top: 50% !important;
+
+  width: 26px !important;
+  height: 26px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  border-radius: 999px !important;
+  background: rgba(34, 211, 238, 0.12) !important;
+  color: #67e8f9 !important;
+
+  transform: translateY(-50%) !important;
+  transition: 0.2s ease !important;
+}
+
+.pilar-triumph-card[open] summary::after {
+  transform: translateY(-50%) rotate(180deg) !important;
+}
+
+.pilar-triumph-card p {
+  padding: 0 16px 16px !important;
+  color: #cbd5e1 !important;
+  line-height: 1.55 !important;
+}
+
+.pilar-triumph-card strong {
+  color: #22d3ee !important;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+  .pilar-triumphs-section {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 700px) {
+  .rune-page-header label:has(select[name="root"]),
+  .rune-page-header .root-field {
+    padding: 14px !important;
+    border-radius: 20px !important;
+  }
+
+  select[name="root"],
+  #rootSelect,
+  .root-native-select,
+  input[name="root"] {
+    height: 58px !important;
+    min-height: 58px !important;
+    padding: 0 50px 0 16px !important;
+    font-size: 20px !important;
+  }
+
+  .rune-page-header label:has(select[name="root"])::after,
+  .root-field::after {
+    right: 24px !important;
+    width: 30px !important;
+    height: 30px !important;
+    font-size: 22px !important;
+  }
+}
+
+/* =========================================================
+   CORREÇÃO FINAL - RAIZ MAIS SIMPLES COMO NOME E GÊNESIS
+========================================================= */
+
+/* Remove o visual exagerado de card da raiz */
+.rune-page-header .root-field,
+.rune-page-header label:has(select[name="root"]) {
+  width: 100% !important;
+
+  padding: 0 !important;
+  margin: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 2px !important;
+
+  border: none !important;
+  border-radius: 0 !important;
+
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Título RAIZ igual ao NOME e GÊNESIS */
+.root-field-label,
+.rune-page-header label:has(select[name="root"]) > span {
+  margin: 0 !important;
+  padding: 0 !important;
+
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: clamp(30px, 5vw, 52px) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 1px !important;
+
+  text-align: center !important;
+  text-transform: uppercase !important;
+
+  text-shadow:
+    0 0 22px rgba(34, 211, 238, 0.12),
+    0 0 44px rgba(34, 211, 238, 0.06) !important;
+}
+
+/* Select da raiz com aparência de input normal */
+select[name="root"],
+#rootSelect,
+.root-native-select {
+  position: relative !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+
+  width: 100% !important;
+  height: 64px !important;
+  min-height: 64px !important;
+
+  margin: 0 !important;
+  padding: 0 50px 0 20px !important;
+
+  display: block !important;
+
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+
+  border: none !important;
+  border-bottom: 2px solid rgba(34, 211, 238, 0.32) !important;
+  border-radius: 16px !important;
+
+  background: rgba(2, 6, 23, 0.88) !important;
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 22px !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.5px !important;
+
+  text-align: center !important;
+  text-align-last: center !important;
+  text-transform: uppercase !important;
+
+  cursor: pointer !important;
+  outline: none !important;
+
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+  transition: 0.25s ease !important;
+}
+
+/* Seta menor e discreta */
+.rune-page-header .root-field::after,
+.rune-page-header label:has(select[name="root"])::after {
+  content: "⌄" !important;
+
+  position: absolute !important;
+  right: 16px !important;
+  bottom: 14px !important;
+  top: auto !important;
+  z-index: 5 !important;
+
+  width: 30px !important;
+  height: 30px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.28) !important;
+  border-radius: 999px !important;
+
+  background: rgba(34, 211, 238, 0.08) !important;
+  color: #67e8f9 !important;
+
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  pointer-events: none !important;
+
+  box-shadow: none !important;
+}
+
+/* Hover/focus mais leve */
+select[name="root"]:hover,
+#rootSelect:hover,
+.root-native-select:hover {
+  border-bottom-color: rgba(34, 211, 238, 0.55) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 22px rgba(34, 211, 238, 0.08) !important;
+}
+
+select[name="root"]:focus,
+#rootSelect:focus,
+.root-native-select:focus {
+  border-bottom-color: rgba(34, 211, 238, 0.75) !important;
+  box-shadow:
+    0 0 0 4px rgba(34, 211, 238, 0.1),
+    0 0 24px rgba(34, 211, 238, 0.1) !important;
+}
+
+/* Mantém as opções escuras quando o navegador permitir */
+select[name="root"] option,
+#rootSelect option,
+.root-native-select option {
+  background: #020617 !important;
+  color: #f8fafc !important;
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 18px !important;
+  text-transform: uppercase !important;
+}
+
+/* Esconde o seletor custom se ele estiver no HTML */
+.root-custom-select {
+  display: none !important;
+}
+
+/* Mobile */
+@media (max-width: 700px) {
+  select[name="root"],
+  #rootSelect,
+  .root-native-select {
+    height: 58px !important;
+    min-height: 58px !important;
+    padding: 0 46px 0 16px !important;
+    font-size: 20px !important;
+  }
+
+  .rune-page-header .root-field::after,
+  .rune-page-header label:has(select[name="root"])::after {
+    right: 14px !important;
+    bottom: 12px !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 18px !important;
+  }
+}
+
+/* =========================================================
+   CORREÇÃO FINAL - ALINHAMENTO DE NOME / RAIZ / GÊNESIS
+========================================================= */
+
+/* Organiza os 3 campos principais como blocos iguais */
+.rune-page-header {
+  width: 100% !important;
+  max-width: 520px !important;
+
+  margin: 0 auto 38px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  gap: 28px !important;
+
+  text-align: center !important;
+}
+
+/* Cada campo ocupa o mesmo espaço */
+.rune-page-header > label,
+.rune-page-header > .root-field {
+  width: 100% !important;
+  max-width: 100% !important;
+
+  min-height: 112px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  gap: 8px !important;
+
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+/* Títulos dos 3 campos iguais */
+.rune-page-header > label > span,
+.rune-page-header .root-field-label {
+  width: 100% !important;
+
+  min-height: 48px !important;
+
+  margin: 0 !important;
+  padding: 0 !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: clamp(30px, 5vw, 52px) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 1px !important;
+
+  text-align: center !important;
+  text-transform: uppercase !important;
+}
+
+/* Inputs e select com mesma altura e alinhamento */
+.rune-page-header > label > input,
+.rune-page-header .root-field select[name="root"],
+.rune-page-header .root-field #rootSelect,
+.rune-page-header .root-field .root-native-select {
+  width: 100% !important;
+
+  height: 64px !important;
+  min-height: 64px !important;
+  max-height: 64px !important;
+
+  margin: 0 !important;
+
+  display: block !important;
+
+  border: none !important;
+  border-bottom: 2px solid rgba(34, 211, 238, 0.32) !important;
+  border-radius: 16px !important;
+
+  background: rgba(2, 6, 23, 0.88) !important;
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 22px !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.5px !important;
+
+  text-align: center !important;
+  text-align-last: center !important;
+  text-transform: uppercase !important;
+
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+}
+
+/* Ajuste específico do select para a seta */
+.rune-page-header .root-field {
+  position: relative !important;
+}
+
+.rune-page-header .root-field select[name="root"],
+.rune-page-header .root-field #rootSelect,
+.rune-page-header .root-field .root-native-select {
+  padding: 0 50px 0 20px !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+}
+
+/* Seta alinhada no centro vertical do campo, não do bloco inteiro */
+.rune-page-header .root-field::after {
+  content: "⌄" !important;
+
+  position: absolute !important;
+  right: 16px !important;
+  bottom: 17px !important;
+  top: auto !important;
+
+  width: 30px !important;
+  height: 30px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.28) !important;
+  border-radius: 999px !important;
+
+  background: rgba(34, 211, 238, 0.08) !important;
+  color: #67e8f9 !important;
+
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  pointer-events: none !important;
+}
+
+/* Remove pseudo-seta duplicada de regras antigas */
+.rune-page-header label:has(select[name="root"])::after {
+  display: none !important;
+}
+
+/* Evita que algum gap antigo empurre a raiz */
+.root-field {
+  gap: 8px !important;
+}
+
+/* Responsivo */
+@media (max-width: 700px) {
+  .rune-page-header {
+    gap: 24px !important;
+    max-width: 100% !important;
+  }
+
+  .rune-page-header > label,
+  .rune-page-header > .root-field {
+    min-height: 104px !important;
+  }
+
+  .rune-page-header > label > span,
+  .rune-page-header .root-field-label {
+    min-height: 44px !important;
+    font-size: 34px !important;
+  }
+
+  .rune-page-header > label > input,
+  .rune-page-header .root-field select[name="root"],
+  .rune-page-header .root-field #rootSelect,
+  .rune-page-header .root-field .root-native-select {
+    height: 58px !important;
+    min-height: 58px !important;
+    max-height: 58px !important;
+    font-size: 20px !important;
+  }
+
+  .rune-page-header .root-field::after {
+    bottom: 14px !important;
+    right: 14px !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 18px !important;
+  }
+}
+
+/* =========================================================
+   PILAR - CONTADOR DE CARTAS
+========================================================= */
+
+.pilar-card-counter {
+  margin: 0 0 24px;
+  padding: 24px;
+
+  display: grid;
+  grid-template-columns: 1fr 220px;
+  align-items: center;
+  gap: 22px;
+
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  border-radius: 26px;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.96)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.16),
+      transparent 42%
+    );
+
+  box-shadow:
+    0 20px 54px rgba(0, 0, 0, 0.28),
+    0 0 34px rgba(34, 211, 238, 0.08);
+}
+
+.pilar-card-counter > div > span {
+  display: inline-flex;
+  margin-bottom: 10px;
+  padding: 8px 12px;
+
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  border-radius: 999px;
+
+  background: rgba(34, 211, 238, 0.08);
+  color: #22d3ee;
+
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.pilar-card-counter > div > strong {
+  display: block;
+  margin-bottom: 8px;
+
+  color: #f8fafc;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: clamp(28px, 4vw, 46px);
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.pilar-card-counter > div > p {
+  color: #94a3b8;
+  line-height: 1.55;
+}
+
+.pilar-card-counter label {
+  margin: 0;
+
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pilar-card-counter label span {
+  color: #22d3ee;
+
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 1.2px;
+  text-align: center;
+  text-transform: uppercase;
+}
+
+.pilar-card-counter input[type="number"] {
+  width: 100%;
+  height: 70px;
+  min-height: 70px;
+
+  margin: 0;
+  padding: 0 18px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.38);
+  border-radius: 20px;
+
+  background: rgba(2, 6, 23, 0.88);
+  color: #f8fafc;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 34px;
+  font-weight: 900;
+  line-height: 1;
+  text-align: center;
+
+  outline: none;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 24px rgba(34, 211, 238, 0.08);
+}
+
+.pilar-card-counter input[type="number"]:focus {
+  border-color: rgba(34, 211, 238, 0.8);
+  box-shadow:
+    0 0 0 4px rgba(34, 211, 238, 0.12),
+    0 0 30px rgba(34, 211, 238, 0.16);
+}
+
+/* Se o JS das setas premium envolver esse input, esconde as setas aqui também */
+.pilar-card-counter .number-control {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.pilar-card-counter .number-control input[type="number"] {
+  padding: 0 18px !important;
+}
+
+.pilar-card-counter .number-control-buttons {
+  display: none !important;
+}
+
+@media (max-width: 800px) {
+  .pilar-card-counter {
+    grid-template-columns: 1fr;
+  }
+
+  .pilar-card-counter label {
+    max-width: 240px;
+    width: 100%;
+    margin: 0 auto;
+  }
+}
+
+/* =========================================================
+   PILAR - CARTAS ATUAL / MÁXIMO LADO A LADO
+========================================================= */
+
+.pilar-card-counter {
+  grid-template-columns: 1fr auto !important;
+  align-items: center !important;
+  gap: 26px !important;
+}
+
+.pilar-card-counter-values {
+  width: 280px !important;
+
+  display: grid !important;
+  grid-template-columns: 1fr auto 1fr !important;
+  align-items: end !important;
+  gap: 10px !important;
+}
+
+.pilar-card-counter-values label {
+  width: 100% !important;
+  margin: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.pilar-card-counter-values label span {
+  color: #22d3ee !important;
+
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.2px !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+}
+
+.pilar-card-counter-values input[type="number"] {
+  width: 100% !important;
+  height: 54px !important;
+  min-height: 54px !important;
+  max-height: 54px !important;
+
+  margin: 0 !important;
+  padding: 0 10px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.42) !important;
+  border-radius: 16px !important;
+
+  background: rgba(2, 6, 23, 0.88) !important;
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+
+  outline: none !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 18px rgba(34, 211, 238, 0.06) !important;
+}
+
+.pilar-card-counter-values input[type="number"]:focus {
+  border-color: rgba(34, 211, 238, 0.85) !important;
+  box-shadow:
+    0 0 0 4px rgba(34, 211, 238, 0.12),
+    0 0 24px rgba(34, 211, 238, 0.14) !important;
+}
+
+.pilar-card-counter-divider {
+  height: 54px !important;
+
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 26px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  transform: translateY(-1px) !important;
+}
+
+/* Remove setas premium se o JS envolver esses inputs */
+.pilar-card-counter-values .number-control {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.pilar-card-counter-values .number-control input[type="number"] {
+  padding: 0 10px !important;
+}
+
+.pilar-card-counter-values .number-control-buttons {
+  display: none !important;
+}
+
+/* Remove regra antiga que deixava input gigante dentro do contador */
+.pilar-card-counter > label {
+  max-width: none !important;
+}
+
+/* Responsivo */
+@media (max-width: 900px) {
+  .pilar-card-counter {
+    grid-template-columns: 1fr !important;
+  }
+
+  .pilar-card-counter-values {
+    width: min(280px, 100%) !important;
+    margin: 0 auto !important;
+  }
+}
+
+@media (max-width: 520px) {
+  .pilar-card-counter-values {
+    width: 100% !important;
+    grid-template-columns: 1fr !important;
+  }
+
+  .pilar-card-counter-divider {
+    height: auto !important;
+    padding: 2px 0 !important;
+  }
+}
+
+/* =========================================================
+   RUNASKIN - NR COMPACTO JUNTO DOS TRIUNFOS
+========================================================= */
+
+.runaskin-nr-compact {
+  width: 100% !important;
+  max-width: 620px !important;
+
+  margin: 0 auto 18px !important;
+  padding: 18px 20px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.26) !important;
+  border-radius: 22px !important;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.82), rgba(2, 6, 23, 0.92)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    ) !important;
+
+  box-shadow:
+    0 14px 38px rgba(0, 0, 0, 0.22),
+    0 0 26px rgba(34, 211, 238, 0.06) !important;
+}
+
+.runaskin-nr-compact .root-extra-header {
+  margin-bottom: 14px !important;
+  text-align: center !important;
+}
+
+.runaskin-nr-compact .root-extra-header span {
+  margin-bottom: 8px !important;
+  padding: 6px 10px !important;
+
+  font-size: 11px !important;
+  letter-spacing: 1.2px !important;
+}
+
+.runaskin-nr-compact .root-extra-header h3 {
+  margin-bottom: 4px !important;
+
+  color: #f8fafc !important;
+  font-size: clamp(26px, 3vw, 38px) !important;
+  line-height: 1 !important;
+}
+
+.runaskin-nr-compact .root-extra-header p {
+  max-width: 420px !important;
+  margin: 0 auto !important;
+
+  color: #94a3b8 !important;
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+}
+
+.runaskin-nr-compact .nr-resource-list,
+.runaskin-nr-compact .rune-resource-list {
+  width: 100% !important;
+  max-width: 460px !important;
+
+  margin: 0 auto !important;
+
+  display: block !important;
+}
+
+.runaskin-nr-compact .rune-resource-line {
+  width: 100% !important;
+
+  display: grid !important;
+  grid-template-columns: auto 86px auto 86px 1fr !important;
+  align-items: center !important;
+  gap: 8px !important;
+
+  margin: 0 !important;
+  padding: 12px 14px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.18) !important;
+  border-radius: 18px !important;
+
+  background: rgba(2, 6, 23, 0.46) !important;
+}
+
+.runaskin-nr-compact .rune-resource-line strong {
+  color: #22d3ee !important;
+
+  font-size: 22px !important;
+  line-height: 1 !important;
+}
+
+.runaskin-nr-compact .rune-resource-line span {
+  color: #f8fafc !important;
+
+  font-size: 20px !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+.runaskin-nr-compact .rune-resource-line input[type="number"] {
+  width: 86px !important;
+  max-width: 86px !important;
+  min-width: 0 !important;
+
+  height: 46px !important;
+  min-height: 46px !important;
+
+  margin: 0 !important;
+  padding: 0 8px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.34) !important;
+  border-radius: 14px !important;
+
+  background: rgba(2, 6, 23, 0.86) !important;
+  color: #f8fafc !important;
+
+  font-size: 22px !important;
+  line-height: 1 !important;
+  text-align: center !important;
+
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.runaskin-nr-compact .rune-bar {
+  min-width: 90px !important;
+  height: 10px !important;
+  margin: 0 !important;
+}
+
+/* Se o JS envolver os inputs de NR com setas premium, esconde aqui */
+.runaskin-nr-compact .number-control {
+  width: 86px !important;
+  max-width: 86px !important;
+}
+
+.runaskin-nr-compact .number-control input[type="number"] {
+  padding: 0 8px !important;
+}
+
+.runaskin-nr-compact .number-control-buttons {
+  display: none !important;
+}
+
+/* Aproxima o NR do bloco de Triunfos */
+.runaskin-nr-compact + .normal-triumphs-box {
+  margin-top: 0 !important;
+}
+
+@media (max-width: 720px) {
+  .runaskin-nr-compact {
+    max-width: 100% !important;
+    padding: 16px !important;
+  }
+
+  .runaskin-nr-compact .rune-resource-line {
+    grid-template-columns: 1fr auto 1fr !important;
+    text-align: center !important;
+  }
+
+  .runaskin-nr-compact .rune-resource-line strong {
+    grid-column: 1 / -1 !important;
+  }
+
+  .runaskin-nr-compact .rune-bar {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+  }
+
+  .runaskin-nr-compact .rune-resource-line input[type="number"],
+  .runaskin-nr-compact .number-control {
+    width: 100% !important;
+    max-width: 120px !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* =========================================================
+   RUNASKIN - NR ÚNICO NA ÚLTIMA PÁGINA
+========================================================= */
+
+/* Garante que o NR antigo de atual/máximo não tenha efeito */
+.runaskin-nr-compact {
+  display: none !important;
+}
+
+/* Bloco único de NR */
+.runaskin-nr-single {
+  width: 100% !important;
+  max-width: 720px !important;
+
+  margin: 0 auto 22px !important;
+  padding: 20px !important;
+
+  display: grid !important;
+  grid-template-columns: 1fr 150px !important;
+  align-items: center !important;
+  gap: 18px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.26) !important;
+  border-radius: 24px !important;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.84), rgba(2, 6, 23, 0.94)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    ) !important;
+
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.24),
+    0 0 28px rgba(34, 211, 238, 0.07) !important;
+}
+
+/* Continua escondendo por padrão.
+   O script mostra quando a raiz Runaskin for selecionada. */
+.runaskin-nr-single:not(.active):not(.show) {
+  display: none !important;
+}
+
+.runaskin-nr-single-info span {
+  display: inline-flex !important;
+
+  margin-bottom: 8px !important;
+  padding: 6px 10px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.28) !important;
+  border-radius: 999px !important;
+
+  background: rgba(34, 211, 238, 0.08) !important;
+  color: #22d3ee !important;
+
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.2px !important;
+  text-transform: uppercase !important;
+}
+
+.runaskin-nr-single-info strong {
+  display: block !important;
+
+  margin-bottom: 6px !important;
+
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: clamp(30px, 4vw, 46px) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 1px !important;
+}
+
+.runaskin-nr-single-info p {
+  color: #94a3b8 !important;
+  font-size: 14px !important;
+  line-height: 1.45 !important;
+}
+
+.runaskin-nr-single-field {
+  margin: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+}
+
+.runaskin-nr-single-field span {
+  color: #22d3ee !important;
+
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: 1.1px !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+}
+
+.runaskin-nr-single-field input[type="number"] {
+  width: 100% !important;
+  height: 56px !important;
+  min-height: 56px !important;
+
+  margin: 0 !important;
+  padding: 0 10px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.4) !important;
+  border-radius: 16px !important;
+
+  background: rgba(2, 6, 23, 0.88) !important;
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 28px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+
+  outline: none !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 20px rgba(34, 211, 238, 0.08) !important;
+}
+
+.runaskin-nr-single-field input[type="number"]:focus {
+  border-color: rgba(34, 211, 238, 0.85) !important;
+  box-shadow:
+    0 0 0 4px rgba(34, 211, 238, 0.12),
+    0 0 26px rgba(34, 211, 238, 0.15) !important;
+}
+
+/* Se o JS envolver o campo com setas premium, esconde nesse campo */
+.runaskin-nr-single .number-control {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+.runaskin-nr-single .number-control input[type="number"] {
+  padding: 0 10px !important;
+}
+
+.runaskin-nr-single .number-control-buttons {
+  display: none !important;
+}
+
+/* Aproxima do bloco de triunfos */
+.runaskin-nr-single + .normal-triumphs-box {
+  margin-top: 0 !important;
+}
+
+/* Remove qualquer sobra visual de NR antigo */
+#nrBarFill {
+  display: none !important;
+}
+
+@media (max-width: 720px) {
+  .runaskin-nr-single {
+    grid-template-columns: 1fr !important;
+    max-width: 100% !important;
+  }
+
+  .runaskin-nr-single-field {
+    max-width: 160px !important;
+    width: 100% !important;
+    margin: 0 auto !important;
+  }
+}
+
+/* =========================================================
+   CORREÇÃO - REMOVE NR ANTIGO DO COMEÇO DA FICHA
+========================================================= */
+
+/*
+  Esconde qualquer bloco antigo de Runaskin que não seja o bloco único
+  da última página.
+*/
+.root-extra-box--runaskin:not(.runaskin-nr-single) {
+  display: none !important;
+}
+
+/* O bloco novo continua controlado pelo JS */
+.runaskin-nr-single {
+  width: 100% !important;
+  max-width: 720px !important;
+
+  margin: 0 auto 22px !important;
+  padding: 20px !important;
+
+  display: none;
+  grid-template-columns: 1fr 150px !important;
+  align-items: center !important;
+  gap: 18px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.26) !important;
+  border-radius: 24px !important;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.84), rgba(2, 6, 23, 0.94)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    ) !important;
+}
+
+.runaskin-nr-single.active,
+.runaskin-nr-single.show {
+  display: grid !important;
+}
+
+.runaskin-nr-single .number-control-buttons {
+  display: none !important;
+}
+
+@media (max-width: 720px) {
+  .runaskin-nr-single {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* =========================================================
+   RUNASKIN - NR PEQUENO DENTRO DOS TRIUNFOS
+========================================================= */
+
+/* Garante que blocos antigos de NR não apareçam */
+.root-extra-box--runaskin:not(.runaskin-nr-mini) {
+  display: none !important;
+}
+
+/* Mini caixa de NR dentro da área de Triunfos */
+.runaskin-nr-mini {
+  width: fit-content !important;
+  min-width: 150px !important;
+  max-width: 180px !important;
+
+  margin: 0 auto 22px !important;
+  padding: 14px 16px !important;
+
+  display: none;
+  grid-template-columns: 1fr !important;
+  align-items: center !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.32) !important;
+  border-radius: 18px !important;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.96)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    ) !important;
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.22),
+    0 0 22px rgba(34, 211, 238, 0.07) !important;
+}
+
+.runaskin-nr-mini.active,
+.runaskin-nr-mini.show {
+  display: grid !important;
+}
+
+.runaskin-nr-mini-field {
+  margin: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.runaskin-nr-mini-field span {
+  color: #22d3ee !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 1px !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+}
+
+.runaskin-nr-mini-field input[type="number"] {
+  width: 92px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+
+  margin: 0 !important;
+  padding: 0 8px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.42) !important;
+  border-radius: 15px !important;
+
+  background: rgba(2, 6, 23, 0.88) !important;
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+
+  outline: none !important;
+
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 18px rgba(34, 211, 238, 0.08) !important;
+}
+
+.runaskin-nr-mini-field input[type="number"]:focus {
+  border-color: rgba(34, 211, 238, 0.85) !important;
+  box-shadow:
+    0 0 0 4px rgba(34, 211, 238, 0.12),
+    0 0 24px rgba(34, 211, 238, 0.14) !important;
+}
+
+/* Esconde setas premium se o JS envolver o campo */
+.runaskin-nr-mini .number-control {
+  width: 92px !important;
+  max-width: 92px !important;
+}
+
+.runaskin-nr-mini .number-control input[type="number"] {
+  padding: 0 8px !important;
+}
+
+.runaskin-nr-mini .number-control-buttons {
+  display: none !important;
+}
+
+/* Remove qualquer barra antiga de NR */
+#nrBarFill {
+  display: none !important;
+}
+
+/* =========================================================
+   CORREÇÃO DEFINITIVA - ESCONDER NR ANTIGO ATUAL/MÁXIMO
+========================================================= */
+
+/* Esconde todo bloco antigo de Runaskin, exceto o mini dentro de Triunfos */
+.root-extra-box--runaskin:not(.runaskin-nr-mini) {
+  display: none !important;
+}
+
+/* Esconde blocos antigos caso tenham ficado com classe antiga */
+.runaskin-nr-single:not(.runaskin-nr-mini),
+.runaskin-nr-compact,
+.nr-resource-list {
+  display: none !important;
+}
+
+/* Esconde campos antigos que sobraram */
+input[name="nrCurrent"],
+input[name="nrMax"] {
+  display: none !important;
+}
+
+/* Mantém o NR novo pequeno */
+.runaskin-nr-mini {
+  width: fit-content !important;
+  min-width: 150px !important;
+  max-width: 180px !important;
+
+  margin: 0 auto 22px !important;
+  padding: 14px 16px !important;
+
+  display: none;
+  grid-template-columns: 1fr !important;
+  align-items: center !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.32) !important;
+  border-radius: 18px !important;
+
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.96)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 42%
+    ) !important;
+
+  box-shadow:
+    0 12px 30px rgba(0, 0, 0, 0.22),
+    0 0 22px rgba(34, 211, 238, 0.07) !important;
+}
+
+.runaskin-nr-mini.active,
+.runaskin-nr-mini.show {
+  display: grid !important;
+}
+
+.runaskin-nr-mini-field {
+  margin: 0 !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+
+.runaskin-nr-mini-field span {
+  color: #22d3ee !important;
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 1px !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+}
+
+.runaskin-nr-mini-field input[type="number"] {
+  width: 92px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+
+  margin: 0 !important;
+  padding: 0 8px !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.42) !important;
+  border-radius: 15px !important;
+
+  background: rgba(2, 6, 23, 0.88) !important;
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+
+  outline: none !important;
+}
+
+.runaskin-nr-mini .number-control-buttons {
+  display: none !important;
+}
+
+/* =========================================================
+   CORREÇÃO - PV / PE / PR-FV E BARRAS DA FICHA
+========================================================= */
+
+.rune-resource-list {
+  width: 100% !important;
+  max-width: 520px !important;
+
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 14px !important;
+
+  margin: 0 0 26px !important;
+}
+
+.rune-resource-line {
+  width: 100% !important;
+
+  display: grid !important;
+  grid-template-columns: 90px 82px 18px 82px 1fr !important;
+  align-items: center !important;
+  gap: 10px !important;
+}
+
+.rune-resource-line strong {
+  color: #22d3ee !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 26px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: left !important;
+}
+
+.rune-resource-line > span {
+  color: #f8fafc !important;
+
+  font-size: 24px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+}
+
+.rune-resource-line input[type="number"] {
+  width: 82px !important;
+  height: 48px !important;
+  min-height: 48px !important;
+
+  margin: 0 !important;
+  padding: 0 8px !important;
+
+  border: 1px solid rgba(148, 163, 184, 0.28) !important;
+  border-radius: 12px !important;
+
+  background: rgba(2, 6, 23, 0.88) !important;
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 22px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-align: center !important;
+
+  outline: none !important;
+}
+
+.rune-resource-line input[type="number"]:focus {
+  border-color: rgba(34, 211, 238, 0.78) !important;
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.1) !important;
+}
+
+.rune-resource-line .rune-bar {
+  width: 100% !important;
+  min-width: 120px !important;
+  height: 10px !important;
+
+  margin: 0 !important;
+
+  border: 1px solid rgba(148, 163, 184, 0.24) !important;
+  border-radius: 999px !important;
+
+  overflow: hidden !important;
+
+  background: rgba(255, 255, 255, 0.07) !important;
+}
+
+.rune-resource-line .rune-bar div {
+  width: 0%;
+  height: 100% !important;
+
+  border-radius: inherit !important;
+
+  background: linear-gradient(90deg, #0891b2, #22d3ee, #67e8f9) !important;
+  transition: width 0.25s ease !important;
+}
+
+/* Se o JS de setas premium envolver esses inputs, remove as setas aqui */
+.rune-resource-line .number-control {
+  width: 82px !important;
+  max-width: 82px !important;
+}
+
+.rune-resource-line .number-control input[type="number"] {
+  padding: 0 8px !important;
+}
+
+.rune-resource-line .number-control-buttons {
+  display: none !important;
+}
+
+@media (max-width: 720px) {
+  .rune-resource-list {
+    max-width: 100% !important;
+  }
+
+  .rune-resource-line {
+    grid-template-columns: 1fr 1fr auto 1fr !important;
+  }
+
+  .rune-resource-line strong {
+    grid-column: 1 / -1 !important;
+    text-align: center !important;
+  }
+
+  .rune-resource-line .rune-bar {
+    grid-column: 1 / -1 !important;
+  }
+
+  .rune-resource-line input[type="number"],
+  .rune-resource-line .number-control {
+    width: 100% !important;
+    max-width: 110px !important;
+    margin: 0 auto !important;
+  }
+}

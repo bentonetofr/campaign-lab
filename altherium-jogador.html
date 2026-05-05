@@ -78,10 +78,22 @@
                   />
                 </label>
 
-                <label>
-                  <span>Raíz</span>
-                  <input type="text" name="root" placeholder="Ex: Runaskin" />
-                </label>
+                <div class="root-field">
+                  <label for="rootSelect" class="root-field-label">
+                    Raíz
+                  </label>
+
+                  <select
+                    id="rootSelect"
+                    name="root"
+                    class="root-native-select"
+                  >
+                    <option value="">Selecione a raiz</option>
+                    <option value="berserk">Berserk</option>
+                    <option value="runaskin">Runaskin</option>
+                    <option value="pilar">Pilar</option>
+                  </select>
+                </div>
 
                 <label>
                   <span>Genesis</span>
@@ -92,30 +104,50 @@
                   />
                 </label>
               </div>
-
               <div class="rune-resource-list">
                 <div class="rune-resource-line">
                   <strong>PV</strong>
-                  <input type="number" min="0" name="pvCurrent" />
+                  <input
+                    type="number"
+                    min="0"
+                    name="pvCurrent"
+                    placeholder="0"
+                  />
                   <span>/</span>
-                  <input type="number" min="0" name="pvMax" />
-                  <div class="rune-bar"><div id="pvBarFill"></div></div>
+                  <input type="number" min="0" name="pvMax" placeholder="0" />
+                  <div class="rune-bar">
+                    <div id="pvBarFill"></div>
+                  </div>
                 </div>
 
                 <div class="rune-resource-line">
                   <strong>PE</strong>
-                  <input type="number" min="0" name="peCurrent" />
+                  <input
+                    type="number"
+                    min="0"
+                    name="peCurrent"
+                    placeholder="0"
+                  />
                   <span>/</span>
-                  <input type="number" min="0" name="peMax" />
-                  <div class="rune-bar"><div id="peBarFill"></div></div>
+                  <input type="number" min="0" name="peMax" placeholder="0" />
+                  <div class="rune-bar">
+                    <div id="peBarFill"></div>
+                  </div>
                 </div>
 
                 <div class="rune-resource-line">
                   <strong>PR - FV</strong>
-                  <input type="number" min="0" name="prCurrent" />
+                  <input
+                    type="number"
+                    min="0"
+                    name="prCurrent"
+                    placeholder="0"
+                  />
                   <span>/</span>
-                  <input type="number" min="0" name="prMax" />
-                  <div class="rune-bar"><div id="prBarFill"></div></div>
+                  <input type="number" min="0" name="prMax" placeholder="0" />
+                  <div class="rune-bar">
+                    <div id="prBarFill"></div>
+                  </div>
                 </div>
               </div>
 
@@ -349,15 +381,327 @@
 
           <section class="rune-paper-page">
             <div class="rune-frame">
-              <div class="rune-section-title centered">
-                <h3>- Triunfos -</h3>
+              <div
+                class="root-extra-box root-extra-box--pilar"
+                id="pilarTriumphsBox"
+                data-root-extra="pilar"
+                style="display: none"
+              >
+                <div class="rune-section-title centered">
+                  <h3>Triunfos de Pilar</h3>
+                  <p>Esta seção aparece quando a raiz Pilar é selecionada.</p>
+                </div>
+
+                <div class="pilar-card-counter">
+                  <div>
+                    <span>Cartas do Pilar</span>
+                    <strong>Controle de cartas</strong>
+                    <p>
+                      Use estes campos para controlar quantas cartas o Pilar tem
+                      disponíveis agora e qual é o limite máximo.
+                    </p>
+                  </div>
+
+                  <div class="pilar-card-counter-values">
+                    <label>
+                      <span>Atual</span>
+                      <input
+                        type="number"
+                        min="0"
+                        name="pilarCardsCurrent"
+                        placeholder="0"
+                      />
+                    </label>
+
+                    <span class="pilar-card-counter-divider">/</span>
+
+                    <label>
+                      <span>Máximo</span>
+                      <input
+                        type="number"
+                        min="0"
+                        name="pilarCardsMax"
+                        placeholder="0"
+                      />
+                    </label>
+                  </div>
+                </div>
+
+                <div class="pilar-triumphs-section">
+                  <div class="pilar-card-group">
+                    <h4>1 🂡</h4>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Fio do Destino</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Adicione -20 a um teste
+                        relacionado à sorte ou evento imprevisto. Já que o dado
+                        de sorte é 1d100.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Língua de Ferro</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Adicione +1d10 ao teste de
+                        Intimidação ou Persuasão.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Mira do Capitão</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Conceda +1d10 em um teste
+                        de ataque de um aliado no próximo ataque.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Olhar de Lodin</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Você recebe +2 em
+                        Investigação durante a cena.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Punhal na Sombra</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Quando atacar oculto,
+                        adicione +4 de dano.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Rastro dos Deuses</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Adicione +1d10 a um teste
+                        de Investigação.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Toque do Ermitão</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Ao tocar ou inspecionar um
+                        material ou substância desconhecida, você identifica sua
+                        natureza e usos possíveis instantaneamente.
+                      </p>
+                    </details>
+                  </div>
+
+                  <div class="pilar-card-group">
+                    <h4>2 🂡</h4>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Fúria Moldada</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Numa rolagem que
+                        normalmente usa Fúria, você pode substituir Fúria por
+                        outro atributo à sua escolha para esse teste.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Ladrão de Sorte</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Escolha um aliado ou
+                        inimigo que acabou de rolar, transfira o resultado dele
+                        para você.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Sangue Ardente</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Em testes que usam Fúria,
+                        adicione +1d10.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Sopro de Níðhöggr</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Escolha um inimigo. No
+                        próximo teste importante dele, aplique -1d10 ao teste.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Voz de Mjörr</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Por uma cena, você recebe
+                        +4 em testes sociais, como Persuasão, Enganação e
+                        Intimidação, quando fala com presença firme.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Passo Fantasma</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Durante este turno você se
+                        move sem ser notado. Ganha +4 em Furtividade e não
+                        provoca ataques de oportunidade por movimento.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Olhos do Augúrio</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Marque um alvo por até a
+                        cena inteira. Enquanto marcado, você recebe +1d10 na
+                        próxima ação direta.
+                      </p>
+                    </details>
+                  </div>
+
+                  <div class="pilar-card-group">
+                    <h4>3 🂡</h4>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Bênção de Hamingja</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Quando fizer um teste
+                        importante, você pode rerrolar os dados e escolher o
+                        resultado melhor.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Chama Inspiradora</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Escolha um aliado. Ele
+                        adiciona +2 a um atributo para um teste específico.
+                        Aplica-se a um único teste.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Conselho dos Caçadores</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Enquanto você coordena uma
+                        investigação em grupo, todos ganham +4 em testes de
+                        Investigação nessa cena.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Guarda de Skaldir</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Por uma cena, aliados
+                        próximos recebem +4 em Impulso.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Mão Precisa</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Escolha uma rolagem
+                        importante. Todos os dados nessa rolagem têm mínimo 5.
+                        Resultados 1–4 contam como 5.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Ouvido do Julgador</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Ao ouvir alguém falar por
+                        até 1 minuto, você identifica variações que denunciam
+                        mentira. O mestre confirma ou nega.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Retorno do Baralho</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Você recupera 1d20+3
+                        cartas do descarte para a sua mão.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Teia de Urðr</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Uma vez por cena, anule um
+                        evento recente. Substitua um teste anterior de um aliado
+                        ou oponente por uma nova rolagem. O mestre aplica
+                        consequências narrativas.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Sombra Antecipada</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Escolha um inimigo
+                        visível. Você recebe uma visão lúgubre do próximo ato
+                        dele. Ele deve declarar se irá atacar, recuar ou usar
+                        habilidade especial.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Trilha do Presságio</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Até o fim do turno, seu
+                        deslocamento dobra.
+                      </p>
+                    </details>
+                  </div>
+
+                  <div class="pilar-card-group">
+                    <h4>4 🂡</h4>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Ecos do Acontecido</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Ao investigar um local por
+                        atenção ou tempo, você reconstrói eventos recentes: +4
+                        em Investigação e revela até 3 detalhes relevantes
+                        escolhidos pelo mestre.
+                      </p>
+                    </details>
+
+                    <details class="pilar-triumph-card">
+                      <summary>Instinto Ancestral</summary>
+                      <p>
+                        <strong>Ação Bônus</strong> — Antes de tomar uma ação
+                        decisiva, role com vantagem narrativa. Receba +2 no
+                        teste e um breve insight do mestre sobre a
+                        probabilidade.
+                      </p>
+                    </details>
+                  </div>
+                </div>
               </div>
-              <textarea
-                class="rune-triumphs-area"
-                name="triumphs"
-                rows="16"
-                placeholder="Escreva aqui seus triunfos, cartas, efeitos especiais e poderes."
-              ></textarea>
+
+              <div
+                class="normal-triumphs-box"
+                id="normalTriumphsBox"
+                data-hide-when-root="pilar"
+              >
+                <div class="rune-section-title centered">
+                  <h3>- Triunfos -</h3>
+                </div>
+
+                <div
+                  class="root-extra-box root-extra-box--runaskin runaskin-nr-single runaskin-nr-mini"
+                  id="runaskinNrBox"
+                  data-root-extra="runaskin"
+                  style="display: none"
+                >
+                  <label class="runaskin-nr-mini-field">
+                    <span>NR</span>
+                    <input type="number" min="0" name="nr" placeholder="0" />
+                  </label>
+                </div>
+
+                <textarea
+                  class="rune-triumphs-area"
+                  name="triumphs"
+                  rows="16"
+                  placeholder="Escreva aqui seus triunfos, cartas, efeitos especiais e poderes."
+                ></textarea>
+              </div>
 
               <div class="rune-section-title"><h3>Anotações</h3></div>
               <textarea
@@ -375,5 +719,76 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="js/supabase-config.js"></script>
     <script src="js/script.js"></script>
+
+    <script>
+      /* =========================================================
+         BARRAS DE RECURSOS DE ALTHERIUM - PV / PE / PR-FV
+      ========================================================= */
+
+      (function setupAltheriumResourceBarsFallback() {
+        function getNumber(name) {
+          const input = document.querySelector(`[name="${name}"]`);
+          if (!input) return 0;
+
+          const value = Number(String(input.value || "0").replace(",", "."));
+          return Number.isFinite(value) ? value : 0;
+        }
+
+        function updateBar(currentName, maxName, barId) {
+          const bar = document.getElementById(barId);
+          if (!bar) return;
+
+          const current = getNumber(currentName);
+          const max = getNumber(maxName);
+
+          let percent = 0;
+
+          if (max > 0) {
+            percent = Math.max(0, Math.min(100, (current / max) * 100));
+          }
+
+          bar.style.width = `${percent}%`;
+        }
+
+        function updateAllResourceBars() {
+          updateBar("pvCurrent", "pvMax", "pvBarFill");
+          updateBar("peCurrent", "peMax", "peBarFill");
+          updateBar("prCurrent", "prMax", "prBarFill");
+        }
+
+        function bindResourceBars() {
+          const form = document.getElementById("playerSheetForm");
+          if (!form || form.dataset.resourceBarsFallbackReady === "true")
+            return;
+
+          form.dataset.resourceBarsFallbackReady = "true";
+
+          form.addEventListener("input", updateAllResourceBars);
+          form.addEventListener("change", updateAllResourceBars);
+        }
+
+        function startResourceBars() {
+          bindResourceBars();
+          updateAllResourceBars();
+
+          let tries = 0;
+          const interval = setInterval(() => {
+            bindResourceBars();
+            updateAllResourceBars();
+
+            tries += 1;
+            if (tries >= 30) clearInterval(interval);
+          }, 250);
+        }
+
+        if (document.readyState === "loading") {
+          document.addEventListener("DOMContentLoaded", startResourceBars);
+        } else {
+          startResourceBars();
+        }
+
+        window.updateAltheriumResourceBarsFallback = updateAllResourceBars;
+      })();
+    </script>
   </body>
 </html>
