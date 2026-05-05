@@ -105,6 +105,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       getSheet: getOrCreateCampaignSheet,
       updateSheet: updateCampaignSheet,
     });
+    await setupAltheriumBestiary();
     setupAddPlayersToCampaign({
       modalId: "altheriumModal",
       titleId: "altheriumModalTitle",
@@ -2108,6 +2109,7 @@ async function refreshCurrentMasterPanel() {
       getSheet: getOrCreateCampaignSheet,
       updateSheet: updateCampaignSheet,
     });
+    await renderAltheriumBestiary();
   }
 
   if (document.body.classList.contains("dnd-master-page")) {
@@ -2292,3 +2294,586 @@ function dndTextareaBox(label, name, value, rows) {
     </label>
   `;
 }
+
+/* =========================================================
+   BESTIÁRIO AUTOMÁTICO DE ALTHERIUM
+========================================================= */
+
+const ALTHERIUM_DICE_SIDES = [4, 6, 8, 10, 12, 20];
+
+const ALTHERIUM_BOSS_DIFFICULTIES = {
+  fraco: {
+    label: "Boss fraco",
+    minPercent: 0.15,
+    maxPercent: 0.2,
+  },
+  medio: {
+    label: "Boss médio",
+    minPercent: 0.2,
+    maxPercent: 0.3,
+  },
+  forte: {
+    label: "Boss forte",
+    minPercent: 0.3,
+    maxPercent: 0.4,
+  },
+};
+
+async function setupAltheriumBestiary() {
+  const form = getFirstElement([
+    "bossForm",
+    "bestiaryForm",
+    "altheriumBestiaryForm",
+  ]);
+
+  if (form && !form.dataset.bestiaryReady) {
+    form.dataset.bestiaryReady = "true";
+
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      await generateAltheriumBoss();
+    });
+
+    form.addEventListener("input", () => {
+      saveDebounced(renderAltheriumBestiary);
+    });
+
+    form.addEventListener("change", () => {
+      saveDebounced(renderAltheriumBestiary);
+    });
+  }
+
+  const generateButton = document.getElementById("generateBossBtn");
+  if (generateButton && !generateButton.dataset.bestiaryReady) {
+    generateButton.dataset.bestiaryReady = "true";
+    generateButton.addEventListener("click", generateAltheriumBoss);
+  }
+
+  const refreshButton = document.getElementById("refreshBestiaryBtn");
+  if (refreshButton && !refreshButton.dataset.bestiaryReady) {
+    refreshButton.dataset.bestiaryReady = "true";
+    refreshButton.addEventListener("click", renderAltheriumBestiary);
+  }
+
+  await renderAltheriumBestiary();
+}
+
+async function renderAltheriumBestiary() {
+  if (!document.body.classList.contains("altherium-page")) return;
+
+  const party = await getAltheriumPartyCombatData();
+
+  renderAltheriumPartyStats(party);
+  renderAltheriumBestiaryPlayers(party);
+  renderAltheriumBossPreview(party);
+}
+
+async function generateAltheriumBoss() {
+  const party = await getAltheriumPartyCombatData();
+  const bossConfig = getAltheriumBossFormConfig();
+  const boss = calculateAltheriumBoss(party, bossConfig);
+
+  renderAltheriumPartyStats(party);
+  renderAltheriumBestiaryPlayers(party);
+  renderAltheriumBossPreview(party, boss);
+  renderAltheriumBossResult(boss);
+}
+
+async function getAltheriumPartyCombatData() {
+  const campaign = await getCurrentCampaign(true);
+
+  if (!campaign) {
+    return {
+      campaign: null,
+      players: [],
+      validPlayers: [],
+      totalHp: 0,
+      averageHp: 0,
+      totalDamageAverage: 0,
+      averageDamagePerPlayer: 0,
+      highestDamageAverage: 0,
+    };
+  }
+
+  const profiles = await getProfiles();
+  const playerIds = getCampaignPlayerIds(campaign);
+  const players = [];
+
+  for (const playerId of playerIds) {
+    const profile = profiles.find((item) => item.id === playerId);
+    const sheet = await getOrCreateCampaignSheet(campaign.id, playerId, campaign.sistema);
+    const sheetStats = getAltheriumSheetCombatStats(sheet);
+
+    players.push({
+      id: playerId,
+      profileName: profile ? profile.name : playerId,
+      sheet,
+      ...sheetStats,
+    });
+  }
+
+  const validPlayers = players.filter((player) => player.hpMax > 0 || player.damageAverage > 0);
+  const hpPlayers = players.filter((player) => player.hpMax > 0);
+  const damagePlayers = players.filter((player) => player.damageAverage > 0);
+
+  const totalHp = hpPlayers.reduce((sum, player) => sum + player.hpMax, 0);
+  const averageHp = hpPlayers.length ? totalHp / hpPlayers.length : 0;
+  const totalDamageAverage = damagePlayers.reduce((sum, player) => sum + player.damageAverage, 0);
+  const averageDamagePerPlayer = damagePlayers.length ? totalDamageAverage / damagePlayers.length : 0;
+  const highestDamageAverage = damagePlayers.reduce(
+    (highest, player) => Math.max(highest, player.damageAverage),
+    0
+  );
+
+  return {
+    campaign,
+    players,
+    validPlayers,
+    totalHp,
+    averageHp,
+    totalDamageAverage,
+    averageDamagePerPlayer,
+    highestDamageAverage,
+  };
+}
+
+function getAltheriumSheetCombatStats(sheet) {
+  const hpMax = Math.max(
+    toCombatNumber(sheet.pvMax),
+    toCombatNumber(sheet.pvCurrent)
+  );
+
+  const weapons = [1, 2, 3, 4]
+    .map((index) => {
+      const name = sheet[`weapon${index}Name`] || `Arma ${index}`;
+      const damage = sheet[`weapon${index}Damage`] || "";
+      const average = getDamageAverageFromExpression(damage);
+
+      return {
+        name,
+        damage,
+        average,
+      };
+    })
+    .filter((weapon) => weapon.average > 0);
+
+  const bestWeapon = weapons.reduce(
+    (best, weapon) => (!best || weapon.average > best.average ? weapon : best),
+    null
+  );
+
+  return {
+    characterName: sheet.characterName || "Personagem sem nome",
+    ownerName: sheet.ownerName || "Jogador",
+    hpMax,
+    damageAverage: bestWeapon ? bestWeapon.average : 0,
+    damageExpression: bestWeapon ? bestWeapon.damage : "",
+    damageWeaponName: bestWeapon ? bestWeapon.name : "Sem arma cadastrada",
+    weapons,
+  };
+}
+
+function getAltheriumBossFormConfig() {
+  const bossNameInput = getFirstElement([
+    "bossName",
+    "bestiaryBossName",
+    "altheriumBossName",
+  ]);
+
+  const roundsInput = getFirstElement([
+    "bossRounds",
+    "bestiaryRounds",
+    "altheriumBossRounds",
+  ]);
+
+  const difficultyInput = getFirstElement([
+    "bossDifficulty",
+    "bestiaryDifficulty",
+    "altheriumBossDifficulty",
+  ]);
+
+  const bossName = bossNameInput ? bossNameInput.value.trim() : "";
+  const rounds = Math.max(1, Math.round(toCombatNumber(roundsInput ? roundsInput.value : 4) || 4));
+  const difficulty = normalizeBossDifficulty(difficultyInput ? difficultyInput.value : "medio");
+
+  return {
+    bossName: bossName || "Boss de Altherium",
+    rounds,
+    difficulty,
+  };
+}
+
+function calculateAltheriumBoss(party, config) {
+  const difficulty = ALTHERIUM_BOSS_DIFFICULTIES[config.difficulty] || ALTHERIUM_BOSS_DIFFICULTIES.medio;
+  const bossHp = Math.max(1, Math.ceil(party.totalDamageAverage * config.rounds));
+  const minDamage = party.averageHp * difficulty.minPercent;
+  const maxDamage = party.averageHp * difficulty.maxPercent;
+  const recommendedDamage = (minDamage + maxDamage) / 2;
+  const recommendedDice = getClosestDiceByAverage(recommendedDamage);
+  const minDice = getClosestDiceByAverage(minDamage);
+  const maxDice = getClosestDiceByAverage(maxDamage);
+
+  return {
+    name: config.bossName,
+    rounds: config.rounds,
+    difficultyKey: config.difficulty,
+    difficultyLabel: difficulty.label,
+    bossHp,
+    minDamage,
+    maxDamage,
+    recommendedDamage,
+    recommendedDice,
+    minDice,
+    maxDice,
+    party,
+  };
+}
+
+function renderAltheriumPartyStats(party) {
+  const container = getFirstElement([
+    "partyStats",
+    "party-stats",
+    "bestiaryPartyStats",
+    "altheriumPartyStats",
+  ]);
+
+  if (!container) return;
+
+  container.innerHTML = `
+    <div class="stat-card">
+      <span>Jogadores com ficha</span>
+      <strong>${party.players.length}</strong>
+    </div>
+
+    <div class="stat-card">
+      <span>Vida média do grupo</span>
+      <strong>${formatCombatNumber(party.averageHp)}</strong>
+    </div>
+
+    <div class="stat-card">
+      <span>Dano médio total</span>
+      <strong>${formatCombatNumber(party.totalDamageAverage)}</strong>
+    </div>
+
+    <div class="stat-card">
+      <span>Dano médio por jogador</span>
+      <strong>${formatCombatNumber(party.averageDamagePerPlayer)}</strong>
+    </div>
+  `;
+}
+
+function renderAltheriumBestiaryPlayers(party) {
+  const container = getFirstElement([
+    "bestiaryPlayersList",
+    "bestiary-players-list",
+    "playersList",
+    "players-list",
+  ]);
+
+  if (!container) return;
+
+  if (!party.players.length) {
+    container.innerHTML = `
+      <div class="altherium-empty">
+        <h3>Nenhum jogador na campanha</h3>
+        <p>Adicione jogadores e preencha as fichas para calcular bosses automaticamente.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = party.players
+    .map(
+      (player) => `
+        <article class="player-card">
+          <div class="player-card__header">
+            <div>
+              <h3>${escapeHtml(player.characterName)}</h3>
+              <span class="player-card__owner">${escapeHtml(player.profileName)}</span>
+            </div>
+          </div>
+
+          <div class="player-card__stats">
+            <div>
+              <span>PV máximo</span>
+              <strong>${formatCombatNumber(player.hpMax)}</strong>
+            </div>
+
+            <div>
+              <span>Melhor dano</span>
+              <strong>${escapeHtml(player.damageExpression || "---")}</strong>
+            </div>
+
+            <div>
+              <span>Dano médio</span>
+              <strong>${formatCombatNumber(player.damageAverage)}</strong>
+            </div>
+          </div>
+
+          <p class="player-card__notes">
+            Arma usada no cálculo: <strong>${escapeHtml(player.damageWeaponName)}</strong>
+          </p>
+        </article>
+      `
+    )
+    .join("");
+}
+
+function renderAltheriumBossPreview(party, boss = null) {
+  const container = getFirstElement([
+    "bossPreview",
+    "boss-preview",
+    "bestiaryPreview",
+    "altheriumBossPreview",
+  ]);
+
+  if (!container) return;
+
+  const previewBoss = boss || calculateAltheriumBoss(party, getAltheriumBossFormConfig());
+
+  if (!party.players.length || party.totalDamageAverage <= 0 || party.averageHp <= 0) {
+    container.innerHTML = `
+      <div class="preview-card">
+        <span>Prévia automática</span>
+        <h3>Preencha as fichas do grupo</h3>
+        <p>O sistema precisa de PV máximo e dano de arma nas fichas para calcular o boss.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <div class="preview-card">
+      <span>Prévia automática</span>
+      <h3>${escapeHtml(previewBoss.name)}</h3>
+
+      <div class="preview-grid">
+        <div>
+          <small>Vida do boss</small>
+          <strong>${formatCombatNumber(previewBoss.bossHp)}</strong>
+        </div>
+
+        <div>
+          <small>Dano recomendado</small>
+          <strong>${previewBoss.recommendedDice.formula}</strong>
+        </div>
+
+        <div>
+          <small>Dificuldade</small>
+          <strong>${previewBoss.difficultyLabel}</strong>
+        </div>
+
+        <div>
+          <small>Rodadas desejadas</small>
+          <strong>${previewBoss.rounds}</strong>
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function renderAltheriumBossResult(boss) {
+  const container = getFirstElement([
+    "bestiaryResult",
+    "bossResult",
+    "boss-result",
+    "altheriumBossResult",
+  ]);
+
+  if (!container) return;
+
+  const party = boss.party;
+
+  if (!party.players.length || party.totalDamageAverage <= 0 || party.averageHp <= 0) {
+    container.innerHTML = `
+      <div class="altherium-empty">
+        <h3>Não foi possível gerar o boss</h3>
+        <p>Preencha pelo menos o PV máximo e o dano de arma nas fichas dos jogadores.</p>
+      </div>
+    `;
+    return;
+  }
+
+  container.innerHTML = `
+    <article class="boss-result-card">
+      <div class="boss-result-card__header">
+        <div>
+          <span class="boss-result-card__tag">${boss.difficultyLabel}</span>
+          <h2>${escapeHtml(boss.name)}</h2>
+        </div>
+
+        <strong class="boss-result-card__hp">PV ${formatCombatNumber(boss.bossHp)}</strong>
+      </div>
+
+      <div class="boss-result-grid">
+        <div>
+          <span>Rodadas</span>
+          <strong>${boss.rounds}</strong>
+        </div>
+
+        <div>
+          <span>Vida média do grupo</span>
+          <strong>${formatCombatNumber(party.averageHp)}</strong>
+        </div>
+
+        <div>
+          <span>Dano médio total</span>
+          <strong>${formatCombatNumber(party.totalDamageAverage)}</strong>
+        </div>
+
+        <div>
+          <span>Jogadores calculados</span>
+          <strong>${party.validPlayers.length}</strong>
+        </div>
+      </div>
+
+      <div class="boss-damage-box">
+        <h3>Dano do boss</h3>
+        <p>
+          Pela vida média do grupo, este boss deve causar entre
+          <strong>${formatCombatNumber(boss.minDamage)}</strong> e
+          <strong>${formatCombatNumber(boss.maxDamage)}</strong> de dano por ataque.
+        </p>
+      </div>
+
+      <div class="boss-dice-options">
+        <div>
+          <span>Mínimo</span>
+          <strong>${boss.minDice.formula}</strong>
+          <small>Média ${formatCombatNumber(boss.minDice.average)}</small>
+        </div>
+
+        <div class="recommended">
+          <span>Recomendado</span>
+          <strong>${boss.recommendedDice.formula}</strong>
+          <small>Média ${formatCombatNumber(boss.recommendedDice.average)}</small>
+        </div>
+
+        <div>
+          <span>Máximo</span>
+          <strong>${boss.maxDice.formula}</strong>
+          <small>Média ${formatCombatNumber(boss.maxDice.average)}</small>
+        </div>
+      </div>
+
+      <div class="boss-formula-box">
+        <h3>Fórmula usada</h3>
+        <p>
+          Vida do boss = dano médio total do grupo
+          (<strong>${formatCombatNumber(party.totalDamageAverage)}</strong>) × rodadas desejadas
+          (<strong>${boss.rounds}</strong>) =
+          <strong>${formatCombatNumber(boss.bossHp)} PV</strong>.
+        </p>
+      </div>
+    </article>
+  `;
+}
+
+function getDamageAverageFromExpression(expression) {
+  const value = String(expression || "").trim().toLowerCase().replaceAll(",", ".");
+
+  if (!value) return 0;
+
+  if (/^[+-]?\d+(\.\d+)?$/.test(value)) {
+    return Math.max(0, Number(value));
+  }
+
+  const compact = value.replace(/\s+/g, "");
+  const tokenRegex = /([+-]?\d*)d(\d+)|([+-]?\d+(?:\.\d+)?)/g;
+  let total = 0;
+  let foundToken = false;
+  let match;
+
+  while ((match = tokenRegex.exec(compact)) !== null) {
+    foundToken = true;
+
+    if (match[2]) {
+      const rawQuantity = match[1];
+      const quantity = rawQuantity === "" || rawQuantity === "+" ? 1 : rawQuantity === "-" ? -1 : Number(rawQuantity);
+      const sides = Number(match[2]);
+
+      if (Number.isFinite(quantity) && Number.isFinite(sides) && sides > 0) {
+        total += quantity * ((sides + 1) / 2);
+      }
+    } else if (match[3]) {
+      total += Number(match[3]);
+    }
+  }
+
+  if (!foundToken) return 0;
+
+  return Math.max(0, total);
+}
+
+function getClosestDiceByAverage(targetAverage) {
+  const target = Math.max(0, Number(targetAverage) || 0);
+
+  if (target <= 0) {
+    return {
+      formula: "0",
+      average: 0,
+      quantity: 0,
+      sides: 0,
+    };
+  }
+
+  let best = null;
+
+  for (let quantity = 1; quantity <= 12; quantity += 1) {
+    for (const sides of ALTHERIUM_DICE_SIDES) {
+      const average = quantity * ((sides + 1) / 2);
+      const difference = Math.abs(average - target);
+      const complexity = quantity * 0.01;
+      const score = difference + complexity;
+
+      if (!best || score < best.score) {
+        best = {
+          formula: `${quantity}d${sides}`,
+          average,
+          quantity,
+          sides,
+          difference,
+          score,
+        };
+      }
+    }
+  }
+
+  return best;
+}
+
+function normalizeBossDifficulty(value) {
+  const normalized = String(value || "medio")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+
+  if (normalized.includes("frac")) return "fraco";
+  if (normalized.includes("fort")) return "forte";
+  return "medio";
+}
+
+function toCombatNumber(value) {
+  if (value === null || value === undefined || value === "") return 0;
+
+  const parsed = Number(String(value).replaceAll(",", "."));
+  return Number.isFinite(parsed) ? parsed : 0;
+}
+
+function formatCombatNumber(value) {
+  const number = Number(value) || 0;
+
+  if (Number.isInteger(number)) return String(number);
+  return number.toFixed(1).replace(".0", "");
+}
+
+function getFirstElement(ids) {
+  for (const id of ids) {
+    const element = document.getElementById(id);
+    if (element) return element;
+  }
+
+  return null;
+}
+

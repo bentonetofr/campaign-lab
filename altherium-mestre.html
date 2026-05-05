@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Altherium | Painel do Mestre</title>
     <link rel="stylesheet" href="css/style.css" />
-    <link rel="icon" href="img/favicon.png" />
   </head>
 
   <body class="altherium-page">
@@ -52,7 +51,7 @@
         <button class="altherium-tab active" data-tab="players">Players</button>
         <button class="altherium-tab" data-tab="fichas">Personagens</button>
         <button class="altherium-tab" data-tab="iniciativa">Iniciativa</button>
-        <button class="altherium-tab" data-tab="bestiario">Monstros</button>
+        <button class="altherium-tab" data-tab="bestiario">Bestiário</button>
       </section>
 
       <section id="players" class="altherium-section active">
@@ -116,20 +115,84 @@
         <div class="altherium-panel">
           <div class="altherium-panel-header">
             <div>
-              <h2>Monstros</h2>
-              <p>Cadastre criaturas, inimigos e ameaças da campanha.</p>
+              <h2>Bestiário automático</h2>
+              <p>
+                Gere inimigos usando automaticamente o PV e o dano das fichas
+                dos jogadores.
+              </p>
             </div>
-
-            <button class="altherium-btn" data-open-modal="monster">
-              Nova criatura
-            </button>
           </div>
 
-          <div class="altherium-grid" id="monsterGrid">
-            <div class="altherium-empty">
-              <h3>Nenhuma criatura cadastrada</h3>
-              <p>Use o botão acima para criar monstros da campanha.</p>
+          <div class="bestiary-layout">
+            <div class="bestiary-column">
+              <form id="bossForm" class="boss-form">
+                <h2>Gerar inimigo</h2>
+                <p>
+                  O sistema usa o dano médio total do grupo para calcular a vida
+                  do boss e a vida média do grupo para calcular o dano.
+                </p>
+
+                <label>
+                  <span>Nome do inimigo</span>
+                  <input
+                    id="bossName"
+                    type="text"
+                    placeholder="Ex: Draugr Corrompido"
+                  />
+                </label>
+
+                <label>
+                  <span>Rodadas desejadas</span>
+                  <input id="bossRounds" type="number" min="1" value="4" />
+                </label>
+
+                <label>
+                  <span>Dificuldade</span>
+                  <select id="bossDifficulty">
+                    <option value="fraco">Boss fraco</option>
+                    <option value="medio" selected>Boss médio</option>
+                    <option value="forte">Boss forte</option>
+                  </select>
+                </label>
+
+                <div class="form-actions">
+                  <button type="submit" class="altherium-btn">
+                    Gerar inimigo
+                  </button>
+
+                  <button
+                    type="button"
+                    class="altherium-btn"
+                    id="refreshBestiaryBtn"
+                  >
+                    Atualizar dados
+                  </button>
+                </div>
+              </form>
+
+              <div class="party-card">
+                <h2>Dados do grupo</h2>
+                <div id="partyStats" class="party-stats"></div>
+              </div>
             </div>
+
+            <div class="bestiary-main-column">
+              <div id="bossPreview" class="boss-preview"></div>
+
+              <div id="bestiaryResult" class="bestiary-result">
+                <div class="altherium-empty">
+                  <h3>Nenhum inimigo gerado</h3>
+                  <p>
+                    Preencha as fichas dos jogadores e clique em Gerar inimigo.
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="party-card" style="margin-top: 24px">
+            <h2>Personagens usados no cálculo</h2>
+            <div id="bestiaryPlayersList" class="players-list"></div>
           </div>
         </div>
       </section>
@@ -151,7 +214,6 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <script src="js/supabase-config.js"></script>
     <script src="js/script.js"></script>
   </body>
 </html>

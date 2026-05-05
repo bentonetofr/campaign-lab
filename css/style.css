@@ -4781,8 +4781,8 @@ textarea:focus {
 }
 
 .header-center .logo img {
-  height: 76px !important;
-  max-height: 76px !important;
+  height: 200px !important;
+  max-height: 200px !important;
   width: auto !important;
   max-width: min(760px, 82vw) !important;
 
@@ -4835,5 +4835,671 @@ textarea:focus {
 
   .header-center .logo img:hover {
     transform: scale(1.03) !important;
+  }
+}
+
+/* =========================================================
+   BESTIÁRIO AUTOMÁTICO DE ALTHERIUM
+   Adicionado para funcionar com o script.js atualizado
+========================================================= */
+
+.bestiary-layout,
+.altherium-bestiary-layout {
+  display: grid;
+  grid-template-columns: 0.9fr 1.1fr;
+  gap: 26px;
+  align-items: start;
+}
+
+.bestiary-column,
+.bestiary-side,
+.bestiary-main-column {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+}
+
+.bestiary-card,
+.player-form,
+.boss-form,
+.party-card,
+.boss-preview-card,
+.import-export-box {
+  padding: 28px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 28px;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.94)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.1),
+      transparent 42%
+    );
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.bestiary-card h2,
+.player-form h2,
+.boss-form h2,
+.party-card h2,
+.import-export-box h3 {
+  margin-bottom: 10px;
+  color: var(--text);
+  font-size: clamp(24px, 3vw, 34px);
+  line-height: 1.05;
+}
+
+.bestiary-card p,
+.player-form p,
+.boss-form p,
+.party-card p,
+.import-export-box p {
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.form-group,
+.form-group-full {
+  display: flex;
+  flex-direction: column;
+}
+
+.form-group.full,
+.form-group-full {
+  grid-column: 1 / -1;
+}
+
+.form-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.form-actions .btn,
+.form-actions button,
+.player-form .btn,
+.boss-form .btn {
+  border: none;
+}
+
+.btn-remove-player,
+.clear-players,
+.add-example-players,
+.export-players,
+[data-clear-players],
+[data-add-example-players],
+[data-export-players] {
+  min-height: 44px;
+  padding: 0 18px;
+  border-radius: 999px;
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.add-example-players,
+.export-players,
+[data-add-example-players],
+[data-export-players] {
+  border: 1px solid rgba(34, 211, 238, 0.28);
+  background: rgba(34, 211, 238, 0.08);
+  color: var(--cyan);
+}
+
+.add-example-players:hover,
+.export-players:hover,
+[data-add-example-players]:hover,
+[data-export-players]:hover {
+  transform: translateY(-2px);
+  border-color: rgba(34, 211, 238, 0.58);
+  background: rgba(34, 211, 238, 0.14);
+  box-shadow: 0 16px 36px rgba(34, 211, 238, 0.12);
+}
+
+.clear-players,
+.btn-remove-player,
+[data-clear-players] {
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+}
+
+.clear-players:hover,
+.btn-remove-player:hover,
+[data-clear-players]:hover {
+  transform: translateY(-2px);
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.58);
+}
+
+.btn-remove-player {
+  min-height: 36px;
+  padding: 0 14px;
+  font-size: 12px;
+}
+
+/* Estatísticas do grupo usadas pelo cálculo automático */
+
+.party-stats,
+#partyStats,
+#party-stats,
+[data-party-stats] {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.party-stats .stat-card,
+#partyStats .stat-card,
+#party-stats .stat-card,
+[data-party-stats] .stat-card {
+  min-height: 118px;
+  padding: 20px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 22px;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.9)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.1),
+      transparent 42%
+    );
+}
+
+.party-stats .stat-card span,
+#partyStats .stat-card span,
+#party-stats .stat-card span,
+[data-party-stats] .stat-card span {
+  display: block;
+  margin-bottom: 10px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.party-stats .stat-card strong,
+#partyStats .stat-card strong,
+#party-stats .stat-card strong,
+[data-party-stats] .stat-card strong {
+  color: var(--text);
+  font-size: clamp(28px, 4vw, 42px);
+  line-height: 1;
+}
+
+/* Lista de personagens lidos pelo bestiário */
+
+.players-list,
+#playersList,
+#players-list,
+[data-players-list] {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.player-card {
+  padding: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.92)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.08),
+      transparent 42%
+    );
+  box-shadow: 0 18px 54px rgba(0, 0, 0, 0.24);
+  transition: 0.25s ease;
+}
+
+.player-card:hover {
+  transform: translateY(-4px);
+  border-color: rgba(34, 211, 238, 0.42);
+  box-shadow:
+    0 22px 64px rgba(0, 0, 0, 0.3),
+    0 0 42px rgba(34, 211, 238, 0.08);
+}
+
+.player-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 18px;
+}
+
+.player-card__header h3 {
+  color: var(--text);
+  font-size: 26px;
+  line-height: 1.05;
+}
+
+.player-card__owner {
+  display: inline-flex;
+  margin-top: 7px;
+  color: var(--cyan);
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.player-card__stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.player-card__stats div {
+  padding: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.14);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.player-card__stats span {
+  display: block;
+  margin-bottom: 6px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.player-card__stats strong {
+  color: var(--text);
+  font-size: 18px;
+}
+
+.player-card__notes {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(148, 163, 184, 0.14);
+  color: var(--text-soft);
+  line-height: 1.55;
+}
+
+.empty-state,
+.altherium-empty {
+  padding: 26px;
+  border: 1px dashed rgba(34, 211, 238, 0.32);
+  border-radius: 24px;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.62), rgba(2, 6, 23, 0.72)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.08),
+      transparent 42%
+    );
+  color: var(--text-soft);
+}
+
+.empty-state h3,
+.altherium-empty h3 {
+  margin-bottom: 8px;
+  color: var(--text);
+}
+
+.empty-state p,
+.altherium-empty p {
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+/* Preview automático do boss */
+
+.boss-preview,
+#bossPreview,
+#boss-preview,
+[data-boss-preview] {
+  width: 100%;
+}
+
+.preview-card {
+  padding: 24px;
+  border: 1px solid rgba(34, 211, 238, 0.34);
+  border-radius: 26px;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.94), rgba(2, 6, 23, 0.94)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.16),
+      transparent 42%
+    );
+  box-shadow:
+    0 24px 70px rgba(0, 0, 0, 0.3),
+    0 0 44px rgba(34, 211, 238, 0.1);
+}
+
+.preview-card > span {
+  display: inline-flex;
+  margin-bottom: 10px;
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.4px;
+  text-transform: uppercase;
+}
+
+.preview-card h3 {
+  margin-bottom: 18px;
+  color: var(--text);
+  font-size: 30px;
+  line-height: 1.05;
+}
+
+.preview-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.preview-grid div {
+  padding: 15px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 16px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.preview-grid small {
+  display: block;
+  margin-bottom: 7px;
+  color: var(--muted);
+  font-weight: 800;
+}
+
+.preview-grid strong {
+  color: var(--text);
+  font-size: 20px;
+}
+
+/* Resultado gerado do boss */
+
+.bestiary-result,
+.boss-result,
+#bestiaryResult,
+#bossResult,
+#boss-result,
+[data-bestiary-result] {
+  width: 100%;
+}
+
+.boss-result-card {
+  padding: 30px;
+  border: 1px solid rgba(34, 211, 238, 0.36);
+  border-radius: 32px;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.96)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.16),
+      transparent 42%
+    ),
+    radial-gradient(
+      circle at bottom left,
+      rgba(14, 165, 233, 0.08),
+      transparent 36%
+    );
+  box-shadow:
+    0 30px 100px rgba(0, 0, 0, 0.38),
+    0 0 60px rgba(34, 211, 238, 0.09);
+}
+
+.boss-result-card__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 22px;
+  margin-bottom: 24px;
+  padding-bottom: 22px;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.14);
+}
+
+.boss-result-card__tag {
+  display: inline-flex;
+  margin-bottom: 12px;
+  padding: 8px 12px;
+  border: 1px solid rgba(34, 211, 238, 0.32);
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.1);
+  color: var(--cyan);
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1.3px;
+  text-transform: uppercase;
+}
+
+.boss-result-card h2 {
+  color: var(--text);
+  font-size: clamp(34px, 5vw, 60px);
+  line-height: 0.98;
+  letter-spacing: -1px;
+}
+
+.boss-result-card__hp {
+  flex-shrink: 0;
+  padding: 14px 18px;
+  border: 1px solid rgba(34, 197, 94, 0.34);
+  border-radius: 18px;
+  background: rgba(34, 197, 94, 0.12);
+  color: #86efac;
+  font-size: 24px;
+  font-weight: 900;
+  white-space: nowrap;
+}
+
+.boss-result-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 12px;
+  margin-bottom: 18px;
+}
+
+.boss-result-grid div {
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 18px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.boss-result-grid span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.boss-result-grid strong {
+  color: var(--text);
+  font-size: 20px;
+}
+
+.boss-damage-box,
+.boss-formula-box {
+  margin-top: 18px;
+  padding: 22px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 24px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.boss-damage-box h3,
+.boss-formula-box h3 {
+  margin-bottom: 10px;
+  color: var(--text);
+  font-size: 24px;
+}
+
+.boss-damage-box p,
+.boss-formula-box p {
+  color: var(--text-soft);
+  line-height: 1.6;
+}
+
+.boss-damage-box strong,
+.boss-formula-box strong {
+  color: var(--cyan);
+}
+
+.boss-dice-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 14px;
+  margin-top: 18px;
+}
+
+.boss-dice-options div {
+  padding: 18px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 20px;
+  background: linear-gradient(
+    145deg,
+    rgba(15, 23, 42, 0.78),
+    rgba(2, 6, 23, 0.78)
+  );
+}
+
+.boss-dice-options div.recommended {
+  border-color: rgba(34, 211, 238, 0.42);
+  background: linear-gradient(
+    145deg,
+    rgba(34, 211, 238, 0.15),
+    rgba(2, 6, 23, 0.86)
+  );
+  box-shadow: 0 0 38px rgba(34, 211, 238, 0.12);
+}
+
+.boss-dice-options span {
+  display: block;
+  margin-bottom: 8px;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 900;
+  text-transform: uppercase;
+}
+
+.boss-dice-options strong {
+  display: block;
+  color: var(--text);
+  font-size: 34px;
+  line-height: 1;
+}
+
+.boss-dice-options small {
+  display: block;
+  margin-top: 8px;
+  color: var(--cyan);
+  font-weight: 900;
+}
+
+/* Importar e exportar fichas/personagens */
+
+#importPlayers,
+#import-players,
+[data-import-players] {
+  height: auto;
+  cursor: pointer;
+  padding: 16px;
+  border-style: dashed;
+}
+
+/* Abas genéricas caso o bestiário use data-tab */
+
+.tabs,
+.bestiary-tabs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 22px;
+}
+
+[data-tab-button] {
+  min-height: 42px;
+  padding: 0 16px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--text-soft);
+  font-weight: 900;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+[data-tab-button]:hover,
+[data-tab-button].active {
+  border-color: rgba(34, 211, 238, 0.44);
+  background: rgba(34, 211, 238, 0.12);
+  color: var(--cyan);
+}
+
+[data-tab-content] {
+  display: none;
+}
+
+[data-tab-content].active {
+  display: block;
+}
+
+/* Responsivo do bestiário */
+
+@media (max-width: 1100px) {
+  .bestiary-layout,
+  .altherium-bestiary-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .boss-result-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 760px) {
+  .bestiary-card,
+  .player-form,
+  .boss-form,
+  .party-card,
+  .boss-preview-card,
+  .import-export-box,
+  .boss-result-card {
+    padding: 20px;
+    border-radius: 22px;
+  }
+
+  .party-stats,
+  #partyStats,
+  #party-stats,
+  [data-party-stats],
+  .player-card__stats,
+  .preview-grid,
+  .boss-result-grid,
+  .boss-dice-options {
+    grid-template-columns: 1fr;
+  }
+
+  .player-card__header,
+  .boss-result-card__header {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .boss-result-card__hp {
+    width: 100%;
+    text-align: center;
+  }
+
+  .form-actions {
+    flex-direction: column;
+  }
+
+  .form-actions .btn,
+  .form-actions button,
+  .add-example-players,
+  .export-players,
+  .clear-players,
+  [data-clear-players],
+  [data-add-example-players],
+  [data-export-players] {
+    width: 100%;
   }
 }
