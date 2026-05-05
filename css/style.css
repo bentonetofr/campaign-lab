@@ -2,44 +2,30 @@
 @import url("https://fonts.googleapis.com/css2?family=Quantico:wght@400;700&family=Inter:wght@300;400;500;600;700;800;900&display=swap");
 @import url("https://fonts.googleapis.com/css2?family=Aboreto&display=swap");
 
-/* =========================================================
-   VARIÁVEIS
-========================================================= */
-
 :root {
   --bg: #030712;
   --bg-soft: #07111f;
   --card: rgba(15, 23, 42, 0.72);
   --card-solid: #0f172a;
-
   --cyan: #00eaff;
   --cyan-soft: rgba(34, 211, 238, 0.18);
   --violet: #00eaff;
   --violet-soft: rgba(139, 92, 246, 0.18);
   --silver: #e5e7eb;
-
   --text: #f8fafc;
   --text-soft: #cbd5e1;
   --muted: #94a3b8;
-
   --border: rgba(148, 163, 184, 0.18);
   --glass: rgba(255, 255, 255, 0.055);
 }
-
-/* =========================================================
-   RESET / BASE
-========================================================= */
-
 * {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
-
 html {
   scroll-behavior: smooth;
 }
-
 body,
 button,
 input,
@@ -52,14 +38,12 @@ label,
 strong {
   font-family: "Inter", sans-serif;
 }
-
 h1,
 h2,
 h3,
 .logo {
   font-family: "Quantico", sans-serif;
 }
-
 body {
   min-height: 100vh;
   background:
@@ -72,23 +56,19 @@ body {
     linear-gradient(180deg, #020617, #030712 40%, #020617);
   color: var(--text);
 }
-
 a {
   color: inherit;
   text-decoration: none;
 }
-
 button,
 input,
 select,
 textarea {
   font: inherit;
 }
-
 button {
   cursor: pointer;
 }
-
 .background-glow {
   position: fixed;
   inset: 0;
@@ -99,58 +79,43 @@ button {
   background-size: 56px 56px;
   mask-image: linear-gradient(to bottom, black, transparent 75%);
 }
-
-/* =========================================================
-   HEADER PADRÃO
-========================================================= */
-
 .header {
   width: 100%;
   position: fixed;
   top: 0;
   z-index: 100;
-
   backdrop-filter: blur(18px);
   background: rgba(2, 6, 23, 0.6);
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
 }
-
 .header-container {
   max-width: 1400px;
   margin: 0 auto;
   padding: 10px 5%;
-
   display: flex;
   align-items: center;
   justify-content: space-between;
 }
-
 .logo {
   display: flex;
   align-items: center;
 }
-
 .logo img {
   height: 110px;
   width: auto;
   object-fit: contain;
-
   filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.5))
     drop-shadow(0 0 25px rgba(34, 211, 238, 0.3));
-
   transition: 0.3s ease;
 }
-
 .logo img:hover {
   transform: scale(1.05);
 }
-
 .nav {
   display: flex;
   align-items: center;
   gap: 36px;
 }
-
 .nav a {
   position: relative;
   font-size: 15px;
@@ -158,252 +123,187 @@ button {
   color: var(--text-soft);
   transition: 0.25s;
 }
-
 .nav a::after {
   content: "";
   position: absolute;
   left: 0;
   bottom: -6px;
-
   width: 0%;
   height: 2px;
-
   background: linear-gradient(90deg, var(--cyan), var(--violet));
   transition: 0.3s;
 }
-
 .nav a:hover {
   color: var(--text);
 }
-
 .nav a:hover::after {
   width: 100%;
 }
-
 .header-cta {
   padding: 10px 18px;
   border: none;
   border-radius: 999px;
-
   font-size: 14px;
   font-weight: 700;
-
   background: linear-gradient(135deg, var(--cyan), var(--violet));
   color: #020617;
-
   transition: 0.3s;
   box-shadow:
     0 0 20px rgba(34, 211, 238, 0.25),
     0 0 40px rgba(139, 92, 246, 0.2);
 }
-
 .header-cta:hover {
   transform: translateY(-2px);
   box-shadow:
     0 0 30px rgba(34, 211, 238, 0.45),
     0 0 60px rgba(139, 92, 246, 0.3);
 }
-
-/* =========================================================
-   HEADER CENTRALIZADO
-========================================================= */
-
 .header-center {
   width: 100%;
   height: 92px;
-
   position: sticky;
   top: 0;
   z-index: 999;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   overflow: hidden;
-
   background: rgba(2, 6, 23, 0.6);
   backdrop-filter: blur(12px);
   border-bottom: 1px solid var(--border);
 }
-
 .header-container-center {
   width: 100%;
   max-width: 1400px;
   height: 100%;
   padding: 0 5%;
-
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 .header-center .logo {
   height: 100%;
-
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 .header-center .logo img {
   height: 76px;
   max-height: 76px;
   width: auto;
   max-width: min(760px, 82vw);
-
   transform: none;
   transform-origin: center center;
-
   object-fit: contain;
   display: block;
-
   filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.4))
     drop-shadow(0 0 25px rgba(34, 211, 238, 0.2));
-
   transition: 0.3s ease;
 }
-
 .header-center .logo img:hover {
   transform: scale(1.03);
   filter: drop-shadow(0 0 15px rgba(34, 211, 238, 0.6))
     drop-shadow(0 0 35px rgba(34, 211, 238, 0.3));
 }
-
-/* =========================================================
-   COMPONENTES GERAIS
-========================================================= */
-
 .logo-mark {
   width: 44px;
   height: 44px;
   border-radius: 14px;
-
   display: grid;
   place-items: center;
-
   background: linear-gradient(135deg, var(--cyan), var(--violet));
   color: #020617;
   font-size: 15px;
   font-weight: 900;
   box-shadow: 0 0 34px rgba(34, 211, 238, 0.28);
 }
-
 .nav-button {
   padding: 12px 18px;
   border: 1px solid var(--border);
   border-radius: 999px;
   background: var(--glass);
 }
-
 .tag {
   width: fit-content;
   padding: 9px 14px;
   margin-bottom: 24px;
-
   border: 1px solid rgba(34, 211, 238, 0.22);
   border-radius: 999px;
   background: rgba(34, 211, 238, 0.08);
-
   color: var(--cyan);
   text-transform: uppercase;
   letter-spacing: 2px;
   font-size: 12px;
   font-weight: 900;
 }
-
 h1 {
   font-size: clamp(58px, 7vw, 108px);
   line-height: 0.92;
   letter-spacing: -2px;
   margin-bottom: 30px;
 }
-
 .btn {
   padding: 18px 26px;
   border-radius: 18px;
   font-weight: 900;
   transition: 0.25s;
 }
-
 .btn:hover {
   transform: translateY(-4px);
 }
-
 .btn-primary {
   background: linear-gradient(135deg, var(--cyan), var(--violet));
   color: #020617;
   box-shadow: 0 0 44px rgba(34, 211, 238, 0.22);
 }
-
 .btn-secondary {
   border: 1px solid var(--border);
   background: var(--glass);
   color: var(--text);
 }
-
-/* =========================================================
-   HERO HOME / LOGIN
-========================================================= */
-
 .hero {
   min-height: 100vh;
   padding: 170px 7% 90px;
-
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   align-items: center;
   gap: 60px;
 }
-
 .hero-content {
   max-width: 920px;
 }
-
 .hero-text {
   max-width: 760px;
   color: var(--text-soft);
   font-size: 23px;
   line-height: 1.65;
 }
-
 .hero-actions {
   margin-top: 42px;
   display: flex;
   gap: 16px;
   flex-wrap: wrap;
 }
-
 .access-hero {
   min-height: 100vh;
 }
-
-/* =========================================================
-   APP PREVIEW / JANELA PREMIUM
-========================================================= */
-
 .app-preview,
 .access-window {
   position: relative;
   border: 1px solid var(--border);
   border-radius: 34px;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.88)),
     radial-gradient(circle at top right, var(--cyan-soft), transparent 42%);
-
   box-shadow:
     0 40px 120px rgba(0, 0, 0, 0.45),
     0 0 80px rgba(34, 211, 238, 0.12);
-
   backdrop-filter: blur(24px);
   animation: floatPanel 5s ease-in-out infinite;
 }
-
 .app-preview {
   padding: 28px;
 }
-
 .access-window {
   padding: 34px;
 }
@@ -418,64 +318,52 @@ h1 {
     transform: translateY(-12px);
   }
 }
-
 .app-topbar {
   display: flex;
   gap: 8px;
   margin-bottom: 28px;
 }
-
 .app-topbar span {
   width: 12px;
   height: 12px;
   border-radius: 50%;
   background: var(--muted);
 }
-
 .app-topbar span:nth-child(1) {
   background: #fb7185;
 }
-
 .app-topbar span:nth-child(2) {
   background: #facc15;
 }
-
 .app-topbar span:nth-child(3) {
   background: #34d399;
 }
-
 .app-header,
 .access-window-header {
   display: flex;
   justify-content: space-between;
   gap: 20px;
 }
-
 .app-header {
   margin-bottom: 26px;
 }
-
 .access-window-header {
   align-items: flex-start;
   margin-bottom: 28px;
 }
-
 .app-header p,
 .access-window-header p {
   color: var(--muted);
   margin-bottom: 8px;
 }
-
 .app-header h2 {
   font-size: 30px;
 }
-
 .access-window-header h2 {
   font-size: clamp(42px, 5vw, 70px);
   line-height: 0.95;
   margin: 0;
 }
-
 .app-header strong,
 .access-window-header strong {
   height: fit-content;
@@ -486,122 +374,93 @@ h1 {
   font-size: 13px;
   font-weight: 900;
 }
-
-/* =========================================================
-   STATS / TIMELINE
-========================================================= */
-
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 14px;
   margin-bottom: 26px;
 }
-
 .stat-card {
   padding: 22px;
   border-radius: 22px;
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.045);
 }
-
 .stat-card span {
   display: block;
   color: var(--muted);
   margin-bottom: 8px;
 }
-
 .stat-card strong {
   color: var(--text);
   font-size: 34px;
 }
-
 .timeline {
   display: grid;
   gap: 14px;
 }
-
 .timeline-item {
   display: flex;
   align-items: center;
   gap: 12px;
-
   padding: 14px;
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.035);
 }
-
 .timeline-item span {
   width: 10px;
   height: 10px;
   border-radius: 50%;
   background: var(--muted);
 }
-
 .timeline-item.active span {
   background: var(--cyan);
   box-shadow: 0 0 16px var(--cyan);
 }
-
 .timeline-item p {
   color: var(--text-soft);
 }
-
 .access-timeline {
   margin-top: 28px;
 }
-
-/* =========================================================
-   FORMULÁRIOS
-========================================================= */
-
 form,
 .access-form {
   display: flex;
   flex-direction: column;
 }
-
 label {
   color: var(--text-soft);
   font-weight: 800;
   margin-bottom: 8px;
 }
-
 input,
 select,
 textarea {
   width: 100%;
   padding: 18px;
   margin-bottom: 18px;
-
   border: 1px solid var(--border);
   border-radius: 16px;
-
   background: rgba(2, 6, 23, 0.72);
   color: var(--text);
   outline: none;
 }
-
 input::placeholder,
 textarea::placeholder {
   color: #64748b;
 }
-
 input:focus,
 select:focus,
 textarea:focus {
   border-color: var(--cyan);
   box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.12);
 }
-
 .access-window .access-form {
   margin-top: 8px;
 }
-
 .access-window .access-form input {
   background: rgba(15, 23, 42, 0.72);
 }
-
 .submit-btn,
 .altherium-submit {
   border: none;
@@ -611,112 +470,88 @@ textarea:focus {
   cursor: pointer;
   transition: 0.25s;
 }
-
 .submit-btn {
   padding: 19px;
   margin-top: 8px;
   border-radius: 18px;
 }
-
 .submit-btn:hover {
   transform: translateY(-4px);
 }
-
 .altherium-submit {
   width: 100%;
   padding: 14px;
   border-radius: 12px;
 }
-
-/* =========================================================
-   SEÇÕES HOME ANTIGAS / REUTILIZADAS
-========================================================= */
-
 .systems-section,
 .features-section,
 .login-section {
   padding: 110px 7%;
 }
-
 .section-title {
   max-width: 820px;
   margin-bottom: 44px;
 }
-
 .section-title h2,
 .login-card h2 {
   font-size: clamp(42px, 5vw, 74px);
   line-height: 1;
   margin-bottom: 18px;
 }
-
 .section-title p {
   color: var(--text-soft);
   font-size: 21px;
   line-height: 1.6;
 }
-
 .systems-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 26px;
 }
-
 .system-card {
   min-height: 360px;
   padding: 42px;
   border: 1px solid var(--border);
   border-radius: 34px;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.8), rgba(2, 6, 23, 0.88)),
     radial-gradient(circle at top left, var(--violet-soft), transparent 45%);
-
   color: var(--text);
   text-align: left;
   cursor: pointer;
   transition: 0.3s;
 }
-
 .system-card:hover,
 .system-card.active {
   transform: translateY(-10px);
   border-color: rgba(34, 211, 238, 0.55);
   box-shadow: 0 32px 90px rgba(34, 211, 238, 0.12);
 }
-
 .system-icon {
   width: 72px;
   height: 72px;
   margin-bottom: 28px;
-
   display: grid;
   place-items: center;
-
   border-radius: 24px;
   background: linear-gradient(135deg, var(--cyan-soft), var(--violet-soft));
   color: var(--cyan);
-
   font-size: 38px;
 }
-
 .system-card h3 {
   font-size: 42px;
   margin-bottom: 16px;
 }
-
 .system-card p {
   color: var(--text-soft);
   font-size: 20px;
   line-height: 1.65;
 }
-
 .features-section {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 22px;
 }
-
 .feature-card {
   padding: 32px;
   border: 1px solid var(--border);
@@ -724,43 +559,35 @@ textarea:focus {
   background: rgba(15, 23, 42, 0.56);
   backdrop-filter: blur(18px);
 }
-
 .feature-card span {
   color: var(--cyan);
   font-weight: 900;
 }
-
 .feature-card h3 {
   font-size: 28px;
   margin: 18px 0 12px;
 }
-
 .feature-card p {
   color: var(--text-soft);
   line-height: 1.6;
 }
-
 .login-section {
   display: grid;
   grid-template-columns: 1.05fr 0.95fr;
   gap: 28px;
   align-items: start;
 }
-
 .login-card,
 .access-preview,
 .access-card {
   border: 1px solid var(--border);
   border-radius: 34px;
   padding: 42px;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.92)),
     radial-gradient(circle at top right, var(--cyan-soft), transparent 42%);
-
   backdrop-filter: blur(22px);
 }
-
 .selected-box {
   padding: 18px;
   border-radius: 18px;
@@ -769,18 +596,15 @@ textarea:focus {
   color: var(--text-soft);
   margin-bottom: 20px;
 }
-
 .selected-box strong {
   color: var(--cyan);
 }
-
 .profile-options {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
   margin-bottom: 24px;
 }
-
 .profile-btn {
   padding: 17px;
   border: 1px solid var(--border);
@@ -791,347 +615,263 @@ textarea:focus {
   cursor: pointer;
   transition: 0.25s;
 }
-
 .profile-btn:hover,
 .profile-btn.active {
   background: linear-gradient(135deg, var(--cyan), var(--violet));
   color: #020617;
 }
-
 .access-preview h3 {
   font-size: 38px;
   margin-bottom: 28px;
 }
-
 .preview-line {
   display: flex;
   justify-content: space-between;
   gap: 20px;
-
   padding: 20px 0;
   border-bottom: 1px solid var(--border);
 }
-
 .preview-line span {
   color: var(--muted);
 }
-
 .preview-line strong {
   color: var(--cyan);
   text-align: right;
 }
-
 .preview-badge {
   width: fit-content;
   margin-top: 28px;
   padding: 12px 16px;
-
   border-radius: 999px;
   background: rgba(34, 197, 94, 0.12);
   color: #86efac;
-
   font-weight: 900;
 }
-
-/* =========================================================
-   PAINÉIS RPG
-========================================================= */
-
 .altherium-main {
   padding: 160px 7% 80px;
 }
-
 .altherium-hero {
   display: grid;
   grid-template-columns: 1.2fr 0.8fr;
   gap: 40px;
   margin-bottom: 60px;
 }
-
 .altherium-hero h1 {
   font-size: 64px;
   margin-bottom: 16px;
 }
-
 .altherium-hero p {
   color: var(--text-soft);
   font-size: 18px;
 }
-
 .altherium-dashboard {
   display: grid;
   gap: 16px;
 }
-
 .altherium-status-card {
   padding: 22px;
   border-radius: 20px;
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.04);
 }
-
 .altherium-status-card span {
   color: var(--muted);
   display: block;
   margin-bottom: 8px;
 }
-
 .altherium-status-card strong {
   font-size: 32px;
 }
-
 .altherium-tabs {
   display: flex;
   gap: 12px;
   margin-bottom: 40px;
 }
-
 .altherium-tab {
   padding: 12px 20px;
   border-radius: 999px;
   border: 1px solid var(--border);
-
   background: rgba(255, 255, 255, 0.04);
   color: var(--text-soft);
-
   cursor: pointer;
   transition: 0.3s;
 }
-
 .altherium-tab.active,
 .altherium-tab:hover {
   background: linear-gradient(135deg, var(--cyan), var(--violet));
   color: #020617;
 }
-
 .altherium-section {
   display: none;
 }
-
 .altherium-section.active {
   display: block;
 }
-
 .altherium-panel {
   border: 1px solid var(--border);
   border-radius: 30px;
   padding: 32px;
-
   background: linear-gradient(
     145deg,
     rgba(15, 23, 42, 0.8),
     rgba(2, 6, 23, 0.9)
   );
 }
-
 .altherium-panel-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 28px;
 }
-
 .altherium-panel-header h2 {
   font-size: 28px;
 }
-
 .altherium-panel-header p {
   color: var(--muted);
   font-size: 14px;
 }
-
 .altherium-btn {
   padding: 10px 18px;
   border-radius: 999px;
   border: none;
-
   background: linear-gradient(135deg, var(--cyan), var(--violet));
   color: #020617;
-
   font-weight: 700;
   cursor: pointer;
 }
-
 .altherium-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
   gap: 18px;
 }
-
 .altherium-card {
   padding: 20px;
   border-radius: 20px;
   border: 1px solid var(--border);
   background: rgba(255, 255, 255, 0.04);
 }
-
 .altherium-card h3 {
   margin-bottom: 6px;
 }
-
 .altherium-card p {
   color: var(--muted);
   font-size: 14px;
   margin-bottom: 14px;
 }
-
 .altherium-actions {
   display: flex;
   gap: 10px;
 }
-
 .altherium-actions button {
   padding: 6px 10px;
   border-radius: 8px;
   border: none;
-
   background: #ef4444;
   color: white;
   font-size: 12px;
   cursor: pointer;
 }
-
-/* =========================================================
-   MODAL
-========================================================= */
-
 .altherium-modal {
   position: fixed;
   inset: 0;
   z-index: 1000;
-
   display: none;
   align-items: center;
   justify-content: center;
-
   background: rgba(0, 0, 0, 0.6);
 }
-
 .altherium-modal.active {
   display: flex;
 }
-
 .altherium-modal-box {
   position: relative;
   width: 100%;
   max-width: 400px;
-
   padding: 28px;
   border-radius: 20px;
-
   background: var(--card-solid);
   border: 1px solid var(--border);
 }
-
 .altherium-close {
   position: absolute;
   right: 20px;
   top: 20px;
-
   background: none;
   border: none;
   font-size: 20px;
   color: white;
   cursor: pointer;
 }
-
 .altherium-modal-box h2 {
   margin-bottom: 20px;
 }
-
 #altheriumForm input,
 #altheriumForm select {
   padding: 12px;
   margin-bottom: 12px;
-
   border-radius: 10px;
   border: 1px solid var(--border);
-
   background: #020617;
   color: white;
 }
-
-/* =========================================================
-   FICHA DO JOGADOR
-========================================================= */
-
 .player-sheet-section {
   margin-top: 40px;
 }
-
 .player-sheet-form {
   display: flex;
   flex-direction: column;
   gap: 26px;
 }
-
 .form-grid,
 .attributes-grid {
   display: grid;
   gap: 18px;
 }
-
 .form-grid {
   grid-template-columns: repeat(2, 1fr);
 }
-
 .attributes-grid {
   grid-template-columns: repeat(3, 1fr);
 }
-
 .player-sheet-form h3 {
   margin-top: 10px;
   font-size: 28px;
   color: var(--cyan);
 }
-
 .player-sheet-form textarea {
   min-height: 160px;
   resize: vertical;
 }
-
-/* =========================================================
-   MINHAS CAMPANHAS
-========================================================= */
-
 .my-campaigns-page .altherium-main {
   padding-top: 170px;
 }
-
 .campaigns-area {
   display: grid;
   gap: 40px;
 }
-
 .campaign-group {
   padding: 34px;
   border: 1px solid var(--border);
   border-radius: 34px;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.78), rgba(2, 6, 23, 0.9)),
     radial-gradient(circle at top left, var(--violet-soft), transparent 42%);
-
   backdrop-filter: blur(22px);
 }
-
 .premium-campaign-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
   gap: 22px;
 }
-
 .premium-campaign-card {
   min-height: 280px;
   padding: 26px;
   border: 1px solid var(--border);
   border-radius: 28px;
-
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 20px;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.85), rgba(2, 6, 23, 0.92)),
     radial-gradient(
@@ -1139,14 +879,11 @@ textarea:focus {
       rgba(34, 211, 238, 0.12),
       transparent 42%
     );
-
   color: var(--text);
   text-align: left;
   cursor: pointer;
-
   transition: 0.3s ease;
 }
-
 .premium-campaign-card:hover {
   transform: translateY(-8px);
   border-color: rgba(34, 211, 238, 0.55);
@@ -1154,7 +891,6 @@ textarea:focus {
     0 28px 80px rgba(0, 0, 0, 0.35),
     0 0 60px rgba(34, 211, 238, 0.12);
 }
-
 .campaign-card-top,
 .campaign-card-footer {
   display: flex;
@@ -1162,48 +898,38 @@ textarea:focus {
   justify-content: space-between;
   gap: 16px;
 }
-
 .campaign-card-top span,
 .campaign-card-top strong {
   padding: 8px 12px;
   border-radius: 999px;
-
   font-size: 12px;
   font-weight: 900;
 }
-
 .campaign-card-top span {
   background: rgba(34, 211, 238, 0.1);
   color: var(--cyan);
 }
-
 .campaign-card-top strong {
   background: rgba(139, 92, 246, 0.14);
   color: #c4b5fd;
 }
-
 .premium-campaign-card h3 {
   font-size: 30px;
   line-height: 1.05;
 }
-
 .premium-campaign-card p {
   color: var(--text-soft);
   line-height: 1.6;
 }
-
 .campaign-card-footer {
   padding-top: 18px;
   border-top: 1px solid var(--border);
-
   color: var(--cyan);
   font-weight: 900;
 }
-
 .campaign-card-footer strong {
   font-size: 26px;
 }
-
 .premium-empty {
   min-height: 180px;
   padding: 28px;
@@ -1211,25 +937,14 @@ textarea:focus {
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.035);
 }
-
-/* =========================================================
-   FOOTER
-========================================================= */
-
 .footer {
   padding: 42px 7%;
   border-top: 1px solid var(--border);
-
   display: flex;
   justify-content: space-between;
   gap: 20px;
-
   color: var(--muted);
 }
-
-/* =========================================================
-   RESPONSIVO
-========================================================= */
 
 @media (max-width: 1000px) {
   .hero,
@@ -1338,171 +1053,125 @@ textarea:focus {
     transform: scale(2.65);
   }
 }
-
-/* =========================================================
-   CRIAR CAMPANHA
-========================================================= */
-
 .create-campaign-card {
   padding: 34px;
   border: 1px solid var(--border);
   border-radius: 34px;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.78), rgba(2, 6, 23, 0.9)),
     radial-gradient(circle at top right, var(--cyan-soft), transparent 42%);
-
   backdrop-filter: blur(22px);
 }
-
 .players-picker-header {
   margin: 24px 0 18px;
 }
-
 .players-picker-header h2 {
   font-size: 28px;
 }
-
 .players-picker-header p {
   color: var(--muted);
   margin-top: 6px;
 }
-
 .players-picker-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
   gap: 14px;
   margin-bottom: 28px;
 }
-
 .player-check-card {
   padding: 16px;
   border: 1px solid var(--border);
   border-radius: 18px;
-
   display: flex;
   align-items: center;
   gap: 12px;
-
   background: rgba(255, 255, 255, 0.04);
   color: var(--text);
-
   cursor: pointer;
   transition: 0.25s;
 }
-
 .player-check-card:hover {
   transform: translateY(-4px);
   border-color: rgba(34, 211, 238, 0.45);
 }
-
 .player-check-card input {
   width: 18px;
   height: 18px;
   margin: 0;
   accent-color: var(--cyan);
 }
-
 .player-check-card span {
   font-weight: 800;
 }
-
 .create-campaign-actions {
   display: flex;
   justify-content: flex-end;
   gap: 16px;
   flex-wrap: wrap;
 }
-
-/* =========================================================
-   GERENCIAR CAMPANHAS
-========================================================= */
-
 .campaign-card-wrapper {
   padding: 0;
   overflow: hidden;
 }
-
 .campaign-main-action {
   width: 100%;
   min-height: 230px;
   padding: 26px;
   border: none;
-
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 20px;
-
   background: transparent;
   color: inherit;
   text-align: left;
   cursor: pointer;
 }
-
 .campaign-management-actions {
   padding: 0 26px 26px;
 }
-
 .campaign-danger-btn,
 .campaign-leave-btn {
   width: 100%;
   padding: 13px 16px;
-
   border-radius: 16px;
   font-weight: 900;
   cursor: pointer;
   transition: 0.25s;
 }
-
 .campaign-danger-btn {
   border: 1px solid rgba(239, 68, 68, 0.35);
   background: rgba(239, 68, 68, 0.1);
   color: #fca5a5;
 }
-
 .campaign-danger-btn:hover {
   background: rgba(239, 68, 68, 0.18);
   transform: translateY(-2px);
 }
-
 .campaign-leave-btn {
   border: 1px solid rgba(251, 191, 36, 0.35);
   background: rgba(251, 191, 36, 0.1);
   color: #fde68a;
 }
-
 .campaign-leave-btn:hover {
   background: rgba(251, 191, 36, 0.18);
   transform: translateY(-2px);
 }
-
-/* =========================================================
-   TÍTULO DA CAMPANHA NO PAINEL DO MESTRE
-========================================================= */
-
 .campaign-title-view {
   max-width: 900px;
-
   margin-bottom: 14px;
-
   font-size: clamp(52px, 7vw, 96px);
   line-height: 0.95;
   letter-spacing: -2px;
-
   color: var(--text);
-
   text-shadow:
     0 0 22px rgba(34, 211, 238, 0.18),
     0 0 60px rgba(34, 211, 238, 0.08);
 }
-
 .master-panel-subtitle {
   margin-bottom: 18px;
-
   font-size: clamp(28px, 3vw, 44px);
   line-height: 1;
-
   color: var(--cyan);
 }
 
@@ -1515,42 +1184,28 @@ textarea:focus {
     font-size: 26px;
   }
 }
-
-/* =========================================================
-   MODAL DE ADICIONAR PLAYERS
-========================================================= */
-
 .altherium-modal {
   position: fixed;
   inset: 0;
   z-index: 1000;
-
   display: none;
   align-items: center;
   justify-content: center;
-
   padding: 20px;
-
   background: rgba(0, 0, 0, 0.72);
   backdrop-filter: blur(10px);
 }
-
 .altherium-modal.active {
   display: flex;
 }
-
 .altherium-modal-box {
   position: relative;
-
   width: min(760px, 100%);
   max-height: calc(100vh - 40px);
-
   display: flex;
   flex-direction: column;
-
   padding: 28px;
   border-radius: 26px;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.96)),
     radial-gradient(
@@ -1558,44 +1213,35 @@ textarea:focus {
       rgba(34, 211, 238, 0.1),
       transparent 42%
     );
-
   border: 1px solid var(--border);
   box-shadow:
     0 30px 100px rgba(0, 0, 0, 0.45),
     0 0 50px rgba(34, 211, 238, 0.08);
-
   overflow: hidden;
 }
-
 .altherium-modal-box h2 {
   margin-bottom: 18px;
   font-size: 30px;
 }
-
 .altherium-close,
 [data-close-dnd-modal] {
   position: absolute;
   top: 18px;
   right: 18px;
-
   width: 42px;
   height: 42px;
-
   border: none;
   border-radius: 12px;
-
   background: rgba(255, 255, 255, 0.05);
   color: var(--text);
   font-size: 22px;
   cursor: pointer;
   transition: 0.25s;
 }
-
 .altherium-close:hover,
 [data-close-dnd-modal]:hover {
   background: rgba(255, 255, 255, 0.12);
 }
-
 #altheriumForm,
 #dndForm {
   display: flex;
@@ -1603,7 +1249,6 @@ textarea:focus {
   min-height: 0;
   height: 100%;
 }
-
 #altheriumFormFields,
 #dndFormFields {
   flex: 1;
@@ -1611,46 +1256,37 @@ textarea:focus {
   overflow-y: auto;
   padding-right: 6px;
 }
-
 #altheriumFormFields::-webkit-scrollbar,
 #dndFormFields::-webkit-scrollbar {
   width: 8px;
 }
-
 #altheriumFormFields::-webkit-scrollbar-thumb,
 #dndFormFields::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.35);
   border-radius: 999px;
 }
-
 .players-picker-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
-
 .player-check-card {
   min-height: 72px;
   padding: 18px 16px;
-
   border: 1px solid var(--border);
   border-radius: 18px;
-
   display: flex;
   align-items: center;
   gap: 14px;
-
   background: rgba(255, 255, 255, 0.04);
   cursor: pointer;
   transition: 0.25s;
 }
-
 .player-check-card:hover {
   transform: translateY(-2px);
   border-color: rgba(34, 211, 238, 0.4);
   background: rgba(255, 255, 255, 0.06);
 }
-
 .player-check-card input {
   width: 20px;
   height: 20px;
@@ -1658,40 +1294,33 @@ textarea:focus {
   accent-color: var(--cyan);
   flex-shrink: 0;
 }
-
 .player-check-card span {
   font-size: 20px;
   font-weight: 800;
   color: var(--text);
 }
-
 .modal-submit-row {
   margin-top: 18px;
   padding-top: 18px;
   border-top: 1px solid var(--border);
-
   display: flex;
   justify-content: flex-end;
 }
-
 .modal-submit-row .altherium-submit {
   width: auto;
   min-width: 170px;
   padding: 14px 22px;
   border-radius: 14px;
 }
-
 .altherium-empty {
   padding: 24px;
   border: 1px solid var(--border);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.035);
 }
-
 .altherium-empty h3 {
   margin-bottom: 8px;
 }
-
 .altherium-empty p {
   color: var(--text-soft);
   line-height: 1.5;
@@ -1716,31 +1345,22 @@ textarea:focus {
     font-size: 18px;
   }
 }
-
-/* =========================================================
-   FICHA DIGITAL DE ALTHERIUM
-========================================================= */
-
 .altherium-sheet-page {
   padding-bottom: 90px;
 }
-
 .altherium-sheet-wrapper {
   display: flex;
   flex-direction: column;
   gap: 26px;
 }
-
 .altherium-sheet-toolbar {
   display: flex;
   justify-content: space-between;
   gap: 22px;
   align-items: flex-start;
-
   padding: 30px;
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 30px;
-
   background:
     linear-gradient(145deg, rgba(9, 16, 39, 0.9), rgba(2, 6, 23, 0.94)),
     radial-gradient(
@@ -1749,53 +1369,40 @@ textarea:focus {
       transparent 42%
     );
 }
-
 .altherium-sheet-toolbar h2 {
   margin: 8px 0;
   font-size: clamp(32px, 4vw, 56px);
 }
-
 .altherium-sheet-toolbar p {
   color: rgba(226, 232, 240, 0.74);
 }
-
 .altherium-rune-sheet {
   display: flex;
   flex-direction: column;
   gap: 34px;
 }
-
 .rune-paper-page {
   width: 100%;
   max-width: 980px;
   margin: 0 auto;
-
   padding: clamp(18px, 4vw, 48px);
-
   border-radius: 28px;
   border: 1px solid rgba(15, 23, 42, 0.22);
-
   background:
     linear-gradient(rgba(229, 229, 220, 0.92), rgba(196, 196, 184, 0.92)),
     radial-gradient(circle at top, rgba(255, 255, 255, 0.75), transparent 52%);
-
   box-shadow:
     0 30px 100px rgba(0, 0, 0, 0.42),
     inset 0 0 0 8px rgba(0, 0, 0, 0.04);
-
   color: #080808;
 }
-
 .rune-frame {
   position: relative;
-
   min-height: 860px;
   padding: clamp(18px, 4vw, 48px);
-
   border: 8px double rgba(0, 0, 0, 0.76);
   outline: 2px solid rgba(0, 0, 0, 0.42);
   outline-offset: -18px;
-
   background:
     linear-gradient(90deg, transparent 0 98%, rgba(0, 0, 0, 0.05) 98%),
     radial-gradient(
@@ -1804,54 +1411,45 @@ textarea:focus {
       transparent 70%
     );
 }
-
 .rune-frame::before,
 .rune-frame::after {
   content: "ᚱ ᚢ ᚾ ᛖ ᛋ ᚨ ᛚ ᚦ ᛖ ᚱ ᛁ ᚢ ᛗ";
   position: absolute;
   left: 28px;
   right: 28px;
-
   color: rgba(0, 0, 0, 0.55);
   font-size: 20px;
   letter-spacing: 6px;
   text-align: center;
   pointer-events: none;
 }
-
 .rune-frame::before {
   top: 8px;
 }
-
 .rune-frame::after {
   bottom: 8px;
 }
-
 .rune-page-header {
   max-width: 520px;
   margin: 0 auto 34px;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 10px;
   text-align: center;
 }
-
 .rune-page-header label {
   width: 100%;
   display: flex;
   flex-direction: column;
   gap: 2px;
 }
-
 .rune-page-header span {
   font-size: clamp(30px, 5vw, 52px);
   line-height: 1;
   font-weight: 900;
   color: #050505;
 }
-
 .rune-page-header input {
   width: 100%;
   border: none;
@@ -1863,7 +1461,6 @@ textarea:focus {
   font-weight: 900;
   outline: none;
 }
-
 .rune-resource-list {
   max-width: 430px;
   display: flex;
@@ -1871,21 +1468,17 @@ textarea:focus {
   gap: 12px;
   margin-bottom: 26px;
 }
-
 .rune-resource-line {
   display: grid;
   grid-template-columns: 86px 74px 16px 74px 1fr;
   align-items: center;
   gap: 8px;
-
   font-size: 24px;
   font-weight: 900;
 }
-
 .rune-resource-line strong {
   color: #050505;
 }
-
 .rune-resource-line input {
   width: 100%;
   padding: 8px;
@@ -1897,7 +1490,6 @@ textarea:focus {
   font-weight: 900;
   outline: none;
 }
-
 .rune-bar {
   height: 11px;
   border: 2px solid rgba(0, 0, 0, 0.45);
@@ -1905,14 +1497,12 @@ textarea:focus {
   overflow: hidden;
   background: rgba(0, 0, 0, 0.12);
 }
-
 .rune-bar div {
   width: 0;
   height: 100%;
   background: linear-gradient(90deg, #123f4a, #1f6f7c);
   transition: 0.25s;
 }
-
 .rune-attributes-table {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -1920,45 +1510,37 @@ textarea:focus {
   margin: 28px 0 38px;
   background: #173844;
 }
-
 .rune-attributes-table label {
   display: flex;
   flex-direction: column;
   border-right: 3px solid rgba(220, 220, 210, 0.75);
 }
-
 .rune-attributes-table label:last-child {
   border-right: none;
 }
-
 .rune-attributes-table span {
   min-height: 48px;
   display: grid;
   place-items: center;
   padding: 8px;
-
   color: #f7f7f0;
   font-size: 16px;
   font-weight: 900;
   text-align: center;
   text-transform: uppercase;
 }
-
 .rune-attributes-table input {
   min-height: 74px;
   width: 100%;
-
   border: none;
   border-top: 3px solid rgba(220, 220, 210, 0.75);
   background: #173844;
-
   color: #f7f7f0;
   font-size: 30px;
   font-weight: 900;
   text-align: center;
   outline: none;
 }
-
 .rune-body-table {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -1966,17 +1548,14 @@ textarea:focus {
   margin-bottom: 54px;
   background: #020202;
 }
-
 .rune-body-table label {
   display: flex;
   flex-direction: column;
   border-right: 3px solid #173844;
 }
-
 .rune-body-table label:last-child {
   border-right: none;
 }
-
 .rune-body-table span,
 .rune-body-table small {
   display: block;
@@ -1984,18 +1563,15 @@ textarea:focus {
   text-align: center;
   font-weight: 900;
 }
-
 .rune-body-table span {
   padding-top: 14px;
   font-size: 19px;
   text-transform: uppercase;
 }
-
 .rune-body-table small {
   padding-bottom: 10px;
   font-size: 18px;
 }
-
 .rune-body-table input {
   min-height: 54px;
   border: none;
@@ -2006,12 +1582,10 @@ textarea:focus {
   text-align: center;
   outline: none;
 }
-
 .rune-weapons-table {
   border: 3px solid #000;
   background: #173844;
 }
-
 .rune-weapons-table h3 {
   padding: 12px;
   border-bottom: 3px solid #000;
@@ -2020,13 +1594,11 @@ textarea:focus {
   font-size: 22px;
   text-transform: uppercase;
 }
-
 .rune-weapon-head,
 .rune-weapon-row {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
 }
-
 .rune-weapon-head span {
   padding: 12px;
   border-right: 3px solid #000;
@@ -2036,11 +1608,9 @@ textarea:focus {
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .rune-weapon-head span:last-child {
   border-right: none;
 }
-
 .rune-weapon-row input {
   min-height: 46px;
   border: none;
@@ -2052,47 +1622,38 @@ textarea:focus {
   font-size: 18px;
   outline: none;
 }
-
 .rune-weapon-row input:last-child {
   border-right: none;
 }
-
 .rune-weapon-row:last-child input {
   border-bottom: none;
 }
-
 .rune-section-title {
   margin-bottom: 22px;
 }
-
 .rune-section-title.centered {
   text-align: center;
 }
-
 .rune-section-title h3 {
   color: #050505;
   font-size: clamp(32px, 5vw, 54px);
   line-height: 1;
   text-transform: uppercase;
 }
-
 .rune-section-title p {
   margin-top: 8px;
   color: rgba(0, 0, 0, 0.7);
   font-weight: 800;
 }
-
 .rune-domains-table {
   border: 3px solid rgba(0, 0, 0, 0.85);
   background: #173844;
 }
-
 .rune-domain-head,
 .rune-domains-table label {
   display: grid;
   grid-template-columns: 1.2fr 1.2fr 1fr;
 }
-
 .rune-domain-head span {
   padding: 14px;
   border-right: 3px solid rgba(220, 220, 210, 0.7);
@@ -2103,11 +1664,9 @@ textarea:focus {
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .rune-domain-head span:last-child {
   border-right: none;
 }
-
 .rune-domains-table label span,
 .rune-domains-table label small,
 .rune-domains-table label input {
@@ -2116,7 +1675,6 @@ textarea:focus {
   border-bottom: 3px solid rgba(220, 220, 210, 0.7);
   color: #f7f7f0;
 }
-
 .rune-domains-table label span,
 .rune-domains-table label small {
   display: grid;
@@ -2126,7 +1684,6 @@ textarea:focus {
   text-align: center;
   text-transform: uppercase;
 }
-
 .rune-domains-table label input {
   border-top: none;
   border-left: none;
@@ -2135,18 +1692,15 @@ textarea:focus {
   font-weight: 900;
   outline: none;
 }
-
 .rune-domains-table label input:last-child {
   border-right: none;
 }
-
 .rune-inventory-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
   margin-top: 28px;
 }
-
 .rune-inventory-list input {
   width: 100%;
   padding: 8px 12px;
@@ -2158,30 +1712,24 @@ textarea:focus {
   font-weight: 800;
   outline: none;
 }
-
 .rune-inventory-list input::placeholder {
   color: rgba(0, 0, 0, 0.7);
 }
-
 .rune-money-field {
   width: fit-content;
   margin: 80px auto 0;
-
   display: flex;
   align-items: center;
   gap: 10px;
-
   padding: 8px 16px;
   background: #173844;
 }
-
 .rune-money-field span {
   color: #f7f7f0;
   font-size: 24px;
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .rune-money-field input {
   width: 140px;
   border: none;
@@ -2191,49 +1739,36 @@ textarea:focus {
   font-weight: 900;
   outline: none;
 }
-
 .rune-triumphs-area {
   width: 100%;
   min-height: 300px;
   padding: 18px;
-
   border: 2px dashed rgba(0, 0, 0, 0.26);
   border-radius: 16px;
-
   background: rgba(255, 255, 255, 0.22);
   color: #050505;
-
   font-size: 18px;
   font-weight: 700;
   line-height: 1.5;
   resize: vertical;
   outline: none;
 }
-
 .rune-triumphs-area:focus {
   border-color: #173844;
   box-shadow: 0 0 0 4px rgba(23, 56, 68, 0.12);
 }
-
-/* =========================================================
-   CARDS DAS FICHAS NO PAINEL DO MESTRE
-========================================================= */
-
 .sheet-grid {
   align-items: stretch;
 }
-
 .sheet-card {
   min-height: 250px;
   padding: 24px;
   border: 1px solid rgba(148, 163, 184, 0.18);
   border-radius: 26px;
-
   display: flex;
   flex-direction: column;
   justify-content: space-between;
   gap: 16px;
-
   background:
     linear-gradient(145deg, rgba(9, 16, 39, 0.92), rgba(4, 10, 25, 0.94)),
     radial-gradient(
@@ -2241,19 +1776,16 @@ textarea:focus {
       rgba(34, 211, 238, 0.09),
       transparent 40%
     );
-
   color: #ffffff;
   text-align: left;
   cursor: pointer;
   transition: 0.25s;
 }
-
 .sheet-card:hover {
   transform: translateY(-4px);
   border-color: rgba(34, 211, 238, 0.4);
   box-shadow: 0 18px 60px rgba(0, 0, 0, 0.28);
 }
-
 .sheet-card-top,
 .sheet-card-footer {
   display: flex;
@@ -2261,68 +1793,50 @@ textarea:focus {
   justify-content: space-between;
   gap: 16px;
 }
-
 .sheet-card-top span {
   color: #22d3ee;
   font-weight: 900;
 }
-
 .sheet-card-top strong {
   padding: 8px 12px;
   border-radius: 999px;
   background: rgba(34, 211, 238, 0.12);
   font-size: 12px;
 }
-
 .sheet-card h3 {
   font-size: 28px;
   line-height: 1.1;
 }
-
 .sheet-card p {
   color: rgba(255, 255, 255, 0.72);
   line-height: 1.5;
 }
-
 .sheet-card-footer {
   color: #22d3ee;
   font-weight: 900;
 }
-
-/* =========================================================
-   MODAL DE FICHA
-========================================================= */
-
 .altherium-modal {
   position: fixed;
   inset: 0;
   z-index: 1000;
-
   display: none;
   align-items: center;
   justify-content: center;
-
   padding: 20px;
-
   background: rgba(0, 0, 0, 0.72);
   backdrop-filter: blur(10px);
 }
-
 .altherium-modal.active {
   display: flex;
 }
-
 .altherium-modal-box {
   position: relative;
   width: min(1100px, 100%);
   max-height: calc(100vh - 40px);
-
   display: flex;
   flex-direction: column;
-
   padding: 28px;
   border-radius: 28px;
-
   background:
     linear-gradient(145deg, rgba(10, 16, 36, 0.98), rgba(4, 10, 22, 0.98)),
     radial-gradient(
@@ -2330,73 +1844,56 @@ textarea:focus {
       rgba(34, 211, 238, 0.1),
       transparent 42%
     );
-
   border: 1px solid rgba(148, 163, 184, 0.18);
   overflow: hidden;
 }
-
 .altherium-sheet-modal-box {
   width: min(1180px, 100%);
 }
-
 .altherium-modal-box h2 {
   margin-bottom: 18px;
   padding-right: 60px;
   font-size: 30px;
 }
-
 .altherium-close {
   position: absolute;
   top: 18px;
   right: 18px;
-
   width: 42px;
   height: 42px;
-
   border: none;
   border-radius: 12px;
-
   background: rgba(255, 255, 255, 0.06);
   color: #ffffff;
   font-size: 24px;
   cursor: pointer;
 }
-
 #altheriumForm {
   display: flex;
   flex-direction: column;
   min-height: 0;
   height: 100%;
 }
-
 #altheriumFormFields {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   padding-right: 8px;
 }
-
 #altheriumFormFields::-webkit-scrollbar {
   width: 8px;
 }
-
 #altheriumFormFields::-webkit-scrollbar-thumb {
   background: rgba(148, 163, 184, 0.35);
   border-radius: 999px;
 }
-
 .modal-submit-row {
   margin-top: 18px;
   padding-top: 18px;
   border-top: 1px solid rgba(148, 163, 184, 0.12);
-
   display: flex;
   justify-content: flex-end;
 }
-
-/* =========================================================
-   RESPONSIVO
-========================================================= */
 
 @media (max-width: 1000px) {
   .rune-attributes-table {
@@ -2505,24 +2002,15 @@ textarea:focus {
     padding: 18px;
   }
 }
-
-/* =========================================================
-   FONTE DA FICHA DE ALTHERIUM
-========================================================= */
-
 .altherium-rune-sheet,
 .altherium-rune-sheet * {
   font-family: "Caesar Dressing", cursive !important;
 }
-
-/* força a fonte também nos campos da ficha */
 .altherium-rune-sheet input,
 .altherium-rune-sheet textarea,
 .altherium-rune-sheet select {
   font-family: "Caesar Dressing", cursive !important;
 }
-
-/* caixas numéricas e campos principais */
 .rune-page-header input,
 .rune-resource-line input,
 .rune-attributes-table input,
@@ -2536,8 +2024,6 @@ textarea:focus {
   font-weight: 400 !important;
   letter-spacing: 0.5px;
 }
-
-/* títulos e rótulos */
 .rune-page-header span,
 .rune-section-title h3,
 .rune-weapons-table h3,
@@ -2548,12 +2034,6 @@ textarea:focus {
   font-family: "Caesar Dressing", cursive !important;
   letter-spacing: 1px;
 }
-
-/* =========================================================
-   MELHORIA VISUAL DAS TABELAS DA FICHA DE ALTHERIUM
-========================================================= */
-
-/* tabela de atributos */
 .rune-attributes-table {
   display: grid;
   grid-template-columns: repeat(6, 1fr);
@@ -2562,7 +2042,6 @@ textarea:focus {
   border: none;
   background: transparent;
 }
-
 .rune-attributes-table label {
   display: flex;
   flex-direction: column;
@@ -2578,7 +2057,6 @@ textarea:focus {
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 8px 18px rgba(0, 0, 0, 0.18);
 }
-
 .rune-attributes-table span {
   min-height: 52px;
   display: grid;
@@ -2592,7 +2070,6 @@ textarea:focus {
   border-bottom: 2px solid rgba(255, 255, 255, 0.12);
   background: rgba(255, 255, 255, 0.04);
 }
-
 .rune-attributes-table input {
   min-height: 76px;
   width: 100%;
@@ -2604,13 +2081,10 @@ textarea:focus {
   text-align: center;
   outline: none;
 }
-
 .rune-attributes-table input:focus {
   background: rgba(34, 211, 238, 0.08);
   box-shadow: inset 0 0 0 2px rgba(34, 211, 238, 0.35);
 }
-
-/* tabela de proteção corporal */
 .rune-body-table {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
@@ -2619,7 +2093,6 @@ textarea:focus {
   border: none;
   background: transparent;
 }
-
 .rune-body-table label {
   display: flex;
   flex-direction: column;
@@ -2635,7 +2108,6 @@ textarea:focus {
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 8px 18px rgba(0, 0, 0, 0.18);
 }
-
 .rune-body-table span {
   padding-top: 14px;
   color: #f5f4ee;
@@ -2644,7 +2116,6 @@ textarea:focus {
   font-weight: 700;
   text-transform: uppercase;
 }
-
 .rune-body-table small {
   padding: 4px 0 12px;
   color: rgba(255, 255, 255, 0.72);
@@ -2653,7 +2124,6 @@ textarea:focus {
   font-weight: 700;
   border-bottom: 2px solid rgba(255, 255, 255, 0.12);
 }
-
 .rune-body-table input {
   min-height: 58px;
   border: none;
@@ -2663,13 +2133,10 @@ textarea:focus {
   text-align: center;
   outline: none;
 }
-
 .rune-body-table input:focus {
   background: rgba(34, 211, 238, 0.08);
   box-shadow: inset 0 0 0 2px rgba(34, 211, 238, 0.35);
 }
-
-/* tabela de armas */
 .rune-weapons-table {
   border: none;
   border-radius: 20px;
@@ -2677,7 +2144,6 @@ textarea:focus {
   background: rgba(10, 26, 33, 0.35);
   box-shadow: 0 10px 24px rgba(0, 0, 0, 0.18);
 }
-
 .rune-weapons-table h3 {
   padding: 16px;
   border-bottom: 1px solid rgba(255, 255, 255, 0.12);
@@ -2691,7 +2157,6 @@ textarea:focus {
     rgba(20, 58, 70, 0.98)
   );
 }
-
 .rune-weapon-head,
 .rune-weapon-row {
   display: grid;
@@ -2699,11 +2164,9 @@ textarea:focus {
   gap: 12px;
   padding: 10px 12px;
 }
-
 .rune-weapon-head {
   background: rgba(255, 255, 255, 0.06);
 }
-
 .rune-weapon-head span {
   padding: 10px;
   border: none;
@@ -2714,11 +2177,9 @@ textarea:focus {
   text-transform: uppercase;
   background: rgba(255, 255, 255, 0.05);
 }
-
 .rune-weapon-row {
   border-top: 1px solid rgba(255, 255, 255, 0.08);
 }
-
 .rune-weapon-row input {
   min-height: 48px;
   padding: 0 12px;
@@ -2730,14 +2191,11 @@ textarea:focus {
   font-size: 18px;
   outline: none;
 }
-
 .rune-weapon-row input:focus {
   border-color: rgba(34, 211, 238, 0.55);
   background: rgba(34, 211, 238, 0.08);
   box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.08);
 }
-
-/* tabela de domínios */
 .rune-domains-table {
   display: flex;
   flex-direction: column;
@@ -2745,18 +2203,15 @@ textarea:focus {
   border: none;
   background: transparent;
 }
-
 .rune-domain-head,
 .rune-domains-table label {
   display: grid;
   grid-template-columns: 1.3fr 1fr 0.9fr;
   gap: 12px;
 }
-
 .rune-domain-head {
   margin-bottom: 6px;
 }
-
 .rune-domain-head span {
   padding: 14px 16px;
   border: none;
@@ -2769,11 +2224,9 @@ textarea:focus {
   text-transform: uppercase;
   box-shadow: 0 8px 18px rgba(0, 0, 0, 0.18);
 }
-
 .rune-domains-table label {
   align-items: stretch;
 }
-
 .rune-domains-table label span,
 .rune-domains-table label small,
 .rune-domains-table label input {
@@ -2791,7 +2244,6 @@ textarea:focus {
     inset 0 1px 0 rgba(255, 255, 255, 0.06),
     0 6px 14px rgba(0, 0, 0, 0.14);
 }
-
 .rune-domains-table label span,
 .rune-domains-table label small {
   display: flex;
@@ -2801,37 +2253,30 @@ textarea:focus {
   font-weight: 700;
   text-transform: uppercase;
 }
-
 .rune-domains-table label span {
   font-size: 16px;
 }
-
 .rune-domains-table label small {
   font-size: 14px;
   color: #9eeaf4;
 }
-
 .rune-domains-table label input {
   text-align: center;
   font-size: 20px;
   font-weight: 700;
   outline: none;
 }
-
 .rune-domains-table label input:focus {
   border-color: rgba(34, 211, 238, 0.55);
   background: rgba(34, 211, 238, 0.08);
   box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.08);
 }
-
-/* inventário mais bonito */
 .rune-inventory-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
   margin-top: 28px;
 }
-
 .rune-inventory-list input {
   width: 100%;
   min-height: 52px;
@@ -2844,13 +2289,11 @@ textarea:focus {
   font-weight: 700;
   outline: none;
 }
-
 .rune-inventory-list input:focus {
   border-color: rgba(23, 64, 77, 0.45);
   box-shadow: 0 0 0 4px rgba(23, 64, 77, 0.08);
 }
 
-/* responsivo */
 @media (max-width: 1000px) {
   .rune-attributes-table {
     grid-template-columns: repeat(3, 1fr);
@@ -2882,46 +2325,30 @@ textarea:focus {
     grid-template-columns: 1fr;
   }
 }
-
-/* =========================================================
-   MODAL DA FICHA DO MESTRE - MAIOR E MELHOR DE VISUALIZAR
-========================================================= */
-
-/* fundo do modal */
 .altherium-modal {
   position: fixed;
   inset: 0;
   z-index: 1000;
-
   display: none;
   align-items: center;
   justify-content: center;
-
   padding: 16px;
-
   background: rgba(0, 0, 0, 0.78);
   backdrop-filter: blur(10px);
 }
-
 .altherium-modal.active {
   display: flex;
 }
-
-/* caixa principal do modal */
 .altherium-modal-box {
   position: relative;
-
   width: min(1600px, calc(100vw - 32px));
   height: min(94vh, 1200px);
   max-height: calc(100vh - 32px);
-
   display: flex;
   flex-direction: column;
-
   padding: 28px;
   border-radius: 30px;
   border: 1px solid rgba(148, 163, 184, 0.18);
-
   background:
     linear-gradient(145deg, rgba(10, 16, 36, 0.98), rgba(4, 10, 22, 0.98)),
     radial-gradient(
@@ -2929,20 +2356,14 @@ textarea:focus {
       rgba(34, 211, 238, 0.12),
       transparent 42%
     );
-
   box-shadow: 0 30px 90px rgba(0, 0, 0, 0.45);
-
   overflow: hidden;
 }
-
-/* versão específica do modal da ficha */
 .altherium-sheet-modal-box {
   width: min(1680px, calc(100vw - 32px));
   height: min(95vh, 1300px);
   max-height: calc(100vh - 32px);
 }
-
-/* título do modal */
 .altherium-modal-box h2 {
   margin-bottom: 18px;
   padding-right: 70px;
@@ -2950,45 +2371,33 @@ textarea:focus {
   line-height: 1.1;
   color: #ffffff;
 }
-
-/* botão fechar */
 .altherium-close {
   position: absolute;
   top: 20px;
   right: 20px;
-
   width: 48px;
   height: 48px;
-
   display: grid;
   place-items: center;
-
   border: none;
   border-radius: 14px;
-
   background: rgba(255, 255, 255, 0.08);
   color: #ffffff;
   font-size: 28px;
   font-weight: 700;
   cursor: pointer;
-
   transition: 0.25s ease;
 }
-
 .altherium-close:hover {
   background: rgba(34, 211, 238, 0.18);
   transform: scale(1.04);
 }
-
-/* formulário do modal */
 #altheriumForm {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
 }
-
-/* área rolável da ficha */
 #altheriumFormFields {
   flex: 1;
   min-height: 0;
@@ -2997,102 +2406,76 @@ textarea:focus {
   padding-right: 12px;
   padding-bottom: 12px;
 }
-
-/* scrollbar */
 #altheriumFormFields::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
-
 #altheriumFormFields::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 999px;
 }
-
 #altheriumFormFields::-webkit-scrollbar-thumb {
   background: rgba(34, 211, 238, 0.35);
   border-radius: 999px;
 }
-
 #altheriumFormFields::-webkit-scrollbar-thumb:hover {
   background: rgba(34, 211, 238, 0.55);
 }
-
-/* rodapé com botão salvar */
 .modal-submit-row {
   margin-top: 18px;
   padding-top: 18px;
   border-top: 1px solid rgba(148, 163, 184, 0.14);
-
   display: flex;
   justify-content: flex-end;
   align-items: center;
   gap: 12px;
-
   background: linear-gradient(
     to top,
     rgba(4, 10, 22, 0.96),
     rgba(4, 10, 22, 0.72)
   );
 }
-
-/* faz a ficha ocupar mais espaço dentro do modal */
 .master-rune-sheet {
   width: 100%;
   min-width: 1200px;
 }
-
 .master-rune-sheet .rune-paper-page {
   width: 100%;
   max-width: 1400px;
   margin: 0 auto;
   padding: 28px;
 }
-
 .master-rune-sheet .rune-frame {
   min-height: auto;
   padding: 32px;
 }
-
-/* deixa a página da ficha menos apertada dentro do modal */
 .master-rune-sheet .rune-page-header {
   max-width: 700px;
 }
-
 .master-rune-sheet .rune-page-header span {
   font-size: clamp(34px, 4vw, 58px);
 }
-
 .master-rune-sheet .rune-page-header input {
   font-size: 24px;
 }
-
-/* botões do modal */
 .altherium-submit {
   min-width: 210px;
   height: 54px;
   padding: 0 26px;
   border: none;
   border-radius: 18px;
-
   background: linear-gradient(135deg, #22d3ee, #06b6d4);
   color: #001018;
   font-size: 20px;
   font-weight: 800;
   cursor: pointer;
-
   box-shadow: 0 10px 28px rgba(34, 211, 238, 0.24);
   transition: 0.25s ease;
 }
-
 .altherium-submit:hover {
   transform: translateY(-2px);
   box-shadow: 0 14px 30px rgba(34, 211, 238, 0.34);
 }
-
-/* =========================================================
-   RESPONSIVO
-========================================================= */
 
 @media (max-width: 1100px) {
   .altherium-modal-box,
@@ -3161,80 +2544,56 @@ textarea:focus {
     justify-content: stretch;
   }
 }
-
-/* =========================================================
-   CORREÇÃO FORTE - FICHA DO MESTRE QUASE TELA CHEIA
-========================================================= */
-
 .altherium-modal.active {
   display: flex;
   align-items: center;
   justify-content: center;
 }
-
 .altherium-sheet-modal-box {
   width: 96vw !important;
   height: 94vh !important;
   max-width: none !important;
   max-height: none !important;
-
   padding: 28px !important;
   border-radius: 28px !important;
-
   display: flex !important;
   flex-direction: column !important;
 }
-
-/* área interna do modal */
 .altherium-sheet-modal-box #altheriumForm {
   flex: 1 !important;
   min-height: 0 !important;
   display: flex !important;
   flex-direction: column !important;
 }
-
-/* área onde a ficha aparece */
 .altherium-sheet-modal-box #altheriumFormFields {
   flex: 1 !important;
   min-height: 0 !important;
-
   overflow: auto !important;
   padding: 18px !important;
 }
-
-/* remove o formato estreito */
 .altherium-sheet-modal-box .master-rune-sheet {
   width: 100% !important;
   min-width: 0 !important;
   max-width: none !important;
-
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 28px !important;
   align-items: start !important;
 }
-
-/* cada página da ficha vira um bloco grande */
 .altherium-sheet-modal-box .master-rune-sheet .rune-paper-page {
   width: 100% !important;
   max-width: none !important;
   margin: 0 !important;
   padding: 22px !important;
 }
-
-/* deixa a primeira página maior, ocupando a linha inteira */
 .altherium-sheet-modal-box .master-rune-sheet .rune-paper-page:first-child {
   grid-column: 1 / -1 !important;
 }
-
-/* reduz a altura interna para não virar uma coluna gigante */
 .altherium-sheet-modal-box .master-rune-sheet .rune-frame {
   min-height: auto !important;
   height: auto !important;
   padding: 34px !important;
 }
-
-/* primeira página em layout mais largo */
 .altherium-sheet-modal-box
   .master-rune-sheet
   .rune-paper-page:first-child
@@ -3243,39 +2602,29 @@ textarea:focus {
   grid-template-columns: 1fr 1fr !important;
   gap: 32px !important;
 }
-
-/* nome, pv e atributos ficam na esquerda/direita de forma melhor */
 .altherium-sheet-modal-box .master-rune-sheet .rune-page-header {
   max-width: none !important;
   margin: 0 !important;
 }
-
 .altherium-sheet-modal-box .master-rune-sheet .rune-resource-list {
   max-width: none !important;
   margin: 0 !important;
 }
-
-/* atributos ocupam toda a largura da primeira página */
 .altherium-sheet-modal-box .master-rune-sheet .rune-attributes-table,
 .altherium-sheet-modal-box .master-rune-sheet .rune-body-table,
 .altherium-sheet-modal-box .master-rune-sheet .rune-weapons-table {
   grid-column: 1 / -1 !important;
 }
-
-/* melhora campos dentro do modal */
 .altherium-sheet-modal-box input,
 .altherium-sheet-modal-box textarea {
   font-size: 18px !important;
 }
-
-/* botão salvar fixo no rodapé */
 .altherium-sheet-modal-box .modal-submit-row {
   flex-shrink: 0 !important;
   margin-top: 14px !important;
   padding-top: 14px !important;
 }
 
-/* responsivo: em telas menores volta para 1 coluna */
 @media (max-width: 1100px) {
   .altherium-sheet-modal-box {
     width: 98vw !important;
@@ -3298,31 +2647,22 @@ textarea:focus {
     display: block !important;
   }
 }
-
-/* =========================================================
-   FICHA DIGITAL DE D&D
-========================================================= */
-
 .dnd-sheet-page {
   padding-bottom: 90px;
 }
-
 .dnd-sheet-wrapper {
   display: flex;
   flex-direction: column;
   gap: 26px;
 }
-
 .dnd-sheet-toolbar {
   display: flex;
   justify-content: space-between;
   gap: 22px;
   align-items: flex-start;
-
   padding: 30px;
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 30px;
-
   background:
     linear-gradient(145deg, rgba(9, 16, 39, 0.9), rgba(2, 6, 23, 0.94)),
     radial-gradient(
@@ -3331,50 +2671,39 @@ textarea:focus {
       transparent 42%
     );
 }
-
 .dnd-sheet-toolbar h2 {
   margin: 8px 0;
   font-size: clamp(32px, 4vw, 56px);
 }
-
 .dnd-sheet-toolbar p {
   color: rgba(226, 232, 240, 0.74);
 }
-
 .dnd-character-sheet {
   display: flex;
   flex-direction: column;
   gap: 34px;
 }
-
 .dnd-paper-page {
   width: 100%;
   max-width: 1160px;
   margin: 0 auto;
   padding: clamp(18px, 4vw, 42px);
-
   border-radius: 28px;
   border: 1px solid rgba(15, 23, 42, 0.22);
-
   background:
     linear-gradient(rgba(245, 245, 242, 0.96), rgba(224, 224, 218, 0.96)),
     radial-gradient(circle at top, rgba(255, 255, 255, 0.75), transparent 52%);
-
   box-shadow:
     0 30px 100px rgba(0, 0, 0, 0.42),
     inset 0 0 0 8px rgba(0, 0, 0, 0.04);
-
   color: #080808;
 }
-
 .dnd-frame {
   min-height: 900px;
   padding: clamp(18px, 3vw, 38px);
-
   border: 6px double rgba(0, 0, 0, 0.72);
   outline: 2px solid rgba(0, 0, 0, 0.24);
   outline-offset: -14px;
-
   background:
     radial-gradient(circle at top left, rgba(0, 0, 0, 0.05), transparent 40%),
     radial-gradient(
@@ -3383,40 +2712,34 @@ textarea:focus {
       transparent 42%
     );
 }
-
 .dnd-banner {
   margin-bottom: 24px;
   padding: 18px;
   border-bottom: 4px solid #111;
   text-align: center;
 }
-
 .dnd-banner h3 {
   font-size: clamp(34px, 5vw, 58px);
   line-height: 1;
   text-transform: uppercase;
   letter-spacing: 1px;
 }
-
 .dnd-identity-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 14px;
   margin-bottom: 22px;
 }
-
 .dnd-identity-grid label,
 .dnd-details-grid label,
 .dnd-spell-header label {
   display: flex;
   flex-direction: column;
   gap: 6px;
-
   font-size: 13px;
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .dnd-identity-grid input,
 .dnd-details-grid input,
 .dnd-spell-header input {
@@ -3430,81 +2753,65 @@ textarea:focus {
   font-weight: 800;
   outline: none;
 }
-
 .dnd-main-grid {
   display: grid;
   grid-template-columns: 180px 1fr 300px;
   gap: 18px;
 }
-
 .dnd-abilities-column {
   display: flex;
   flex-direction: column;
   gap: 14px;
 }
-
 .dnd-ability-card {
   padding: 14px;
   border: 3px solid #111;
   border-radius: 18px;
-
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-
   background: rgba(255, 255, 255, 0.58);
 }
-
 .dnd-ability-card span {
   font-size: 14px;
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .dnd-ability-card input {
   width: 88px;
   height: 58px;
-
   border: 2px solid rgba(0, 0, 0, 0.32);
   border-radius: 14px;
-
   background: #f8f8f2;
   color: #080808;
-
   font-size: 28px;
   font-weight: 900;
   text-align: center;
   outline: none;
 }
-
 .dnd-ability-card strong {
   min-width: 58px;
   min-height: 38px;
   display: grid;
   place-items: center;
-
   border: 2px solid #111;
   border-radius: 999px;
-
   background: #ffffff;
   font-size: 20px;
 }
-
 .dnd-middle-column,
 .dnd-right-column {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-
 .dnd-box {
   padding: 16px;
   border: 3px solid #111;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.56);
 }
-
 .dnd-box h3 {
   margin-bottom: 12px;
   text-align: center;
@@ -3512,30 +2819,25 @@ textarea:focus {
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .dnd-list {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-
 .dnd-list.two-cols {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
 }
-
 .dnd-list label {
   display: grid;
   grid-template-columns: 1fr 58px;
   align-items: center;
   gap: 8px;
 }
-
 .dnd-list label span {
   font-size: 13px;
   font-weight: 800;
 }
-
 .dnd-list input {
   height: 34px;
   border: 2px solid rgba(0, 0, 0, 0.2);
@@ -3546,35 +2848,28 @@ textarea:focus {
   font-weight: 900;
   outline: none;
 }
-
 .dnd-stats-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 12px;
 }
-
 .dnd-stats-grid label {
   min-height: 96px;
   padding: 12px;
-
   border: 3px solid #111;
   border-radius: 18px;
-
   display: flex;
   flex-direction: column;
   justify-content: center;
   gap: 8px;
-
   background: rgba(255, 255, 255, 0.56);
 }
-
 .dnd-stats-grid span {
   text-align: center;
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .dnd-stats-grid input {
   min-height: 42px;
   border: none;
@@ -3585,27 +2880,23 @@ textarea:focus {
   font-weight: 900;
   outline: none;
 }
-
 .dnd-hp-box {
   padding: 16px;
   border: 3px solid #111;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.56);
 }
-
 .dnd-hp-box h3 {
   margin-bottom: 12px;
   text-align: center;
   text-transform: uppercase;
 }
-
 .dnd-hp-row {
   display: grid;
   grid-template-columns: 1fr auto 1fr;
   align-items: end;
   gap: 10px;
 }
-
 .dnd-hp-row label,
 .dnd-hp-box label {
   display: flex;
@@ -3614,7 +2905,6 @@ textarea:focus {
   font-weight: 900;
   text-align: center;
 }
-
 .dnd-hp-row input,
 .dnd-hp-box input {
   min-height: 44px;
@@ -3627,7 +2917,6 @@ textarea:focus {
   font-weight: 900;
   outline: none;
 }
-
 .dnd-hp-bar {
   height: 12px;
   margin: 14px 0;
@@ -3636,41 +2925,35 @@ textarea:focus {
   overflow: hidden;
   background: rgba(0, 0, 0, 0.1);
 }
-
 .dnd-hp-bar div {
   width: 0;
   height: 100%;
   background: linear-gradient(90deg, #991b1b, #ef4444);
   transition: 0.25s;
 }
-
 .dnd-bottom-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 18px;
   margin-top: 20px;
 }
-
 .dnd-attack-table {
   display: flex;
   flex-direction: column;
   gap: 8px;
 }
-
 .dnd-attack-table div,
 .dnd-attack-table label {
   display: grid;
   grid-template-columns: 1.4fr 0.8fr 1.2fr;
   gap: 8px;
 }
-
 .dnd-attack-table span {
   text-align: center;
   font-size: 12px;
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .dnd-attack-table input {
   min-height: 38px;
   border: 2px solid rgba(0, 0, 0, 0.2);
@@ -3681,57 +2964,47 @@ textarea:focus {
   font-weight: 800;
   outline: none;
 }
-
 .dnd-textarea-box textarea,
 .dnd-box textarea {
   width: 100%;
   min-height: 130px;
   padding: 12px;
-
   border: 2px solid rgba(0, 0, 0, 0.2);
   border-radius: 12px;
-
   background: #f8f8f2;
   color: #080808;
-
   font: inherit;
   font-weight: 700;
   resize: vertical;
   outline: none;
 }
-
 .dnd-section-title {
   margin-bottom: 22px;
   text-align: center;
 }
-
 .dnd-section-title h3 {
   font-size: clamp(30px, 5vw, 54px);
   line-height: 1;
   text-transform: uppercase;
 }
-
 .dnd-details-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-bottom: 20px;
 }
-
 .dnd-story-grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
   gap: 18px;
   margin-bottom: 18px;
 }
-
 .dnd-spell-header {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 14px;
   margin-bottom: 20px;
 }
-
 .dnd-spell-slots {
   padding: 16px;
   border: 3px solid #111;
@@ -3739,19 +3012,16 @@ textarea:focus {
   margin-bottom: 20px;
   background: rgba(255, 255, 255, 0.56);
 }
-
 .dnd-spell-slots h3 {
   margin-bottom: 14px;
   text-align: center;
   text-transform: uppercase;
 }
-
 .dnd-spell-slots div {
   display: grid;
   grid-template-columns: repeat(9, 1fr);
   gap: 10px;
 }
-
 .dnd-spell-slots label {
   display: flex;
   flex-direction: column;
@@ -3759,7 +3029,6 @@ textarea:focus {
   text-align: center;
   font-weight: 900;
 }
-
 .dnd-spell-slots input {
   min-height: 40px;
   border: 2px solid rgba(0, 0, 0, 0.22);
@@ -3769,28 +3038,23 @@ textarea:focus {
   font-weight: 900;
   outline: none;
 }
-
 .dnd-spells-grid {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 18px;
 }
-
 .dnd-spells-grid label {
   display: flex;
   flex-direction: column;
   gap: 10px;
   padding: 16px;
-
   border: 3px solid #111;
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.56);
-
   font-weight: 900;
   text-align: center;
   text-transform: uppercase;
 }
-
 .dnd-spells-grid textarea {
   width: 100%;
   padding: 12px;
@@ -3803,35 +3067,29 @@ textarea:focus {
   resize: vertical;
   outline: none;
 }
-
 .dnd-paper-page input:focus,
 .dnd-paper-page textarea:focus {
   border-color: #991b1b;
   box-shadow: 0 0 0 4px rgba(153, 27, 27, 0.08);
 }
-
-/* modal grande do mestre para ficha D&D */
 .dnd-sheet-modal-box {
   width: 96vw !important;
   height: 94vh !important;
   max-width: none !important;
   max-height: none !important;
 }
-
 .dnd-sheet-modal-box #dndForm {
   flex: 1;
   min-height: 0;
   display: flex;
   flex-direction: column;
 }
-
 .dnd-sheet-modal-box #dndFormFields {
   flex: 1;
   min-height: 0;
   overflow: auto;
   padding: 18px;
 }
-
 .dnd-sheet-modal-box .master-dnd-sheet {
   width: 100%;
   min-width: 1100px;
@@ -3840,18 +3098,15 @@ textarea:focus {
   gap: 28px;
   align-items: start;
 }
-
 .dnd-sheet-modal-box .master-dnd-sheet .dnd-paper-page {
   width: 100%;
   max-width: none;
   margin: 0;
 }
-
 .dnd-sheet-modal-box .master-dnd-sheet .dnd-paper-page:first-child {
   grid-column: 1 / -1;
 }
 
-/* responsivo */
 @media (max-width: 1100px) {
   .dnd-main-grid {
     grid-template-columns: 1fr;
@@ -3914,11 +3169,6 @@ textarea:focus {
     min-width: 760px;
   }
 }
-
-/* =========================================================
-   D&D SHEET - DARK MODE
-========================================================= */
-
 .dnd-paper-page {
   background:
     linear-gradient(180deg, rgba(9, 12, 20, 0.98), rgba(4, 8, 16, 0.98)),
@@ -3929,7 +3179,6 @@ textarea:focus {
     inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   color: #f8fafc;
 }
-
 .dnd-frame {
   background:
     linear-gradient(180deg, rgba(11, 18, 32, 0.92), rgba(7, 12, 24, 0.96)),
@@ -3942,18 +3191,15 @@ textarea:focus {
   outline: 1px solid rgba(248, 250, 252, 0.08);
   outline-offset: -10px;
 }
-
 .dnd-banner {
   border-bottom: 2px solid rgba(248, 250, 252, 0.14);
 }
-
 .dnd-banner h3,
 .dnd-section-title h3,
 .dnd-box h3,
 .dnd-sheet-toolbar h2 {
   color: #f8fafc;
 }
-
 .dnd-sheet-toolbar {
   background:
     linear-gradient(145deg, rgba(8, 14, 28, 0.96), rgba(3, 7, 18, 0.98)),
@@ -3964,7 +3210,6 @@ textarea:focus {
     );
   border: 1px solid rgba(148, 163, 184, 0.16);
 }
-
 .dnd-sheet-toolbar p,
 .dnd-paper-page p,
 .dnd-paper-page label,
@@ -3972,7 +3217,6 @@ textarea:focus {
 .dnd-paper-page strong {
   color: #e2e8f0;
 }
-
 .dnd-identity-grid label,
 .dnd-details-grid label,
 .dnd-spell-header label,
@@ -3985,7 +3229,6 @@ textarea:focus {
 .dnd-ability-card span {
   color: #cbd5e1;
 }
-
 .dnd-box,
 .dnd-ability-card,
 .dnd-stats-grid label,
@@ -4002,13 +3245,11 @@ textarea:focus {
     inset 0 1px 0 rgba(255, 255, 255, 0.03),
     0 10px 26px rgba(0, 0, 0, 0.22);
 }
-
 .dnd-ability-card strong {
   background: rgba(255, 255, 255, 0.04);
   border: 1px solid rgba(148, 163, 184, 0.24);
   color: #ffffff;
 }
-
 .dnd-paper-page input,
 .dnd-paper-page textarea {
   background: rgba(2, 6, 23, 0.88);
@@ -4016,12 +3257,10 @@ textarea:focus {
   color: #f8fafc;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
-
 .dnd-paper-page input::placeholder,
 .dnd-paper-page textarea::placeholder {
   color: rgba(203, 213, 225, 0.45);
 }
-
 .dnd-identity-grid input,
 .dnd-details-grid input,
 .dnd-spell-header input,
@@ -4038,39 +3277,32 @@ textarea:focus {
   color: #f8fafc;
   border: 1px solid rgba(148, 163, 184, 0.22);
 }
-
 .dnd-paper-page input:focus,
 .dnd-paper-page textarea:focus {
   border-color: rgba(239, 68, 68, 0.7);
   box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.12);
 }
-
 .dnd-attack-table div {
   border-bottom: 1px solid rgba(148, 163, 184, 0.12);
   padding-bottom: 8px;
   margin-bottom: 4px;
 }
-
 .dnd-list label,
 .dnd-attack-table label {
   color: #e2e8f0;
 }
-
 .dnd-hp-bar {
   background: rgba(255, 255, 255, 0.06);
   border: 1px solid rgba(148, 163, 184, 0.18);
 }
-
 .dnd-hp-bar div {
   background: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
 }
-
 .dnd-spell-slots h3,
 .dnd-spells-grid label,
 .dnd-textarea-box h3 {
   color: #f8fafc;
 }
-
 .dnd-sheet-modal-box {
   background:
     linear-gradient(145deg, rgba(7, 12, 24, 0.98), rgba(2, 6, 16, 0.98)),
@@ -4080,8 +3312,6 @@ textarea:focus {
       transparent 42%
     );
 }
-
-/* cards das fichas no painel do mestre */
 .dnd-sheet-card {
   background:
     linear-gradient(145deg, rgba(9, 16, 30, 0.95), rgba(4, 9, 20, 0.96)),
@@ -4093,43 +3323,31 @@ textarea:focus {
   border: 1px solid rgba(148, 163, 184, 0.16);
   color: #f8fafc;
 }
-
 .dnd-sheet-card h3,
 .dnd-sheet-card p,
 .dnd-sheet-card span,
 .dnd-sheet-card strong {
   color: #f8fafc;
 }
-
 .dnd-sheet-card .sheet-card-top strong,
 .dnd-sheet-card .sheet-card-footer strong {
   color: #f87171;
 }
-
-/* scrollbar interna do modal */
 #dndFormFields::-webkit-scrollbar {
   width: 10px;
   height: 10px;
 }
-
 #dndFormFields::-webkit-scrollbar-track {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 999px;
 }
-
 #dndFormFields::-webkit-scrollbar-thumb {
   background: rgba(239, 68, 68, 0.35);
   border-radius: 999px;
 }
-
 #dndFormFields::-webkit-scrollbar-thumb:hover {
   background: rgba(239, 68, 68, 0.55);
 }
-
-/* =========================================================
-   FONTE DA FICHA DE D&D
-========================================================= */
-
 .dnd-character-sheet,
 .dnd-character-sheet *,
 .dnd-paper-page,
@@ -4138,8 +3356,6 @@ textarea:focus {
 .dnd-sheet-modal-box * {
   font-family: "Aboreto", serif !important;
 }
-
-/* Mantém os campos bonitos com a fonte nova */
 .dnd-paper-page input,
 .dnd-paper-page textarea,
 .dnd-sheet-modal-box input,
@@ -4147,8 +3363,6 @@ textarea:focus {
   font-family: "Aboreto", serif !important;
   letter-spacing: 0.8px;
 }
-
-/* Títulos maiores e com presença */
 .dnd-banner h3,
 .dnd-section-title h3,
 .dnd-box h3,
@@ -4158,8 +3372,6 @@ textarea:focus {
   letter-spacing: 1.4px;
   font-weight: 400 !important;
 }
-
-/* Labels e textos menores */
 .dnd-paper-page label,
 .dnd-paper-page span,
 .dnd-paper-page small,
@@ -4170,8 +3382,6 @@ textarea:focus {
   letter-spacing: 0.6px;
   font-weight: 400 !important;
 }
-
-/* Números dos atributos e status */
 .dnd-ability-card input,
 .dnd-ability-card strong,
 .dnd-stats-grid input,
@@ -4184,27 +3394,18 @@ textarea:focus {
   font-weight: 400 !important;
   letter-spacing: 0.5px;
 }
-
 .dnd-banner h3 {
   font-size: clamp(42px, 6vw, 72px);
 }
-
 .dnd-section-title h3 {
   font-size: clamp(34px, 5vw, 62px);
 }
-
 .dnd-box h3 {
   font-size: 18px;
 }
-
-/* =========================================================
-   FICHA DE ALTHERIUM - DARK MODE
-========================================================= */
-
 .altherium-sheet-wrapper {
   color: #f8fafc;
 }
-
 .rune-paper-page {
   background:
     linear-gradient(180deg, rgba(8, 13, 24, 0.98), rgba(3, 7, 16, 0.98)),
@@ -4215,7 +3416,6 @@ textarea:focus {
     inset 0 0 0 1px rgba(255, 255, 255, 0.03);
   color: #f8fafc;
 }
-
 .rune-frame {
   background:
     linear-gradient(180deg, rgba(11, 18, 32, 0.92), rgba(7, 12, 24, 0.96)),
@@ -4228,23 +3428,19 @@ textarea:focus {
   outline: 1px solid rgba(248, 250, 252, 0.08);
   outline-offset: -10px;
 }
-
 .rune-frame::before,
 .rune-frame::after {
   color: rgba(226, 232, 240, 0.28);
 }
-
 .rune-page-header span,
 .rune-section-title h3,
 .rune-weapons-table h3,
 .rune-money-field span {
   color: #f8fafc;
 }
-
 .rune-section-title p {
   color: rgba(226, 232, 240, 0.72);
 }
-
 .rune-page-header input,
 .rune-resource-line input,
 .rune-attributes-table input,
@@ -4259,7 +3455,6 @@ textarea:focus {
   color: #f8fafc;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
-
 .rune-page-header input::placeholder,
 .rune-resource-line input::placeholder,
 .rune-weapon-row input::placeholder,
@@ -4267,39 +3462,31 @@ textarea:focus {
 .rune-triumphs-area::placeholder {
   color: rgba(203, 213, 225, 0.45);
 }
-
 .rune-page-header input {
   border-bottom: 2px solid rgba(34, 211, 238, 0.32);
 }
-
 .rune-resource-line {
   color: #f8fafc;
 }
-
 .rune-resource-line strong {
   color: #22d3ee;
 }
-
 .rune-resource-line span {
   color: #e2e8f0;
 }
-
 .rune-bar {
   background: rgba(255, 255, 255, 0.07);
   border: 1px solid rgba(148, 163, 184, 0.22);
 }
-
 .rune-bar div {
   background: linear-gradient(90deg, #0891b2, #22d3ee, #67e8f9);
 }
-
 .rune-attributes-table,
 .rune-body-table,
 .rune-weapons-table,
 .rune-domains-table {
   background: transparent;
 }
-
 .rune-attributes-table label,
 .rune-body-table label,
 .rune-domains-table label span,
@@ -4313,7 +3500,6 @@ textarea:focus {
   border-color: rgba(148, 163, 184, 0.18);
   color: #f8fafc;
 }
-
 .rune-attributes-table span,
 .rune-body-table span,
 .rune-body-table small {
@@ -4321,12 +3507,10 @@ textarea:focus {
   background: rgba(255, 255, 255, 0.035);
   border-color: rgba(148, 163, 184, 0.14);
 }
-
 .rune-attributes-table span,
 .rune-body-table span {
   color: #22d3ee;
 }
-
 .rune-attributes-table input:focus,
 .rune-body-table input:focus,
 .rune-weapon-row input:focus,
@@ -4337,7 +3521,6 @@ textarea:focus {
   background: rgba(34, 211, 238, 0.08);
   box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.1);
 }
-
 .rune-weapons-table {
   background: linear-gradient(
     180deg,
@@ -4347,7 +3530,6 @@ textarea:focus {
   border: 1px solid rgba(148, 163, 184, 0.18);
   box-shadow: 0 12px 34px rgba(0, 0, 0, 0.28);
 }
-
 .rune-weapons-table h3 {
   background: linear-gradient(
     180deg,
@@ -4356,21 +3538,17 @@ textarea:focus {
   );
   border-bottom: 1px solid rgba(148, 163, 184, 0.16);
 }
-
 .rune-weapon-head {
   background: rgba(255, 255, 255, 0.04);
 }
-
 .rune-weapon-head span {
   color: #22d3ee;
   background: rgba(255, 255, 255, 0.035);
   border-color: rgba(148, 163, 184, 0.16);
 }
-
 .rune-weapon-row {
   border-color: rgba(148, 163, 184, 0.12);
 }
-
 .rune-domain-head span {
   background: linear-gradient(
     180deg,
@@ -4380,11 +3558,9 @@ textarea:focus {
   color: #f8fafc;
   border: 1px solid rgba(148, 163, 184, 0.18);
 }
-
 .rune-domains-table label small {
   color: #67e8f9;
 }
-
 .rune-inventory-list input {
   background: linear-gradient(
     180deg,
@@ -4394,7 +3570,6 @@ textarea:focus {
   border: 1px solid rgba(148, 163, 184, 0.18);
   color: #f8fafc;
 }
-
 .rune-money-field {
   background: linear-gradient(
     180deg,
@@ -4404,7 +3579,6 @@ textarea:focus {
   border: 1px solid rgba(148, 163, 184, 0.2);
   border-radius: 16px;
 }
-
 .rune-triumphs-area {
   background: linear-gradient(
     180deg,
@@ -4414,14 +3588,11 @@ textarea:focus {
   border: 1px dashed rgba(34, 211, 238, 0.32);
   color: #f8fafc;
 }
-
-/* Modal do mestre também em dark mode */
 .altherium-sheet-modal-box .rune-paper-page {
   background:
     linear-gradient(180deg, rgba(8, 13, 24, 0.98), rgba(3, 7, 16, 0.98)),
     radial-gradient(circle at top, rgba(34, 211, 238, 0.08), transparent 46%);
 }
-
 .altherium-sheet-modal-box .rune-frame {
   background:
     linear-gradient(180deg, rgba(11, 18, 32, 0.92), rgba(7, 12, 24, 0.96)),
@@ -4431,8 +3602,6 @@ textarea:focus {
       transparent 36%
     );
 }
-
-/* Cards das fichas de Altherium no painel do mestre */
 .sheet-card:not(.dnd-sheet-card) {
   background:
     linear-gradient(145deg, rgba(9, 16, 30, 0.95), rgba(4, 9, 20, 0.96)),
@@ -4444,59 +3613,45 @@ textarea:focus {
   border: 1px solid rgba(148, 163, 184, 0.16);
   color: #f8fafc;
 }
-
 .sheet-card:not(.dnd-sheet-card) h3,
 .sheet-card:not(.dnd-sheet-card) p,
 .sheet-card:not(.dnd-sheet-card) span,
 .sheet-card:not(.dnd-sheet-card) strong {
   color: #f8fafc;
 }
-
 .sheet-card:not(.dnd-sheet-card) .sheet-card-top strong,
 .sheet-card:not(.dnd-sheet-card) .sheet-card-footer strong,
 .sheet-card:not(.dnd-sheet-card) .sheet-card-footer span {
   color: #22d3ee;
 }
-
-/* título principal da área da ficha */
 .dnd-sheet-toolbar h2 {
   font-family: "Aboreto", serif !important;
   font-weight: 400 !important;
   letter-spacing: 2px;
   text-transform: uppercase;
 }
-
-/* =========================================================
-   SISTEMA DE INICIATIVA
-========================================================= */
-
 .initiative-sheet-box {
   margin: 24px 0;
   padding: 22px;
   border-radius: 22px;
   border: 1px solid rgba(34, 211, 238, 0.28);
-
   background:
     linear-gradient(180deg, rgba(8, 145, 178, 0.16), rgba(14, 116, 144, 0.08)),
     rgba(2, 6, 23, 0.6);
-
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24);
 }
-
 .initiative-sheet-box label {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 18px;
 }
-
 .initiative-sheet-box span {
   color: #22d3ee;
   font-size: 28px;
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .initiative-sheet-box input {
   width: 130px;
   min-height: 64px;
@@ -4509,54 +3664,44 @@ textarea:focus {
   font-weight: 900;
   outline: none;
 }
-
 .initiative-sheet-box input:focus {
   border-color: rgba(34, 211, 238, 0.8);
   box-shadow: 0 0 0 5px rgba(34, 211, 238, 0.12);
 }
-
 .initiative-sheet-box p {
   margin-top: 12px;
   color: rgba(226, 232, 240, 0.72);
   line-height: 1.5;
 }
-
 .dnd-initiative-box {
   border-color: rgba(239, 68, 68, 0.3);
   background:
     linear-gradient(180deg, rgba(239, 68, 68, 0.14), rgba(127, 29, 29, 0.08)),
     rgba(2, 6, 23, 0.6);
 }
-
 .dnd-initiative-box span {
   color: #f87171;
 }
-
 .dnd-initiative-box input {
   border-color: rgba(239, 68, 68, 0.34);
 }
-
 .dnd-initiative-box input:focus {
   border-color: rgba(239, 68, 68, 0.8);
   box-shadow: 0 0 0 5px rgba(239, 68, 68, 0.12);
 }
-
 .initiative-board {
   display: flex;
   flex-direction: column;
   gap: 16px;
 }
-
 .initiative-row {
   display: grid;
   grid-template-columns: 72px 1fr 110px;
   align-items: center;
   gap: 18px;
-
   padding: 20px;
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 22px;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.92)),
     radial-gradient(
@@ -4564,78 +3709,58 @@ textarea:focus {
       rgba(34, 211, 238, 0.08),
       transparent 42%
     );
-
   transition: 0.25s ease;
 }
-
 .initiative-row.active {
   border-color: rgba(34, 211, 238, 0.52);
   box-shadow:
     0 0 0 1px rgba(34, 211, 238, 0.14),
     0 20px 50px rgba(0, 0, 0, 0.28);
 }
-
 .dnd-master-page .initiative-row.active {
   border-color: rgba(239, 68, 68, 0.52);
   box-shadow:
     0 0 0 1px rgba(239, 68, 68, 0.14),
     0 20px 50px rgba(0, 0, 0, 0.28);
 }
-
 .initiative-position {
   width: 58px;
   height: 58px;
-
   display: grid;
   place-items: center;
-
   border-radius: 18px;
   background: linear-gradient(135deg, #22d3ee, #06b6d4);
   color: #020617;
-
   font-size: 26px;
   font-weight: 900;
 }
-
 .dnd-master-page .initiative-position {
   background: linear-gradient(135deg, #f87171, #dc2626);
 }
-
 .initiative-character {
   display: flex;
   flex-direction: column;
   gap: 6px;
 }
-
 .initiative-character strong {
   color: #f8fafc;
   font-size: 26px;
 }
-
 .initiative-character span {
   color: rgba(226, 232, 240, 0.68);
   font-size: 14px;
 }
-
 .initiative-value {
   min-height: 58px;
-
   display: grid;
   place-items: center;
-
   border-radius: 18px;
   border: 1px solid rgba(148, 163, 184, 0.18);
   background: rgba(255, 255, 255, 0.05);
-
   color: #f8fafc;
   font-size: 30px;
   font-weight: 900;
 }
-
-/* =========================================================
-   AJUSTES FINAIS DAS FICHAS E MODAIS
-========================================================= */
-
 .altherium-sheet-modal-box,
 .dnd-sheet-modal-box {
   width: 96vw !important;
@@ -4643,7 +3768,6 @@ textarea:focus {
   max-width: none !important;
   max-height: none !important;
 }
-
 .altherium-sheet-modal-box #altheriumForm,
 .dnd-sheet-modal-box #dndForm {
   flex: 1;
@@ -4651,7 +3775,6 @@ textarea:focus {
   display: flex;
   flex-direction: column;
 }
-
 .altherium-sheet-modal-box #altheriumFormFields,
 .dnd-sheet-modal-box #dndFormFields {
   flex: 1;
@@ -4659,7 +3782,6 @@ textarea:focus {
   overflow: auto;
   padding: 18px;
 }
-
 .altherium-sheet-modal-box .master-rune-sheet,
 .dnd-sheet-modal-box .master-dnd-sheet {
   width: 100%;
@@ -4669,30 +3791,22 @@ textarea:focus {
   gap: 28px;
   align-items: start;
 }
-
 .altherium-sheet-modal-box .master-rune-sheet .rune-paper-page,
 .dnd-sheet-modal-box .master-dnd-sheet .dnd-paper-page {
   width: 100%;
   max-width: none;
   margin: 0;
 }
-
 .altherium-sheet-modal-box .master-rune-sheet .rune-paper-page:first-child,
 .dnd-sheet-modal-box .master-dnd-sheet .dnd-paper-page:first-child {
   grid-column: 1 / -1;
 }
-
-/* =========================================================
-   GARANTIA DE FONTES NAS FICHAS
-========================================================= */
-
 .altherium-rune-sheet,
 .altherium-rune-sheet *,
 .altherium-sheet-modal-box .altherium-rune-sheet,
 .altherium-sheet-modal-box .altherium-rune-sheet * {
   font-family: "Caesar Dressing", cursive !important;
 }
-
 .dnd-character-sheet,
 .dnd-character-sheet *,
 .dnd-sheet-modal-box .dnd-character-sheet,
@@ -4700,14 +3814,12 @@ textarea:focus {
   font-family: "Aboreto", serif !important;
   font-weight: 400 !important;
 }
-
 .dnd-sheet-toolbar .tag,
 .dnd-sheet-toolbar h2,
 .dnd-sheet-toolbar p {
   font-family: "Aboreto", serif !important;
   font-weight: 400 !important;
 }
-
 .dnd-sheet-toolbar h2 {
   letter-spacing: 4px !important;
   text-transform: uppercase !important;
@@ -4745,59 +3857,38 @@ textarea:focus {
     width: 100%;
   }
 }
-
-/* =========================================================
-   CORREÇÃO FINAL - LOGO DO HEADER MENOR
-========================================================= */
-
-/*
-  O header centralizado estava usando transform: scale(5.2),
-  por isso a logo continuava gigante mesmo mudando o height.
-  Este bloco fica no final para sobrescrever qualquer regra antiga.
-*/
-
 .header-center {
   height: 92px !important;
   overflow: hidden !important;
 }
-
 .header-container-center {
   width: 100% !important;
   max-width: 1400px !important;
   height: 100% !important;
   padding: 0 5% !important;
-
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
-
 .header-center .logo {
   height: 100% !important;
-
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
 }
-
 .header-center .logo img {
   height: 200px !important;
   max-height: 200px !important;
   width: auto !important;
   max-width: min(760px, 82vw) !important;
-
   display: block !important;
   object-fit: contain !important;
-
   transform: none !important;
   transform-origin: center center !important;
 }
-
 .header-center .logo img:hover {
   transform: scale(1.03) !important;
 }
-
-/* Caso alguma página use o header padrão em vez do header centralizado */
 .header:not(.header-center) .logo img {
   height: 82px !important;
   max-height: 82px !important;
@@ -4837,12 +3928,6 @@ textarea:focus {
     transform: scale(1.03) !important;
   }
 }
-
-/* =========================================================
-   BESTIÁRIO AUTOMÁTICO DE ALTHERIUM
-   Adicionado para funcionar com o script.js atualizado
-========================================================= */
-
 .bestiary-layout,
 .altherium-bestiary-layout {
   display: grid;
@@ -4850,7 +3935,6 @@ textarea:focus {
   gap: 26px;
   align-items: start;
 }
-
 .bestiary-column,
 .bestiary-side,
 .bestiary-main-column {
@@ -4858,7 +3942,6 @@ textarea:focus {
   flex-direction: column;
   gap: 22px;
 }
-
 .bestiary-card,
 .player-form,
 .boss-form,
@@ -4879,7 +3962,6 @@ textarea:focus {
     0 24px 80px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
 }
-
 .bestiary-card h2,
 .player-form h2,
 .boss-form h2,
@@ -4890,7 +3972,6 @@ textarea:focus {
   font-size: clamp(24px, 3vw, 34px);
   line-height: 1.05;
 }
-
 .bestiary-card p,
 .player-form p,
 .boss-form p,
@@ -4899,32 +3980,27 @@ textarea:focus {
   color: var(--text-soft);
   line-height: 1.6;
 }
-
 .form-group,
 .form-group-full {
   display: flex;
   flex-direction: column;
 }
-
 .form-group.full,
 .form-group-full {
   grid-column: 1 / -1;
 }
-
 .form-actions {
   display: flex;
   flex-wrap: wrap;
   gap: 12px;
   margin-top: 8px;
 }
-
 .form-actions .btn,
 .form-actions button,
 .player-form .btn,
 .boss-form .btn {
   border: none;
 }
-
 .btn-remove-player,
 .clear-players,
 .add-example-players,
@@ -4939,7 +4015,6 @@ textarea:focus {
   cursor: pointer;
   transition: 0.25s ease;
 }
-
 .add-example-players,
 .export-players,
 [data-add-example-players],
@@ -4948,7 +4023,6 @@ textarea:focus {
   background: rgba(34, 211, 238, 0.08);
   color: var(--cyan);
 }
-
 .add-example-players:hover,
 .export-players:hover,
 [data-add-example-players]:hover,
@@ -4958,7 +4032,6 @@ textarea:focus {
   background: rgba(34, 211, 238, 0.14);
   box-shadow: 0 16px 36px rgba(34, 211, 238, 0.12);
 }
-
 .clear-players,
 .btn-remove-player,
 [data-clear-players] {
@@ -4966,7 +4039,6 @@ textarea:focus {
   background: rgba(239, 68, 68, 0.1);
   color: #fca5a5;
 }
-
 .clear-players:hover,
 .btn-remove-player:hover,
 [data-clear-players]:hover {
@@ -4974,15 +4046,11 @@ textarea:focus {
   background: rgba(239, 68, 68, 0.18);
   border-color: rgba(239, 68, 68, 0.58);
 }
-
 .btn-remove-player {
   min-height: 36px;
   padding: 0 14px;
   font-size: 12px;
 }
-
-/* Estatísticas do grupo usadas pelo cálculo automático */
-
 .party-stats,
 #partyStats,
 #party-stats,
@@ -4991,7 +4059,6 @@ textarea:focus {
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 14px;
 }
-
 .party-stats .stat-card,
 #partyStats .stat-card,
 #party-stats .stat-card,
@@ -5008,7 +4075,6 @@ textarea:focus {
       transparent 42%
     );
 }
-
 .party-stats .stat-card span,
 #partyStats .stat-card span,
 #party-stats .stat-card span,
@@ -5019,7 +4085,6 @@ textarea:focus {
   font-size: 13px;
   font-weight: 800;
 }
-
 .party-stats .stat-card strong,
 #partyStats .stat-card strong,
 #party-stats .stat-card strong,
@@ -5028,9 +4093,6 @@ textarea:focus {
   font-size: clamp(28px, 4vw, 42px);
   line-height: 1;
 }
-
-/* Lista de personagens lidos pelo bestiário */
-
 .players-list,
 #playersList,
 #players-list,
@@ -5039,7 +4101,6 @@ textarea:focus {
   flex-direction: column;
   gap: 16px;
 }
-
 .player-card {
   padding: 22px;
   border: 1px solid rgba(148, 163, 184, 0.16);
@@ -5054,7 +4115,6 @@ textarea:focus {
   box-shadow: 0 18px 54px rgba(0, 0, 0, 0.24);
   transition: 0.25s ease;
 }
-
 .player-card:hover {
   transform: translateY(-4px);
   border-color: rgba(34, 211, 238, 0.42);
@@ -5062,7 +4122,6 @@ textarea:focus {
     0 22px 64px rgba(0, 0, 0, 0.3),
     0 0 42px rgba(34, 211, 238, 0.08);
 }
-
 .player-card__header {
   display: flex;
   align-items: flex-start;
@@ -5070,13 +4129,11 @@ textarea:focus {
   gap: 16px;
   margin-bottom: 18px;
 }
-
 .player-card__header h3 {
   color: var(--text);
   font-size: 26px;
   line-height: 1.05;
 }
-
 .player-card__owner {
   display: inline-flex;
   margin-top: 7px;
@@ -5084,20 +4141,17 @@ textarea:focus {
   font-size: 13px;
   font-weight: 900;
 }
-
 .player-card__stats {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 12px;
 }
-
 .player-card__stats div {
   padding: 14px;
   border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.035);
 }
-
 .player-card__stats span {
   display: block;
   margin-bottom: 6px;
@@ -5105,12 +4159,10 @@ textarea:focus {
   font-size: 12px;
   font-weight: 800;
 }
-
 .player-card__stats strong {
   color: var(--text);
   font-size: 18px;
 }
-
 .player-card__notes {
   margin-top: 16px;
   padding-top: 16px;
@@ -5118,7 +4170,6 @@ textarea:focus {
   color: var(--text-soft);
   line-height: 1.55;
 }
-
 .empty-state,
 .altherium-empty {
   padding: 26px;
@@ -5133,28 +4184,22 @@ textarea:focus {
     );
   color: var(--text-soft);
 }
-
 .empty-state h3,
 .altherium-empty h3 {
   margin-bottom: 8px;
   color: var(--text);
 }
-
 .empty-state p,
 .altherium-empty p {
   color: var(--text-soft);
   line-height: 1.6;
 }
-
-/* Preview automático do boss */
-
 .boss-preview,
 #bossPreview,
 #boss-preview,
 [data-boss-preview] {
   width: 100%;
 }
-
 .preview-card {
   padding: 24px;
   border: 1px solid rgba(34, 211, 238, 0.34);
@@ -5170,7 +4215,6 @@ textarea:focus {
     0 24px 70px rgba(0, 0, 0, 0.3),
     0 0 44px rgba(34, 211, 238, 0.1);
 }
-
 .preview-card > span {
   display: inline-flex;
   margin-bottom: 10px;
@@ -5180,41 +4224,33 @@ textarea:focus {
   letter-spacing: 1.4px;
   text-transform: uppercase;
 }
-
 .preview-card h3 {
   margin-bottom: 18px;
   color: var(--text);
   font-size: 30px;
   line-height: 1.05;
 }
-
 .preview-grid {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 12px;
 }
-
 .preview-grid div {
   padding: 15px;
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.04);
 }
-
 .preview-grid small {
   display: block;
   margin-bottom: 7px;
   color: var(--muted);
   font-weight: 800;
 }
-
 .preview-grid strong {
   color: var(--text);
   font-size: 20px;
 }
-
-/* Resultado gerado do boss */
-
 .bestiary-result,
 .boss-result,
 #bestiaryResult,
@@ -5223,7 +4259,6 @@ textarea:focus {
 [data-bestiary-result] {
   width: 100%;
 }
-
 .boss-result-card {
   padding: 30px;
   border: 1px solid rgba(34, 211, 238, 0.36);
@@ -5244,7 +4279,6 @@ textarea:focus {
     0 30px 100px rgba(0, 0, 0, 0.38),
     0 0 60px rgba(34, 211, 238, 0.09);
 }
-
 .boss-result-card__header {
   display: flex;
   align-items: flex-start;
@@ -5254,7 +4288,6 @@ textarea:focus {
   padding-bottom: 22px;
   border-bottom: 1px solid rgba(148, 163, 184, 0.14);
 }
-
 .boss-result-card__tag {
   display: inline-flex;
   margin-bottom: 12px;
@@ -5268,14 +4301,12 @@ textarea:focus {
   letter-spacing: 1.3px;
   text-transform: uppercase;
 }
-
 .boss-result-card h2 {
   color: var(--text);
   font-size: clamp(34px, 5vw, 60px);
   line-height: 0.98;
   letter-spacing: -1px;
 }
-
 .boss-result-card__hp {
   flex-shrink: 0;
   padding: 14px 18px;
@@ -5287,21 +4318,18 @@ textarea:focus {
   font-weight: 900;
   white-space: nowrap;
 }
-
 .boss-result-grid {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
   gap: 12px;
   margin-bottom: 18px;
 }
-
 .boss-result-grid div {
   padding: 16px;
   border: 1px solid rgba(148, 163, 184, 0.16);
   border-radius: 18px;
   background: rgba(255, 255, 255, 0.04);
 }
-
 .boss-result-grid span {
   display: block;
   margin-bottom: 8px;
@@ -5309,12 +4337,10 @@ textarea:focus {
   font-size: 12px;
   font-weight: 800;
 }
-
 .boss-result-grid strong {
   color: var(--text);
   font-size: 20px;
 }
-
 .boss-damage-box,
 .boss-formula-box {
   margin-top: 18px;
@@ -5323,32 +4349,27 @@ textarea:focus {
   border-radius: 24px;
   background: rgba(255, 255, 255, 0.035);
 }
-
 .boss-damage-box h3,
 .boss-formula-box h3 {
   margin-bottom: 10px;
   color: var(--text);
   font-size: 24px;
 }
-
 .boss-damage-box p,
 .boss-formula-box p {
   color: var(--text-soft);
   line-height: 1.6;
 }
-
 .boss-damage-box strong,
 .boss-formula-box strong {
   color: var(--cyan);
 }
-
 .boss-dice-options {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
   margin-top: 18px;
 }
-
 .boss-dice-options div {
   padding: 18px;
   border: 1px solid rgba(148, 163, 184, 0.16);
@@ -5359,7 +4380,6 @@ textarea:focus {
     rgba(2, 6, 23, 0.78)
   );
 }
-
 .boss-dice-options div.recommended {
   border-color: rgba(34, 211, 238, 0.42);
   background: linear-gradient(
@@ -5369,7 +4389,6 @@ textarea:focus {
   );
   box-shadow: 0 0 38px rgba(34, 211, 238, 0.12);
 }
-
 .boss-dice-options span {
   display: block;
   margin-bottom: 8px;
@@ -5378,23 +4397,18 @@ textarea:focus {
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .boss-dice-options strong {
   display: block;
   color: var(--text);
   font-size: 34px;
   line-height: 1;
 }
-
 .boss-dice-options small {
   display: block;
   margin-top: 8px;
   color: var(--cyan);
   font-weight: 900;
 }
-
-/* Importar e exportar fichas/personagens */
-
 #importPlayers,
 #import-players,
 [data-import-players] {
@@ -5403,9 +4417,6 @@ textarea:focus {
   padding: 16px;
   border-style: dashed;
 }
-
-/* Abas genéricas caso o bestiário use data-tab */
-
 .tabs,
 .bestiary-tabs {
   display: flex;
@@ -5413,7 +4424,6 @@ textarea:focus {
   gap: 10px;
   margin-bottom: 22px;
 }
-
 [data-tab-button] {
   min-height: 42px;
   padding: 0 16px;
@@ -5425,23 +4435,18 @@ textarea:focus {
   cursor: pointer;
   transition: 0.25s ease;
 }
-
 [data-tab-button]:hover,
 [data-tab-button].active {
   border-color: rgba(34, 211, 238, 0.44);
   background: rgba(34, 211, 238, 0.12);
   color: var(--cyan);
 }
-
 [data-tab-content] {
   display: none;
 }
-
 [data-tab-content].active {
   display: block;
 }
-
-/* Responsivo do bestiário */
 
 @media (max-width: 1100px) {
   .bestiary-layout,
@@ -5503,83 +4508,58 @@ textarea:focus {
     width: 100%;
   }
 }
-
-/* =========================================================
-   SETAS PREMIUM PARA INPUT TYPE NUMBER - SITE TODO
-========================================================= */
-
-/* Remove as setas feias padrão do navegador */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
-
 input[type="number"] {
   appearance: textfield;
   -moz-appearance: textfield;
 }
-
-/* Container criado pelo JavaScript */
 .number-control {
   position: relative;
   width: 100%;
   display: flex;
   align-items: stretch;
 }
-
 .number-control input[type="number"] {
   width: 100%;
   padding-right: 54px !important;
 }
-
-/* Área das setas */
 .number-control-buttons {
   position: absolute;
   top: 6px;
   right: 6px;
   bottom: 6px;
-
   width: 36px;
-
   display: flex;
   flex-direction: column;
   gap: 4px;
-
   pointer-events: auto;
 }
-
-/* Botões das setas */
 .number-control-btn {
   flex: 1;
-
   display: flex;
   align-items: center;
   justify-content: center;
-
   border: 1px solid rgba(34, 211, 238, 0.35);
   border-radius: 10px;
-
   background: linear-gradient(
     145deg,
     rgba(34, 211, 238, 0.18),
     rgba(15, 23, 42, 0.9)
   );
-
   color: #67e8f9;
-
   font-size: 12px;
   font-weight: 900;
   line-height: 1;
-
   cursor: pointer;
   transition: 0.2s ease;
-
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 0 12px rgba(34, 211, 238, 0.08);
 }
-
 .number-control-btn:hover {
   border-color: rgba(34, 211, 238, 0.8);
   background: linear-gradient(
@@ -5587,58 +4567,40 @@ input[type="number"] {
     rgba(34, 211, 238, 0.32),
     rgba(8, 47, 73, 0.95)
   );
-
   color: #ffffff;
-
   box-shadow:
     0 0 18px rgba(34, 211, 238, 0.25),
     inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
-
 .number-control-btn:active {
   transform: scale(0.92);
 }
-
 .number-control-btn:disabled {
   opacity: 0.35;
   cursor: not-allowed;
 }
-
-/* Ícones */
 .number-control-btn span {
   transform: translateY(-1px);
 }
-
 .number-control-btn.down span {
   transform: translateY(1px);
 }
-
-/* =========================================================
-   CORREÇÃO DAS SETAS NOS CARDS DE ATRIBUTO
-========================================================= */
-
-/* Base segura */
 .number-control {
   position: relative;
   width: 100%;
   min-width: 0;
 }
-
 .number-control input[type="number"] {
   min-width: 0;
 }
-
-/* Corrige especificamente os atributos da ficha */
 .rune-attributes-table label {
   overflow: hidden;
 }
-
 .rune-attributes-table .number-control {
   width: 100%;
   max-width: 132px;
   margin: 0 auto;
 }
-
 .rune-attributes-table .number-control input[type="number"] {
   width: 100%;
   max-width: none;
@@ -5648,8 +4610,6 @@ input[type="number"] {
   text-align: center;
   border-radius: 16px;
 }
-
-/* Área das setas menor e encaixada */
 .rune-attributes-table .number-control-buttons {
   position: absolute;
   top: 6px;
@@ -5660,7 +4620,6 @@ input[type="number"] {
   flex-direction: column;
   gap: 4px;
 }
-
 .rune-attributes-table .number-control-btn {
   flex: 1;
   min-height: 0;
@@ -5668,8 +4627,6 @@ input[type="number"] {
   border-radius: 10px;
   font-size: 11px;
 }
-
-/* Ajuste extra para os recursos PV/PE/PR e outros campos numéricos */
 .rune-resource-line .number-control input[type="number"],
 .initiative-sheet-box .number-control input[type="number"],
 .rune-money-field .number-control input[type="number"],
@@ -5677,7 +4634,6 @@ input[type="number"] {
   padding-right: 46px !important;
 }
 
-/* Mobile */
 @media (max-width: 760px) {
   .rune-attributes-table .number-control {
     max-width: 100%;
@@ -5687,25 +4643,15 @@ input[type="number"] {
     font-size: 26px;
   }
 }
-
-/* =========================================================
-   CORREÇÃO FINAL - SETAS NUMÉRICAS MENORES E SEM VAZAR
-   Coloquei no final para sobrescrever as regras antigas
-========================================================= */
-
-/* Remove as setas padrão do navegador */
 input[type="number"]::-webkit-inner-spin-button,
 input[type="number"]::-webkit-outer-spin-button {
   -webkit-appearance: none !important;
   margin: 0 !important;
 }
-
 input[type="number"] {
   appearance: textfield !important;
   -moz-appearance: textfield !important;
 }
-
-/* Base geral do controle */
 .number-control {
   position: relative !important;
   width: 100% !important;
@@ -5714,33 +4660,26 @@ input[type="number"] {
   display: block !important;
   overflow: visible !important;
 }
-
 .number-control input[type="number"] {
   width: 100% !important;
   min-width: 0 !important;
   box-sizing: border-box !important;
   padding-right: 34px !important;
 }
-
-/* Botões menores no site todo */
 .number-control-buttons {
   position: absolute !important;
   top: 50% !important;
   right: 7px !important;
   bottom: auto !important;
-
   width: 22px !important;
   height: 38px !important;
-
   display: flex !important;
   flex-direction: column !important;
   gap: 3px !important;
-
   transform: translateY(-50%) !important;
   z-index: 5 !important;
   pointer-events: auto !important;
 }
-
 .number-control-btn {
   width: 22px !important;
   height: 17px !important;
@@ -5748,39 +4687,29 @@ input[type="number"] {
   min-height: 17px !important;
   max-width: 22px !important;
   max-height: 17px !important;
-
   flex: 0 0 17px !important;
-
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-
   padding: 0 !important;
   margin: 0 !important;
-
   border: 1px solid rgba(34, 211, 238, 0.45) !important;
   border-radius: 7px !important;
-
   background: linear-gradient(
     145deg,
     rgba(34, 211, 238, 0.2),
     rgba(8, 47, 73, 0.88)
   ) !important;
-
   color: #a5f3fc !important;
-
   font-size: 8px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
-
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.08),
     0 0 8px rgba(34, 211, 238, 0.12) !important;
-
   cursor: pointer !important;
   transition: 0.18s ease !important;
 }
-
 .number-control-btn:hover {
   border-color: rgba(34, 211, 238, 0.9) !important;
   background: linear-gradient(
@@ -5793,67 +4722,47 @@ input[type="number"] {
     0 0 12px rgba(34, 211, 238, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.12) !important;
 }
-
 .number-control-btn:active {
   transform: scale(0.92) !important;
 }
-
 .number-control-btn span {
   display: block !important;
   font-size: 8px !important;
   line-height: 1 !important;
   transform: none !important;
 }
-
-/* =========================================================
-   ALTHERIUM - ATRIBUTOS
-========================================================= */
-
 .rune-attributes-table label {
   overflow: hidden !important;
 }
-
-/* O wrapper fica pequeno e centralizado */
 .rune-attributes-table .number-control {
   width: 82px !important;
   max-width: 82px !important;
   min-width: 82px !important;
   margin: 0 auto !important;
 }
-
-/* Input menor para caber dentro do card */
 .rune-attributes-table .number-control input[type="number"] {
   width: 82px !important;
   max-width: 82px !important;
   min-width: 82px !important;
-
   height: 48px !important;
   min-height: 48px !important;
   max-height: 48px !important;
-
   padding: 0 28px 0 8px !important;
   margin: 0 !important;
-
   border-radius: 14px !important;
-
   font-size: 26px !important;
   line-height: 1 !important;
   text-align: center !important;
 }
-
-/* Botões ainda menores dentro dos atributos */
 .rune-attributes-table .number-control-buttons {
   top: 50% !important;
   right: 5px !important;
   bottom: auto !important;
-
   width: 20px !important;
   height: 34px !important;
-
   gap: 2px !important;
   transform: translateY(-50%) !important;
 }
-
 .rune-attributes-table .number-control-btn {
   width: 20px !important;
   height: 16px !important;
@@ -5862,52 +4771,38 @@ input[type="number"] {
   max-width: 20px !important;
   max-height: 16px !important;
   flex: 0 0 16px !important;
-
   border-radius: 7px !important;
   font-size: 7px !important;
 }
-
 .rune-attributes-table .number-control-btn span {
   font-size: 7px !important;
 }
-
-/* =========================================================
-   D&D - ATRIBUTOS
-========================================================= */
-
 .dnd-ability-card {
   overflow: hidden !important;
 }
-
 .dnd-ability-card .number-control {
   width: 88px !important;
   max-width: 88px !important;
   min-width: 88px !important;
   margin: 0 auto !important;
 }
-
 .dnd-ability-card .number-control input[type="number"] {
   width: 88px !important;
   max-width: 88px !important;
   min-width: 88px !important;
-
   height: 52px !important;
   min-height: 52px !important;
   max-height: 52px !important;
-
   padding: 0 30px 0 8px !important;
-
   font-size: 25px !important;
   text-align: center !important;
 }
-
 .dnd-ability-card .number-control-buttons {
   width: 21px !important;
   height: 36px !important;
   right: 6px !important;
   gap: 3px !important;
 }
-
 .dnd-ability-card .number-control-btn {
   width: 21px !important;
   height: 16px !important;
@@ -5917,11 +4812,6 @@ input[type="number"] {
   max-height: 16px !important;
   flex: 0 0 16px !important;
 }
-
-/* =========================================================
-   CAMPOS PEQUENOS DA FICHA
-========================================================= */
-
 .rune-resource-line .number-control input[type="number"],
 .initiative-sheet-box .number-control input[type="number"],
 .rune-money-field .number-control input[type="number"],
@@ -5933,7 +4823,6 @@ input[type="number"] {
 .dnd-spell-slots .number-control input[type="number"] {
   padding-right: 32px !important;
 }
-
 .rune-body-table .number-control-buttons,
 .dnd-list .number-control-buttons,
 .dnd-stats-grid .number-control-buttons,
@@ -5945,7 +4834,6 @@ input[type="number"] {
   right: 6px !important;
 }
 
-/* Mobile */
 @media (max-width: 760px) {
   .rune-attributes-table .number-control,
   .rune-attributes-table .number-control input[type="number"] {
@@ -5976,19 +4864,6 @@ input[type="number"] {
     flex: 0 0 16px !important;
   }
 }
-
-/* =========================================================
-   CORREÇÃO DEFINITIVA - REMOVE SETAS DOS CAMPOS PEQUENOS
-   Mantém o input limpo nas fichas e evita botões vazando
-========================================================= */
-
-/*
-  Os botões premium de number ficam bons em campos grandes.
-  Nos cards pequenos de atributo eles ficam apertados.
-  Então aqui eles são escondidos apenas nos campos pequenos.
-*/
-
-/* ALTHERIUM - atributos */
 .rune-attributes-table .number-control {
   width: 100% !important;
   max-width: 90px !important;
@@ -5998,33 +4873,23 @@ input[type="number"] {
   position: relative !important;
   overflow: hidden !important;
 }
-
 .rune-attributes-table .number-control input[type="number"] {
   width: 100% !important;
   max-width: 90px !important;
   min-width: 0 !important;
-
   height: 54px !important;
   min-height: 54px !important;
-
   padding: 0 8px !important;
   margin: 0 auto !important;
-
   display: block !important;
-
   text-align: center !important;
   font-size: 28px !important;
   line-height: 1 !important;
-
   border-radius: 16px !important;
 }
-
-/* esconde as setas customizadas só nos atributos */
 .rune-attributes-table .number-control-buttons {
   display: none !important;
 }
-
-/* D&D - atributos */
 .dnd-ability-card .number-control {
   width: 88px !important;
   max-width: 88px !important;
@@ -6034,84 +4899,63 @@ input[type="number"] {
   position: relative !important;
   overflow: hidden !important;
 }
-
 .dnd-ability-card .number-control input[type="number"] {
   width: 88px !important;
   max-width: 88px !important;
   min-width: 0 !important;
-
   height: 54px !important;
   min-height: 54px !important;
-
   padding: 0 8px !important;
   margin: 0 auto !important;
-
   display: block !important;
-
   text-align: center !important;
   font-size: 26px !important;
   line-height: 1 !important;
-
   border-radius: 16px !important;
 }
-
 .dnd-ability-card .number-control-buttons {
   display: none !important;
 }
-
-/* ALTHERIUM - PV, PE, PR dentro da ficha */
 .rune-resource-line .number-control {
   width: 100% !important;
   max-width: 80px !important;
   overflow: hidden !important;
 }
-
 .rune-resource-line .number-control input[type="number"] {
   width: 100% !important;
   max-width: 80px !important;
   padding: 8px !important;
   text-align: center !important;
 }
-
 .rune-resource-line .number-control-buttons {
   display: none !important;
 }
-
-/* ALTHERIUM - iniciativa da ficha */
 .initiative-sheet-box .number-control {
   width: 130px !important;
   max-width: 130px !important;
   overflow: hidden !important;
 }
-
 .initiative-sheet-box .number-control input[type="number"] {
   width: 100% !important;
   padding: 0 10px !important;
   text-align: center !important;
 }
-
 .initiative-sheet-box .number-control-buttons {
   display: none !important;
 }
-
-/* ALTHERIUM - hacksilvers */
 .rune-money-field .number-control {
   width: 140px !important;
   max-width: 140px !important;
   overflow: hidden !important;
 }
-
 .rune-money-field .number-control input[type="number"] {
   width: 100% !important;
   padding: 0 10px !important;
   text-align: center !important;
 }
-
 .rune-money-field .number-control-buttons {
   display: none !important;
 }
-
-/* D&D - campos pequenos de ficha */
 .dnd-list .number-control-buttons,
 .dnd-stats-grid .number-control-buttons,
 .dnd-hp-row .number-control-buttons,
@@ -6119,7 +4963,6 @@ input[type="number"] {
 .dnd-spell-slots .number-control-buttons {
   display: none !important;
 }
-
 .dnd-list .number-control input[type="number"],
 .dnd-stats-grid .number-control input[type="number"],
 .dnd-hp-row .number-control input[type="number"],
@@ -6128,16 +4971,12 @@ input[type="number"] {
   padding-right: 8px !important;
   text-align: center !important;
 }
-
-/* Mantém as setas premium apenas em inputs comuns fora das fichas */
 .altherium-rune-sheet .number-control-buttons,
 .dnd-character-sheet .number-control-buttons,
 .altherium-sheet-modal-box .number-control-buttons,
 .dnd-sheet-modal-box .number-control-buttons {
   display: none !important;
 }
-
-/* Em formulários normais fora das fichas, continua usando as setas */
 body:not(.altherium-player-page):not(.dnd-player-page)
   .boss-form
   .number-control-buttons,
@@ -6149,8 +4988,6 @@ body:not(.altherium-player-page):not(.dnd-player-page)
   .number-control-buttons {
   display: flex !important;
 }
-
-/* Correção para não deixar padding sobrando quando as setas somem */
 .altherium-rune-sheet .number-control input[type="number"],
 .dnd-character-sheet .number-control input[type="number"],
 .altherium-sheet-modal-box .number-control input[type="number"],
@@ -6158,7 +4995,6 @@ body:not(.altherium-player-page):not(.dnd-player-page)
   padding-right: 8px !important;
 }
 
-/* Mobile */
 @media (max-width: 760px) {
   .rune-attributes-table .number-control {
     max-width: 86px !important;
@@ -6171,159 +5007,6 @@ body:not(.altherium-player-page):not(.dnd-player-page)
     font-size: 26px !important;
   }
 }
-
-/* =========================================================
-   SETA DE VOLTAR NO HEADER - TODAS AS PÁGINAS
-========================================================= */
-
-.header,
-header {
-  position: relative;
-}
-
-.header-back-button {
-  position: absolute;
-  left: clamp(14px, 3vw, 38px);
-  top: 50%;
-  z-index: 1200;
-
-  min-width: 48px;
-  height: 48px;
-  padding: 0 18px 0 13px;
-
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-
-  border: 1px solid rgba(34, 211, 238, 0.32);
-  border-radius: 999px;
-
-  background:
-    linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.96)),
-    radial-gradient(
-      circle at top right,
-      rgba(34, 211, 238, 0.2),
-      transparent 42%
-    );
-
-  color: #e0faff;
-
-  font-weight: 900;
-  font-size: 14px;
-  line-height: 1;
-
-  cursor: pointer;
-  transform: translateY(-50%);
-  transition: 0.25s ease;
-
-  box-shadow:
-    0 0 0 1px rgba(34, 211, 238, 0.04),
-    0 12px 34px rgba(0, 0, 0, 0.28),
-    0 0 26px rgba(34, 211, 238, 0.08);
-}
-
-.header-back-button__icon {
-  width: 24px;
-  height: 24px;
-
-  display: grid;
-  place-items: center;
-
-  border-radius: 999px;
-
-  background: rgba(34, 211, 238, 0.12);
-  color: #67e8f9;
-
-  font-size: 30px;
-  font-weight: 900;
-  line-height: 0.75;
-
-  transform: translateY(-1px);
-}
-
-.header-back-button__text {
-  color: #e0faff;
-  letter-spacing: 0.3px;
-}
-
-.header-back-button:hover {
-  transform: translateY(-50%) translateX(-3px);
-  border-color: rgba(34, 211, 238, 0.7);
-  background:
-    linear-gradient(145deg, rgba(8, 47, 73, 0.92), rgba(2, 6, 23, 0.98)),
-    radial-gradient(
-      circle at top right,
-      rgba(34, 211, 238, 0.3),
-      transparent 42%
-    );
-  color: #ffffff;
-
-  box-shadow:
-    0 16px 42px rgba(0, 0, 0, 0.34),
-    0 0 34px rgba(34, 211, 238, 0.18);
-}
-
-.header-back-button:hover .header-back-button__icon {
-  background: rgba(34, 211, 238, 0.22);
-  color: #ffffff;
-}
-
-.header-back-button:active {
-  transform: translateY(-50%) translateX(-3px) scale(0.96);
-}
-
-/* Header centralizado com logo grande */
-.header-center .header-back-button {
-  left: clamp(14px, 3vw, 38px);
-}
-
-/* Quando o header for fixo, a seta continua presa nele */
-.header:not(.header-center) .header-back-button {
-  left: clamp(14px, 3vw, 38px);
-}
-
-/* Responsivo */
-@media (max-width: 760px) {
-  .header-back-button {
-    width: 44px;
-    min-width: 44px;
-    height: 44px;
-    padding: 0;
-    left: 12px;
-  }
-
-  .header-back-button__text {
-    display: none;
-  }
-
-  .header-back-button__icon {
-    width: 26px;
-    height: 26px;
-    font-size: 30px;
-  }
-}
-
-@media (max-width: 420px) {
-  .header-back-button {
-    width: 40px;
-    min-width: 40px;
-    height: 40px;
-    left: 8px;
-  }
-
-  .header-back-button__icon {
-    width: 24px;
-    height: 24px;
-    font-size: 28px;
-  }
-}
-
-/* =========================================================
-   RAÍZES DINÂMICAS - ALTHERIUM
-   Berserk: padrão | Runaskin: NR | Pilar: Triunfos
-========================================================= */
-
 .altherium-root-field select,
 .altherium-rune-sheet select[name="root"],
 #playerSheetForm select[name="root"],
@@ -6349,7 +5032,6 @@ header {
   letter-spacing: 1px;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
-
 .altherium-root-field select:focus,
 .altherium-rune-sheet select[name="root"]:focus,
 #playerSheetForm select[name="root"]:focus,
@@ -6359,17 +5041,14 @@ header {
     0 0 0 4px rgba(34, 211, 238, 0.12),
     0 0 30px rgba(34, 211, 238, 0.1);
 }
-
 .altherium-root-dynamic-zone {
   grid-column: 1 / -1;
   width: 100%;
   margin: 18px 0 28px;
 }
-
 .altherium-root-section[hidden] {
   display: none !important;
 }
-
 .altherium-root-section {
   width: 100%;
   padding: 24px;
@@ -6386,31 +5065,26 @@ header {
     0 18px 56px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
-
 .altherium-root-section .rune-section-title {
   margin-bottom: 18px;
 }
-
 .altherium-root-section .rune-section-title h3 {
   color: #f8fafc;
   font-size: clamp(32px, 4vw, 54px);
   line-height: 1;
   text-shadow: 0 0 24px rgba(34, 211, 238, 0.16);
 }
-
 .altherium-root-section .rune-section-title p {
   margin-top: 8px;
   color: #94a3b8;
   font-size: 16px;
   line-height: 1.5;
 }
-
 .runaskin-nr-card {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 16px;
 }
-
 .runaskin-nr-card label {
   padding: 20px;
   border: 1px solid rgba(34, 211, 238, 0.18);
@@ -6424,7 +5098,6 @@ header {
   flex-direction: column;
   gap: 10px;
 }
-
 .runaskin-nr-card span {
   color: #22d3ee;
   text-transform: uppercase;
@@ -6432,7 +5105,6 @@ header {
   font-weight: 900;
   letter-spacing: 1px;
 }
-
 .runaskin-nr-card input {
   min-height: 64px;
   border: 1px solid rgba(34, 211, 238, 0.26);
@@ -6444,13 +5116,11 @@ header {
   text-align: center;
   outline: none;
 }
-
 .pilar-triumphs-groups {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 18px;
 }
-
 .pilar-triumph-group {
   overflow: hidden;
   border: 1px solid rgba(148, 163, 184, 0.16);
@@ -6461,7 +5131,6 @@ header {
     rgba(10, 20, 36, 0.96)
   );
 }
-
 .pilar-triumph-group__header {
   padding: 18px;
   display: flex;
@@ -6475,7 +5144,6 @@ header {
     rgba(2, 6, 23, 0.2)
   );
 }
-
 .pilar-triumph-group__header span {
   min-width: 64px;
   min-height: 44px;
@@ -6488,27 +5156,23 @@ header {
   font-size: 22px;
   font-weight: 900;
 }
-
 .pilar-triumph-group__header strong {
   color: #f8fafc;
   font-size: 22px;
   text-transform: uppercase;
 }
-
 .pilar-triumph-list {
   padding: 14px;
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
 .pilar-triumph-card {
   border: 1px solid rgba(148, 163, 184, 0.14);
   border-radius: 16px;
   background: rgba(255, 255, 255, 0.035);
   overflow: hidden;
 }
-
 .pilar-triumph-card summary {
   min-height: 56px;
   padding: 12px 14px;
@@ -6520,18 +5184,15 @@ header {
   cursor: pointer;
   list-style: none;
 }
-
 .pilar-triumph-card summary::-webkit-details-marker {
   display: none;
 }
-
 .pilar-triumph-card summary span {
   color: #f8fafc;
   font-size: 18px;
   font-weight: 900;
   line-height: 1.15;
 }
-
 .pilar-triumph-card summary strong {
   padding: 6px 9px;
   border: 1px solid rgba(34, 211, 238, 0.26);
@@ -6541,7 +5202,6 @@ header {
   font-size: 13px;
   white-space: nowrap;
 }
-
 .pilar-triumph-card summary em {
   width: 28px;
   height: 28px;
@@ -6555,17 +5215,14 @@ header {
   line-height: 1;
   transition: 0.2s ease;
 }
-
 .pilar-triumph-card[open] summary em {
   transform: rotate(180deg);
   background: rgba(34, 211, 238, 0.2);
 }
-
 .pilar-triumph-card__content {
   padding: 0 14px 16px;
   color: #cbd5e1;
 }
-
 .pilar-triumph-card__content small {
   display: inline-flex;
   margin-bottom: 8px;
@@ -6577,7 +5234,6 @@ header {
   font-weight: 900;
   text-transform: uppercase;
 }
-
 .pilar-triumph-card__content p {
   color: #cbd5e1;
   font-size: 15px;
@@ -6607,27 +5263,17 @@ header {
     grid-column: 2;
   }
 }
-
-/* =========================================================
-   CORREÇÃO VISUAL DA RAIZ - FEITO SOMENTE PELO CSS
-   Aplica estilo premium ao select nativo e às opções
-========================================================= */
-
-/* Campo raiz dentro da ficha */
 .rune-page-header label:has(select[name="root"]),
 .rune-page-header .root-field {
   width: 100% !important;
   position: relative !important;
-
   display: flex !important;
   flex-direction: column !important;
   align-items: stretch !important;
   gap: 10px !important;
-
   padding: 18px !important;
   border: 1px solid rgba(34, 211, 238, 0.32) !important;
   border-radius: 24px !important;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.94)),
     radial-gradient(
@@ -6635,58 +5281,43 @@ header {
       rgba(34, 211, 238, 0.12),
       transparent 42%
     ) !important;
-
   box-shadow:
     0 18px 46px rgba(0, 0, 0, 0.28),
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 0 32px rgba(34, 211, 238, 0.08) !important;
 }
-
-/* Título RAIZ */
 .rune-page-header label:has(select[name="root"]) > span,
 .root-field-label {
   margin: 0 !important;
-
   display: block !important;
-
   color: #f8fafc !important;
   font-size: clamp(28px, 4vw, 46px) !important;
   font-weight: 900 !important;
   line-height: 0.95 !important;
   letter-spacing: 1.4px !important;
-
   text-align: center !important;
   text-transform: uppercase !important;
-
   text-shadow:
     0 0 22px rgba(34, 211, 238, 0.18),
     0 0 50px rgba(34, 211, 238, 0.08) !important;
 }
-
-/* Select nativo estilizado */
 select[name="root"],
 #rootSelect,
 .root-native-select {
   position: relative !important;
   opacity: 1 !important;
   pointer-events: auto !important;
-
   width: 100% !important;
   height: 64px !important;
   min-height: 64px !important;
-
   margin: 0 !important;
   padding: 0 58px 0 22px !important;
-
   display: block !important;
-
   appearance: none !important;
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
-
   border: 1px solid rgba(34, 211, 238, 0.55) !important;
   border-radius: 20px !important;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.99)),
     radial-gradient(
@@ -6694,9 +5325,7 @@ select[name="root"],
       rgba(34, 211, 238, 0.18),
       transparent 42%
     ) !important;
-
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 24px !important;
   font-weight: 900 !important;
@@ -6705,50 +5334,35 @@ select[name="root"],
   text-align: center !important;
   text-align-last: center !important;
   text-transform: uppercase !important;
-
   cursor: pointer !important;
   outline: none !important;
-
   box-shadow:
     0 0 0 1px rgba(34, 211, 238, 0.06),
     0 14px 34px rgba(0, 0, 0, 0.24),
     0 0 26px rgba(34, 211, 238, 0.1) !important;
-
   transition: 0.25s ease !important;
 }
-
-/* Seta customizada do select */
 .rune-page-header label:has(select[name="root"])::after,
 .root-field::after {
   content: "⌄" !important;
-
   position: absolute !important;
   right: 32px !important;
   top: calc(50% + 22px) !important;
   z-index: 5 !important;
-
   width: 34px !important;
   height: 34px !important;
-
   display: grid !important;
   place-items: center !important;
-
   border: 1px solid rgba(34, 211, 238, 0.35) !important;
   border-radius: 999px !important;
-
   background: rgba(34, 211, 238, 0.12) !important;
   color: #67e8f9 !important;
-
   font-size: 24px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
-
   pointer-events: none !important;
-
   box-shadow: 0 0 18px rgba(34, 211, 238, 0.12) !important;
 }
-
-/* Hover e foco */
 select[name="root"]:hover,
 #rootSelect:hover,
 .root-native-select:hover {
@@ -6758,7 +5372,6 @@ select[name="root"]:hover,
     0 18px 42px rgba(0, 0, 0, 0.28),
     0 0 34px rgba(34, 211, 238, 0.18) !important;
 }
-
 select[name="root"]:focus,
 #rootSelect:focus,
 .root-native-select:focus {
@@ -6768,49 +5381,34 @@ select[name="root"]:focus,
     0 18px 42px rgba(0, 0, 0, 0.28),
     0 0 36px rgba(34, 211, 238, 0.24) !important;
 }
-
-/* Opções do select */
 select[name="root"] option,
 #rootSelect option,
 .root-native-select option {
   background: #020617 !important;
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 20px !important;
   font-weight: 900 !important;
   letter-spacing: 1px !important;
-
   padding: 18px !important;
   text-align: center !important;
   text-transform: uppercase !important;
 }
-
-/* Placeholder do select */
 select[name="root"] option[value=""],
 #rootSelect option[value=""],
 .root-native-select option[value=""] {
   color: #94a3b8 !important;
   background: #020617 !important;
 }
-
-/* Remove o seletor custom antigo caso esteja no HTML.
-   Como agora é só CSS, o select nativo fica visível e funcional. */
 .root-custom-select {
   display: none !important;
 }
-
-/* Caso o HTML antigo ainda esteja com input de texto em vez de select,
-   pelo menos deixa o campo com o mesmo visual premium. */
 input[name="root"] {
   height: 64px !important;
   min-height: 64px !important;
-
   padding: 0 22px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.55) !important;
   border-radius: 20px !important;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.98), rgba(2, 6, 23, 0.99)),
     radial-gradient(
@@ -6818,44 +5416,32 @@ input[name="root"] {
       rgba(34, 211, 238, 0.18),
       transparent 42%
     ) !important;
-
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 24px !important;
   font-weight: 900 !important;
   letter-spacing: 1px !important;
   text-align: center !important;
   text-transform: uppercase !important;
-
   box-shadow:
     0 0 0 1px rgba(34, 211, 238, 0.06),
     0 14px 34px rgba(0, 0, 0, 0.24),
     0 0 26px rgba(34, 211, 238, 0.1) !important;
 }
-
-/* Caixa Runaskin e Pilar escondem por padrão.
-   O JS mostra quando a raiz correta é selecionada. */
 .root-extra-box {
   display: none;
 }
-
-/* Quando o JS adicionar classe active */
 .root-extra-box.active,
 .root-extra-box.is-active,
 .root-extra-box.show {
   display: block !important;
 }
-
-/* Visual premium das caixas especiais */
 .root-extra-box--runaskin,
 .root-extra-box--pilar {
   margin: 24px 0 !important;
   padding: 24px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.28) !important;
   border-radius: 28px !important;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.94)),
     radial-gradient(
@@ -6863,55 +5449,44 @@ input[name="root"] {
       rgba(34, 211, 238, 0.14),
       transparent 42%
     ) !important;
-
   box-shadow:
     0 20px 54px rgba(0, 0, 0, 0.26),
     0 0 38px rgba(34, 211, 238, 0.08) !important;
 }
-
 .root-extra-header span {
   display: inline-flex !important;
   margin-bottom: 10px !important;
   padding: 8px 12px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.28) !important;
   border-radius: 999px !important;
-
   background: rgba(34, 211, 238, 0.08) !important;
   color: #22d3ee !important;
-
   font-size: 12px !important;
   font-weight: 900 !important;
   letter-spacing: 1.4px !important;
   text-transform: uppercase !important;
 }
-
 .root-extra-header h3 {
   color: #f8fafc !important;
   font-size: clamp(28px, 4vw, 46px) !important;
   line-height: 1 !important;
   margin-bottom: 8px !important;
 }
-
 .root-extra-header p {
   color: #94a3b8 !important;
   line-height: 1.5 !important;
 }
-
-/* Triunfos de Pilar */
 .pilar-triumphs-section {
   display: grid !important;
   grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   gap: 18px !important;
 }
-
 .pilar-card-group {
   padding: 18px !important;
   border: 1px solid rgba(148, 163, 184, 0.16) !important;
   border-radius: 22px !important;
   background: rgba(255, 255, 255, 0.035) !important;
 }
-
 .pilar-card-group h4 {
   margin-bottom: 14px !important;
   color: #22d3ee !important;
@@ -6919,7 +5494,6 @@ input[name="root"] {
   line-height: 1 !important;
   text-align: center !important;
 }
-
 .pilar-triumph-card {
   margin-bottom: 10px !important;
   border: 1px solid rgba(34, 211, 238, 0.16) !important;
@@ -6927,62 +5501,48 @@ input[name="root"] {
   overflow: hidden !important;
   background: rgba(2, 6, 23, 0.55) !important;
 }
-
 .pilar-triumph-card summary {
   min-height: 50px !important;
   padding: 14px 44px 14px 16px !important;
-
   position: relative !important;
-
   color: #f8fafc !important;
   font-size: 18px !important;
   font-weight: 900 !important;
   letter-spacing: 0.6px !important;
   text-transform: uppercase !important;
-
   cursor: pointer !important;
   list-style: none !important;
 }
-
 .pilar-triumph-card summary::-webkit-details-marker {
   display: none !important;
 }
-
 .pilar-triumph-card summary::after {
   content: "⌄" !important;
   position: absolute !important;
   right: 14px !important;
   top: 50% !important;
-
   width: 26px !important;
   height: 26px !important;
-
   display: grid !important;
   place-items: center !important;
-
   border-radius: 999px !important;
   background: rgba(34, 211, 238, 0.12) !important;
   color: #67e8f9 !important;
-
   transform: translateY(-50%) !important;
   transition: 0.2s ease !important;
 }
-
 .pilar-triumph-card[open] summary::after {
   transform: translateY(-50%) rotate(180deg) !important;
 }
-
 .pilar-triumph-card p {
   padding: 0 16px 16px !important;
   color: #cbd5e1 !important;
   line-height: 1.55 !important;
 }
-
 .pilar-triumph-card strong {
   color: #22d3ee !important;
 }
 
-/* Responsivo */
 @media (max-width: 900px) {
   .pilar-triumphs-section {
     grid-template-columns: 1fr !important;
@@ -7014,131 +5574,91 @@ input[name="root"] {
     font-size: 22px !important;
   }
 }
-
-/* =========================================================
-   CORREÇÃO FINAL - RAIZ MAIS SIMPLES COMO NOME E GÊNESIS
-========================================================= */
-
-/* Remove o visual exagerado de card da raiz */
 .rune-page-header .root-field,
 .rune-page-header label:has(select[name="root"]) {
   width: 100% !important;
-
   padding: 0 !important;
   margin: 0 !important;
-
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   gap: 2px !important;
-
   border: none !important;
   border-radius: 0 !important;
-
   background: transparent !important;
   box-shadow: none !important;
 }
-
-/* Título RAIZ igual ao NOME e GÊNESIS */
 .root-field-label,
 .rune-page-header label:has(select[name="root"]) > span {
   margin: 0 !important;
   padding: 0 !important;
-
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: clamp(30px, 5vw, 52px) !important;
   font-weight: 900 !important;
   line-height: 1 !important;
   letter-spacing: 1px !important;
-
   text-align: center !important;
   text-transform: uppercase !important;
-
   text-shadow:
     0 0 22px rgba(34, 211, 238, 0.12),
     0 0 44px rgba(34, 211, 238, 0.06) !important;
 }
-
-/* Select da raiz com aparência de input normal */
 select[name="root"],
 #rootSelect,
 .root-native-select {
   position: relative !important;
   opacity: 1 !important;
   pointer-events: auto !important;
-
   width: 100% !important;
   height: 64px !important;
   min-height: 64px !important;
-
   margin: 0 !important;
   padding: 0 50px 0 20px !important;
-
   display: block !important;
-
   appearance: none !important;
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
-
   border: none !important;
   border-bottom: 2px solid rgba(34, 211, 238, 0.32) !important;
   border-radius: 16px !important;
-
   background: rgba(2, 6, 23, 0.88) !important;
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 22px !important;
   font-weight: 400 !important;
   line-height: 1 !important;
   letter-spacing: 0.5px !important;
-
   text-align: center !important;
   text-align-last: center !important;
   text-transform: uppercase !important;
-
   cursor: pointer !important;
   outline: none !important;
-
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
   transition: 0.25s ease !important;
 }
-
-/* Seta menor e discreta */
 .rune-page-header .root-field::after,
 .rune-page-header label:has(select[name="root"])::after {
   content: "⌄" !important;
-
   position: absolute !important;
   right: 16px !important;
   bottom: 14px !important;
   top: auto !important;
   z-index: 5 !important;
-
   width: 30px !important;
   height: 30px !important;
-
   display: grid !important;
   place-items: center !important;
-
   border: 1px solid rgba(34, 211, 238, 0.28) !important;
   border-radius: 999px !important;
-
   background: rgba(34, 211, 238, 0.08) !important;
   color: #67e8f9 !important;
-
   font-size: 20px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
-
   pointer-events: none !important;
-
   box-shadow: none !important;
 }
-
-/* Hover/focus mais leve */
 select[name="root"]:hover,
 #rootSelect:hover,
 .root-native-select:hover {
@@ -7147,7 +5667,6 @@ select[name="root"]:hover,
     inset 0 1px 0 rgba(255, 255, 255, 0.03),
     0 0 22px rgba(34, 211, 238, 0.08) !important;
 }
-
 select[name="root"]:focus,
 #rootSelect:focus,
 .root-native-select:focus {
@@ -7156,8 +5675,6 @@ select[name="root"]:focus,
     0 0 0 4px rgba(34, 211, 238, 0.1),
     0 0 24px rgba(34, 211, 238, 0.1) !important;
 }
-
-/* Mantém as opções escuras quando o navegador permitir */
 select[name="root"] option,
 #rootSelect option,
 .root-native-select option {
@@ -7167,13 +5684,10 @@ select[name="root"] option,
   font-size: 18px !important;
   text-transform: uppercase !important;
 }
-
-/* Esconde o seletor custom se ele estiver no HTML */
 .root-custom-select {
   display: none !important;
 }
 
-/* Mobile */
 @media (max-width: 700px) {
   select[name="root"],
   #rootSelect,
@@ -7193,117 +5707,79 @@ select[name="root"] option,
     font-size: 18px !important;
   }
 }
-
-/* =========================================================
-   CORREÇÃO FINAL - ALINHAMENTO DE NOME / RAIZ / GÊNESIS
-========================================================= */
-
-/* Organiza os 3 campos principais como blocos iguais */
 .rune-page-header {
   width: 100% !important;
   max-width: 520px !important;
-
   margin: 0 auto 38px !important;
-
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-
   gap: 28px !important;
-
   text-align: center !important;
 }
-
-/* Cada campo ocupa o mesmo espaço */
 .rune-page-header > label,
 .rune-page-header > .root-field {
   width: 100% !important;
   max-width: 100% !important;
-
   min-height: 112px !important;
-
   margin: 0 !important;
   padding: 0 !important;
-
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
-
   gap: 8px !important;
-
   border: none !important;
   background: transparent !important;
   box-shadow: none !important;
 }
-
-/* Títulos dos 3 campos iguais */
 .rune-page-header > label > span,
 .rune-page-header .root-field-label {
   width: 100% !important;
-
   min-height: 48px !important;
-
   margin: 0 !important;
   padding: 0 !important;
-
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: clamp(30px, 5vw, 52px) !important;
   font-weight: 900 !important;
   line-height: 1 !important;
   letter-spacing: 1px !important;
-
   text-align: center !important;
   text-transform: uppercase !important;
 }
-
-/* Inputs e select com mesma altura e alinhamento */
 .rune-page-header > label > input,
 .rune-page-header .root-field select[name="root"],
 .rune-page-header .root-field #rootSelect,
 .rune-page-header .root-field .root-native-select {
   width: 100% !important;
-
   height: 64px !important;
   min-height: 64px !important;
   max-height: 64px !important;
-
   margin: 0 !important;
-
   display: block !important;
-
   border: none !important;
   border-bottom: 2px solid rgba(34, 211, 238, 0.32) !important;
   border-radius: 16px !important;
-
   background: rgba(2, 6, 23, 0.88) !important;
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 22px !important;
   font-weight: 400 !important;
   line-height: 1 !important;
   letter-spacing: 0.5px !important;
-
   text-align: center !important;
   text-align-last: center !important;
   text-transform: uppercase !important;
-
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
 }
-
-/* Ajuste específico do select para a seta */
 .rune-page-header .root-field {
   position: relative !important;
 }
-
 .rune-page-header .root-field select[name="root"],
 .rune-page-header .root-field #rootSelect,
 .rune-page-header .root-field .root-native-select {
@@ -7312,46 +5788,32 @@ select[name="root"] option,
   -webkit-appearance: none !important;
   -moz-appearance: none !important;
 }
-
-/* Seta alinhada no centro vertical do campo, não do bloco inteiro */
 .rune-page-header .root-field::after {
   content: "⌄" !important;
-
   position: absolute !important;
   right: 16px !important;
   bottom: 17px !important;
   top: auto !important;
-
   width: 30px !important;
   height: 30px !important;
-
   display: grid !important;
   place-items: center !important;
-
   border: 1px solid rgba(34, 211, 238, 0.28) !important;
   border-radius: 999px !important;
-
   background: rgba(34, 211, 238, 0.08) !important;
   color: #67e8f9 !important;
-
   font-size: 20px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
-
   pointer-events: none !important;
 }
-
-/* Remove pseudo-seta duplicada de regras antigas */
 .rune-page-header label:has(select[name="root"])::after {
   display: none !important;
 }
-
-/* Evita que algum gap antigo empurre a raiz */
 .root-field {
   gap: 8px !important;
 }
 
-/* Responsivo */
 @media (max-width: 700px) {
   .rune-page-header {
     gap: 24px !important;
@@ -7387,23 +5849,15 @@ select[name="root"] option,
     font-size: 18px !important;
   }
 }
-
-/* =========================================================
-   PILAR - CONTADOR DE CARTAS
-========================================================= */
-
 .pilar-card-counter {
   margin: 0 0 24px;
   padding: 24px;
-
   display: grid;
   grid-template-columns: 1fr 220px;
   align-items: center;
   gap: 22px;
-
   border: 1px solid rgba(34, 211, 238, 0.28);
   border-radius: 26px;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.96)),
     radial-gradient(
@@ -7411,35 +5865,27 @@ select[name="root"] option,
       rgba(34, 211, 238, 0.16),
       transparent 42%
     );
-
   box-shadow:
     0 20px 54px rgba(0, 0, 0, 0.28),
     0 0 34px rgba(34, 211, 238, 0.08);
 }
-
 .pilar-card-counter > div > span {
   display: inline-flex;
   margin-bottom: 10px;
   padding: 8px 12px;
-
   border: 1px solid rgba(34, 211, 238, 0.28);
   border-radius: 999px;
-
   background: rgba(34, 211, 238, 0.08);
   color: #22d3ee;
-
   font-size: 12px;
   font-weight: 900;
   letter-spacing: 1.4px;
   text-transform: uppercase;
 }
-
 .pilar-card-counter > div > strong {
   display: block;
   margin-bottom: 8px;
-
   color: #f8fafc;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: clamp(28px, 4vw, 46px);
   font-weight: 900;
@@ -7447,74 +5893,57 @@ select[name="root"] option,
   letter-spacing: 1px;
   text-transform: uppercase;
 }
-
 .pilar-card-counter > div > p {
   color: #94a3b8;
   line-height: 1.55;
 }
-
 .pilar-card-counter label {
   margin: 0;
-
   display: flex;
   flex-direction: column;
   gap: 10px;
 }
-
 .pilar-card-counter label span {
   color: #22d3ee;
-
   font-size: 13px;
   font-weight: 900;
   letter-spacing: 1.2px;
   text-align: center;
   text-transform: uppercase;
 }
-
 .pilar-card-counter input[type="number"] {
   width: 100%;
   height: 70px;
   min-height: 70px;
-
   margin: 0;
   padding: 0 18px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.38);
   border-radius: 20px;
-
   background: rgba(2, 6, 23, 0.88);
   color: #f8fafc;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 34px;
   font-weight: 900;
   line-height: 1;
   text-align: center;
-
   outline: none;
-
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 0 24px rgba(34, 211, 238, 0.08);
 }
-
 .pilar-card-counter input[type="number"]:focus {
   border-color: rgba(34, 211, 238, 0.8);
   box-shadow:
     0 0 0 4px rgba(34, 211, 238, 0.12),
     0 0 30px rgba(34, 211, 238, 0.16);
 }
-
-/* Se o JS das setas premium envolver esse input, esconde as setas aqui também */
 .pilar-card-counter .number-control {
   width: 100% !important;
   max-width: 100% !important;
 }
-
 .pilar-card-counter .number-control input[type="number"] {
   padding: 0 18px !important;
 }
-
 .pilar-card-counter .number-control-buttons {
   display: none !important;
 }
@@ -7530,117 +5959,86 @@ select[name="root"] option,
     margin: 0 auto;
   }
 }
-
-/* =========================================================
-   PILAR - CARTAS ATUAL / MÁXIMO LADO A LADO
-========================================================= */
-
 .pilar-card-counter {
   grid-template-columns: 1fr auto !important;
   align-items: center !important;
   gap: 26px !important;
 }
-
 .pilar-card-counter-values {
   width: 280px !important;
-
   display: grid !important;
   grid-template-columns: 1fr auto 1fr !important;
   align-items: end !important;
   gap: 10px !important;
 }
-
 .pilar-card-counter-values label {
   width: 100% !important;
   margin: 0 !important;
-
   display: flex !important;
   flex-direction: column !important;
   gap: 8px !important;
 }
-
 .pilar-card-counter-values label span {
   color: #22d3ee !important;
-
   font-size: 13px !important;
   font-weight: 900 !important;
   letter-spacing: 1.2px !important;
   text-align: center !important;
   text-transform: uppercase !important;
 }
-
 .pilar-card-counter-values input[type="number"] {
   width: 100% !important;
   height: 54px !important;
   min-height: 54px !important;
   max-height: 54px !important;
-
   margin: 0 !important;
   padding: 0 10px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.42) !important;
   border-radius: 16px !important;
-
   background: rgba(2, 6, 23, 0.88) !important;
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 24px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
   text-align: center !important;
-
   outline: none !important;
-
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 0 18px rgba(34, 211, 238, 0.06) !important;
 }
-
 .pilar-card-counter-values input[type="number"]:focus {
   border-color: rgba(34, 211, 238, 0.85) !important;
   box-shadow:
     0 0 0 4px rgba(34, 211, 238, 0.12),
     0 0 24px rgba(34, 211, 238, 0.14) !important;
 }
-
 .pilar-card-counter-divider {
   height: 54px !important;
-
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 26px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
-
   transform: translateY(-1px) !important;
 }
-
-/* Remove setas premium se o JS envolver esses inputs */
 .pilar-card-counter-values .number-control {
   width: 100% !important;
   max-width: 100% !important;
 }
-
 .pilar-card-counter-values .number-control input[type="number"] {
   padding: 0 10px !important;
 }
-
 .pilar-card-counter-values .number-control-buttons {
   display: none !important;
 }
-
-/* Remove regra antiga que deixava input gigante dentro do contador */
 .pilar-card-counter > label {
   max-width: none !important;
 }
 
-/* Responsivo */
 @media (max-width: 900px) {
   .pilar-card-counter {
     grid-template-columns: 1fr !important;
@@ -7663,21 +6061,13 @@ select[name="root"] option,
     padding: 2px 0 !important;
   }
 }
-
-/* =========================================================
-   RUNASKIN - NR COMPACTO JUNTO DOS TRIUNFOS
-========================================================= */
-
 .runaskin-nr-compact {
   width: 100% !important;
   max-width: 620px !important;
-
   margin: 0 auto 18px !important;
   padding: 18px 20px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.26) !important;
   border-radius: 22px !important;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.82), rgba(2, 6, 23, 0.92)),
     radial-gradient(
@@ -7685,129 +6075,95 @@ select[name="root"] option,
       rgba(34, 211, 238, 0.12),
       transparent 42%
     ) !important;
-
   box-shadow:
     0 14px 38px rgba(0, 0, 0, 0.22),
     0 0 26px rgba(34, 211, 238, 0.06) !important;
 }
-
 .runaskin-nr-compact .root-extra-header {
   margin-bottom: 14px !important;
   text-align: center !important;
 }
-
 .runaskin-nr-compact .root-extra-header span {
   margin-bottom: 8px !important;
   padding: 6px 10px !important;
-
   font-size: 11px !important;
   letter-spacing: 1.2px !important;
 }
-
 .runaskin-nr-compact .root-extra-header h3 {
   margin-bottom: 4px !important;
-
   color: #f8fafc !important;
   font-size: clamp(26px, 3vw, 38px) !important;
   line-height: 1 !important;
 }
-
 .runaskin-nr-compact .root-extra-header p {
   max-width: 420px !important;
   margin: 0 auto !important;
-
   color: #94a3b8 !important;
   font-size: 14px !important;
   line-height: 1.45 !important;
 }
-
 .runaskin-nr-compact .nr-resource-list,
 .runaskin-nr-compact .rune-resource-list {
   width: 100% !important;
   max-width: 460px !important;
-
   margin: 0 auto !important;
-
   display: block !important;
 }
-
 .runaskin-nr-compact .rune-resource-line {
   width: 100% !important;
-
   display: grid !important;
   grid-template-columns: auto 86px auto 86px 1fr !important;
   align-items: center !important;
   gap: 8px !important;
-
   margin: 0 !important;
   padding: 12px 14px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.18) !important;
   border-radius: 18px !important;
-
   background: rgba(2, 6, 23, 0.46) !important;
 }
-
 .runaskin-nr-compact .rune-resource-line strong {
   color: #22d3ee !important;
-
   font-size: 22px !important;
   line-height: 1 !important;
 }
-
 .runaskin-nr-compact .rune-resource-line span {
   color: #f8fafc !important;
-
   font-size: 20px !important;
   line-height: 1 !important;
   text-align: center !important;
 }
-
 .runaskin-nr-compact .rune-resource-line input[type="number"] {
   width: 86px !important;
   max-width: 86px !important;
   min-width: 0 !important;
-
   height: 46px !important;
   min-height: 46px !important;
-
   margin: 0 !important;
   padding: 0 8px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.34) !important;
   border-radius: 14px !important;
-
   background: rgba(2, 6, 23, 0.86) !important;
   color: #f8fafc !important;
-
   font-size: 22px !important;
   line-height: 1 !important;
   text-align: center !important;
-
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
 }
-
 .runaskin-nr-compact .rune-bar {
   min-width: 90px !important;
   height: 10px !important;
   margin: 0 !important;
 }
-
-/* Se o JS envolver os inputs de NR com setas premium, esconde aqui */
 .runaskin-nr-compact .number-control {
   width: 86px !important;
   max-width: 86px !important;
 }
-
 .runaskin-nr-compact .number-control input[type="number"] {
   padding: 0 8px !important;
 }
-
 .runaskin-nr-compact .number-control-buttons {
   display: none !important;
 }
-
-/* Aproxima o NR do bloco de Triunfos */
 .runaskin-nr-compact + .normal-triumphs-box {
   margin-top: 0 !important;
 }
@@ -7839,32 +6195,20 @@ select[name="root"] option,
     margin: 0 auto !important;
   }
 }
-
-/* =========================================================
-   RUNASKIN - NR ÚNICO NA ÚLTIMA PÁGINA
-========================================================= */
-
-/* Garante que o NR antigo de atual/máximo não tenha efeito */
 .runaskin-nr-compact {
   display: none !important;
 }
-
-/* Bloco único de NR */
 .runaskin-nr-single {
   width: 100% !important;
   max-width: 720px !important;
-
   margin: 0 auto 22px !important;
   padding: 20px !important;
-
   display: grid !important;
   grid-template-columns: 1fr 150px !important;
   align-items: center !important;
   gap: 18px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.26) !important;
   border-radius: 24px !important;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.84), rgba(2, 6, 23, 0.94)),
     radial-gradient(
@@ -7872,128 +6216,94 @@ select[name="root"] option,
       rgba(34, 211, 238, 0.12),
       transparent 42%
     ) !important;
-
   box-shadow:
     0 16px 42px rgba(0, 0, 0, 0.24),
     0 0 28px rgba(34, 211, 238, 0.07) !important;
 }
-
-/* Continua escondendo por padrão.
-   O script mostra quando a raiz Runaskin for selecionada. */
 .runaskin-nr-single:not(.active):not(.show) {
   display: none !important;
 }
-
 .runaskin-nr-single-info span {
   display: inline-flex !important;
-
   margin-bottom: 8px !important;
   padding: 6px 10px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.28) !important;
   border-radius: 999px !important;
-
   background: rgba(34, 211, 238, 0.08) !important;
   color: #22d3ee !important;
-
   font-size: 11px !important;
   font-weight: 900 !important;
   letter-spacing: 1.2px !important;
   text-transform: uppercase !important;
 }
-
 .runaskin-nr-single-info strong {
   display: block !important;
-
   margin-bottom: 6px !important;
-
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: clamp(30px, 4vw, 46px) !important;
   font-weight: 900 !important;
   line-height: 1 !important;
   letter-spacing: 1px !important;
 }
-
 .runaskin-nr-single-info p {
   color: #94a3b8 !important;
   font-size: 14px !important;
   line-height: 1.45 !important;
 }
-
 .runaskin-nr-single-field {
   margin: 0 !important;
-
   display: flex !important;
   flex-direction: column !important;
   gap: 8px !important;
 }
-
 .runaskin-nr-single-field span {
   color: #22d3ee !important;
-
   font-size: 12px !important;
   font-weight: 900 !important;
   letter-spacing: 1.1px !important;
   text-align: center !important;
   text-transform: uppercase !important;
 }
-
 .runaskin-nr-single-field input[type="number"] {
   width: 100% !important;
   height: 56px !important;
   min-height: 56px !important;
-
   margin: 0 !important;
   padding: 0 10px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.4) !important;
   border-radius: 16px !important;
-
   background: rgba(2, 6, 23, 0.88) !important;
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 28px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
   text-align: center !important;
-
   outline: none !important;
-
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 0 20px rgba(34, 211, 238, 0.08) !important;
 }
-
 .runaskin-nr-single-field input[type="number"]:focus {
   border-color: rgba(34, 211, 238, 0.85) !important;
   box-shadow:
     0 0 0 4px rgba(34, 211, 238, 0.12),
     0 0 26px rgba(34, 211, 238, 0.15) !important;
 }
-
-/* Se o JS envolver o campo com setas premium, esconde nesse campo */
 .runaskin-nr-single .number-control {
   width: 100% !important;
   max-width: 100% !important;
 }
-
 .runaskin-nr-single .number-control input[type="number"] {
   padding: 0 10px !important;
 }
-
 .runaskin-nr-single .number-control-buttons {
   display: none !important;
 }
-
-/* Aproxima do bloco de triunfos */
 .runaskin-nr-single + .normal-triumphs-box {
   margin-top: 0 !important;
 }
-
-/* Remove qualquer sobra visual de NR antigo */
 #nrBarFill {
   display: none !important;
 }
@@ -8010,35 +6320,20 @@ select[name="root"] option,
     margin: 0 auto !important;
   }
 }
-
-/* =========================================================
-   CORREÇÃO - REMOVE NR ANTIGO DO COMEÇO DA FICHA
-========================================================= */
-
-/*
-  Esconde qualquer bloco antigo de Runaskin que não seja o bloco único
-  da última página.
-*/
 .root-extra-box--runaskin:not(.runaskin-nr-single) {
   display: none !important;
 }
-
-/* O bloco novo continua controlado pelo JS */
 .runaskin-nr-single {
   width: 100% !important;
   max-width: 720px !important;
-
   margin: 0 auto 22px !important;
   padding: 20px !important;
-
   display: none;
   grid-template-columns: 1fr 150px !important;
   align-items: center !important;
   gap: 18px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.26) !important;
   border-radius: 24px !important;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.84), rgba(2, 6, 23, 0.94)),
     radial-gradient(
@@ -8047,12 +6342,10 @@ select[name="root"] option,
       transparent 42%
     ) !important;
 }
-
 .runaskin-nr-single.active,
 .runaskin-nr-single.show {
   display: grid !important;
 }
-
 .runaskin-nr-single .number-control-buttons {
   display: none !important;
 }
@@ -8062,32 +6355,20 @@ select[name="root"] option,
     grid-template-columns: 1fr !important;
   }
 }
-
-/* =========================================================
-   RUNASKIN - NR PEQUENO DENTRO DOS TRIUNFOS
-========================================================= */
-
-/* Garante que blocos antigos de NR não apareçam */
 .root-extra-box--runaskin:not(.runaskin-nr-mini) {
   display: none !important;
 }
-
-/* Mini caixa de NR dentro da área de Triunfos */
 .runaskin-nr-mini {
   width: fit-content !important;
   min-width: 150px !important;
   max-width: 180px !important;
-
   margin: 0 auto 22px !important;
   padding: 14px 16px !important;
-
   display: none;
   grid-template-columns: 1fr !important;
   align-items: center !important;
-
   border: 1px solid rgba(34, 211, 238, 0.32) !important;
   border-radius: 18px !important;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.96)),
     radial-gradient(
@@ -8095,29 +6376,23 @@ select[name="root"] option,
       rgba(34, 211, 238, 0.12),
       transparent 42%
     ) !important;
-
   box-shadow:
     0 12px 30px rgba(0, 0, 0, 0.22),
     0 0 22px rgba(34, 211, 238, 0.07) !important;
 }
-
 .runaskin-nr-mini.active,
 .runaskin-nr-mini.show {
   display: grid !important;
 }
-
 .runaskin-nr-mini-field {
   margin: 0 !important;
-
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   gap: 8px !important;
 }
-
 .runaskin-nr-mini-field span {
   color: #22d3ee !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 24px !important;
   font-weight: 900 !important;
@@ -8126,98 +6401,68 @@ select[name="root"] option,
   text-align: center !important;
   text-transform: uppercase !important;
 }
-
 .runaskin-nr-mini-field input[type="number"] {
   width: 92px !important;
   height: 48px !important;
   min-height: 48px !important;
-
   margin: 0 !important;
   padding: 0 8px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.42) !important;
   border-radius: 15px !important;
-
   background: rgba(2, 6, 23, 0.88) !important;
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 24px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
   text-align: center !important;
-
   outline: none !important;
-
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 0 18px rgba(34, 211, 238, 0.08) !important;
 }
-
 .runaskin-nr-mini-field input[type="number"]:focus {
   border-color: rgba(34, 211, 238, 0.85) !important;
   box-shadow:
     0 0 0 4px rgba(34, 211, 238, 0.12),
     0 0 24px rgba(34, 211, 238, 0.14) !important;
 }
-
-/* Esconde setas premium se o JS envolver o campo */
 .runaskin-nr-mini .number-control {
   width: 92px !important;
   max-width: 92px !important;
 }
-
 .runaskin-nr-mini .number-control input[type="number"] {
   padding: 0 8px !important;
 }
-
 .runaskin-nr-mini .number-control-buttons {
   display: none !important;
 }
-
-/* Remove qualquer barra antiga de NR */
 #nrBarFill {
   display: none !important;
 }
-
-/* =========================================================
-   CORREÇÃO DEFINITIVA - ESCONDER NR ANTIGO ATUAL/MÁXIMO
-========================================================= */
-
-/* Esconde todo bloco antigo de Runaskin, exceto o mini dentro de Triunfos */
 .root-extra-box--runaskin:not(.runaskin-nr-mini) {
   display: none !important;
 }
-
-/* Esconde blocos antigos caso tenham ficado com classe antiga */
 .runaskin-nr-single:not(.runaskin-nr-mini),
 .runaskin-nr-compact,
 .nr-resource-list {
   display: none !important;
 }
-
-/* Esconde campos antigos que sobraram */
 input[name="nrCurrent"],
 input[name="nrMax"] {
   display: none !important;
 }
-
-/* Mantém o NR novo pequeno */
 .runaskin-nr-mini {
   width: fit-content !important;
   min-width: 150px !important;
   max-width: 180px !important;
-
   margin: 0 auto 22px !important;
   padding: 14px 16px !important;
-
   display: none;
   grid-template-columns: 1fr !important;
   align-items: center !important;
-
   border: 1px solid rgba(34, 211, 238, 0.32) !important;
   border-radius: 18px !important;
-
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.96)),
     radial-gradient(
@@ -8225,26 +6470,21 @@ input[name="nrMax"] {
       rgba(34, 211, 238, 0.12),
       transparent 42%
     ) !important;
-
   box-shadow:
     0 12px 30px rgba(0, 0, 0, 0.22),
     0 0 22px rgba(34, 211, 238, 0.07) !important;
 }
-
 .runaskin-nr-mini.active,
 .runaskin-nr-mini.show {
   display: grid !important;
 }
-
 .runaskin-nr-mini-field {
   margin: 0 !important;
-
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   gap: 8px !important;
 }
-
 .runaskin-nr-mini-field span {
   color: #22d3ee !important;
   font-family: "Caesar Dressing", cursive !important;
@@ -8255,140 +6495,101 @@ input[name="nrMax"] {
   text-align: center !important;
   text-transform: uppercase !important;
 }
-
 .runaskin-nr-mini-field input[type="number"] {
   width: 92px !important;
   height: 48px !important;
   min-height: 48px !important;
-
   margin: 0 !important;
   padding: 0 8px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.42) !important;
   border-radius: 15px !important;
-
   background: rgba(2, 6, 23, 0.88) !important;
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 24px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
   text-align: center !important;
-
   outline: none !important;
 }
-
 .runaskin-nr-mini .number-control-buttons {
   display: none !important;
 }
-
-/* =========================================================
-   CORREÇÃO - PV / PE / PR-FV E BARRAS DA FICHA
-========================================================= */
-
 .rune-resource-list {
   width: 100% !important;
   max-width: 520px !important;
-
   display: flex !important;
   flex-direction: column !important;
   gap: 14px !important;
-
   margin: 0 0 26px !important;
 }
-
 .rune-resource-line {
   width: 100% !important;
-
   display: grid !important;
   grid-template-columns: 90px 82px 18px 82px 1fr !important;
   align-items: center !important;
   gap: 10px !important;
 }
-
 .rune-resource-line strong {
   color: #22d3ee !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 26px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
   text-align: left !important;
 }
-
 .rune-resource-line > span {
   color: #f8fafc !important;
-
   font-size: 24px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
   text-align: center !important;
 }
-
 .rune-resource-line input[type="number"] {
   width: 82px !important;
   height: 48px !important;
   min-height: 48px !important;
-
   margin: 0 !important;
   padding: 0 8px !important;
-
   border: 1px solid rgba(148, 163, 184, 0.28) !important;
   border-radius: 12px !important;
-
   background: rgba(2, 6, 23, 0.88) !important;
   color: #f8fafc !important;
-
   font-family: "Caesar Dressing", cursive !important;
   font-size: 22px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
   text-align: center !important;
-
   outline: none !important;
 }
-
 .rune-resource-line input[type="number"]:focus {
   border-color: rgba(34, 211, 238, 0.78) !important;
   box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.1) !important;
 }
-
 .rune-resource-line .rune-bar {
   width: 100% !important;
   min-width: 120px !important;
   height: 10px !important;
-
   margin: 0 !important;
-
   border: 1px solid rgba(148, 163, 184, 0.24) !important;
   border-radius: 999px !important;
-
   overflow: hidden !important;
-
   background: rgba(255, 255, 255, 0.07) !important;
 }
-
 .rune-resource-line .rune-bar div {
   width: 0%;
   height: 100% !important;
-
   border-radius: inherit !important;
-
   background: linear-gradient(90deg, #0891b2, #22d3ee, #67e8f9) !important;
   transition: width 0.25s ease !important;
 }
-
-/* Se o JS de setas premium envolver esses inputs, remove as setas aqui */
 .rune-resource-line .number-control {
   width: 82px !important;
   max-width: 82px !important;
 }
-
 .rune-resource-line .number-control input[type="number"] {
   padding: 0 8px !important;
 }
-
 .rune-resource-line .number-control-buttons {
   display: none !important;
 }
@@ -8418,12 +6619,6 @@ input[name="nrMax"] {
     margin: 0 auto !important;
   }
 }
-
-/* =========================================================
-   D&D - SETAS DE NÚMERO ESTILO MOSTRAR MAIS
-========================================================= */
-
-/* Remove setas padrão do navegador */
 .dnd-character-sheet input[type="number"]::-webkit-inner-spin-button,
 .dnd-character-sheet input[type="number"]::-webkit-outer-spin-button,
 .master-dnd-sheet input[type="number"]::-webkit-inner-spin-button,
@@ -8433,56 +6628,43 @@ input[name="nrMax"] {
   -webkit-appearance: none !important;
   margin: 0 !important;
 }
-
 .dnd-character-sheet input[type="number"],
 .master-dnd-sheet input[type="number"],
 .dnd-player-page input[type="number"] {
   appearance: textfield !important;
   -moz-appearance: textfield !important;
 }
-
-/* Wrapper */
 .dnd-number-control,
 .dnd-character-sheet .number-control,
 .master-dnd-sheet .number-control {
   position: relative !important;
   width: 100% !important;
   max-width: 100% !important;
-
   display: block !important;
 }
-
-/* Espaço para os botões */
 .dnd-number-control input[type="number"],
 .dnd-character-sheet .number-control input[type="number"],
 .master-dnd-sheet .number-control input[type="number"] {
   width: 100% !important;
   padding-right: 54px !important;
 }
-
-/* Coluna dos botões */
 .dnd-number-control-buttons,
 .dnd-character-sheet .number-control-buttons,
 .master-dnd-sheet .number-control-buttons {
   position: absolute !important;
   top: 50% !important;
   right: 8px !important;
-
   width: 34px !important;
   height: 62px !important;
-
   display: flex !important;
   flex-direction: column !important;
   align-items: center !important;
   justify-content: center !important;
   gap: 6px !important;
-
   transform: translateY(-50%) !important;
   z-index: 20 !important;
   pointer-events: auto !important;
 }
-
-/* Botões redondos */
 .dnd-number-control-btn,
 .dnd-character-sheet .number-control-btn,
 .master-dnd-sheet .number-control-btn {
@@ -8492,32 +6674,24 @@ input[name="nrMax"] {
   min-height: 28px !important;
   max-width: 28px !important;
   max-height: 28px !important;
-
   padding: 0 !important;
   margin: 0 !important;
-
   display: grid !important;
   place-items: center !important;
-
   border: 1px solid rgba(34, 211, 238, 0.28) !important;
   border-radius: 999px !important;
-
   background: rgba(34, 211, 238, 0.12) !important;
   color: #67e8f9 !important;
-
   font-family: inherit !important;
   font-size: 17px !important;
   font-weight: 900 !important;
   line-height: 1 !important;
-
   cursor: pointer !important;
   transition: 0.18s ease !important;
-
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 0 14px rgba(34, 211, 238, 0.08) !important;
 }
-
 .dnd-number-control-btn span,
 .dnd-character-sheet .number-control-btn span,
 .master-dnd-sheet .number-control-btn span {
@@ -8525,61 +6699,49 @@ input[name="nrMax"] {
   line-height: 1 !important;
   transform: translateY(-1px) !important;
 }
-
 .dnd-number-control-btn.down span,
 .dnd-character-sheet .number-control-btn.down span,
 .master-dnd-sheet .number-control-btn.down span {
   transform: translateY(-2px) !important;
 }
-
-/* Hover */
 .dnd-number-control-btn:hover,
 .dnd-character-sheet .number-control-btn:hover,
 .master-dnd-sheet .number-control-btn:hover {
   border-color: rgba(34, 211, 238, 0.75) !important;
   background: rgba(34, 211, 238, 0.22) !important;
   color: #ffffff !important;
-
   box-shadow:
     0 0 18px rgba(34, 211, 238, 0.22),
     inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
 }
-
 .dnd-number-control-btn:active,
 .dnd-character-sheet .number-control-btn:active,
 .master-dnd-sheet .number-control-btn:active {
   transform: scale(0.92) !important;
 }
-
 .dnd-number-control-btn:disabled,
 .dnd-character-sheet .number-control-btn:disabled,
 .master-dnd-sheet .number-control-btn:disabled {
   opacity: 0.35 !important;
   cursor: not-allowed !important;
 }
-
-/* Cards de atributos D&D precisam de botões menores */
 .dnd-ability-card .number-control {
   width: 92px !important;
   max-width: 92px !important;
   margin: 0 auto !important;
 }
-
 .dnd-ability-card .number-control input[type="number"] {
   width: 92px !important;
   height: 56px !important;
   padding: 0 34px 0 8px !important;
-
   text-align: center !important;
 }
-
 .dnd-ability-card .number-control-buttons {
   right: 5px !important;
   width: 24px !important;
   height: 52px !important;
   gap: 4px !important;
 }
-
 .dnd-ability-card .number-control-btn {
   width: 22px !important;
   height: 22px !important;
@@ -8587,11 +6749,8 @@ input[name="nrMax"] {
   min-height: 22px !important;
   max-width: 22px !important;
   max-height: 22px !important;
-
   font-size: 14px !important;
 }
-
-/* Campos muito pequenos da lista */
 .dnd-list .number-control-buttons,
 .dnd-stats-grid .number-control-buttons,
 .dnd-hp-row .number-control-buttons,
@@ -8602,7 +6761,6 @@ input[name="nrMax"] {
   height: 54px !important;
   gap: 4px !important;
 }
-
 .dnd-list .number-control-btn,
 .dnd-stats-grid .number-control-btn,
 .dnd-hp-row .number-control-btn,
@@ -8614,11 +6772,9 @@ input[name="nrMax"] {
   min-height: 23px !important;
   max-width: 23px !important;
   max-height: 23px !important;
-
   font-size: 14px !important;
 }
 
-/* Mobile */
 @media (max-width: 760px) {
   .dnd-number-control input[type="number"],
   .dnd-character-sheet .number-control input[type="number"],
@@ -8645,35 +6801,20 @@ input[name="nrMax"] {
     max-height: 24px !important;
   }
 }
-
-/* =========================================================
-   D&D - TÍTULO DA FICHA COM FONTE PADRÃO DO SOFTWARE
-========================================================= */
-
-/*
-  A ficha de D&D estava usando Aboreto no cabeçalho.
-  Aqui voltamos o cabeçalho principal para Quantico,
-  que é a fonte padrão dos títulos do Campaign Lab.
-*/
-
 .dnd-sheet-toolbar .tag,
 .dnd-sheet-toolbar h2,
 .dnd-sheet-toolbar p {
   font-family: "Quantico", sans-serif !important;
 }
-
 .dnd-sheet-toolbar .tag {
   font-size: 13px !important;
   font-weight: 700 !important;
   letter-spacing: 2px !important;
   text-transform: uppercase !important;
 }
-
 .dnd-sheet-toolbar h2 {
   margin: 8px 0 !important;
-
   color: #f8fafc !important;
-
   font-family: "Quantico", sans-serif !important;
   font-size: clamp(38px, 5vw, 72px) !important;
   font-weight: 700 !important;
@@ -8681,37 +6822,19 @@ input[name="nrMax"] {
   letter-spacing: 1px !important;
   text-transform: uppercase !important;
 }
-
 .dnd-sheet-toolbar p {
   color: rgba(226, 232, 240, 0.78) !important;
-
   font-size: 16px !important;
   font-weight: 400 !important;
   letter-spacing: 0.5px !important;
   text-transform: uppercase !important;
 }
-
-/* Mantém a ficha interna de D&D com o estilo próprio dela */
 .dnd-character-sheet,
 .dnd-character-sheet *,
 .dnd-sheet-modal-box .dnd-character-sheet,
 .dnd-sheet-modal-box .dnd-character-sheet * {
   font-family: "Aboreto", serif !important;
 }
-
-/* =========================================================
-   CORREÇÃO FINAL - FONTES ORIGINAIS DAS FICHAS RESTAURADAS
-========================================================= */
-
-/*
-  Mantém a identidade visual de cada ficha:
-  - Altherium usa Caesar Dressing
-  - D&D usa Aboreto
-
-  E mantém os campos sem text-transform para não forçar maiúsculas.
-*/
-
-/* FICHA DE ALTHERIUM - fonte própria em toda a ficha */
 .altherium-rune-sheet,
 .altherium-rune-sheet *,
 .master-rune-sheet,
@@ -8724,8 +6847,6 @@ input[name="nrMax"] {
 #altheriumFormFields .altherium-rune-sheet * {
   font-family: "Caesar Dressing", cursive !important;
 }
-
-/* Campos digitáveis de Altherium seguem a fonte da ficha, mas sem forçar caixa */
 .altherium-rune-sheet input,
 .altherium-rune-sheet textarea,
 .altherium-rune-sheet select,
@@ -8755,8 +6876,6 @@ select[name="root"] {
   text-transform: none !important;
   font-variant: normal !important;
 }
-
-/* FICHA DE D&D - fonte própria em toda a ficha */
 .dnd-character-sheet,
 .dnd-character-sheet *,
 .master-dnd-sheet,
@@ -8771,8 +6890,6 @@ select[name="root"] {
 #dndFormFields .dnd-character-sheet * {
   font-family: "Aboreto", serif !important;
 }
-
-/* Campos digitáveis de D&D seguem a fonte da ficha, mas sem forçar caixa */
 .dnd-character-sheet input,
 .dnd-character-sheet textarea,
 .dnd-character-sheet select,
@@ -8803,8 +6920,6 @@ select[name="root"] {
   text-transform: none !important;
   font-variant: normal !important;
 }
-
-/* Placeholders voltam para a fonte da ficha */
 .altherium-rune-sheet input::placeholder,
 .altherium-rune-sheet textarea::placeholder,
 .master-rune-sheet input::placeholder,
@@ -8814,7 +6929,6 @@ select[name="root"] {
   font-family: "Caesar Dressing", cursive !important;
   text-transform: none !important;
 }
-
 .dnd-character-sheet input::placeholder,
 .dnd-character-sheet textarea::placeholder,
 .master-dnd-sheet input::placeholder,
@@ -8824,20 +6938,15 @@ select[name="root"] {
   font-family: "Aboreto", serif !important;
   text-transform: none !important;
 }
-
-/* Mantém o cabeçalho externo da página D&D na fonte padrão do software */
 .dnd-sheet-toolbar .tag,
 .dnd-sheet-toolbar h2,
 .dnd-sheet-toolbar p {
   font-family: "Quantico", sans-serif !important;
 }
-
 .dnd-sheet-toolbar h2 {
   text-transform: uppercase !important;
   letter-spacing: 1px !important;
 }
-
-/* Botões e controles pequenos seguem a fonte do sistema para legibilidade */
 .number-control-btn,
 .number-control-btn span,
 .dnd-number-control-btn,
@@ -8847,8 +6956,6 @@ select[name="root"] {
 .btn {
   font-family: "Quantico", sans-serif !important;
 }
-
-/* Cards e textos fora da ficha seguem a fonte padrão do software */
 .sheet-card,
 .sheet-card *,
 .dnd-sheet-card,
@@ -8857,8 +6964,6 @@ select[name="root"] {
 .altherium-card * {
   font-family: "Inter", sans-serif !important;
 }
-
-/* Mas nomes dentro dos cards não forçam maiúsculas */
 .sheet-card h3,
 .sheet-card p,
 .dnd-sheet-card h3,
@@ -8869,42 +6974,26 @@ select[name="root"] {
 #dndClassMini {
   text-transform: none !important;
 }
-
-/* =========================================================
-   ALTHERIUM - FICHA MAIS LARGA COMO A FICHA DE D&D
-========================================================= */
-
-/*
-  Antes a ficha de Altherium usava max-width menor.
-  Agora ela usa a mesma largura base da ficha de D&D.
-*/
-
 .altherium-sheet-wrapper,
 .player-sheet-form,
 .altherium-rune-sheet {
   width: 100% !important;
 }
-
 .altherium-rune-sheet .rune-paper-page,
 #playerSheetForm .rune-paper-page,
 .altherium-sheet-wrapper .rune-paper-page {
   width: 100% !important;
   max-width: 1160px !important;
 }
-
-/* Mantém o conteúdo interno confortável na largura maior */
 .altherium-rune-sheet .rune-frame,
 #playerSheetForm .rune-frame,
 .altherium-sheet-wrapper .rune-frame {
   width: 100% !important;
 }
-
-/* No modal do mestre, Altherium também fica mais largo */
 .altherium-sheet-modal-box .master-rune-sheet .rune-paper-page {
   max-width: 1160px !important;
 }
 
-/* Em telas grandes, a primeira página de Altherium aproveita melhor a largura */
 @media (min-width: 1180px) {
   .altherium-rune-sheet .rune-paper-page,
   #playerSheetForm .rune-paper-page,
@@ -8913,7 +7002,6 @@ select[name="root"] {
   }
 }
 
-/* Responsivo: no celular continua ocupando a tela sem estourar */
 @media (max-width: 760px) {
   .altherium-rune-sheet .rune-paper-page,
   #playerSheetForm .rune-paper-page,
@@ -8921,264 +7009,9 @@ select[name="root"] {
     max-width: 100% !important;
   }
 }
-
-/* =========================================================
-   HEADER - VOLTAR MAIS À DIREITA E LOGOUT SEPARADO
-========================================================= */
-
-/*
-  Layout final:
-  [logout]     [voltar]
-  O botão Voltar fica mais para a direita para não grudar no logout.
-*/
-
-.header,
-.header-center {
-  position: sticky !important;
-}
-
-.header-center .logo,
-.header .logo,
-.header-container-center,
-.header-container {
-  position: relative !important;
-  z-index: 1 !important;
-}
-
-.header-nav-actions {
-  position: absolute !important;
-  left: clamp(18px, 3vw, 46px) !important;
-  top: 50% !important;
-  z-index: 9000 !important;
-
-  display: flex !important;
-  align-items: center !important;
-  justify-content: flex-start !important;
-
-  /* aqui cria o espaço real entre logout e voltar */
-  gap: 18px !important;
-
-  transform: translateY(-50%) !important;
-  pointer-events: auto !important;
-}
-
-/* Logout fica como botão pequeno/redondo à esquerda */
-.header-logout-button {
-  order: 1 !important;
-
-  width: 42px !important;
-  min-width: 42px !important;
-  max-width: 42px !important;
-  height: 42px !important;
-  min-height: 42px !important;
-  max-height: 42px !important;
-
-  padding: 0 !important;
-  margin: 0 !important;
-
-  display: grid !important;
-  place-items: center !important;
-
-  border-radius: 999px !important;
-  border: 1px solid rgba(248, 113, 113, 0.52) !important;
-
-  background: #120812 !important;
-  color: #fca5a5 !important;
-
-  font-family: "Quantico", sans-serif !important;
-
-  cursor: pointer !important;
-  transition: 0.22s ease !important;
-
-  box-shadow:
-    0 0 0 1px rgba(248, 113, 113, 0.08),
-    0 0 18px rgba(248, 113, 113, 0.12),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
-}
-
-/* Voltar fica mais para a direita */
-.header-back-button {
-  order: 2 !important;
-
-  height: 46px !important;
-  min-height: 46px !important;
-  max-height: 46px !important;
-  min-width: 128px !important;
-
-  padding: 0 18px 0 10px !important;
-  margin: 0 !important;
-
-  display: inline-flex !important;
-  align-items: center !important;
-  justify-content: center !important;
-  gap: 9px !important;
-  flex: 0 0 auto !important;
-
-  border-radius: 999px !important;
-  border: 1px solid rgba(34, 211, 238, 0.6) !important;
-
-  background: #020617 !important;
-  color: #f8fafc !important;
-
-  font-family: "Quantico", sans-serif !important;
-  font-size: 14px !important;
-  font-weight: 700 !important;
-  line-height: 1 !important;
-  letter-spacing: 0.4px !important;
-  text-transform: uppercase !important;
-  white-space: nowrap !important;
-
-  cursor: pointer !important;
-  transition: 0.22s ease !important;
-
-  box-shadow:
-    0 0 0 1px rgba(34, 211, 238, 0.1),
-    0 0 22px rgba(34, 211, 238, 0.14),
-    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
-}
-
-.header-back-button__icon {
-  width: 30px !important;
-  height: 30px !important;
-  min-width: 30px !important;
-
-  display: grid !important;
-  place-items: center !important;
-
-  border-radius: 999px !important;
-
-  background: rgba(34, 211, 238, 0.16) !important;
-  color: #67e8f9 !important;
-
-  font-family: "Quantico", sans-serif !important;
-  font-size: 24px !important;
-  font-weight: 900 !important;
-  line-height: 1 !important;
-}
-
-.header-logout-button__icon {
-  width: 24px !important;
-  height: 24px !important;
-  min-width: 24px !important;
-
-  display: grid !important;
-  place-items: center !important;
-
-  border-radius: 999px !important;
-
-  background: rgba(248, 113, 113, 0.14) !important;
-  color: #fca5a5 !important;
-
-  font-family: "Quantico", sans-serif !important;
-  font-size: 13px !important;
-  font-weight: 900 !important;
-  line-height: 1 !important;
-}
-
-.header-logout-button__text {
-  display: none !important;
-}
-
-.header-back-button__text {
-  display: inline-block !important;
-  transform: translateY(0) !important;
-}
-
-.header-back-button:hover {
-  transform: translateY(-2px) !important;
-  border-color: rgba(34, 211, 238, 0.9) !important;
-  background: #062133 !important;
-  color: #ffffff !important;
-
-  box-shadow:
-    0 0 26px rgba(34, 211, 238, 0.28),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-}
-
-.header-logout-button:hover {
-  transform: translateY(-2px) !important;
-  border-color: rgba(248, 113, 113, 0.9) !important;
-  background: #2a0d13 !important;
-  color: #ffffff !important;
-
-  box-shadow:
-    0 0 24px rgba(248, 113, 113, 0.22),
-    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
-}
-
-.header-back-button:active,
-.header-logout-button:active {
-  transform: translateY(0) scale(0.98) !important;
-}
-
-/* Mobile: mantém separado, mas só com ícones */
-@media (max-width: 760px) {
-  .header-nav-actions {
-    left: 10px !important;
-    gap: 12px !important;
-  }
-
-  .header-logout-button,
-  .header-back-button {
-    width: 40px !important;
-    min-width: 40px !important;
-    max-width: 40px !important;
-    height: 40px !important;
-    min-height: 40px !important;
-    max-height: 40px !important;
-
-    padding: 0 !important;
-  }
-
-  .header-back-button__text {
-    display: none !important;
-  }
-
-  .header-back-button__icon,
-  .header-logout-button__icon {
-    width: 26px !important;
-    height: 26px !important;
-    min-width: 26px !important;
-  }
-}
-
-@media (max-width: 420px) {
-  .header-nav-actions {
-    left: 8px !important;
-    gap: 9px !important;
-  }
-
-  .header-logout-button,
-  .header-back-button {
-    width: 36px !important;
-    min-width: 36px !important;
-    max-width: 36px !important;
-    height: 36px !important;
-    min-height: 36px !important;
-    max-height: 36px !important;
-  }
-
-  .header-back-button__icon,
-  .header-logout-button__icon {
-    width: 23px !important;
-    height: 23px !important;
-    min-width: 23px !important;
-  }
-}
-
-/* =========================================================
-   AJUSTE FINO - LOGOUT MAIS À DIREITA
-========================================================= */
-
-/*
-  Deixa o botão Logout mais próximo do canto direito,
-  equivalente ao Voltar no canto esquerdo.
-*/
-
 .header-logout-area {
   right: clamp(6px, 1.6vw, 18px) !important;
 }
-
 .header-back-area {
   left: clamp(6px, 1.6vw, 18px) !important;
 }
@@ -9202,88 +7035,58 @@ select[name="root"] {
     left: 6px !important;
   }
 }
-
-/* =========================================================
-   HEADER - VOLTAR E LOGOUT PRESOS NA TELA
-========================================================= */
-
-/*
-  Correção definitiva:
-  o JS agora coloca .header-back-area e .header-logout-area direto no body.
-  Por isso usamos position: fixed, preso na largura real da janela.
-*/
-
 body > .header-back-area,
 body > .header-logout-area {
   position: fixed !important;
   top: 46px !important;
   z-index: 999999 !important;
-
   display: flex !important;
   align-items: center !important;
   justify-content: center !important;
-
   transform: translateY(-50%) !important;
   pointer-events: auto !important;
 }
-
 body > .header-back-area {
   left: 28px !important;
 }
-
 body > .header-logout-area {
   right: 28px !important;
 }
-
-/* desativa o wrapper antigo, caso tenha ficado de algum teste anterior */
 .header-nav-actions {
   display: none !important;
 }
-
 body > .header-back-area .header-back-button,
 body > .header-logout-area .header-logout-button {
   margin: 0 !important;
-
   display: inline-flex !important;
   align-items: center !important;
   justify-content: center !important;
-
   border-radius: 999px !important;
-
   font-family: "Quantico", sans-serif !important;
   line-height: 1 !important;
   cursor: pointer !important;
-
   transition: 0.22s ease !important;
 }
-
-/* botão voltar */
 body > .header-back-area .header-back-button {
   width: auto !important;
   min-width: 128px !important;
   height: 46px !important;
   min-height: 46px !important;
   max-height: 46px !important;
-
   padding: 0 18px 0 10px !important;
   gap: 9px !important;
-
   border: 1px solid rgba(34, 211, 238, 0.68) !important;
   background: #020617 !important;
   color: #f8fafc !important;
-
   font-size: 14px !important;
   font-weight: 700 !important;
   letter-spacing: 0.4px !important;
   text-transform: uppercase !important;
-
   box-shadow:
     0 0 0 1px rgba(34, 211, 238, 0.1),
     0 0 22px rgba(34, 211, 238, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
 }
-
-/* botão logout no canto direito */
 body > .header-logout-area .header-logout-button {
   width: 46px !important;
   min-width: 46px !important;
@@ -9291,84 +7094,65 @@ body > .header-logout-area .header-logout-button {
   height: 46px !important;
   min-height: 46px !important;
   max-height: 46px !important;
-
   padding: 0 !important;
   gap: 0 !important;
-
   border: 1px solid rgba(248, 113, 113, 0.68) !important;
   background: #120812 !important;
   color: #f8fafc !important;
-
   box-shadow:
     0 0 0 1px rgba(248, 113, 113, 0.08),
     0 0 20px rgba(248, 113, 113, 0.16),
     inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
 }
-
 body > .header-back-area .header-back-button__icon,
 body > .header-logout-area .header-logout-button__icon {
   display: grid !important;
   place-items: center !important;
-
   border-radius: 999px !important;
-
   font-family: "Quantico", sans-serif !important;
   font-weight: 900 !important;
   line-height: 1 !important;
 }
-
 body > .header-back-area .header-back-button__icon {
   width: 30px !important;
   height: 30px !important;
   min-width: 30px !important;
-
   background: rgba(34, 211, 238, 0.16) !important;
   color: #67e8f9 !important;
-
   font-size: 24px !important;
 }
-
 body > .header-logout-area .header-logout-button__icon {
   width: 30px !important;
   height: 30px !important;
   min-width: 30px !important;
-
   background: rgba(248, 113, 113, 0.14) !important;
   color: #fca5a5 !important;
-
   font-size: 13px !important;
 }
-
-/* mostra texto só no voltar */
 body > .header-back-area .header-back-button__text {
   display: inline-block !important;
   color: #f8fafc !important;
 }
-
 body > .header-logout-area .header-logout-button__text {
   display: none !important;
 }
-
 body > .header-back-area .header-back-button:hover {
   transform: translateY(-2px) !important;
   border-color: rgba(34, 211, 238, 0.95) !important;
   background: #062133 !important;
   color: #ffffff !important;
 }
-
 body > .header-logout-area .header-logout-button:hover {
   transform: translateY(-2px) !important;
   border-color: rgba(248, 113, 113, 0.95) !important;
   background: #2a0d13 !important;
   color: #ffffff !important;
 }
-
 body > .header-back-area .header-back-button:active,
 body > .header-logout-area .header-logout-button:active {
   transform: translateY(0) scale(0.98) !important;
 }
 
-/* Responsivo */
 @media (max-width: 760px) {
   body > .header-back-area,
   body > .header-logout-area {
@@ -9441,28 +7225,45 @@ body > .header-logout-area .header-logout-button:active {
   }
 }
 
-/* =========================================================
-   HEADER - AJUSTE FINAL SEM MOVIMENTO E DISTÂNCIA IGUAL
-========================================================= */
-
-/*
-  Ajuste pedido:
-  - remove a animação de subir/descer dos botões
-  - Voltar fica a 28px da borda esquerda
-  - Logout fica a 28px da borda direita
-*/
+/* HEADER ATUAL: voltar esquerda, logout direita, sem movimento */
+body > .header-back-area,
+body > .header-logout-area {
+  position: fixed !important;
+  top: 32px !important;
+  z-index: 999999 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform: none !important;
+  pointer-events: auto !important;
+}
 
 body > .header-back-area {
   left: 28px !important;
+  right: auto !important;
 }
 
 body > .header-logout-area {
   right: 28px !important;
+  left: auto !important;
 }
 
-/* Remove qualquer movimento vertical no hover */
+.header-nav-actions {
+  display: none !important;
+}
+
 body > .header-back-area .header-back-button,
 body > .header-logout-area .header-logout-button {
+  margin: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  font-family: "Quantico", sans-serif !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  transform: none !important;
+  translate: none !important;
   transition:
     border-color 0.22s ease,
     background 0.22s ease,
@@ -9470,189 +7271,99 @@ body > .header-logout-area .header-logout-button {
     box-shadow 0.22s ease !important;
 }
 
-body > .header-back-area .header-back-button:hover,
-body > .header-logout-area .header-logout-button:hover,
-body > .header-back-area .header-back-button:active,
-body > .header-logout-area .header-logout-button:active {
-  transform: none !important;
+body > .header-back-area .header-back-button {
+  width: auto !important;
+  min-width: 128px !important;
+  height: 46px !important;
+  padding: 0 18px 0 10px !important;
+  gap: 9px !important;
+  border: 1px solid rgba(34, 211, 238, 0.68) !important;
+  background: #020617 !important;
+  color: #f8fafc !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.4px !important;
+  text-transform: uppercase !important;
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.1),
+    0 0 22px rgba(34, 211, 238, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
 }
 
-/* Mantém somente mudança de cor no hover */
-body > .header-back-area .header-back-button:hover {
-  border-color: rgba(34, 211, 238, 0.95) !important;
-  background: #062133 !important;
-  color: #ffffff !important;
+body > .header-logout-area .header-logout-button {
+  width: 46px !important;
+  min-width: 46px !important;
+  max-width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  max-height: 46px !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  border: 1px solid rgba(248, 113, 113, 0.68) !important;
+  background: #120812 !important;
+  color: #f8fafc !important;
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.08),
+    0 0 20px rgba(248, 113, 113, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
 }
 
-body > .header-logout-area .header-logout-button:hover {
-  border-color: rgba(248, 113, 113, 0.95) !important;
-  background: #2a0d13 !important;
-  color: #ffffff !important;
-}
-
-/* Responsivo com distância equivalente dos dois lados */
-@media (max-width: 760px) {
-  body > .header-back-area {
-    left: 10px !important;
-  }
-
-  body > .header-logout-area {
-    right: 10px !important;
-  }
-}
-
-@media (max-width: 420px) {
-  body > .header-back-area {
-    left: 8px !important;
-  }
-
-  body > .header-logout-area {
-    right: 8px !important;
-  }
-}
-
-/* =========================================================
-   HEADER - REMOVER MOVIMENTO DO BOTÃO VOLTAR
-========================================================= */
-
-/*
-  Correção definitiva:
-  remove o translateY do container e do botão.
-  Assim o botão Voltar não desce nem sobe ao passar o mouse.
-*/
-
-body > .header-back-area {
-  position: fixed !important;
-  top: 23px !important;
-  left: 28px !important;
-  right: auto !important;
-  z-index: 999999 !important;
-
-  transform: none !important;
-  transition: none !important;
-}
-
-body > .header-logout-area {
-  position: fixed !important;
-  top: 23px !important;
-  right: 28px !important;
-  left: auto !important;
-  z-index: 999999 !important;
-
-  transform: none !important;
-  transition: none !important;
-}
-
-body > .header-back-area:hover,
-body > .header-logout-area:hover,
-body > .header-back-area:active,
-body > .header-logout-area:active {
-  transform: none !important;
-}
-
-body > .header-back-area .header-back-button,
-body > .header-back-area .header-back-button:hover,
-body > .header-back-area .header-back-button:active,
-body > .header-back-area .header-back-button:focus,
-body > .header-back-area .header-back-button:focus-visible {
-  transform: none !important;
-  translate: none !important;
-  top: auto !important;
-  bottom: auto !important;
-}
-
-body > .header-logout-area .header-logout-button,
-body > .header-logout-area .header-logout-button:hover,
-body > .header-logout-area .header-logout-button:active,
-body > .header-logout-area .header-logout-button:focus,
-body > .header-logout-area .header-logout-button:focus-visible {
-  transform: none !important;
-  translate: none !important;
-  top: auto !important;
-  bottom: auto !important;
-}
-
-/* Sobrescreve qualquer regra antiga criada antes */
-.header-back-button:hover,
-.header-back-button:active,
-.header-back-button:focus,
-.header-back-button:focus-visible,
-.header-logout-button:hover,
-.header-logout-button:active,
-.header-logout-button:focus,
-.header-logout-button:focus-visible {
-  transform: none !important;
-  translate: none !important;
-}
-
-/* Mantém só a mudança visual no hover, sem movimento */
-body > .header-back-area .header-back-button:hover {
-  border-color: rgba(34, 211, 238, 0.95) !important;
-  background: #062133 !important;
-  color: #ffffff !important;
-}
-
-body > .header-logout-area .header-logout-button:hover {
-  border-color: rgba(248, 113, 113, 0.95) !important;
-  background: #2a0d13 !important;
-  color: #ffffff !important;
-}
-
-@media (max-width: 760px) {
-  body > .header-back-area {
-    top: 20px !important;
-    left: 10px !important;
-  }
-
-  body > .header-logout-area {
-    top: 20px !important;
-    right: 10px !important;
-  }
-}
-
-@media (max-width: 420px) {
-  body > .header-back-area {
-    top: 17px !important;
-    left: 8px !important;
-  }
-
-  body > .header-logout-area {
-    top: 17px !important;
-    right: 8px !important;
-  }
-}
-
-/* =========================================================
-   HEADER - AJUSTE DE ALTURA DOS BOTÕES
-========================================================= */
-
-/*
-  Mantém o botão sem animação de movimento,
-  mas desce ele para ficar melhor centralizado no header.
-*/
-
-body > .header-back-area {
-  top: 57px !important;
-  transform: none !important;
-}
-
-body > .header-logout-area {
-  top: 32px !important;
-  transform: none !important;
-}
-
-body > .header-back-area .header-back-button,
 body > .header-back-area .header-back-button:hover,
 body > .header-back-area .header-back-button:active,
 body > .header-back-area .header-back-button:focus,
 body > .header-back-area .header-back-button:focus-visible,
-body > .header-logout-area .header-logout-button,
 body > .header-logout-area .header-logout-button:hover,
 body > .header-logout-area .header-logout-button:active,
 body > .header-logout-area .header-logout-button:focus,
 body > .header-logout-area .header-logout-button:focus-visible {
   transform: none !important;
   translate: none !important;
+}
+
+body > .header-back-area .header-back-button:hover {
+  border-color: rgba(34, 211, 238, 0.95) !important;
+  background: #062133 !important;
+  color: #ffffff !important;
+}
+
+body > .header-logout-area .header-logout-button:hover {
+  border-color: rgba(248, 113, 113, 0.95) !important;
+  background: #2a0d13 !important;
+  color: #ffffff !important;
+}
+
+body > .header-back-area .header-back-button__icon,
+body > .header-logout-area .header-logout-button__icon {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  font-family: "Quantico", sans-serif !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+body > .header-back-area .header-back-button__icon {
+  background: rgba(34, 211, 238, 0.16) !important;
+  color: #67e8f9 !important;
+  font-size: 24px !important;
+}
+
+body > .header-logout-area .header-logout-button__icon {
+  background: rgba(248, 113, 113, 0.14) !important;
+  color: #fca5a5 !important;
+  font-size: 13px !important;
+}
+
+body > .header-back-area .header-back-button__text {
+  display: inline-block !important;
+  color: #f8fafc !important;
+}
+
+body > .header-logout-area .header-logout-button__text {
+  display: none !important;
 }
 
 @media (max-width: 760px) {
@@ -9660,11 +7371,97 @@ body > .header-logout-area .header-logout-button:focus-visible {
   body > .header-logout-area {
     top: 26px !important;
   }
+
+  body > .header-back-area {
+    left: 10px !important;
+  }
+
+  body > .header-logout-area {
+    right: 10px !important;
+  }
+
+  body > .header-back-area .header-back-button,
+  body > .header-logout-area .header-logout-button {
+    width: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  body > .header-back-area .header-back-button__text,
+  body > .header-logout-area .header-logout-button__text {
+    display: none !important;
+  }
+
+  body > .header-back-area .header-back-button__icon,
+  body > .header-logout-area .header-logout-button__icon {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+  }
 }
 
-@media (max-width: 420px) {
-  body > .header-back-area,
-  body > .header-logout-area {
-    top: 23px !important;
-  }
+/* =========================================================
+   D&D - REMOVER BOTÕES DE AUMENTAR/DIMINUIR NÚMEROS
+========================================================= */
+
+/*
+  Remove os botões customizados de subir/descer apenas da ficha de D&D.
+  Os inputs continuam funcionando normalmente para digitar o número.
+*/
+
+.dnd-character-sheet .number-control-buttons,
+.dnd-character-sheet .dnd-number-control-buttons,
+.master-dnd-sheet .number-control-buttons,
+.master-dnd-sheet .dnd-number-control-buttons,
+.dnd-sheet-modal-box .number-control-buttons,
+.dnd-sheet-modal-box .dnd-number-control-buttons,
+#dndPlayerSheetForm .number-control-buttons,
+#dndPlayerSheetForm .dnd-number-control-buttons,
+#dndFormFields .number-control-buttons,
+#dndFormFields .dnd-number-control-buttons {
+  display: none !important;
+}
+
+/* Remove o espaço lateral que existia para as setas */
+.dnd-character-sheet .number-control input[type="number"],
+.dnd-character-sheet .dnd-number-control input[type="number"],
+.master-dnd-sheet .number-control input[type="number"],
+.master-dnd-sheet .dnd-number-control input[type="number"],
+.dnd-sheet-modal-box .number-control input[type="number"],
+.dnd-sheet-modal-box .dnd-number-control input[type="number"],
+#dndPlayerSheetForm .number-control input[type="number"],
+#dndPlayerSheetForm .dnd-number-control input[type="number"],
+#dndFormFields .number-control input[type="number"],
+#dndFormFields .dnd-number-control input[type="number"] {
+  padding-right: 8px !important;
+  text-align: center !important;
+}
+
+/* Garante que o navegador também não mostre as setas padrão dentro da ficha D&D */
+.dnd-character-sheet input[type="number"]::-webkit-inner-spin-button,
+.dnd-character-sheet input[type="number"]::-webkit-outer-spin-button,
+.master-dnd-sheet input[type="number"]::-webkit-inner-spin-button,
+.master-dnd-sheet input[type="number"]::-webkit-outer-spin-button,
+.dnd-sheet-modal-box input[type="number"]::-webkit-inner-spin-button,
+.dnd-sheet-modal-box input[type="number"]::-webkit-outer-spin-button,
+#dndPlayerSheetForm input[type="number"]::-webkit-inner-spin-button,
+#dndPlayerSheetForm input[type="number"]::-webkit-outer-spin-button,
+#dndFormFields input[type="number"]::-webkit-inner-spin-button,
+#dndFormFields input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none !important;
+  margin: 0 !important;
+}
+
+.dnd-character-sheet input[type="number"],
+.master-dnd-sheet input[type="number"],
+.dnd-sheet-modal-box input[type="number"],
+#dndPlayerSheetForm input[type="number"],
+#dndFormFields input[type="number"] {
+  appearance: textfield !important;
+  -moz-appearance: textfield !important;
 }
