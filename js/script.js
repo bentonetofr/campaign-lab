@@ -6887,6 +6887,19 @@ function setupAltheriumRootDynamicControls() {
   document.addEventListener(
     "click",
     (event) => {
+      const detailsButton = event.target.closest("[data-berserk-triumph-more]");
+
+      if (detailsButton) {
+        const card = detailsButton.closest(".berserk-triumph-card");
+        if (!card) return;
+
+        event.preventDefault();
+        event.stopPropagation();
+
+        toggleBerserkTriumphDetails(card);
+        return;
+      }
+
       const card = event.target.closest(".berserk-triumph-card");
       if (!card) return;
 
@@ -7262,6 +7275,31 @@ function syncBerserkTriumphSelection(form) {
   return selected;
 }
 
+function toggleBerserkTriumphDetails(card, force = null) {
+  if (!card) return;
+
+  const shouldOpen = force === null
+    ? !card.classList.contains("details-open")
+    : Boolean(force);
+
+  card.classList.toggle("details-open", shouldOpen);
+
+  const details = card.querySelector("[data-berserk-triumph-details]");
+  if (details) {
+    details.hidden = !shouldOpen;
+  }
+
+  const button = card.querySelector("[data-berserk-triumph-more]");
+  if (button) {
+    button.setAttribute("aria-expanded", String(shouldOpen));
+
+    const label = button.querySelector("[data-berserk-triumph-more-label]");
+    if (label) {
+      label.textContent = shouldOpen ? "Ver menos" : "Ver mais";
+    }
+  }
+}
+
 function updateBerserkTriumphCheckboxState(checkbox) {
   if (!checkbox) return;
 
@@ -7407,7 +7445,23 @@ function buildBerserkTriumphCard(triumph, selectedSet = new Set()) {
           <em>${escapeHtml(triumph.cost)}</em>
         </div>
 
-        <p>${escapeHtml(triumph.description)}</p>
+        <button
+          type="button"
+          class="berserk-triumph-more"
+          data-berserk-triumph-more="true"
+          aria-expanded="false"
+        >
+          <span data-berserk-triumph-more-label>Ver mais</span>
+          <span class="berserk-triumph-more-arrow" aria-hidden="true">⌄</span>
+        </button>
+
+        <div
+          class="berserk-triumph-details"
+          data-berserk-triumph-details="true"
+          hidden
+        >
+          <p>${escapeHtml(triumph.description)}</p>
+        </div>
 
         <div class="berserk-triumph-tags">
           <small>${escapeHtml(triumph.action)}</small>

@@ -15870,3 +15870,77 @@ button .master-character-health + .sheet-card-footer {
     transform: scale(1) !important;
   }
 }
+
+/* =========================================================
+   TRIUNFOS BERSERK - VER MAIS
+========================================================= */
+.berserk-triumph-card {
+  min-height: 142px !important;
+}
+
+.berserk-triumph-more {
+  width: fit-content !important;
+  margin: 2px 0 10px !important;
+  padding: 7px 11px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border: 1px solid rgba(239, 68, 68, 0.34) !important;
+  border-radius: 999px !important;
+  background: rgba(239, 68, 68, 0.09) !important;
+  color: #fecaca !important;
+  font-family: inherit !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.7px !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    color 0.2s ease !important;
+}
+
+.berserk-triumph-more:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(239, 68, 68, 0.72) !important;
+  background: rgba(239, 68, 68, 0.18) !important;
+  color: #ffffff !important;
+}
+
+.berserk-triumph-more-arrow {
+  display: inline-block !important;
+  font-size: 18px !important;
+  line-height: 1 !important;
+  transition: transform 0.2s ease !important;
+}
+
+.berserk-triumph-card.details-open .berserk-triumph-more-arrow {
+  transform: rotate(180deg) !important;
+}
+
+.berserk-triumph-details {
+  display: none !important;
+  margin: 0 0 12px !important;
+  padding: 12px 13px !important;
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+  border-radius: 14px !important;
+  background: rgba(2, 6, 23, 0.34) !important;
+}
+
+.berserk-triumph-card.details-open .berserk-triumph-details {
+  display: block !important;
+}
+
+.berserk-triumph-details[hidden] {
+  display: none !important;
+}
+
+.berserk-triumph-details p {
+  margin: 0 !important;
+  color: #cbd5e1 !important;
+  font-size: 15px !important;
+  line-height: 1.45 !important;
+}
