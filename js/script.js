@@ -2635,6 +2635,7 @@ async function setupDndPlayerSheet() {
 
   await getOrCreateDndSheet(campaign.id, user.id, campaign.sistema);
   await loadDndSheetIntoPlayerForm();
+  setupDndSpellSlotTrackers(form);
   setupDndRestControls();
 
   form.addEventListener("input", () => {
@@ -2658,6 +2659,7 @@ async function loadDndSheetIntoPlayerForm() {
     updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
     updateDndPlayerPreview();
     updateDndAutoNumbers();
+    syncAllDndSpellSlotTrackers(form);
     updateDndRestPreview();
   refreshCharacterPortraitFloatingPanels();
     return;
@@ -2674,6 +2676,8 @@ async function loadDndSheetIntoPlayerForm() {
   updateCharacterPortraitFields(form, sheet);
   updateDndPlayerPreview();
   updateDndAutoNumbers();
+  setupDndSpellSlotTrackers(form);
+  syncAllDndSpellSlotTrackers(form);
   setupDndRestControls();
   updateDndRestPreview();
 }
@@ -2684,6 +2688,8 @@ async function saveDndPlayerSheet(showAlert) {
   const form = document.getElementById("dndPlayerSheetForm");
 
   if (!user || !campaign || !form) return;
+
+  syncAllDndSpellSlotTrackers(form);
 
   await updateDndSheet(campaign.id, user.id, Object.fromEntries(new FormData(form)));
   updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
@@ -2720,6 +2726,94 @@ function updateDndAutoNumbers() {
   );
 }
 
+
+
+
+
+/* =========================================================
+   D&D - ESPAÇOS DE MAGIA COM BOLINHAS SELECIONÁVEIS
+========================================================= */
+function setupDndSpellSlotTrackers(scope = document) {
+  const root = scope && scope.querySelectorAll ? scope : document;
+  const levels = root.querySelectorAll(".dnd-spell-slot-level");
+
+  levels.forEach((levelBox) => {
+    syncDndSpellSlotLevel(levelBox);
+
+    if (levelBox.dataset.spellSlotReady === "true") return;
+    levelBox.dataset.spellSlotReady = "true";
+
+    levelBox.addEventListener("click", (event) => {
+      const dot = event.target.closest(".dnd-spell-slot-dot");
+      if (!dot) return;
+
+      event.preventDefault();
+      toggleDndSpellSlotDot(levelBox, dot);
+    });
+
+    levelBox.addEventListener("keydown", (event) => {
+      const dot = event.target.closest(".dnd-spell-slot-dot");
+      if (!dot) return;
+
+      if (event.key !== "Enter" && event.key !== " ") return;
+
+      event.preventDefault();
+      toggleDndSpellSlotDot(levelBox, dot);
+    });
+  });
+}
+
+function syncAllDndSpellSlotTrackers(scope = document) {
+  const root = scope && scope.querySelectorAll ? scope : document;
+  root.querySelectorAll(".dnd-spell-slot-level").forEach(syncDndSpellSlotLevel);
+}
+
+function syncDndSpellSlotLevel(levelBox) {
+  if (!levelBox) return;
+
+  const hidden = levelBox.querySelector("[data-spell-slot-hidden]");
+  const dots = Array.from(levelBox.querySelectorAll(".dnd-spell-slot-dot"));
+
+  if (!hidden || !dots.length) return;
+
+  const normalized = normalizeDndSpellSlotValue(hidden.value, dots.length);
+  hidden.value = normalized;
+
+  dots.forEach((dot, index) => {
+    const isChecked = normalized[index] === "1";
+    dot.classList.toggle("is-checked", isChecked);
+    dot.setAttribute("aria-pressed", isChecked ? "true" : "false");
+  });
+}
+
+function toggleDndSpellSlotDot(levelBox, dot) {
+  const hidden = levelBox.querySelector("[data-spell-slot-hidden]");
+  const dots = Array.from(levelBox.querySelectorAll(".dnd-spell-slot-dot"));
+
+  if (!hidden || !dots.length) return;
+
+  const index = Number(dot.dataset.spellSlotDot);
+  const current = normalizeDndSpellSlotValue(hidden.value, dots.length).split("");
+
+  if (!Number.isInteger(index) || index < 0 || index >= current.length) return;
+
+  current[index] = current[index] === "1" ? "0" : "1";
+  hidden.value = current.join("");
+
+  syncDndSpellSlotLevel(levelBox);
+
+  const form = levelBox.closest("form");
+  if (form) {
+    hidden.dispatchEvent(new Event("input", { bubbles: true }));
+    hidden.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+}
+
+function normalizeDndSpellSlotValue(value, totalDots) {
+  const safeLength = Math.max(0, Number(totalDots) || 0);
+  const raw = String(value || "").replace(/[^01]/g, "");
+  return (raw + "0".repeat(safeLength)).slice(0, safeLength);
+}
 
 
 /* =========================================================

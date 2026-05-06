@@ -14025,7 +14025,6 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
     0 0 26px rgba(34, 211, 238, 0.14) !important;
 }
 
-
 /* =========================================================
    ALTHERIUM - GENESIS COM O MESMO TAMANHO E SETA DA RAIZ
    Correção final em cima da estrutura root-field.
@@ -14167,7 +14166,6 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   }
 }
 
-
 /* =========================================================
    ALTHERIUM - NR DO RUNASKIN COM ATUAL / MÁXIMO
 ========================================================= */
@@ -14294,7 +14292,6 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   }
 }
 
-
 /* =========================================================
    RUNASKIN NR - VISUAL FINAL
    Duas caixas lado a lado com barra central, como referência.
@@ -14401,7 +14398,11 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   border-radius: 999px !important;
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.96)),
-    radial-gradient(circle at top right, rgba(34, 211, 238, 0.1), transparent 55%) !important;
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.1),
+      transparent 55%
+    ) !important;
   color: #f8fafc !important;
   font-family: "Caesar Dressing", cursive !important;
   font-size: 26px !important;
@@ -14456,7 +14457,6 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
     font-size: 24px !important;
   }
 }
-
 
 /* =========================================================
    RUNASKIN NR - CORREÇÃO DAS CAIXAS INVISÍVEIS
@@ -14599,7 +14599,6 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   clip: auto !important;
 }
 
-
 /* =========================================================
    ROLADOR - TAMANHO DO ÓRGÃO GENITAL 1D3
 ========================================================= */
@@ -14615,7 +14614,11 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   border-radius: 14px;
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.76), rgba(2, 6, 23, 0.9)),
-    radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 45%);
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 45%
+    );
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 0 18px rgba(34, 211, 238, 0.06);
@@ -14681,7 +14684,6 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   }
 }
 
-
 /* =========================================================
    ROLADOR - POSIÇÃO ABAIXO DA FÓRMULA PERSONALIZADA
 ========================================================= */
@@ -14690,7 +14692,6 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   margin-bottom: 14px !important;
 }
 
-
 /* =========================================================
    MESTRE - FICHA SEM BLOCO DE ESCOLHER IMAGEM
 ========================================================= */
@@ -14698,11 +14699,13 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   grid-template-columns: 1fr !important;
 }
 
-.character-sheet-floating-layout--master-no-portrait .character-floating-portrait-panel {
+.character-sheet-floating-layout--master-no-portrait
+  .character-floating-portrait-panel {
   display: none !important;
 }
 
-.character-sheet-floating-layout--master-no-portrait .character-sheet-floating-main {
+.character-sheet-floating-layout--master-no-portrait
+  .character-sheet-floating-main {
   width: 100% !important;
   max-width: 100% !important;
   grid-column: 1 / -1 !important;
@@ -14713,7 +14716,6 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   width: 100% !important;
   max-width: 100% !important;
 }
-
 
 /* =========================================================
    MESTRE - BARRA DE VIDA NO CARD DO PERSONAGEM
@@ -14726,7 +14728,11 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   border-radius: 14px;
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.72), rgba(2, 6, 23, 0.88)),
-    radial-gradient(circle at top right, rgba(34, 211, 238, 0.1), transparent 48%);
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.1),
+      transparent 48%
+    );
 }
 
 .master-character-health__top {
@@ -14790,4 +14796,15 @@ button .master-character-health {
 .sheet-card .master-character-health + .sheet-card-footer,
 button .master-character-health + .sheet-card-footer {
   margin-top: 6px;
+}
+
+/* =========================================================
+   D&D - BOLINHAS DE MAGIA SELECIONADAS
+========================================================= */
+.dnd-spell-slot-dot[aria-pressed="true"] {
+  border-color: rgba(34, 211, 238, 0.95) !important;
+  background: #22d3ee !important;
+  box-shadow:
+    inset 0 0 0 4px rgba(2, 6, 23, 0.9),
+    0 0 16px rgba(34, 211, 238, 0.36) !important;
 }
