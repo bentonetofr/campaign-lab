@@ -587,6 +587,19 @@ let campaignPresenceState = {};
 let campaignPresenceReady = false;
 let saveTimer = null;
 
+const MAX_MASTER_CAMPAIGNS = 10;
+const CAMPAIGN_COVER_MAX_SIZE = 2.5 * 1024 * 1024;
+const CAMPAIGN_COVER_MAX_WIDTH = 1400;
+const CAMPAIGN_COVER_JPEG_QUALITY = 0.82;
+const CAMPAIGN_COVER_ADJUST_SAVE_DELAY = 450;
+const CAMPAIGN_COVER_MIN_ZOOM = 1;
+const CAMPAIGN_COVER_MAX_ZOOM = 1.8;
+const DEFAULT_CAMPAIGN_COVER_SETTINGS = {
+  x: 50,
+  y: 50,
+  zoom: 1,
+};
+
 /* =========================================================
    BOOT
 ========================================================= */
@@ -627,6 +640,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (document.body.classList.contains("altherium-page")) {
     await protectPage("Altherium", "Mestre");
     await setupMasterCampaignName();
+    await setupMasterCampaignCoverPanel("Altherium");
     await setupCampaignPresence();
     await setupOnlinePlayersInfoPanel();
     await setupMasterPlayersRealtime("playersGrid", "onlineCount");
@@ -667,6 +681,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (document.body.classList.contains("dnd-master-page")) {
     await protectPage("D&D", "Mestre");
     await setupMasterCampaignName();
+    await setupMasterCampaignCoverPanel("D&D");
     await setupCampaignPresence();
     await setupOnlinePlayersInfoPanel();
     await setupMasterPlayersRealtime("dndPlayersGrid", "dndPlayerCount");
@@ -821,6 +836,10 @@ async function getAllCampaigns(force = false) {
       system,
       master_id,
       description,
+      cover_url,
+      cover_position_x,
+      cover_position_y,
+      cover_zoom,
       created_at,
       campaign_members (
         user_id,
@@ -856,6 +875,14 @@ function mapCampaignFromDb(row) {
     master_id: row.master_id,
     descricao: row.description || "",
     description: row.description || "",
+    coverUrl: row.cover_url || "",
+    cover_url: row.cover_url || "",
+    coverPositionX: row.cover_position_x ?? DEFAULT_CAMPAIGN_COVER_SETTINGS.x,
+    cover_position_x: row.cover_position_x ?? DEFAULT_CAMPAIGN_COVER_SETTINGS.x,
+    coverPositionY: row.cover_position_y ?? DEFAULT_CAMPAIGN_COVER_SETTINGS.y,
+    cover_position_y: row.cover_position_y ?? DEFAULT_CAMPAIGN_COVER_SETTINGS.y,
+    coverZoom: row.cover_zoom ?? DEFAULT_CAMPAIGN_COVER_SETTINGS.zoom,
+    cover_zoom: row.cover_zoom ?? DEFAULT_CAMPAIGN_COVER_SETTINGS.zoom,
     membros: members,
     jogadores,
   };
@@ -867,6 +894,417 @@ async function getCurrentCampaign(force = false) {
 
   const campaigns = await getAllCampaigns(force);
   return campaigns.find((item) => item.id === campaignId) || null;
+}
+
+function getCampaignCoverUrl(campaign = {}) {
+  return campaign.coverUrl || campaign.cover_url || campaign.capaUrl || campaign.campaignCoverUrl || "";
+}
+
+function normalizeCampaignCoverNumber(value, fallback, min, max) {
+  const number = Number(value);
+
+  if (!Number.isFinite(number)) return fallback;
+
+  return Math.min(max, Math.max(min, number));
+}
+
+function getCampaignCoverSettings(campaign = {}) {
+  const x = normalizeCampaignCoverNumber(
+    campaign.coverPositionX ?? campaign.cover_position_x,
+    DEFAULT_CAMPAIGN_COVER_SETTINGS.x,
+    0,
+    100
+  );
+  const y = normalizeCampaignCoverNumber(
+    campaign.coverPositionY ?? campaign.cover_position_y,
+    DEFAULT_CAMPAIGN_COVER_SETTINGS.y,
+    0,
+    100
+  );
+  const zoom = normalizeCampaignCoverNumber(
+    campaign.coverZoom ?? campaign.cover_zoom,
+    DEFAULT_CAMPAIGN_COVER_SETTINGS.zoom,
+    CAMPAIGN_COVER_MIN_ZOOM,
+    CAMPAIGN_COVER_MAX_ZOOM
+  );
+
+  return { x, y, zoom };
+}
+
+function getCampaignCoverStyleAttribute(campaign = {}) {
+  const coverUrl = getCampaignCoverUrl(campaign);
+
+  if (!coverUrl) return "";
+
+  const settings = getCampaignCoverSettings(campaign);
+  const scale = (1.02 * settings.zoom).toFixed(3);
+  const hoverScale = (1.08 * settings.zoom).toFixed(3);
+
+  return ` style="--campaign-card-cover: url(&quot;${escapeHtml(coverUrl)}&quot;); --campaign-card-cover-position-x: ${settings.x}%; --campaign-card-cover-position-y: ${settings.y}%; --campaign-card-cover-scale: ${scale}; --campaign-card-cover-hover-scale: ${hoverScale};"`;
+}
+
+function getCampaignCoverClass(campaign = {}) {
+  return getCampaignCoverUrl(campaign) ? " campaign-card-wrapper--has-cover" : "";
+}
+
+async function setupMasterCampaignCoverPanel(systemName = "Sistema") {
+  const campaign = await getCurrentCampaign(true);
+  const user = getLoggedUserFromSession();
+
+  if (!campaign || !user) return;
+  if (String(campaign.mestreId || campaign.master_id || "") !== String(user.id || "")) return;
+
+  const oldPanel = document.getElementById("campaignCoverPanel");
+  if (oldPanel) oldPanel.remove();
+
+  const coverUrl = getCampaignCoverUrl(campaign);
+  const settings = getCampaignCoverSettings(campaign);
+  const panel = document.createElement("section");
+  panel.id = "campaignCoverPanel";
+  panel.className = `campaign-cover-panel${coverUrl ? " campaign-cover-panel--has-image" : ""}`;
+
+  panel.innerHTML = `
+    <div class="campaign-cover-panel__preview" data-campaign-cover-preview style="--campaign-cover-preview-x: ${settings.x}%; --campaign-cover-preview-y: ${settings.y}%; --campaign-cover-preview-zoom: ${settings.zoom};">
+      ${coverUrl ? `<img src="${escapeHtml(coverUrl)}" alt="Imagem da campanha ${escapeHtml(campaign.nome || campaign.name)}" loading="lazy" />` : `<span>Imagem da campanha</span>`}
+    </div>
+
+    <div class="campaign-cover-panel__content">
+      <span>${escapeHtml(systemName)}</span>
+      <h2>Imagem da campanha</h2>
+      <p>Clique em escolher imagem. Depois use a janela de edição para arrastar, dar zoom e enquadrar a capa antes de salvar.</p>
+    </div>
+
+    <div class="campaign-cover-panel__actions">
+      <label class="campaign-cover-upload-btn" for="campaignCoverInput">
+        Escolher imagem
+      </label>
+
+      <button type="button" class="campaign-cover-remove-btn" data-remove-campaign-cover ${coverUrl ? "" : "disabled"}>
+        Remover
+      </button>
+
+      <input
+        id="campaignCoverInput"
+        type="file"
+        accept="image/png,image/jpeg,image/jpg,image/webp"
+        hidden
+      />
+    </div>
+  `;
+
+  const target =
+    document.querySelector(".altherium-hero") ||
+    document.querySelector(".dnd-hero") ||
+    document.querySelector(".master-hero") ||
+    document.querySelector(".altherium-main") ||
+    document.querySelector("main") ||
+    document.body;
+
+  if (target.parentNode) {
+    target.parentNode.insertBefore(panel, target.nextSibling);
+  } else {
+    document.body.appendChild(panel);
+  }
+
+  const input = panel.querySelector("#campaignCoverInput");
+  const removeButton = panel.querySelector("[data-remove-campaign-cover]");
+
+  if (input) {
+    input.addEventListener("change", async () => {
+      const file = input.files && input.files[0];
+
+      if (!file) return;
+
+      await uploadCampaignCoverFromFile(file, campaign, panel);
+      input.value = "";
+    });
+  }
+
+  if (removeButton) {
+    removeButton.addEventListener("click", async () => {
+      await saveCampaignCoverUrl(campaign, "", panel, DEFAULT_CAMPAIGN_COVER_SETTINGS);
+    });
+  }
+
+  setupCampaignCoverAdjustments(campaign, panel);
+}
+
+function getCampaignCoverPanelSettings(panel) {
+  return {
+    x: normalizeCampaignCoverNumber(
+      panel?.querySelector("[data-campaign-cover-x]")?.value,
+      DEFAULT_CAMPAIGN_COVER_SETTINGS.x,
+      0,
+      100
+    ),
+    y: normalizeCampaignCoverNumber(
+      panel?.querySelector("[data-campaign-cover-y]")?.value,
+      DEFAULT_CAMPAIGN_COVER_SETTINGS.y,
+      0,
+      100
+    ),
+    zoom: normalizeCampaignCoverNumber(
+      panel?.querySelector("[data-campaign-cover-zoom]")?.value,
+      DEFAULT_CAMPAIGN_COVER_SETTINGS.zoom,
+      CAMPAIGN_COVER_MIN_ZOOM,
+      CAMPAIGN_COVER_MAX_ZOOM
+    ),
+  };
+}
+
+function applyCampaignCoverPreviewSettings(panel, settings = DEFAULT_CAMPAIGN_COVER_SETTINGS) {
+  if (!panel) return;
+
+  const preview = panel.querySelector("[data-campaign-cover-preview]");
+
+  if (!preview) return;
+
+  preview.style.setProperty("--campaign-cover-preview-x", `${settings.x}%`);
+  preview.style.setProperty("--campaign-cover-preview-y", `${settings.y}%`);
+  preview.style.setProperty("--campaign-cover-preview-zoom", settings.zoom);
+}
+
+function setCampaignCoverPanelControlValues(panel, settings = DEFAULT_CAMPAIGN_COVER_SETTINGS) {
+  if (!panel) return;
+
+  const xInput = panel.querySelector("[data-campaign-cover-x]");
+  const yInput = panel.querySelector("[data-campaign-cover-y]");
+  const zoomInput = panel.querySelector("[data-campaign-cover-zoom]");
+
+  if (xInput) xInput.value = settings.x;
+  if (yInput) yInput.value = settings.y;
+  if (zoomInput) zoomInput.value = settings.zoom;
+
+  applyCampaignCoverPreviewSettings(panel, settings);
+}
+
+function setupCampaignCoverAdjustments(campaign, panel) {
+  if (!campaign || !panel) return;
+
+  const controls = panel.querySelectorAll("[data-campaign-cover-x], [data-campaign-cover-y], [data-campaign-cover-zoom]");
+  const resetButton = panel.querySelector("[data-reset-campaign-cover-adjust]");
+  let saveAdjustTimer = null;
+
+  const scheduleSave = () => {
+    window.clearTimeout(saveAdjustTimer);
+    saveAdjustTimer = window.setTimeout(async () => {
+      const coverUrl = getCampaignCoverUrl(campaign);
+      if (!coverUrl) return;
+
+      await saveCampaignCoverSettings(campaign, getCampaignCoverPanelSettings(panel), panel, false);
+    }, CAMPAIGN_COVER_ADJUST_SAVE_DELAY);
+  };
+
+  controls.forEach((control) => {
+    control.addEventListener("input", () => {
+      const settings = getCampaignCoverPanelSettings(panel);
+      applyCampaignCoverPreviewSettings(panel, settings);
+      scheduleSave();
+    });
+
+    control.addEventListener("change", async () => {
+      window.clearTimeout(saveAdjustTimer);
+      const coverUrl = getCampaignCoverUrl(campaign);
+      if (!coverUrl) return;
+
+      await saveCampaignCoverSettings(campaign, getCampaignCoverPanelSettings(panel), panel, false);
+    });
+  });
+
+  if (resetButton) {
+    resetButton.addEventListener("click", async () => {
+      window.clearTimeout(saveAdjustTimer);
+      setCampaignCoverPanelControlValues(panel, DEFAULT_CAMPAIGN_COVER_SETTINGS);
+
+      const coverUrl = getCampaignCoverUrl(campaign);
+      if (!coverUrl) return;
+
+      await saveCampaignCoverSettings(campaign, DEFAULT_CAMPAIGN_COVER_SETTINGS, panel, false);
+    });
+  }
+}
+
+async function uploadCampaignCoverFromFile(file, campaign, panel) {
+  if (!file.type || !file.type.startsWith("image/")) {
+    alert("Escolha um arquivo de imagem.");
+    return;
+  }
+
+  if (file.size > CAMPAIGN_COVER_MAX_SIZE) {
+    alert("A imagem da campanha precisa ter no máximo 2.5MB.");
+    return;
+  }
+
+  const uploadButton = panel ? panel.querySelector(".campaign-cover-upload-btn") : null;
+  const oldText = uploadButton ? uploadButton.textContent : "";
+
+  if (uploadButton) {
+    uploadButton.textContent = "Abrindo editor...";
+    uploadButton.classList.add("is-loading");
+  }
+
+  try {
+    const editedFile = await openCampaignLabImageCropper(file, {
+      title: "Editar imagem da campanha",
+      helperText: "Arraste a imagem e use o zoom para enquadrar a capa do card.",
+      cropWidth: 560,
+      cropHeight: 330,
+      outputWidth: 1400,
+      outputHeight: 825,
+      mask: "rectangle",
+      buttonText: "Usar imagem",
+      fileNameSuffix: "capa-campanha",
+    });
+
+    if (!editedFile) return;
+
+    if (uploadButton) uploadButton.textContent = "Salvando...";
+
+    const imageUrl = await resizeCampaignCoverImage(editedFile);
+    await saveCampaignCoverUrl(campaign, imageUrl, panel, DEFAULT_CAMPAIGN_COVER_SETTINGS);
+  } catch (error) {
+    console.error("Erro ao preparar imagem da campanha:", error);
+    alert("Erro ao carregar a imagem da campanha.");
+  } finally {
+    if (uploadButton) {
+      uploadButton.textContent = oldText || "Escolher imagem";
+      uploadButton.classList.remove("is-loading");
+    }
+  }
+}
+
+function resizeCampaignCoverImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onerror = () => reject(new Error("Não foi possível ler o arquivo."));
+    reader.onload = () => {
+      const image = new Image();
+
+      image.onerror = () => reject(new Error("Não foi possível carregar a imagem."));
+      image.onload = () => {
+        const scale = Math.min(CAMPAIGN_COVER_MAX_WIDTH / image.width, 1);
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        canvas.width = width;
+        canvas.height = height;
+        context.drawImage(image, 0, 0, width, height);
+
+        resolve(canvas.toDataURL("image/jpeg", CAMPAIGN_COVER_JPEG_QUALITY));
+      };
+
+      image.src = reader.result;
+    };
+
+    reader.readAsDataURL(file);
+  });
+}
+
+async function saveCampaignCoverUrl(campaign, coverUrl, panel = null, settings = null) {
+  const user = getLoggedUserFromSession();
+
+  if (!campaign || !user) return;
+
+  const finalSettings = coverUrl ? getCampaignCoverSettings(settings || campaign) : DEFAULT_CAMPAIGN_COVER_SETTINGS;
+
+  const { error } = await DB
+    .from("campaigns")
+    .update({
+      cover_url: coverUrl || null,
+      cover_position_x: finalSettings.x,
+      cover_position_y: finalSettings.y,
+      cover_zoom: finalSettings.zoom,
+    })
+    .eq("id", campaign.id)
+    .eq("master_id", user.id);
+
+  if (error) {
+    console.error("Erro ao salvar imagem da campanha:", error);
+    alert("Erro ao salvar imagem da campanha. Rode o SQL de atualização no Supabase e tente novamente.");
+    return;
+  }
+
+  campaignsCache = [];
+
+  campaign.coverUrl = coverUrl;
+  campaign.cover_url = coverUrl;
+  campaign.coverPositionX = finalSettings.x;
+  campaign.cover_position_x = finalSettings.x;
+  campaign.coverPositionY = finalSettings.y;
+  campaign.cover_position_y = finalSettings.y;
+  campaign.coverZoom = finalSettings.zoom;
+  campaign.cover_zoom = finalSettings.zoom;
+
+  const updatedCampaign = { ...campaign };
+
+  if (panel) updateCampaignCoverPanelPreview(panel, updatedCampaign);
+}
+
+async function saveCampaignCoverSettings(campaign, settings, panel = null, showError = true) {
+  const user = getLoggedUserFromSession();
+
+  if (!campaign || !user) return;
+
+  const finalSettings = getCampaignCoverSettings(settings);
+
+  const { error } = await DB
+    .from("campaigns")
+    .update({
+      cover_position_x: finalSettings.x,
+      cover_position_y: finalSettings.y,
+      cover_zoom: finalSettings.zoom,
+    })
+    .eq("id", campaign.id)
+    .eq("master_id", user.id);
+
+  if (error) {
+    console.error("Erro ao salvar ajuste da imagem da campanha:", error);
+    if (showError) alert("Erro ao salvar ajuste da imagem. Rode o SQL de atualização no Supabase e tente novamente.");
+    return;
+  }
+
+  campaignsCache = [];
+
+  campaign.coverPositionX = finalSettings.x;
+  campaign.cover_position_x = finalSettings.x;
+  campaign.coverPositionY = finalSettings.y;
+  campaign.cover_position_y = finalSettings.y;
+  campaign.coverZoom = finalSettings.zoom;
+  campaign.cover_zoom = finalSettings.zoom;
+
+  if (panel) applyCampaignCoverPreviewSettings(panel, finalSettings);
+}
+
+function updateCampaignCoverPanelPreview(panel, campaign) {
+  if (!panel) return;
+
+  const coverUrl = getCampaignCoverUrl(campaign);
+  const settings = getCampaignCoverSettings(campaign);
+  const preview = panel.querySelector("[data-campaign-cover-preview]");
+  const removeButton = panel.querySelector("[data-remove-campaign-cover]");
+  const adjustments = panel.querySelector("[data-campaign-cover-adjustments]");
+
+  panel.classList.toggle("campaign-cover-panel--has-image", Boolean(coverUrl));
+
+  if (preview) {
+    applyCampaignCoverPreviewSettings(panel, settings);
+    preview.innerHTML = coverUrl
+      ? `<img src="${escapeHtml(coverUrl)}" alt="Imagem da campanha ${escapeHtml(campaign.nome || campaign.name || "")}" loading="lazy" />`
+      : `<span>Imagem da campanha</span>`;
+  }
+
+  if (removeButton) {
+    removeButton.disabled = !coverUrl;
+  }
+
+  if (adjustments) {
+    adjustments.classList.toggle("is-disabled", !coverUrl);
+  }
+
+  setCampaignCoverPanelControlValues(panel, settings);
 }
 
 function getCampaignPlayerIds(campaign) {
@@ -900,6 +1338,147 @@ async function getUserCampaigns(userId) {
   return userCampaigns;
 }
 
+
+async function getMasterCampaignCount(userId) {
+  if (!userId) return 0;
+
+  const campaigns = await getAllCampaigns(true);
+  return campaigns.filter((campaign) => campaign.mestreId === userId).length;
+}
+
+function hasReachedMasterCampaignLimit(count) {
+  return Number(count || 0) >= MAX_MASTER_CAMPAIGNS;
+}
+
+function getRemainingMasterCampaignSlots(count) {
+  return Math.max(MAX_MASTER_CAMPAIGNS - Number(count || 0), 0);
+}
+
+function renderMasterCampaignLimitNotice(masterCount) {
+  const masterCampaignsContainer = document.getElementById("masterCampaigns");
+  if (!masterCampaignsContainer) return;
+
+  const parent = masterCampaignsContainer.parentElement || masterCampaignsContainer;
+  let notice = document.getElementById("masterCampaignLimitNotice");
+
+  if (!notice) {
+    notice = document.createElement("div");
+    notice.id = "masterCampaignLimitNotice";
+    notice.className = "campaign-limit-notice";
+    parent.insertBefore(notice, masterCampaignsContainer);
+  }
+
+  const remaining = getRemainingMasterCampaignSlots(masterCount);
+  const reachedLimit = hasReachedMasterCampaignLimit(masterCount);
+
+  notice.classList.toggle("campaign-limit-notice--full", reachedLimit);
+  notice.innerHTML = reachedLimit
+    ? `
+      <strong>Limite de campanhas atingido</strong>
+      <span>Você já criou ${MAX_MASTER_CAMPAIGNS} campanhas como mestre. Exclua uma campanha para criar outra.</span>
+    `
+    : `
+      <strong>${masterCount}/${MAX_MASTER_CAMPAIGNS} campanhas como mestre</strong>
+      <span>Você ainda pode criar ${remaining} ${remaining === 1 ? "campanha" : "campanhas"} como mestre.</span>
+    `;
+}
+
+function getCreateCampaignButtons() {
+  return Array.from(
+    document.querySelectorAll(
+      `a[href*="criar-campanha"],
+       a[href*="nova-campanha"],
+       button[data-create-campaign],
+       a[data-create-campaign],
+       .create-campaign-button,
+       .new-campaign-button`
+    )
+  );
+}
+
+function updateCreateCampaignButtonsByLimit(masterCount) {
+  const reachedLimit = hasReachedMasterCampaignLimit(masterCount);
+
+  getCreateCampaignButtons().forEach((button) => {
+    if (!button.dataset.originalTitle) {
+      button.dataset.originalTitle = button.getAttribute("title") || "Criar campanha";
+    }
+
+    button.classList.toggle("campaign-create-disabled", reachedLimit);
+    button.setAttribute("aria-disabled", reachedLimit ? "true" : "false");
+    button.title = reachedLimit
+      ? `Limite de ${MAX_MASTER_CAMPAIGNS} campanhas como mestre atingido.`
+      : button.dataset.originalTitle;
+  });
+}
+
+function setupCreateCampaignLimitNavigationGuard() {
+  if (window.createCampaignLimitNavigationGuardReady) return;
+
+  window.createCampaignLimitNavigationGuardReady = true;
+
+  document.addEventListener("click", async (event) => {
+    const createButton = event.target.closest(
+      `a[href*="criar-campanha"],
+       a[href*="nova-campanha"],
+       button[data-create-campaign],
+       a[data-create-campaign],
+       .create-campaign-button,
+       .new-campaign-button`
+    );
+
+    if (!createButton) return;
+
+    const user = getLoggedUserFromSession();
+    if (!user) return;
+
+    const masterCount = await getMasterCampaignCount(user.id);
+
+    if (!hasReachedMasterCampaignLimit(masterCount)) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    alert(`Você já criou ${MAX_MASTER_CAMPAIGNS} campanhas como mestre. Exclua uma campanha para criar outra.`);
+  }, true);
+}
+
+function renderCreateCampaignPageLimitNotice(form, masterCount) {
+  if (!form) return;
+
+  let notice = document.getElementById("createCampaignLimitNotice");
+
+  if (!notice) {
+    notice = document.createElement("div");
+    notice.id = "createCampaignLimitNotice";
+    notice.className = "campaign-limit-notice create-campaign-limit-notice";
+    form.insertAdjacentElement("beforebegin", notice);
+  }
+
+  const remaining = getRemainingMasterCampaignSlots(masterCount);
+  const reachedLimit = hasReachedMasterCampaignLimit(masterCount);
+
+  notice.classList.toggle("campaign-limit-notice--full", reachedLimit);
+  notice.innerHTML = reachedLimit
+    ? `
+      <strong>Limite de campanhas atingido</strong>
+      <span>Você já criou ${MAX_MASTER_CAMPAIGNS} campanhas como mestre. Volte em Minhas Campanhas e exclua uma campanha para criar outra.</span>
+    `
+    : `
+      <strong>${masterCount}/${MAX_MASTER_CAMPAIGNS} campanhas como mestre</strong>
+      <span>Você ainda pode criar ${remaining} ${remaining === 1 ? "campanha" : "campanhas"} como mestre.</span>
+    `;
+}
+
+function setCreateCampaignFormLocked(form, locked) {
+  if (!form) return;
+
+  form.classList.toggle("campaign-create-form-locked", locked);
+
+  form.querySelectorAll("input, select, textarea, button").forEach((field) => {
+    field.disabled = locked;
+  });
+}
+
 async function renderMyCampaignsPage() {
   const user = getLoggedUserFromSession();
 
@@ -914,13 +1493,16 @@ async function renderMyCampaignsPage() {
 
   setText("userNameView", user.nome);
   setText("campaignCount", userCampaigns.length);
-  setText("masterCount", campaignsAsMaster.length);
+  setText("masterCount", `${campaignsAsMaster.length}/${MAX_MASTER_CAMPAIGNS}`);
   setText("playerCount", campaignsAsPlayer.length);
 
   await renderProfileAvatarPanel(user);
 
   renderCampaigns(document.getElementById("masterCampaigns"), campaignsAsMaster);
   renderCampaigns(document.getElementById("playerCampaigns"), campaignsAsPlayer);
+  renderMasterCampaignLimitNotice(campaignsAsMaster.length);
+  updateCreateCampaignButtonsByLimit(campaignsAsMaster.length);
+  setupCreateCampaignLimitNavigationGuard();
 
   const logoutBtn = document.getElementById("logoutBtn");
   if (logoutBtn) logoutBtn.onclick = logout;
@@ -954,8 +1536,11 @@ function renderCampaigns(container, campaigns) {
             </button>
           `;
 
+      const coverStyle = getCampaignCoverStyleAttribute(campaign);
+      const coverClass = getCampaignCoverClass(campaign);
+
       return `
-        <div class="premium-campaign-card campaign-card-wrapper">
+        <div class="premium-campaign-card campaign-card-wrapper${coverClass}"${coverStyle}>
           <button type="button" class="campaign-main-action" onclick="enterCampaignById('${campaign.id}', '${campaign.perfil}')">
             <div class="campaign-card-top">
               <span>${campaign.sistema}</span>
@@ -1096,6 +1681,12 @@ async function setupCreateCampaignPage() {
 
   if (!playersPickerGrid || !createCampaignForm) return;
 
+  const masterCampaignCount = await getMasterCampaignCount(user.id);
+  const masterCampaignLimitReached = hasReachedMasterCampaignLimit(masterCampaignCount);
+
+  renderCreateCampaignPageLimitNotice(createCampaignForm, masterCampaignCount);
+  setCreateCampaignFormLocked(createCampaignForm, masterCampaignLimitReached);
+
   const profiles = (await getProfiles(true)).filter((profile) => profile.id !== user.id);
 
   playersPickerGrid.innerHTML = profiles
@@ -1111,6 +1702,15 @@ async function setupCreateCampaignPage() {
 
   createCampaignForm.addEventListener("submit", async (event) => {
     event.preventDefault();
+
+    const currentMasterCampaignCount = await getMasterCampaignCount(user.id);
+
+    if (hasReachedMasterCampaignLimit(currentMasterCampaignCount)) {
+      renderCreateCampaignPageLimitNotice(createCampaignForm, currentMasterCampaignCount);
+      setCreateCampaignFormLocked(createCampaignForm, true);
+      alert(`Você já criou ${MAX_MASTER_CAMPAIGNS} campanhas como mestre. Exclua uma campanha para criar outra.`);
+      return;
+    }
 
     const campaignName = document.getElementById("campaignName").value.trim();
     const campaignSystem = document.getElementById("campaignSystem").value;
@@ -5941,11 +6541,14 @@ function openCampaignLabImageCropper(file, options = {}) {
       const image = new Image();
 
       image.onload = () => {
-        const cropSize = 360;
-        const outputSize = 720;
+        const cropWidth = Number(options.cropWidth) || 360;
+        const cropHeight = Number(options.cropHeight) || cropWidth;
+        const outputWidth = Number(options.outputWidth || options.outputSize) || 720;
+        const outputHeight = Number(options.outputHeight || options.outputSize) || outputWidth;
+        const isRectangle = options.mask === "rectangle";
         const mimeType = file.type === "image/png" ? "image/png" : "image/jpeg";
 
-        let minScale = Math.max(cropSize / image.naturalWidth, cropSize / image.naturalHeight);
+        let minScale = Math.max(cropWidth / image.naturalWidth, cropHeight / image.naturalHeight);
         let zoom = 1;
         let offsetX = 0;
         let offsetY = 0;
@@ -5956,26 +6559,29 @@ function openCampaignLabImageCropper(file, options = {}) {
         let startOffsetY = 0;
 
         const modal = document.createElement("div");
-        modal.className = "image-cropper-modal";
+        modal.className = `image-cropper-modal${isRectangle ? " image-cropper-modal--rectangle" : ""}`;
         modal.innerHTML = `
           <div class="image-cropper-box" role="dialog" aria-modal="true">
             <div class="image-cropper-header">
               <div>
-                <span>Editar imagem</span>
+                <span>${escapeHtml(options.kicker || "Editar imagem")}</span>
                 <h2>${escapeHtml(options.title || "Cortar imagem")}</h2>
-                <p>Arraste a imagem e use o zoom para enquadrar melhor.</p>
+                <p>${escapeHtml(options.helperText || "Arraste a imagem e use o zoom para enquadrar melhor.")}</p>
               </div>
 
               <button type="button" class="image-cropper-close" data-crop-cancel>×</button>
             </div>
 
-            <div class="image-cropper-stage-wrap">
+            <div
+              class="image-cropper-stage-wrap"
+              style="--image-cropper-stage-w: ${cropWidth}px; --image-cropper-stage-h: ${cropHeight}px; --image-cropper-stage-ratio: ${cropWidth} / ${cropHeight};"
+            >
               <canvas
                 class="image-cropper-canvas"
-                width="${cropSize}"
-                height="${cropSize}"
+                width="${cropWidth}"
+                height="${cropHeight}"
               ></canvas>
-              <div class="image-cropper-circle-mask"></div>
+              <div class="image-cropper-circle-mask${isRectangle ? " image-cropper-rect-mask" : ""}"></div>
             </div>
 
             <div class="image-cropper-controls">
@@ -6003,7 +6609,7 @@ function openCampaignLabImageCropper(file, options = {}) {
               </button>
 
               <button type="button" class="image-cropper-btn primary" data-crop-confirm>
-                Usar imagem
+                ${escapeHtml(options.buttonText || "Usar imagem")}
               </button>
             </div>
           </div>
@@ -6020,8 +6626,8 @@ function openCampaignLabImageCropper(file, options = {}) {
           const width = image.naturalWidth * scale;
           const height = image.naturalHeight * scale;
 
-          const maxOffsetX = Math.max(0, (width - cropSize) / 2);
-          const maxOffsetY = Math.max(0, (height - cropSize) / 2);
+          const maxOffsetX = Math.max(0, (width - cropWidth) / 2);
+          const maxOffsetY = Math.max(0, (height - cropHeight) / 2);
 
           offsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, offsetX));
           offsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, offsetY));
@@ -6033,12 +6639,12 @@ function openCampaignLabImageCropper(file, options = {}) {
           const scale = minScale * zoom;
           const width = image.naturalWidth * scale;
           const height = image.naturalHeight * scale;
-          const x = cropSize / 2 - width / 2 + offsetX;
-          const y = cropSize / 2 - height / 2 + offsetY;
+          const x = cropWidth / 2 - width / 2 + offsetX;
+          const y = cropHeight / 2 - height / 2 + offsetY;
 
-          context.clearRect(0, 0, cropSize, cropSize);
+          context.clearRect(0, 0, cropWidth, cropHeight);
           context.fillStyle = "#020617";
-          context.fillRect(0, 0, cropSize, cropSize);
+          context.fillRect(0, 0, cropWidth, cropHeight);
           context.drawImage(image, x, y, width, height);
         }
 
@@ -6106,19 +6712,21 @@ function openCampaignLabImageCropper(file, options = {}) {
         function createCroppedFile() {
           return new Promise((cropResolve) => {
             const outputCanvas = document.createElement("canvas");
-            outputCanvas.width = outputSize;
-            outputCanvas.height = outputSize;
+            outputCanvas.width = outputWidth;
+            outputCanvas.height = outputHeight;
 
             const outputContext = outputCanvas.getContext("2d");
-            const ratio = outputSize / cropSize;
-            const scale = minScale * zoom * ratio;
-            const width = image.naturalWidth * scale;
-            const height = image.naturalHeight * scale;
-            const x = outputSize / 2 - width / 2 + offsetX * ratio;
-            const y = outputSize / 2 - height / 2 + offsetY * ratio;
+            const ratioX = outputWidth / cropWidth;
+            const ratioY = outputHeight / cropHeight;
+            const scaleX = minScale * zoom * ratioX;
+            const scaleY = minScale * zoom * ratioY;
+            const width = image.naturalWidth * scaleX;
+            const height = image.naturalHeight * scaleY;
+            const x = outputWidth / 2 - width / 2 + offsetX * ratioX;
+            const y = outputHeight / 2 - height / 2 + offsetY * ratioY;
 
             outputContext.fillStyle = "#020617";
-            outputContext.fillRect(0, 0, outputSize, outputSize);
+            outputContext.fillRect(0, 0, outputWidth, outputHeight);
             outputContext.drawImage(image, x, y, width, height);
 
             outputCanvas.toBlob(
@@ -6129,13 +6737,15 @@ function openCampaignLabImageCropper(file, options = {}) {
                 }
 
                 const extension = mimeType === "image/png" ? "png" : "jpg";
+                const suffix = String(options.fileNameSuffix || "cortada")
+                  .replace(/[^a-zA-Z0-9_-]/g, "-");
                 const baseName = String(file.name || "imagem")
                   .replace(/\.[^/.]+$/, "")
                   .replace(/[^a-zA-Z0-9_-]/g, "-");
 
                 const croppedFile = new File(
                   [blob],
-                  `${baseName}-cortada.${extension}`,
+                  `${baseName}-${suffix}.${extension}`,
                   { type: mimeType }
                 );
 
