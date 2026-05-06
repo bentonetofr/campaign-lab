@@ -14808,3 +14808,236 @@ button .master-character-health + .sheet-card-footer {
     inset 0 0 0 4px rgba(2, 6, 23, 0.9),
     0 0 16px rgba(34, 211, 238, 0.36) !important;
 }
+
+/* =========================================================
+   D&D MESTRE - BARRA DE VIDA NO CARD
+========================================================= */
+.dnd-sheet-card .master-character-health {
+  width: 100% !important;
+  margin: 12px 0 14px !important;
+}
+
+.dnd-sheet-card .master-character-health__bar {
+  width: 100% !important;
+}
+
+.dnd-sheet-card .master-character-health + .sheet-card-footer {
+  margin-top: 6px !important;
+}
+
+/* =========================================================
+   MINHAS CAMPANHAS - PESSOAS ONLINE
+========================================================= */
+.minhas-campanhas-hero {
+  grid-template-columns: minmax(0, 1.05fr) minmax(320px, 0.95fr) !important;
+  align-items: start !important;
+}
+
+.minhas-campanhas-side {
+  display: grid;
+  gap: 18px;
+  min-width: 0;
+}
+
+.site-online-panel {
+  width: 100%;
+  min-width: 0;
+  padding: 22px;
+  border: 1px solid rgba(34, 211, 238, 0.2);
+  border-radius: 26px;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.78), rgba(2, 6, 23, 0.94)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.14),
+      transparent 46%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 24px 80px rgba(0, 0, 0, 0.28),
+    0 0 40px rgba(34, 211, 238, 0.08);
+}
+
+.site-online-panel__header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 18px;
+  margin-bottom: 16px;
+}
+
+.site-online-panel__header span {
+  display: block;
+  margin-bottom: 6px;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.site-online-panel__header h3 {
+  margin: 0;
+  color: #f8fafc;
+  font-size: 26px;
+  line-height: 1;
+}
+
+.site-online-panel__header > strong {
+  min-width: 46px;
+  height: 46px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(34, 211, 238, 0.35);
+  border-radius: 16px;
+  background: rgba(34, 211, 238, 0.12);
+  color: #f8fafc;
+  font-size: 24px;
+  font-weight: 900;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.12);
+}
+
+.site-online-panel__list {
+  display: grid;
+  gap: 10px;
+  max-height: 360px;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.site-online-panel__list::-webkit-scrollbar {
+  width: 8px;
+}
+
+.site-online-panel__list::-webkit-scrollbar-thumb {
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.32);
+}
+
+.site-online-card {
+  min-width: 0;
+  padding: 12px;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  border: 1px solid rgba(148, 163, 184, 0.12);
+  border-radius: 18px;
+  background: rgba(2, 6, 23, 0.52);
+}
+
+.site-online-card__avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  flex-shrink: 0;
+}
+
+.site-online-card__avatar .profile-avatar,
+.site-online-card__avatar img {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 999px !important;
+}
+
+.site-online-initials-avatar {
+  width: 42px;
+  height: 42px;
+  display: grid;
+  place-items: center;
+  border: 1px solid rgba(34, 211, 238, 0.4);
+  border-radius: 999px;
+  background: rgba(34, 211, 238, 0.12);
+  color: #67e8f9;
+  font-size: 13px;
+  font-weight: 900;
+}
+
+.site-online-card__body {
+  min-width: 0;
+}
+
+.site-online-card__body strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #f8fafc;
+  font-size: 15px;
+  font-weight: 900;
+  line-height: 1.1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-online-card__body span {
+  display: block;
+  color: #94a3b8;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.site-online-card__status {
+  display: grid;
+  justify-items: end;
+  gap: 5px;
+  color: #94a3b8;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
+.site-online-card__status i {
+  width: 10px;
+  height: 10px;
+  border-radius: 999px;
+  background: #22c55e;
+  box-shadow: 0 0 14px rgba(34, 197, 94, 0.6);
+}
+
+.site-online-card__status small {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.site-online-empty {
+  padding: 16px;
+  border: 1px dashed rgba(148, 163, 184, 0.22);
+  border-radius: 16px;
+  color: #94a3b8;
+  text-align: center;
+  font-weight: 800;
+}
+
+@media (max-width: 980px) {
+  .minhas-campanhas-hero {
+    grid-template-columns: 1fr !important;
+  }
+
+  .site-online-panel__list {
+    max-height: 300px;
+  }
+}
+
+@media (max-width: 520px) {
+  .site-online-panel {
+    padding: 18px;
+    border-radius: 22px;
+  }
+
+  .site-online-card {
+    grid-template-columns: auto minmax(0, 1fr);
+  }
+
+  .site-online-card__status {
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: space-between;
+    justify-items: stretch;
+  }
+}

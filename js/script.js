@@ -2394,6 +2394,8 @@ async function renderDndMasterSheets() {
           Iniciativa ${sheet.combatInitiative || "--"}
         </p>
 
+        ${buildMasterCharacterHealthBar(sheet)}
+
         <div class="sheet-card-footer">
           <span>Abrir ficha completa</span>
           <strong>→</strong>
@@ -3925,6 +3927,10 @@ function bindCampaignDiceRollerEvents(system) {
     }
 
     if (rollButton) {
+      if (isCampaignDiceGenitalRollButton(rollButton)) {
+        playCampaignGenitalDiceSound();
+      }
+
       await handleCampaignDiceRoll({
         system,
         formula: rollButton.dataset.diceFormula,
@@ -9539,6 +9545,95 @@ function injectCampaignDiceGenitalSizeStyles() {
   document.head.appendChild(style);
 }
 
+
+
+
+const CAMPAIGN_GENITAL_DICE_SOUND_SRC = "audio/orgao-genital.mp3";
+
+/* =========================================================
+   SOM DO DADO DE ÓRGÃO GENITAL
+   Funciona em todos os sistemas usando Web Audio API.
+========================================================= */
+function isCampaignDiceGenitalRollButton(button) {
+  if (!button) return false;
+
+  const label = String(button.dataset?.diceLabel || "").toLowerCase();
+
+  return (
+    button.classList.contains("campaign-dice-genital-size-btn") ||
+    Boolean(button.closest("[data-dice-genital-size-box]")) ||
+    label.includes("órgão genital") ||
+    label.includes("orgao genital")
+  );
+}
+
+function playCampaignGenitalDiceSound() {
+  playCampaignGenitalDiceCustomAudio()
+    .catch(() => {
+      playCampaignGenitalDiceGeneratedSound();
+    });
+}
+
+async function playCampaignGenitalDiceCustomAudio() {
+  if (!CAMPAIGN_GENITAL_DICE_SOUND_SRC) {
+    throw new Error("Som próprio não configurado.");
+  }
+
+  const audio = new Audio(CAMPAIGN_GENITAL_DICE_SOUND_SRC);
+  audio.volume = 0.85;
+  audio.currentTime = 0;
+
+  await audio.play();
+}
+
+function playCampaignGenitalDiceGeneratedSound() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    const audioContext =
+      window.campaignLabGenitalDiceAudioContext ||
+      new AudioContextClass();
+
+    window.campaignLabGenitalDiceAudioContext = audioContext;
+
+    if (audioContext.state === "suspended") {
+      audioContext.resume();
+    }
+
+    const now = audioContext.currentTime;
+
+    playCampaignGenitalDiceTone(audioContext, now, 180, 0.09, "triangle", 0.09);
+    playCampaignGenitalDiceTone(audioContext, now + 0.08, 260, 0.08, "sine", 0.07);
+    playCampaignGenitalDiceTone(audioContext, now + 0.15, 120, 0.11, "square", 0.035);
+  } catch (error) {
+    console.warn("Não foi possível tocar o som do dado especial.", error);
+  }
+}
+
+function playCampaignGenitalDiceTone(audioContext, startTime, frequency, duration, type, volume) {
+  const oscillator = audioContext.createOscillator();
+  const gain = audioContext.createGain();
+
+  oscillator.type = type;
+  oscillator.frequency.setValueAtTime(frequency, startTime);
+  oscillator.frequency.exponentialRampToValueAtTime(
+    Math.max(40, frequency * 0.72),
+    startTime + duration
+  );
+
+  gain.gain.setValueAtTime(0.0001, startTime);
+  gain.gain.exponentialRampToValueAtTime(volume, startTime + 0.01);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+  oscillator.connect(gain);
+  gain.connect(audioContext.destination);
+
+  oscillator.start(startTime);
+  oscillator.stop(startTime + duration + 0.02);
+}
+
+
 function ensureCampaignDiceGenitalSizeRoll(widget) {
   injectCampaignDiceGenitalSizeStyles();
 
@@ -10152,6 +10247,10 @@ function setupCampaignDiceGlobalFallback() {
       }
 
       if (rollButton) {
+        if (isCampaignDiceGenitalRollButton(rollButton)) {
+          playCampaignGenitalDiceSound();
+        }
+
         await handleCampaignDiceRoll({
           system,
           formula: rollButton.dataset.diceFormula,
