@@ -529,6 +529,8 @@ const PILAR_TRIUMPH_GROUPS = [
 
 const BERSERK_TRIUMPH_NOTES_START = "===== TRIUNFOS BERSERK SELECIONADOS =====";
 const BERSERK_TRIUMPH_NOTES_END = "===== FIM DOS TRIUNFOS BERSERK =====";
+const RUNASKIN_VISUAL_NOTE_COUNT = 8;
+const RUNASKIN_VISUAL_NOTE_INCREMENT = 4;
 
 const DND_SKILLS = [
   ["skillAcrobatics", "Acrobacia"],
@@ -1869,6 +1871,12 @@ function getDefaultSheet(campaignId, playerId, system) {
     sheet[`domain_${domain.key}`] = "";
   });
 
+  for (let index = 1; index <= RUNASKIN_VISUAL_NOTE_COUNT; index += 1) {
+    sheet[`runaskinNote${index}Image`] = "";
+    sheet[`runaskinNote${index}Title`] = "";
+    sheet[`runaskinNote${index}Effect`] = "";
+  }
+
   for (let index = 1; index <= 13; index += 1) {
     sheet[`inventory${index}`] = "";
   }
@@ -2302,6 +2310,7 @@ async function loadSheetIntoPlayerForm() {
   });
 
   syncRunaskinNrFieldsFromSheet(form, sheet);
+  hydrateRunaskinVisualNotePreviews(form);
 
   setAltheriumRootSelectorValue(form.elements.root, sheet.root);
   setAltheriumGenesisSelectorValue(form.elements.genesis, sheet.genesis);
@@ -6905,7 +6914,55 @@ function setupAltheriumRootDynamicControls() {
     },
     true
   );
+
+  document.addEventListener("input", (event) => {
+    if (!event.target.matches("[data-runaskin-note-image]")) return;
+
+    updateRunaskinVisualNotePreview(event.target.closest(".runaskin-visual-note-card"));
+  });
+
+  document.addEventListener("change", (event) => {
+    if (!event.target.matches("[data-runaskin-note-image]")) return;
+
+    updateRunaskinVisualNotePreview(event.target.closest(".runaskin-visual-note-card"));
+  });
+
+  document.addEventListener("change", (event) => {
+    if (!event.target.matches("[data-runaskin-note-file]")) return;
+
+    handleRunaskinVisualNoteFileChange(event.target);
+  });
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      const removeButton = event.target.closest("[data-runaskin-note-remove-image]");
+
+      if (!removeButton) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      clearRunaskinVisualNoteImage(removeButton.closest(".runaskin-visual-note-card"));
+    },
+    true
+  );
+
+  document.addEventListener("input", (event) => {
+    if (!isRunaskinVisualNoteField(event.target)) return;
+
+    const form = event.target.closest("form");
+    ensureRunaskinVisualNotesCapacity(form);
+  });
+
+  document.addEventListener("change", (event) => {
+    if (!isRunaskinVisualNoteField(event.target)) return;
+
+    const form = event.target.closest("form");
+    ensureRunaskinVisualNotesCapacity(form);
+  });
 }
+
 
 function setupAltheriumRootFeatureSections(form, sheet = {}) {
   if (!form) return;
@@ -6970,6 +7027,7 @@ function ensureAltheriumRootFeatureSections(form, sheet = {}) {
 
   if (form.querySelector("[data-root-dynamic-zone]")) {
     hydrateBerserkTriumphSelection(form, sheet);
+    hydrateRunaskinVisualNotePreviews(form);
     return;
   }
 
@@ -6980,7 +7038,9 @@ function ensureAltheriumRootFeatureSections(form, sheet = {}) {
 
   if (hasFixedRootSections) {
     ensureBerserkTriumphBox(form, sheet);
+    ensureRunaskinVisualNotesBox(form, sheet);
     hydrateBerserkTriumphSelection(form, sheet);
+    hydrateRunaskinVisualNotePreviews(form);
     return;
   }
 
@@ -6992,6 +7052,7 @@ function ensureAltheriumRootFeatureSections(form, sheet = {}) {
 
   target.insertAdjacentHTML("beforebegin", buildAltheriumRootDynamicSections(sheet));
   hydrateBerserkTriumphSelection(form, sheet);
+  hydrateRunaskinVisualNotePreviews(form);
 }
 
 function updateAltheriumRootSections(form) {
@@ -7001,6 +7062,7 @@ function updateAltheriumRootSections(form) {
   const root = normalizeAltheriumRoot(rootField ? rootField.value : "");
 
   ensureBerserkTriumphBox(form);
+  ensureRunaskinVisualNotesBox(form);
 
   form.querySelectorAll("[data-root-section]").forEach((section) => {
     const shouldShow = section.dataset.rootSection === root;
@@ -7040,15 +7102,22 @@ function updateAltheriumRootSections(form) {
   const normalTriumphsBox = form.querySelector("#normalTriumphsBox, .normal-triumphs-box");
   if (normalTriumphsBox) {
     const hideNormalTriumphs = root === "pilar";
+    const hideTriumphTextAreaOnly = root === "runaskin";
 
     normalTriumphsBox.classList.toggle("hidden-by-root", hideNormalTriumphs);
+    normalTriumphsBox.classList.toggle(
+      "normal-triumphs-box--hide-textarea",
+      hideTriumphTextAreaOnly
+    );
     normalTriumphsBox.style.display = hideNormalTriumphs ? "none" : "block";
   }
 
+  ensureRunaskinVisualNotesCapacity(form);
   hydrateBerserkTriumphSelection(form);
   syncBerserkTriumphSelection(form);
   syncBerserkTriumphsToTriumphNotes(form);
   updateBerserkTriumphCounter(form);
+  hydrateRunaskinVisualNotePreviews(form);
 }
 
 function normalizeAltheriumRoot(value) {
@@ -7350,6 +7419,361 @@ function buildBerserkTriumphCard(triumph, selectedSet = new Set()) {
   `;
 }
 
+
+function ensureRunaskinVisualNotesBox(form, sheet = {}) {
+  if (!form) return;
+
+  const runaskinBox =
+    form.querySelector("#runaskinNrBox") ||
+    form.querySelector("[data-root-section='runaskin']");
+
+  if (!runaskinBox) return;
+
+  if (runaskinBox.querySelector("[data-runaskin-notes-grid]")) {
+    ensureRunaskinVisualNotesCapacity(form, sheet);
+    hydrateRunaskinVisualNotePreviews(form);
+    return;
+  }
+
+  const nrField = runaskinBox.querySelector(".runaskin-nr-mini-field");
+  const notesHtml = buildRunaskinVisualNotesGrid(sheet);
+
+  if (nrField) {
+    nrField.insertAdjacentHTML("afterend", notesHtml);
+  } else {
+    runaskinBox.insertAdjacentHTML("beforeend", notesHtml);
+  }
+
+  ensureRunaskinVisualNotesCapacity(form, sheet);
+  hydrateRunaskinVisualNotePreviews(form);
+}
+
+function clearRunaskinVisualNoteImage(card) {
+  if (!card) return;
+
+  const imageInput = card.querySelector("[data-runaskin-note-image]");
+  const fileInput = card.querySelector("[data-runaskin-note-file]");
+
+  if (!imageInput) return;
+
+  imageInput.value = "";
+
+  if (fileInput) {
+    fileInput.value = "";
+  }
+
+  updateRunaskinVisualNotePreview(card);
+
+  imageInput.dispatchEvent(new Event("input", { bubbles: true }));
+  imageInput.dispatchEvent(new Event("change", { bubbles: true }));
+  ensureRunaskinVisualNotesCapacity(card.closest("form"));
+}
+
+function handleRunaskinVisualNoteFileChange(fileInput) {
+  if (!fileInput) return;
+
+  const file = fileInput.files && fileInput.files[0];
+
+  if (!file) return;
+
+  if (!file.type || !file.type.startsWith("image/")) {
+    alert("Escolha um arquivo de imagem válido.");
+    fileInput.value = "";
+    return;
+  }
+
+  const card = fileInput.closest(".runaskin-visual-note-card");
+  const imageInput = card?.querySelector("[data-runaskin-note-image]");
+
+  if (!card || !imageInput) return;
+
+  readRunaskinVisualNoteFile(file)
+    .then((imageData) => {
+      imageInput.value = imageData;
+      updateRunaskinVisualNotePreview(card);
+
+      imageInput.dispatchEvent(new Event("input", { bubbles: true }));
+      imageInput.dispatchEvent(new Event("change", { bubbles: true }));
+      ensureRunaskinVisualNotesCapacity(card.closest("form"));
+    })
+    .catch(() => {
+      alert("Não foi possível carregar essa imagem. Tente outro arquivo.");
+    })
+    .finally(() => {
+      fileInput.value = "";
+    });
+}
+
+function readRunaskinVisualNoteFile(file) {
+  const maxDirectSize = 850 * 1024;
+
+  if (file.size <= maxDirectSize) {
+    return readRunaskinVisualNoteFileAsDataUrl(file);
+  }
+
+  return resizeRunaskinVisualNoteImage(file).catch(() =>
+    readRunaskinVisualNoteFileAsDataUrl(file)
+  );
+}
+
+function readRunaskinVisualNoteFileAsDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => resolve(String(reader.result || ""));
+    reader.onerror = () => reject(reader.error || new Error("Erro ao ler imagem"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function resizeRunaskinVisualNoteImage(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+
+    reader.onload = () => {
+      const image = new Image();
+
+      image.onload = () => {
+        const maxSize = 900;
+        const largestSide = Math.max(image.width, image.height) || maxSize;
+        const scale = Math.min(1, maxSize / largestSide);
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d");
+
+        if (!context) {
+          reject(new Error("Canvas indisponível"));
+          return;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        context.drawImage(image, 0, 0, width, height);
+
+        resolve(canvas.toDataURL("image/jpeg", 0.86));
+      };
+
+      image.onerror = () => reject(new Error("Imagem inválida"));
+      image.src = String(reader.result || "");
+    };
+
+    reader.onerror = () => reject(reader.error || new Error("Erro ao ler imagem"));
+    reader.readAsDataURL(file);
+  });
+}
+
+function isRunaskinVisualNoteField(field) {
+  if (!field || !field.name) return false;
+
+  return /^runaskinNote\d+(Image|Title|Effect)$/.test(field.name);
+}
+
+function getRunaskinVisualNoteIndexFromName(name) {
+  const match = String(name || "").match(/^runaskinNote(\d+)(Image|Title|Effect)$/);
+
+  return match ? Number(match[1]) : 0;
+}
+
+function getRunaskinVisualNoteCardIndex(card) {
+  if (!card) return 0;
+
+  const field = card.querySelector("[name^='runaskinNote']");
+
+  return getRunaskinVisualNoteIndexFromName(field?.name);
+}
+
+function getRunaskinVisualNotesGridElement(form) {
+  if (!form) return null;
+
+  return form.querySelector("[data-runaskin-notes-grid] .runaskin-visual-notes-grid");
+}
+
+function getRunaskinVisualNoteCards(form) {
+  const grid = getRunaskinVisualNotesGridElement(form);
+
+  if (!grid) return [];
+
+  return Array.from(grid.querySelectorAll(".runaskin-visual-note-card"));
+}
+
+function isRunaskinVisualNoteCardFilled(card) {
+  if (!card) return false;
+
+  return Array.from(card.querySelectorAll("input[type='hidden'], input[type='text'], textarea"))
+    .some((field) => String(field.value || "").trim());
+}
+
+function getRunaskinVisualNoteHighestSavedIndex(sheet = {}) {
+  return Object.entries(sheet || {}).reduce((highest, [key, value]) => {
+    if (!String(value || "").trim()) return highest;
+
+    const index = getRunaskinVisualNoteIndexFromName(key);
+
+    return Math.max(highest, index);
+  }, 0);
+}
+
+function getRunaskinVisualNoteDesiredCount(form, sheet = {}) {
+  const cards = getRunaskinVisualNoteCards(form);
+  const highestSavedIndex = getRunaskinVisualNoteHighestSavedIndex(sheet);
+  let desiredCount = Math.max(RUNASKIN_VISUAL_NOTE_COUNT, cards.length, highestSavedIndex);
+
+  if (highestSavedIndex > RUNASKIN_VISUAL_NOTE_COUNT) {
+    desiredCount = Math.ceil(highestSavedIndex / RUNASKIN_VISUAL_NOTE_INCREMENT) * RUNASKIN_VISUAL_NOTE_INCREMENT;
+
+    if (highestSavedIndex % RUNASKIN_VISUAL_NOTE_INCREMENT === 0) {
+      desiredCount += RUNASKIN_VISUAL_NOTE_INCREMENT;
+    }
+  }
+
+  const sortedCards = [...cards].sort(
+    (a, b) => getRunaskinVisualNoteCardIndex(a) - getRunaskinVisualNoteCardIndex(b)
+  );
+  const lastCard = sortedCards[sortedCards.length - 1];
+
+  if (lastCard && isRunaskinVisualNoteCardFilled(lastCard)) {
+    desiredCount = Math.max(desiredCount, cards.length + RUNASKIN_VISUAL_NOTE_INCREMENT);
+  }
+
+  return desiredCount;
+}
+
+function ensureRunaskinVisualNotesCapacity(form, sheet = {}) {
+  if (!form) return;
+
+  const grid = getRunaskinVisualNotesGridElement(form);
+
+  if (!grid) return;
+
+  let cards = getRunaskinVisualNoteCards(form);
+  let highestIndex = cards.reduce(
+    (highest, card) => Math.max(highest, getRunaskinVisualNoteCardIndex(card)),
+    0
+  );
+  const desiredCount = getRunaskinVisualNoteDesiredCount(form, sheet);
+
+  while (cards.length < desiredCount) {
+    highestIndex += 1;
+    grid.insertAdjacentHTML("beforeend", buildRunaskinVisualNoteCard(highestIndex, sheet));
+    cards = getRunaskinVisualNoteCards(form);
+  }
+
+  hydrateRunaskinVisualNotePreviews(form);
+}
+
+function hydrateRunaskinVisualNotePreviews(form) {
+  if (!form) return;
+
+  form.querySelectorAll(".runaskin-visual-note-card").forEach((card) => {
+    updateRunaskinVisualNotePreview(card);
+  });
+}
+
+function updateRunaskinVisualNotePreview(card) {
+  if (!card) return;
+
+  const imageInput = card.querySelector("[data-runaskin-note-image]");
+  const preview = card.querySelector("[data-runaskin-note-preview]");
+  const image = preview?.querySelector("img");
+  const emptyState = preview?.querySelector("span");
+  const removeButton = preview?.querySelector("[data-runaskin-note-remove-image]");
+  const imageUrl = String(imageInput?.value || "").trim();
+
+  if (!preview || !image || !emptyState) return;
+
+  if (imageUrl) {
+    image.src = imageUrl;
+    image.hidden = false;
+    emptyState.hidden = true;
+    if (removeButton) removeButton.hidden = false;
+    preview.classList.add("has-image");
+  } else {
+    image.removeAttribute("src");
+    image.hidden = true;
+    emptyState.hidden = false;
+    if (removeButton) removeButton.hidden = true;
+    preview.classList.remove("has-image");
+  }
+}
+
+function buildRunaskinVisualNotesGrid(sheet = {}) {
+  return `
+    <div class="runaskin-visual-notes" data-runaskin-notes-grid>
+      <div class="runaskin-visual-notes-header">
+        <span>Anotações Runaskin</span>
+        <strong>Cards Triunficos</strong>
+        <p>Clique no quadrado da imagem para escolher um arquivo do PC e registrar runas, marcas, espíritos, formas, bênçãos ou poderes visuais.</p>
+      </div>
+
+      <div class="runaskin-visual-notes-grid">
+        ${Array.from({ length: RUNASKIN_VISUAL_NOTE_COUNT }, (_, index) =>
+          buildRunaskinVisualNoteCard(index + 1, sheet)
+        ).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function buildRunaskinVisualNoteCard(index, sheet = {}) {
+  const imageValue = sheet[`runaskinNote${index}Image`] || "";
+  const titleValue = sheet[`runaskinNote${index}Title`] || "";
+  const effectValue = sheet[`runaskinNote${index}Effect`] || "";
+
+  return `
+    <article class="runaskin-visual-note-card" data-runaskin-note-card="true" data-runaskin-note-index="${index}">
+      <label class="runaskin-visual-note-image-picker">
+        <input
+          type="hidden"
+          name="runaskinNote${index}Image"
+          value="${escapeHtml(imageValue)}"
+          data-runaskin-note-image="true"
+        />
+
+        <input
+          class="runaskin-visual-note-file-input"
+          type="file"
+          accept="image/*"
+          data-runaskin-note-file="true"
+        />
+
+        <div class="runaskin-visual-note-preview ${imageValue ? "has-image" : ""}" data-runaskin-note-preview role="button" tabindex="0">
+          <img src="${escapeHtml(imageValue)}" alt="Imagem da anotação Runaskin ${index}" ${imageValue ? "" : "hidden"} />
+          <span ${imageValue ? "hidden" : ""}>Clique para escolher</span>
+          <em>${imageValue ? "Trocar imagem" : "Selecionar imagem"}</em>
+          <button
+            type="button"
+            class="runaskin-visual-note-remove-image"
+            data-runaskin-note-remove-image="true"
+            title="Excluir imagem"
+            aria-label="Excluir imagem"
+            ${imageValue ? "" : "hidden"}
+          >×</button>
+        </div>
+      </label>
+
+      <label>
+        <small>Título</small>
+        <input
+          type="text"
+          name="runaskinNote${index}Title"
+          value="${escapeHtml(titleValue)}"
+          placeholder="Nome da runa, forma ou poder"
+        />
+      </label>
+
+      <label>
+        <small>O que faz</small>
+        <textarea
+          name="runaskinNote${index}Effect"
+          rows="4"
+          placeholder="Descreva o efeito, custo, teste ou condição."
+        >${escapeHtml(effectValue)}</textarea>
+      </label>
+    </article>
+  `;
+}
+
 function buildAltheriumRootDynamicSections(sheet = {}) {
   return `
     <div class="altherium-root-dynamic-zone" data-root-dynamic-zone>
@@ -7385,6 +7809,8 @@ function buildAltheriumRootDynamicSections(sheet = {}) {
             </label>
           </div>
         </div>
+
+        ${buildRunaskinVisualNotesGrid(sheet)}
       </section>
 
       <section class="altherium-root-section pilar-root-section" data-root-section="pilar" hidden>
