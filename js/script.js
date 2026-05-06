@@ -3792,7 +3792,7 @@ async function handleCampaignDiceRoll({ system, formula, label }) {
   playCampaignDiceRollSound();
 
   const context = getCampaignDiceContext(system);
-  const result = rollCampaignDiceFormula(formula, context.variables);
+  const result = rollCampaignDiceFormula(formula, context.variables, { system });
 
   if (!result.ok) {
     showCampaignDiceLocalResult({
@@ -4009,8 +4009,9 @@ function getCampaignDiceNumber(value) {
   return Number.isFinite(number) ? number : 0;
 }
 
-function rollCampaignDiceFormula(formula, variables = {}) {
+function rollCampaignDiceFormula(formula, variables = {}, options = {}) {
   const originalFormula = String(formula || "").trim();
+  const system = String(options.system || "").trim();
 
   if (!originalFormula) {
     return { ok: false, error: "Digite uma fórmula de rolagem." };
@@ -4022,6 +4023,11 @@ function rollCampaignDiceFormula(formula, variables = {}) {
   if (!terms.length) {
     return { ok: false, error: "Fórmula inválida." };
   }
+
+  const altheriumSkillInfo =
+    system === "Altherium" ? getAltheriumSkillDiceFormulaInfo(terms, variables) : null;
+
+  const isAltheriumSkillTest = Boolean(altheriumSkillInfo);
 
   const parts = [];
   const usedVariables = [];
@@ -4040,17 +4046,60 @@ function rollCampaignDiceFormula(formula, variables = {}) {
 
     if (!token) continue;
 
-    const diceMatch = token.match(/^(\d*)d(\d+)$/i);
+    /*
+      Regra:
+      - Em testes de perícia de Altherium, os pontos da perícia viram dados extras.
+      - A perícia não soma como bônus.
+      - Rola todos os d10 e usa o melhor.
+      - Soma somente o atributo e outros bônus fixos.
+      - O símbolo # força pegar o melhor dado em qualquer rolagem.
+    */
+    const bestDiceMatch = token.match(/^(\d+)#d(\d+)$/i);
+    const normalDiceMatch = token.match(/^(\d*)d(\d+)$/i);
 
-    if (diceMatch) {
-      const count = Math.max(1, Math.min(100, Number(diceMatch[1] || "1")));
-      const sides = Math.max(2, Math.min(1000, Number(diceMatch[2])));
+    if (bestDiceMatch || normalDiceMatch) {
+      const forcedBest = Boolean(bestDiceMatch);
+      const baseCount = forcedBest
+        ? Math.max(1, Math.min(100, Number(bestDiceMatch[1] || "1")))
+        : Math.max(1, Math.min(100, Number(normalDiceMatch[1] || "1")));
+
+      const sides = forcedBest
+        ? Math.max(2, Math.min(1000, Number(bestDiceMatch[2])))
+        : Math.max(2, Math.min(1000, Number(normalDiceMatch[2])));
+
+      const skillExtraDice = isAltheriumSkillTest && !forcedBest
+        ? Math.max(0, Number(altheriumSkillInfo.skillValue) || 0)
+        : 0;
+
+      const count = Math.max(1, Math.min(100, baseCount + skillExtraDice));
+      const useBestDie = forcedBest || isAltheriumSkillTest;
       const rolls = Array.from({ length: count }, () => getCampaignDiceRandomInt(sides));
-      const subtotal = rolls.reduce((sum, value) => sum + value, 0) * sign;
+      const chosen = useBestDie ? Math.max(...rolls) : rolls.reduce((sum, value) => sum + value, 0);
+      const subtotal = chosen * sign;
+      const rawDice = forcedBest
+        ? `${sign < 0 ? "-" : "+"}${baseCount}#d${sides}`
+        : `${sign < 0 ? "-" : "+"}${count}d${sides}`;
 
       total += subtotal;
-      parts.push({ type: "dice", raw: `${sign < 0 ? "-" : "+"}${count}d${sides}`, rolls, subtotal });
-      resolvedParts.push(`${sign < 0 ? "-" : "+"}${rolls.join("+")}`);
+
+      parts.push({
+        type: "dice",
+        raw: rawDice,
+        baseRaw: forcedBest
+          ? `${baseCount}#d${sides}`
+          : `${baseCount}d${sides}`,
+        rolls,
+        chosen,
+        subtotal,
+        mode: useBestDie ? "best" : "sum",
+        forcedBest,
+        skillTest: isAltheriumSkillTest,
+        skillExtraDice,
+        skillName: altheriumSkillInfo ? altheriumSkillInfo.skillName : "",
+        skillValue: altheriumSkillInfo ? altheriumSkillInfo.skillValue : 0,
+      });
+
+      resolvedParts.push(`${subtotal >= 0 ? "+" : ""}${subtotal}`);
       continue;
     }
 
@@ -4066,6 +4115,28 @@ function rollCampaignDiceFormula(formula, variables = {}) {
 
     if (Object.prototype.hasOwnProperty.call(variables, variableKey)) {
       const variableValue = Number(variables[variableKey]) || 0;
+
+      /*
+        Em Altherium, domain_* em teste de perícia representa quantidade de dados extras.
+        Então não entra no total como bônus.
+      */
+      if (isAltheriumSkillTest && altheriumSkillInfo && variableKey === altheriumSkillInfo.skillKey) {
+        usedVariables.push({
+          name: token,
+          value: variableValue,
+          role: "skill-dice",
+        });
+
+        parts.push({
+          type: "skill-dice",
+          raw: `${sign < 0 ? "-" : "+"}${token}`,
+          name: token,
+          value: variableValue,
+        });
+
+        continue;
+      }
+
       const value = variableValue * sign;
       total += value;
       usedVariables.push({ name: token, value: variableValue });
@@ -4081,13 +4152,7 @@ function rollCampaignDiceFormula(formula, variables = {}) {
   }
 
   const normalizedTotal = Number.isInteger(total) ? total : Number(total.toFixed(2));
-  const summary = parts
-    .map((part) => {
-      if (part.type === "dice") return `${part.raw.replace(/^\+/, "")}: [${part.rolls.join(", ")}]`;
-      if (part.type === "variable") return `${part.raw.replace(/^\+/, "")}: ${part.value}`;
-      return `${part.raw.replace(/^\+/, "")}`;
-    })
-    .join(" • ");
+  const summary = buildCampaignDiceRollSummary(parts);
 
   return {
     ok: true,
@@ -4097,6 +4162,97 @@ function rollCampaignDiceFormula(formula, variables = {}) {
     summary,
     resolvedFormula: resolvedParts.join("").replace(/^\+/, ""),
   };
+}
+
+function buildCampaignDiceRollSummary(parts = []) {
+  const diceParts = parts.filter((part) => part.type === "dice");
+  const bonusParts = parts.filter((part) => part.type === "variable" || part.type === "number");
+  const skillDiceParts = parts.filter((part) => part.type === "skill-dice");
+
+  const diceText = diceParts
+    .map((part) => {
+      const raw = part.raw.replace(/^\+/, "");
+      const rollsText = part.rolls.join(", ");
+
+      if (part.mode === "best") {
+        const skillText = part.skillTest
+          ? ` | perícia ${part.skillName || "domínio"}: +${part.skillValue} dados`
+          : "";
+
+        return `${raw}: resultados ${rollsText} | usado ${part.chosen}${skillText}`;
+      }
+
+      return `${raw}: resultados ${rollsText} | soma ${part.chosen}`;
+    })
+    .join(" • ");
+
+  const bonusText = bonusParts
+    .map((part) => {
+      if (part.type === "variable") {
+        const name = part.raw.replace(/^\+/, "");
+        return `${name}: ${part.value}`;
+      }
+
+      const number = part.raw.replace(/^\+/, "");
+      return `${number}`;
+    })
+    .join(" • ");
+
+  const skillText = skillDiceParts
+    .map((part) => {
+      const name = part.raw.replace(/^\+/, "");
+      return `${name}: ${part.value} dados extras`;
+    })
+    .join(" • ");
+
+  const sections = [];
+
+  if (diceText) sections.push(diceText);
+  if (bonusText) sections.push(`Bônus: ${bonusText}`);
+  if (skillText) sections.push(`Perícia: ${skillText}`);
+
+  return sections.join(" • ") || "Rolagem feita.";
+}
+
+function getAltheriumSkillDiceFormulaInfo(terms = [], variables = {}) {
+  for (const rawTerm of terms) {
+    const token = String(rawTerm || "").replace(/^[+-]/, "");
+    const normalized = normalizeCampaignDiceToken(token);
+
+    const domain = ALTHERIUM_DOMAINS.find((item) => {
+      return (
+        normalized === normalizeCampaignDiceToken(`domain_${item.key}`) ||
+        normalized === normalizeCampaignDiceToken(item.key) ||
+        normalized === normalizeCampaignDiceToken(item.label)
+      );
+    });
+
+    if (!domain) continue;
+
+    const variableKeys = [
+      normalizeCampaignDiceToken(`domain_${domain.key}`),
+      normalizeCampaignDiceToken(domain.key),
+      normalizeCampaignDiceToken(domain.label),
+    ];
+
+    const foundKey = variableKeys.find((key) =>
+      Object.prototype.hasOwnProperty.call(variables, key)
+    );
+
+    const skillValue = Math.max(0, Number(foundKey ? variables[foundKey] : 0) || 0);
+
+    return {
+      skillKey: foundKey || normalizeCampaignDiceToken(`domain_${domain.key}`),
+      skillName: domain.label,
+      skillValue,
+    };
+  }
+
+  return null;
+}
+
+function isAltheriumSkillDiceFormula(terms = []) {
+  return Boolean(getAltheriumSkillDiceFormulaInfo(terms, {}));
 }
 
 function getCampaignDiceRandomInt(sides) {
@@ -9087,7 +9243,7 @@ async function handleCampaignDiceRoll({ system, formula, label }) {
   const isHidden = isCampaignDiceHiddenModeEnabled();
   const isMaster = await isCurrentUserCampaignMaster();
   const context = getCampaignDiceContext(system);
-  const result = rollCampaignDiceFormula(formula, context.variables);
+  const result = rollCampaignDiceFormula(formula, context.variables, { system });
 
   if (!result.ok) {
     showCampaignDiceLocalResult({
