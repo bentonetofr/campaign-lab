@@ -17374,3 +17374,95 @@ button {
     height: 42px !important;
   }
 }
+
+/* =========================================================
+   SCROLLBAR PREMIUM - CAMPAIGN LAB
+   Substitui a barra branca padrão por uma barra escura/ciano.
+========================================================= */
+html {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34, 211, 238, 0.72) rgba(2, 6, 23, 0.88);
+}
+
+body,
+.sheet-modal,
+.modal-content,
+.altherium-main,
+.altherium-sheet-area,
+.altherium-rune-sheet,
+.campaign-chat-messages,
+.player-messages-list,
+.master-messages-list,
+.roll-history-list,
+.initiative-list,
+.runaskin-visual-cards-grid,
+.berserk-triumphs-grid,
+textarea {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(34, 211, 238, 0.72) rgba(2, 6, 23, 0.88);
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: linear-gradient(
+    180deg,
+    rgba(2, 6, 23, 0.98),
+    rgba(8, 15, 30, 0.98)
+  );
+  border-radius: 999px;
+  box-shadow: inset 0 0 0 1px rgba(34, 211, 238, 0.08);
+}
+
+::-webkit-scrollbar-thumb {
+  min-height: 44px;
+  border: 2px solid rgba(2, 6, 23, 0.96);
+  border-radius: 999px;
+  background: linear-gradient(
+    180deg,
+    rgba(103, 232, 249, 0.95),
+    rgba(6, 182, 212, 0.76),
+    rgba(14, 116, 144, 0.82)
+  );
+  box-shadow:
+    0 0 12px rgba(34, 211, 238, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(
+    180deg,
+    rgba(165, 243, 252, 1),
+    rgba(34, 211, 238, 0.92),
+    rgba(8, 145, 178, 0.92)
+  );
+  box-shadow:
+    0 0 18px rgba(34, 211, 238, 0.48),
+    inset 0 1px 0 rgba(255, 255, 255, 0.34);
+}
+
+::-webkit-scrollbar-thumb:active {
+  background: linear-gradient(
+    180deg,
+    rgba(34, 211, 238, 1),
+    rgba(8, 145, 178, 0.98)
+  );
+}
+
+::-webkit-scrollbar-corner {
+  background: rgba(2, 6, 23, 0.98);
+}
+
+* {
+  scrollbar-width: thin;
+}
+
+@media (max-width: 760px) {
+  ::-webkit-scrollbar {
+    width: 7px;
+    height: 7px;
+  }
+}
