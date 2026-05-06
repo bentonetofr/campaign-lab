@@ -16977,3 +16977,400 @@ button {
     grid-template-columns: 1fr !important;
   }
 }
+
+/* =========================================================
+   CHAT - EMOJIS E STICKERS
+========================================================= */
+.player-chat-tools {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 9px !important;
+}
+
+.player-chat-tool-btn {
+  min-height: 38px !important;
+  padding: 0 13px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  border: 1px solid rgba(34, 211, 238, 0.18) !important;
+  border-radius: 999px !important;
+  background: rgba(15, 23, 42, 0.74) !important;
+  color: #e0f2fe !important;
+  font: inherit !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  cursor: pointer !important;
+  transition: 0.2s ease !important;
+}
+
+.player-chat-tool-btn:hover,
+.player-chat-tool-btn.active {
+  border-color: rgba(34, 211, 238, 0.52) !important;
+  background: rgba(34, 211, 238, 0.12) !important;
+  transform: translateY(-1px) !important;
+  box-shadow: 0 0 20px rgba(34, 211, 238, 0.1) !important;
+}
+
+.player-chat-tool-btn span {
+  font-size: 17px !important;
+  line-height: 1 !important;
+}
+
+.player-chat-picker {
+  padding: 12px !important;
+  border: 1px solid rgba(34, 211, 238, 0.16) !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(34, 211, 238, 0.08),
+      transparent 42%
+    ),
+    rgba(15, 23, 42, 0.72) !important;
+}
+
+.player-chat-picker[hidden] {
+  display: none !important;
+}
+
+.player-chat-picker-title {
+  margin-bottom: 10px !important;
+  color: #cffafe !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.8px !important;
+  text-transform: uppercase !important;
+}
+
+.player-chat-emoji-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(42px, 1fr)) !important;
+  gap: 8px !important;
+}
+
+.player-chat-emoji-btn {
+  height: 42px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid rgba(148, 163, 184, 0.14) !important;
+  border-radius: 13px !important;
+  background: rgba(2, 6, 23, 0.62) !important;
+  font-size: 22px !important;
+  cursor: pointer !important;
+  transition: 0.18s ease !important;
+}
+
+.player-chat-emoji-btn:hover {
+  border-color: rgba(34, 211, 238, 0.48) !important;
+  background: rgba(34, 211, 238, 0.1) !important;
+  transform: translateY(-1px) scale(1.03) !important;
+}
+
+.player-chat-sticker-grid {
+  display: grid !important;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)) !important;
+  gap: 10px !important;
+}
+
+.player-chat-sticker-btn {
+  min-height: 108px !important;
+  padding: 12px !important;
+  display: grid !important;
+  justify-items: center !important;
+  align-content: center !important;
+  gap: 5px !important;
+  border: 1px solid rgba(148, 163, 184, 0.15) !important;
+  border-radius: 17px !important;
+  background:
+    radial-gradient(circle at top, rgba(34, 211, 238, 0.1), transparent 55%),
+    rgba(2, 6, 23, 0.68) !important;
+  color: #f8fafc !important;
+  cursor: pointer !important;
+  transition: 0.2s ease !important;
+}
+
+.player-chat-sticker-btn:hover {
+  border-color: rgba(34, 211, 238, 0.5) !important;
+  transform: translateY(-2px) !important;
+  box-shadow: 0 16px 28px rgba(0, 0, 0, 0.18) !important;
+}
+
+.player-chat-sticker-btn:disabled {
+  opacity: 0.58 !important;
+  cursor: wait !important;
+}
+
+.player-chat-sticker-btn span {
+  font-size: 34px !important;
+  line-height: 1 !important;
+}
+
+.player-chat-sticker-btn strong {
+  color: #f8fafc !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+}
+
+.player-chat-sticker-btn small {
+  color: #94a3b8 !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  text-align: center !important;
+}
+
+.player-chat-message.sticker .player-chat-message-bubble {
+  width: fit-content !important;
+  min-width: 150px !important;
+  padding: 14px 16px !important;
+}
+
+.player-chat-sticker-message {
+  display: grid !important;
+  justify-items: center !important;
+  gap: 4px !important;
+  text-align: center !important;
+}
+
+.player-chat-sticker-message-icon {
+  font-size: 54px !important;
+  line-height: 1 !important;
+  filter: drop-shadow(0 0 12px rgba(34, 211, 238, 0.18)) !important;
+}
+
+.player-chat-sticker-message strong {
+  color: #f8fafc !important;
+  font-size: 16px !important;
+  font-weight: 900 !important;
+}
+
+.player-chat-sticker-message small {
+  color: #bae6fd !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+@media (max-width: 640px) {
+  .player-chat-tools {
+    gap: 8px !important;
+  }
+
+  .player-chat-tool-btn {
+    flex: 1 1 130px !important;
+  }
+
+  .player-chat-sticker-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .player-chat-sticker-btn {
+    min-height: 96px !important;
+  }
+
+  .player-chat-sticker-btn span {
+    font-size: 30px !important;
+  }
+}
+
+/* =========================================================
+   CHAT - SOMENTE EMOJIS + FOTO DE PERFIL
+========================================================= */
+.player-chat-tools--emoji-only {
+  justify-content: flex-start !important;
+}
+
+.player-chat-message-avatar {
+  overflow: hidden !important;
+  flex-shrink: 0 !important;
+}
+
+.player-chat-message-avatar--photo {
+  padding: 0 !important;
+  background: rgba(2, 6, 23, 0.92) !important;
+}
+
+.player-chat-message-avatar--photo img {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  object-fit: cover !important;
+  border-radius: inherit !important;
+}
+
+.player-chat-message-avatar:not(.player-chat-message-avatar--photo) {
+  text-transform: uppercase !important;
+}
+
+.player-chat-sticker-grid,
+.player-chat-sticker-btn,
+.player-chat-sticker-message {
+  display: none !important;
+}
+
+/* =========================================================
+   CHAT - NOTIFICAÇÃO DE NOVA MENSAGEM
+========================================================= */
+.player-chat-notification-stack {
+  position: fixed !important;
+  top: 50% !important;
+  right: 24px !important;
+  z-index: 99999 !important;
+  width: min(360px, calc(100vw - 32px)) !important;
+  display: grid !important;
+  gap: 12px !important;
+  transform: translateY(-50%) !important;
+  pointer-events: none !important;
+}
+
+.player-chat-notification {
+  width: 100% !important;
+  min-height: 86px !important;
+  padding: 14px !important;
+  display: grid !important;
+  grid-template-columns: 46px 1fr !important;
+  align-items: center !important;
+  gap: 12px !important;
+  border: 1px solid rgba(34, 211, 238, 0.32) !important;
+  border-radius: 20px !important;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(34, 211, 238, 0.16),
+      transparent 42%
+    ),
+    linear-gradient(145deg, rgba(9, 18, 34, 0.98), rgba(3, 8, 18, 0.98)) !important;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.38),
+    0 0 32px rgba(34, 211, 238, 0.1),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+  color: #f8fafc !important;
+  cursor: pointer !important;
+  pointer-events: auto !important;
+  text-align: left !important;
+  animation: playerChatNotificationIn 0.28s ease both !important;
+}
+
+.player-chat-notification.private {
+  border-color: rgba(168, 85, 247, 0.42) !important;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(168, 85, 247, 0.18),
+      transparent 42%
+    ),
+    linear-gradient(145deg, rgba(14, 12, 35, 0.98), rgba(3, 8, 18, 0.98)) !important;
+  box-shadow:
+    0 18px 48px rgba(0, 0, 0, 0.38),
+    0 0 32px rgba(168, 85, 247, 0.12),
+    inset 0 1px 0 rgba(255, 255, 255, 0.06) !important;
+}
+
+.player-chat-notification:hover {
+  transform: translateX(-4px) !important;
+  border-color: rgba(34, 211, 238, 0.58) !important;
+}
+
+.player-chat-notification.leaving {
+  animation: playerChatNotificationOut 0.24s ease both !important;
+}
+
+.player-chat-notification .player-chat-message-avatar {
+  width: 46px !important;
+  height: 46px !important;
+  margin: 0 !important;
+  font-size: 14px !important;
+  border-radius: 15px !important;
+}
+
+.player-chat-notification-content {
+  min-width: 0 !important;
+  display: grid !important;
+  gap: 3px !important;
+}
+
+.player-chat-notification-content strong {
+  overflow: hidden !important;
+  color: #f8fafc !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+  line-height: 1.1 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+.player-chat-notification-content small {
+  width: fit-content !important;
+  padding: 3px 8px !important;
+  border: 1px solid rgba(34, 211, 238, 0.18) !important;
+  border-radius: 999px !important;
+  background: rgba(34, 211, 238, 0.08) !important;
+  color: #bae6fd !important;
+  font-size: 11px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.3px !important;
+  text-transform: uppercase !important;
+}
+
+.player-chat-notification.private .player-chat-notification-content small {
+  border-color: rgba(168, 85, 247, 0.28) !important;
+  background: rgba(168, 85, 247, 0.12) !important;
+  color: #e9d5ff !important;
+}
+
+.player-chat-notification-content em {
+  overflow: hidden !important;
+  color: #cbd5e1 !important;
+  font-size: 13px !important;
+  font-style: normal !important;
+  font-weight: 700 !important;
+  line-height: 1.25 !important;
+  text-overflow: ellipsis !important;
+  white-space: nowrap !important;
+}
+
+@keyframes playerChatNotificationIn {
+  from {
+    opacity: 0;
+    transform: translateX(28px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes playerChatNotificationOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(28px) scale(0.96);
+  }
+}
+
+@media (max-width: 760px) {
+  .player-chat-notification-stack {
+    top: auto !important;
+    right: 14px !important;
+    bottom: 92px !important;
+    left: 14px !important;
+    width: auto !important;
+    transform: none !important;
+  }
+
+  .player-chat-notification {
+    min-height: 78px !important;
+    grid-template-columns: 42px 1fr !important;
+    border-radius: 18px !important;
+  }
+
+  .player-chat-notification .player-chat-message-avatar {
+    width: 42px !important;
+    height: 42px !important;
+  }
+}

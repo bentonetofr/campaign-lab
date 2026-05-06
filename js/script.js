@@ -532,6 +532,28 @@ const BERSERK_TRIUMPH_NOTES_END = "===== FIM DOS TRIUNFOS BERSERK =====";
 const RUNASKIN_VISUAL_NOTE_COUNT = 8;
 const RUNASKIN_VISUAL_NOTE_INCREMENT = 4;
 
+
+const PLAYER_CHAT_EMOJI_OPTIONS = [
+  "😀", "😂", "😎", "😈", "😭", "😱", "😤", "🤝", "❤️", "✨",
+  "🎲", "⚔️", "🛡️", "🏹", "🧙", "🐺", "👑", "💀", "🔥", "🩸",
+  "🌙", "⭐", "🍻", "🧪", "📜", "🗡️", "🪓", "🔮", "🧿", "🏆"
+];
+
+const PLAYER_CHAT_STICKER_OPTIONS = [
+  { id: "critico", icon: "🎲", title: "Crítico!", text: "Crítico!" },
+  { id: "falha", icon: "💀", title: "Falha", text: "Falha crítica" },
+  { id: "ataque", icon: "⚔️", title: "Ataque", text: "Vou atacar" },
+  { id: "defesa", icon: "🛡️", title: "Defesa", text: "Eu defendo" },
+  { id: "fogo", icon: "🔥", title: "Fogo", text: "Queime tudo" },
+  { id: "sangue", icon: "🩸", title: "Sangue", text: "Sangue por sangue" },
+  { id: "mestre", icon: "👑", title: "Mestre", text: "Chamando o mestre" },
+  { id: "misterio", icon: "🔮", title: "Mistério", text: "Algo estranho aconteceu" },
+  { id: "vitoria", icon: "🏆", title: "Vitória", text: "Vitória da mesa" },
+  { id: "taverna", icon: "🍻", title: "Taverna", text: "Hora da taverna" },
+  { id: "lobo", icon: "🐺", title: "Lobo", text: "Instinto de lobo" },
+  { id: "perigo", icon: "😱", title: "Perigo", text: "Estamos em perigo" }
+];
+
 const DND_SKILLS = [
   ["skillAcrobatics", "Acrobacia"],
   ["skillArcana", "Arcanismo"],
@@ -559,6 +581,8 @@ let realtimeChannel = null;
 let diceRealtimeChannel = null;
 let campaignPresenceChannel = null;
 let campaignChatRealtimeChannel = null;
+let campaignChatAudioContext = null;
+let campaignChatNotificationReady = false;
 let campaignPresenceState = {};
 let campaignPresenceReady = false;
 let saveTimer = null;
@@ -1195,6 +1219,7 @@ async function setupPlayerCampaignChat(system = "") {
   if (!campaignId || !user || !DB) return;
 
   ensurePlayerCampaignChatTab(system);
+  setupPlayerCampaignChatNotifications();
   setupPlayerCampaignChatForm(system);
   await renderPlayerCampaignChatRecipientOptions();
   await renderPlayerCampaignChat(system);
@@ -1208,6 +1233,7 @@ async function setupMasterCampaignChat(system = "") {
   if (!campaignId || !user || !DB) return;
 
   ensureMasterCampaignChatTab(system);
+  setupPlayerCampaignChatNotifications();
   setupPlayerCampaignChatForm(system);
   await renderPlayerCampaignChatRecipientOptions();
   await renderPlayerCampaignChat(system);
@@ -1375,6 +1401,8 @@ function buildPlayerCampaignChatMarkup(system = "") {
             </select>
           </div>
 
+          ${buildPlayerCampaignChatToolsMarkup()}
+
           <div class="player-chat-compose-row">
             <textarea
               id="playerCampaignChatInput"
@@ -1385,6 +1413,26 @@ function buildPlayerCampaignChatMarkup(system = "") {
             <button class="altherium-btn" type="submit" id="playerCampaignChatSendBtn">Enviar</button>
           </div>
         </form>
+      </div>
+    </div>
+  `;
+}
+
+function buildPlayerCampaignChatToolsMarkup() {
+  return `
+    <div class="player-chat-tools player-chat-tools--emoji-only">
+      <button class="player-chat-tool-btn" type="button" data-player-chat-tool="emoji" aria-expanded="false">
+        <span>😊</span>
+        Emojis
+      </button>
+    </div>
+
+    <div class="player-chat-picker" id="playerCampaignEmojiPicker" data-player-chat-picker="emoji" hidden>
+      <div class="player-chat-picker-title">Escolha um emoji</div>
+      <div class="player-chat-emoji-grid">
+        ${PLAYER_CHAT_EMOJI_OPTIONS.map((emoji) => `
+          <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="${escapeHtml(emoji)}">${escapeHtml(emoji)}</button>
+        `).join("")}
       </div>
     </div>
   `;
@@ -1500,6 +1548,8 @@ function setupPlayerCampaignChatForm(system = "") {
     await sendPlayerCampaignChatMessage(system);
   });
 
+  setupPlayerCampaignChatTools(form, input, system);
+
   const recipientSelect = document.getElementById("playerCampaignChatRecipient");
 
   if (recipientSelect) {
@@ -1510,6 +1560,71 @@ function setupPlayerCampaignChatForm(system = "") {
         : "Digite sua mensagem para a mesa...";
     });
   }
+}
+
+function setupPlayerCampaignChatTools(form, input, system = "") {
+  if (!form || !input) return;
+
+  form.querySelectorAll("[data-player-chat-tool]").forEach((button) => {
+    button.addEventListener("click", () => {
+      const tool = button.dataset.playerChatTool;
+      togglePlayerCampaignChatPicker(form, tool);
+    });
+  });
+
+  form.querySelectorAll("[data-player-chat-emoji]").forEach((button) => {
+    button.addEventListener("click", () => {
+      insertPlayerCampaignChatTextAtCursor(input, button.dataset.playerChatEmoji || button.textContent || "");
+      input.focus();
+    });
+  });
+}
+
+function togglePlayerCampaignChatPicker(form, selectedTool = "") {
+  if (!form) return;
+
+  form.querySelectorAll("[data-player-chat-picker]").forEach((picker) => {
+    const shouldOpen = picker.dataset.playerChatPicker === selectedTool && picker.hidden;
+    picker.hidden = !shouldOpen;
+  });
+
+  form.querySelectorAll("[data-player-chat-tool]").forEach((button) => {
+    const isOpen = !form.querySelector(`[data-player-chat-picker="${button.dataset.playerChatTool}"]`)?.hidden;
+    button.classList.toggle("active", isOpen);
+    button.setAttribute("aria-expanded", String(isOpen));
+  });
+}
+
+function insertPlayerCampaignChatTextAtCursor(input, text = "") {
+  if (!input || !text) return;
+
+  const start = input.selectionStart ?? input.value.length;
+  const end = input.selectionEnd ?? input.value.length;
+  const before = input.value.slice(0, start);
+  const after = input.value.slice(end);
+  const spacerBefore = before && !/\s$/.test(before) ? " " : "";
+  const spacerAfter = after && !/^\s/.test(after) ? " " : "";
+  const insertText = `${spacerBefore}${text}${spacerAfter}`;
+
+  input.value = `${before}${insertText}${after}`;
+  const cursor = start + insertText.length;
+  input.setSelectionRange(cursor, cursor);
+}
+
+function getPlayerCampaignChatStickerToken(stickerId = "") {
+  return `[[campaign-sticker:${String(stickerId).trim()}]]`;
+}
+
+function getPlayerCampaignChatStickerById(stickerId = "") {
+  return PLAYER_CHAT_STICKER_OPTIONS.find((sticker) => sticker.id === String(stickerId).trim()) || null;
+}
+
+function getPlayerCampaignChatStickerFromMessage(message = "") {
+  const match = String(message || "").trim().match(/^\[\[campaign-sticker:([a-z0-9-]+)\]\]$/i);
+
+  if (!match) return null;
+
+  return getPlayerCampaignChatStickerById(match[1]);
 }
 
 async function sendPlayerCampaignChatMessage(system = "") {
@@ -1554,6 +1669,10 @@ async function sendPlayerCampaignChatMessage(system = "") {
   }
 
   input.value = "";
+
+  const form = document.getElementById("playerCampaignChatForm");
+  if (form) togglePlayerCampaignChatPicker(form, "");
+
   await renderPlayerCampaignChat(system, { forceScroll: true });
 }
 
@@ -1580,6 +1699,8 @@ async function renderPlayerCampaignChat(system = "", options = {}) {
     `;
     return;
   }
+
+  await getProfiles();
 
   const visibleMessages = (data || []).filter(isPlayerCampaignChatMessageVisible);
 
@@ -1612,7 +1733,7 @@ function renderPlayerCampaignChatMessage(row = {}) {
 
   return `
     <article class="player-chat-message ${isMine ? "mine" : ""} ${isPrivate ? "private" : ""}">
-      <div class="player-chat-message-avatar">${escapeHtml(getPlayerCampaignChatInitials(row.user_name || "J"))}</div>
+      ${renderPlayerCampaignChatAvatar(row)}
       <div class="player-chat-message-bubble">
         <div class="player-chat-message-meta">
           <strong>${escapeHtml(row.user_name || "Jogador")}</strong>
@@ -1661,6 +1782,22 @@ function formatPlayerCampaignChatText(value = "") {
   return escapeHtml(value).replace(/\n/g, "<br>");
 }
 
+function renderPlayerCampaignChatAvatar(row = {}) {
+  const profile = profilesCache.find((item) => String(item.id) === String(row.user_id));
+  const name = profile?.name || row.user_name || "Jogador";
+  const avatarUrl = profile?.avatar_url || profile?.avatarUrl || row.user_avatar_url || "";
+
+  if (avatarUrl) {
+    return `
+      <div class="player-chat-message-avatar player-chat-message-avatar--photo" title="${escapeHtml(name)}">
+        <img src="${escapeHtml(avatarUrl)}" alt="Foto de perfil de ${escapeHtml(name)}" loading="lazy" />
+      </div>
+    `;
+  }
+
+  return `<div class="player-chat-message-avatar" title="${escapeHtml(name)}">${escapeHtml(getPlayerCampaignChatInitials(name))}</div>`;
+}
+
 function getPlayerCampaignChatInitials(name = "") {
   const parts = String(name)
     .trim()
@@ -1699,6 +1836,189 @@ function showPlayerCampaignChatError(message) {
   messagesBox.scrollTop = messagesBox.scrollHeight;
 }
 
+
+function setupPlayerCampaignChatNotifications() {
+  if (campaignChatNotificationReady) return;
+
+  campaignChatNotificationReady = true;
+
+  document.addEventListener(
+    "click",
+    () => {
+      unlockPlayerCampaignChatNotificationSound();
+    },
+    { once: true }
+  );
+
+  document.addEventListener(
+    "keydown",
+    () => {
+      unlockPlayerCampaignChatNotificationSound();
+    },
+    { once: true }
+  );
+}
+
+function shouldNotifyPlayerCampaignChatMessage(row = null) {
+  const user = getLoggedUserFromSession();
+
+  if (!row || !user) return false;
+  if (String(row.user_id) === String(user.id)) return false;
+  if (!isPlayerCampaignChatMessageVisible(row)) return false;
+
+  return true;
+}
+
+function unlockPlayerCampaignChatNotificationSound() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContext) return;
+
+    if (!campaignChatAudioContext) {
+      campaignChatAudioContext = new AudioContext();
+    }
+
+    if (campaignChatAudioContext.state === "suspended") {
+      campaignChatAudioContext.resume().catch(() => {});
+    }
+  } catch (error) {
+    // O navegador pode bloquear áudio automático até o primeiro clique do usuário.
+  }
+}
+
+function playPlayerCampaignChatNotificationSound() {
+  try {
+    const AudioContext = window.AudioContext || window.webkitAudioContext;
+
+    if (!AudioContext) return;
+
+    if (!campaignChatAudioContext) {
+      campaignChatAudioContext = new AudioContext();
+    }
+
+    const context = campaignChatAudioContext;
+
+    if (context.state === "suspended") {
+      context.resume().catch(() => {});
+    }
+
+    const now = context.currentTime;
+    const masterGain = context.createGain();
+
+    masterGain.gain.setValueAtTime(0.0001, now);
+    masterGain.gain.exponentialRampToValueAtTime(0.16, now + 0.015);
+    masterGain.gain.exponentialRampToValueAtTime(0.0001, now + 0.42);
+    masterGain.connect(context.destination);
+
+    createPlayerCampaignChatNotificationTone(context, masterGain, 740, now, 0.13);
+    createPlayerCampaignChatNotificationTone(context, masterGain, 980, now + 0.15, 0.17);
+  } catch (error) {
+    console.warn("Som de notificação do chat bloqueado pelo navegador.", error);
+  }
+}
+
+function createPlayerCampaignChatNotificationTone(context, destination, frequency, startTime, duration) {
+  const oscillator = context.createOscillator();
+  const gain = context.createGain();
+
+  oscillator.type = "sine";
+  oscillator.frequency.setValueAtTime(frequency, startTime);
+
+  gain.gain.setValueAtTime(0.0001, startTime);
+  gain.gain.exponentialRampToValueAtTime(0.9, startTime + 0.02);
+  gain.gain.exponentialRampToValueAtTime(0.0001, startTime + duration);
+
+  oscillator.connect(gain);
+  gain.connect(destination);
+
+  oscillator.start(startTime);
+  oscillator.stop(startTime + duration + 0.03);
+}
+
+function ensurePlayerCampaignChatNotificationContainer() {
+  let container = document.getElementById("playerCampaignChatNotificationStack");
+
+  if (container) return container;
+
+  container = document.createElement("div");
+  container.id = "playerCampaignChatNotificationStack";
+  container.className = "player-chat-notification-stack";
+  container.setAttribute("aria-live", "polite");
+  container.setAttribute("aria-atomic", "false");
+
+  document.body.appendChild(container);
+
+  return container;
+}
+
+function showPlayerCampaignChatNotification(row = {}) {
+  const container = ensurePlayerCampaignChatNotificationContainer();
+  const notification = document.createElement("button");
+  const isPrivate = isPlayerCampaignChatMessagePrivate(row);
+  const senderName = row.user_name || "Jogador";
+  const messagePreview = getPlayerCampaignChatNotificationPreview(row.message || "");
+
+  notification.type = "button";
+  notification.className = `player-chat-notification ${isPrivate ? "private" : ""}`;
+  notification.innerHTML = `
+    ${renderPlayerCampaignChatAvatar(row)}
+    <span class="player-chat-notification-content">
+      <strong>${escapeHtml(senderName)}</strong>
+      <small>${isPrivate ? "Mensagem privada" : "Mensagem da mesa"}</small>
+      <em>${escapeHtml(messagePreview)}</em>
+    </span>
+  `;
+
+  notification.addEventListener("click", () => {
+    openPlayerCampaignChatTab();
+    notification.remove();
+  });
+
+  container.prepend(notification);
+
+  while (container.children.length > 4) {
+    container.lastElementChild?.remove();
+  }
+
+  window.setTimeout(() => {
+    notification.classList.add("leaving");
+    window.setTimeout(() => notification.remove(), 260);
+  }, 5600);
+}
+
+function getPlayerCampaignChatNotificationPreview(message = "") {
+  const preview = String(message || "")
+    .replace(/\s+/g, " ")
+    .trim();
+
+  if (!preview) return "Nova mensagem";
+
+  return preview.length > 72 ? `${preview.slice(0, 72)}...` : preview;
+}
+
+function openPlayerCampaignChatTab() {
+  const section = document.getElementById("playerMessagesSection") || document.getElementById("masterMessagesSection");
+
+  if (!section) return;
+
+  const tab = document.querySelector(`.altherium-tab[data-tab="${section.id}"]`);
+
+  if (tab) {
+    tab.click();
+  } else {
+    document
+      .querySelectorAll(".altherium-section, .player-campaign-tab-panel")
+      .forEach((item) => item.classList.remove("active"));
+    section.classList.add("active");
+  }
+
+  section.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  const messagesBox = document.getElementById("playerCampaignChatMessages");
+  if (messagesBox) messagesBox.scrollTop = messagesBox.scrollHeight;
+}
+
 function subscribePlayerCampaignChatRealtime(system = "") {
   const campaignId = getCurrentCampaignId();
 
@@ -1711,8 +2031,16 @@ function subscribePlayerCampaignChatRealtime(system = "") {
     .on(
       "postgres_changes",
       { event: "*", schema: "public", table: "campaign_messages", filter: `campaign_id=eq.${campaignId}` },
-      async () => {
+      async (payload) => {
+        const incomingMessage = payload?.new || null;
+        const shouldNotify = shouldNotifyPlayerCampaignChatMessage(incomingMessage);
+
         await renderPlayerCampaignChat(system, { forceScroll: true });
+
+        if (shouldNotify) {
+          playPlayerCampaignChatNotificationSound();
+          showPlayerCampaignChatNotification(incomingMessage);
+        }
       }
     )
     .subscribe();
