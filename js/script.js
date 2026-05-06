@@ -1824,6 +1824,8 @@ async function renderMasterSheets() {
           Iniciativa ${sheet.combatInitiative || "--"}
         </p>
 
+        ${buildMasterCharacterHealthBar(sheet)}
+
         <div class="sheet-card-footer">
           <span>Abrir ficha completa</span>
           <strong>→</strong>
@@ -1834,6 +1836,44 @@ async function renderMasterSheets() {
 
   grid.innerHTML = cards.join("");
 }
+
+
+
+function buildMasterCharacterHealthBar(sheet = {}) {
+  const current = getMasterCharacterHealthNumber(sheet.pvCurrent ?? sheet.hpCurrent ?? sheet.currentHp ?? sheet.hp);
+  const max = getMasterCharacterHealthNumber(sheet.pvMax ?? sheet.hpMax ?? sheet.maxHp ?? sheet.hpTotal);
+
+  const safeMax = max > 0 ? max : 0;
+  const percent = safeMax > 0
+    ? Math.max(0, Math.min(100, Math.round((current / safeMax) * 100)))
+    : 0;
+
+  const statusClass =
+    percent <= 25
+      ? "is-danger"
+      : percent <= 50
+        ? "is-warning"
+        : "is-healthy";
+
+  return `
+    <div class="master-character-health ${statusClass}" title="PV ${escapeHtml(current)}/${escapeHtml(safeMax)}">
+      <div class="master-character-health__top">
+        <span>Vida</span>
+        <strong>${escapeHtml(current)}/${escapeHtml(safeMax)}</strong>
+      </div>
+
+      <div class="master-character-health__bar" aria-label="Barra de vida">
+        <i style="width: ${percent}%"></i>
+      </div>
+    </div>
+  `;
+}
+
+function getMasterCharacterHealthNumber(value) {
+  const number = Number(String(value ?? "0").replace(",", ".").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(number) ? Math.max(0, number) : 0;
+}
+
 
 async function openMasterSheetModal(playerId) {
   const modal = document.getElementById("altheriumModal");
@@ -1865,11 +1905,7 @@ async function openMasterSheetModal(playerId) {
 
 function buildMasterSheetEditor(sheet) {
   return `
-    <div class="character-sheet-floating-layout character-sheet-floating-layout--altherium">
-      <aside class="character-floating-portrait-panel">
-        ${buildCharacterPortraitField(sheet, "Altherium")}
-      </aside>
-
+    <div class="character-sheet-floating-layout character-sheet-floating-layout--altherium character-sheet-floating-layout--master-no-portrait">
       <div class="character-sheet-floating-main">
         <div class="altherium-rune-sheet master-rune-sheet">
       <section class="rune-paper-page">
@@ -2397,11 +2433,7 @@ async function openDndMasterSheetModal(playerId) {
 
 function buildDndSheetEditor(sheet, isModal = false) {
   return `
-    <div class="character-sheet-floating-layout character-sheet-floating-layout--dnd">
-      <aside class="character-floating-portrait-panel">
-        ${buildCharacterPortraitField(sheet, "D&D")}
-      </aside>
-
+    <div class="character-sheet-floating-layout character-sheet-floating-layout--dnd character-sheet-floating-layout--master-no-portrait">
       <div class="character-sheet-floating-main">
         <div class="dnd-character-sheet ${isModal ? "master-dnd-sheet" : ""}">
       <section class="dnd-paper-page">
@@ -3509,14 +3541,93 @@ async function clearInitiative(config) {
 
   if (!confirm("Limpar a iniciativa de todos os personagens?")) return;
 
-  for (const playerId of getCampaignPlayerIds(campaign)) {
-    await config.updateSheet(campaign.id, playerId, {
-      combatInitiative: "",
-    });
+  await clearAllCampaignSheetInitiatives(config, campaign);
+  await saveInitiativeTurnState(config, campaign, 0, "");
+  clearLocalInitiativeTurnState(config, campaign);
+  clearVisibleInitiativeInputs();
+
+  await renderInitiativeBoard(config);
+
+  if (typeof refreshCurrentMasterPanel === "function") {
+    await refreshCurrentMasterPanel();
+  }
+}
+
+async function clearAllCampaignSheetInitiatives(config, campaign) {
+  const table = config.system === "D&D" ? "dnd_sheets" : "altherium_sheets";
+  const campaignId = String(campaign.id);
+  const campaignPlayerIds = getCampaignPlayerIds(campaign).map((id) => String(id));
+  const handledIds = new Set();
+
+  if (DB) {
+    const { data, error } = await DB
+      .from(table)
+      .select("user_id, data")
+      .eq("campaign_id", campaignId);
+
+    if (error) {
+      console.error("Erro ao buscar fichas para limpar iniciativa:", error);
+    } else {
+      for (const row of data || []) {
+        const playerId = String(row.user_id);
+        handledIds.add(playerId);
+
+        const currentData = row.data || {};
+        const updatedData = {
+          ...currentData,
+          combatInitiative: "",
+          updatedAt: new Date().toISOString(),
+        };
+
+        const { error: updateError } = await DB
+          .from(table)
+          .update({
+            data: updatedData,
+            updated_at: new Date().toISOString(),
+          })
+          .eq("campaign_id", campaignId)
+          .eq("user_id", playerId);
+
+        if (updateError) {
+          console.error(`Erro ao limpar iniciativa do jogador ${playerId}:`, updateError);
+
+          if (config.updateSheet) {
+            await config.updateSheet(campaign.id, playerId, {
+              combatInitiative: "",
+            });
+          }
+        }
+      }
+    }
   }
 
-  await saveInitiativeTurnState(config, campaign, 0, "");
-  await renderInitiativeBoard(config);
+  for (const playerId of campaignPlayerIds) {
+    if (handledIds.has(playerId)) continue;
+
+    if (config.updateSheet) {
+      await config.updateSheet(campaign.id, playerId, {
+        combatInitiative: "",
+      });
+    }
+  }
+}
+
+function clearLocalInitiativeTurnState(config, campaign) {
+  try {
+    localStorage.removeItem(getInitiativeTurnStorageKey(config, campaign));
+  } catch (error) {
+    console.warn("Não consegui limpar o estado local da iniciativa:", error);
+  }
+}
+
+function clearVisibleInitiativeInputs() {
+  document
+    .querySelectorAll("input[name='combatInitiative']")
+    .forEach((input) => {
+      input.value = "";
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      input.dispatchEvent(new Event("change", { bubbles: true }));
+    });
 }
 
 
@@ -9254,7 +9365,89 @@ function ensureCampaignDiceRoller(system) {
 
 
 
+
+
+function injectCampaignDiceGenitalSizeStyles() {
+  if (document.getElementById("campaign-dice-genital-size-style")) return;
+
+  const style = document.createElement("style");
+  style.id = "campaign-dice-genital-size-style";
+  style.textContent = `
+    .campaign-dice-genital-size-box {
+      width: 100%;
+      margin: 10px 0 12px;
+      padding: 10px;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: center;
+      gap: 10px;
+      border: 1px solid rgba(34, 211, 238, 0.22);
+      border-radius: 14px;
+      background:
+        linear-gradient(145deg, rgba(15, 23, 42, 0.76), rgba(2, 6, 23, 0.9)),
+        radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 45%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.04),
+        0 0 18px rgba(34, 211, 238, 0.06);
+    }
+
+    .campaign-dice-genital-size-box span {
+      display: block;
+      color: #f8fafc;
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.1;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+    }
+
+    .campaign-dice-genital-size-box small {
+      display: block;
+      margin-top: 3px;
+      color: rgba(226, 232, 240, 0.7);
+      font-size: 11px;
+      line-height: 1.2;
+    }
+
+    .campaign-dice-genital-size-btn {
+      min-width: 86px;
+      min-height: 38px;
+      padding: 0 12px;
+      border: 1px solid rgba(34, 211, 238, 0.45);
+      border-radius: 12px;
+      background: rgba(34, 211, 238, 0.12);
+      color: #67e8f9;
+      font-family: inherit;
+      font-size: 12px;
+      font-weight: 900;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .campaign-dice-genital-size-btn:hover {
+      border-color: rgba(34, 211, 238, 0.78);
+      background: rgba(34, 211, 238, 0.18);
+      box-shadow: 0 0 18px rgba(34, 211, 238, 0.12);
+    }
+
+    @media (max-width: 520px) {
+      .campaign-dice-genital-size-box {
+        grid-template-columns: 1fr;
+      }
+
+      .campaign-dice-genital-size-btn {
+        width: 100%;
+      }
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
 function ensureCampaignDiceGenitalSizeRoll(widget) {
+  injectCampaignDiceGenitalSizeStyles();
+
   if (!widget || widget.querySelector("[data-dice-genital-size-box]")) return;
 
   const box = document.createElement("div");
@@ -9278,12 +9471,20 @@ function ensureCampaignDiceGenitalSizeRoll(widget) {
 
   const customForm = widget.querySelector("[data-dice-custom-form]");
 
-  if (customForm && customForm.parentNode) {
-    customForm.insertAdjacentElement("afterend", box);
+  if (customForm) {
+    const formulaCard =
+      customForm.closest(".campaign-dice-custom-box") ||
+      customForm.closest(".campaign-dice-custom-form") ||
+      customForm.closest(".campaign-dice-form-box") ||
+      customForm.closest("section") ||
+      customForm;
+
+    formulaCard.insertAdjacentElement("afterend", box);
     return;
   }
 
   const history = widget.querySelector("#campaignDiceHistory") || widget.querySelector("[data-dice-history]");
+
   if (history && history.parentNode) {
     history.parentNode.insertBefore(box, history);
     return;

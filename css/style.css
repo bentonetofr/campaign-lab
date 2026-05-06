@@ -14025,6 +14025,7 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
     0 0 26px rgba(34, 211, 238, 0.14) !important;
 }
 
+
 /* =========================================================
    ALTHERIUM - GENESIS COM O MESMO TAMANHO E SETA DA RAIZ
    Correção final em cima da estrutura root-field.
@@ -14166,6 +14167,7 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   }
 }
 
+
 /* =========================================================
    ALTHERIUM - NR DO RUNASKIN COM ATUAL / MÁXIMO
 ========================================================= */
@@ -14292,6 +14294,7 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   }
 }
 
+
 /* =========================================================
    RUNASKIN NR - VISUAL FINAL
    Duas caixas lado a lado com barra central, como referência.
@@ -14398,11 +14401,7 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   border-radius: 999px !important;
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.96)),
-    radial-gradient(
-      circle at top right,
-      rgba(34, 211, 238, 0.1),
-      transparent 55%
-    ) !important;
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.1), transparent 55%) !important;
   color: #f8fafc !important;
   font-family: "Caesar Dressing", cursive !important;
   font-size: 26px !important;
@@ -14457,6 +14456,7 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
     font-size: 24px !important;
   }
 }
+
 
 /* =========================================================
    RUNASKIN NR - CORREÇÃO DAS CAIXAS INVISÍVEIS
@@ -14599,6 +14599,7 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   clip: auto !important;
 }
 
+
 /* =========================================================
    ROLADOR - TAMANHO DO ÓRGÃO GENITAL 1D3
 ========================================================= */
@@ -14614,11 +14615,7 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   border-radius: 14px;
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.76), rgba(2, 6, 23, 0.9)),
-    radial-gradient(
-      circle at top right,
-      rgba(34, 211, 238, 0.12),
-      transparent 45%
-    );
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 45%);
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 0 18px rgba(34, 211, 238, 0.06);
@@ -14684,10 +14681,113 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   }
 }
 
+
 /* =========================================================
    ROLADOR - POSIÇÃO ABAIXO DA FÓRMULA PERSONALIZADA
 ========================================================= */
 [data-dice-custom-form] + .campaign-dice-genital-size-box {
   margin-top: 10px !important;
   margin-bottom: 14px !important;
+}
+
+
+/* =========================================================
+   MESTRE - FICHA SEM BLOCO DE ESCOLHER IMAGEM
+========================================================= */
+.character-sheet-floating-layout--master-no-portrait {
+  grid-template-columns: 1fr !important;
+}
+
+.character-sheet-floating-layout--master-no-portrait .character-floating-portrait-panel {
+  display: none !important;
+}
+
+.character-sheet-floating-layout--master-no-portrait .character-sheet-floating-main {
+  width: 100% !important;
+  max-width: 100% !important;
+  grid-column: 1 / -1 !important;
+}
+
+.character-sheet-floating-layout--master-no-portrait .master-rune-sheet,
+.character-sheet-floating-layout--master-no-portrait .dnd-sheet {
+  width: 100% !important;
+  max-width: 100% !important;
+}
+
+
+/* =========================================================
+   MESTRE - BARRA DE VIDA NO CARD DO PERSONAGEM
+========================================================= */
+.master-character-health {
+  width: 100%;
+  margin: 12px 0 14px;
+  padding: 10px;
+  border: 1px solid rgba(34, 211, 238, 0.16);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.72), rgba(2, 6, 23, 0.88)),
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.1), transparent 48%);
+}
+
+.master-character-health__top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 7px;
+}
+
+.master-character-health__top span {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  line-height: 1;
+  text-transform: uppercase;
+}
+
+.master-character-health__top strong {
+  color: #f8fafc;
+  font-size: 13px;
+  font-weight: 900;
+  line-height: 1;
+}
+
+.master-character-health__bar {
+  width: 100%;
+  height: 10px;
+  overflow: hidden;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 999px;
+  background: rgba(2, 6, 23, 0.95);
+}
+
+.master-character-health__bar i {
+  display: block;
+  height: 100%;
+  min-width: 0;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #22c55e, #67e8f9);
+  box-shadow: 0 0 14px rgba(34, 197, 94, 0.28);
+  transition: width 0.25s ease;
+}
+
+.master-character-health.is-warning .master-character-health__bar i {
+  background: linear-gradient(90deg, #facc15, #fb923c);
+  box-shadow: 0 0 14px rgba(250, 204, 21, 0.24);
+}
+
+.master-character-health.is-danger .master-character-health__bar i {
+  background: linear-gradient(90deg, #ef4444, #fb7185);
+  box-shadow: 0 0 14px rgba(239, 68, 68, 0.28);
+}
+
+.sheet-card .master-character-health,
+button .master-character-health {
+  text-align: left;
+}
+
+.sheet-card .master-character-health + .sheet-card-footer,
+button .master-character-health + .sheet-card-footer {
+  margin-top: 6px;
 }
