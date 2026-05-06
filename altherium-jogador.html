@@ -715,6 +715,581 @@
               </div>
 
               <div
+                class="root-extra-box root-extra-box--berserk berserk-triumphs-box"
+                id="berserkTriumphsBox"
+                data-root-extra="berserk"
+                style="display: none"
+              >
+                <input type="hidden" name="berserkTriumphs" value="[]" />
+
+                <div class="rune-section-title centered berserk-triumphs-title">
+                  <h3>Triunfos Berserk</h3>
+                  <p>
+                    Escolha os triunfos que o personagem possui. Ao selecionar,
+                    eles entram automaticamente nas anotações de triunfos.
+                  </p>
+                </div>
+
+                <div class="berserk-triumphs-summary">
+                  <span>Selecionados</span>
+                  <strong data-berserk-triumph-counter>0</strong>
+                </div>
+
+                <div class="berserk-triumphs-grid">
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Briga de Bar"
+                      data-berserk-triumph="Briga de Bar"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Briga de Bar</strong>
+                        <em>4 FV</em>
+                      </div>
+                      <p>Usa qualquer objeto como arma (1d8).</p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Padrão</small>
+                        <small>Toque/curto</small>
+                        <small>Teste de luta com fúria</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Corrente Predadora"
+                      data-berserk-triumph="Corrente Predadora"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Corrente Predadora</strong>
+                        <em>2 FV</em>
+                      </div>
+                      <p>
+                        Coloca corrente em uma arma pesada ou leve, puxa o
+                        inimigo em sua direção e o deixa perto ao acertar.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Curto</small>
+                        <small>Teste de luta com Impulso</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Crítico Selvagem"
+                      data-berserk-triumph="Crítico Selvagem"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Crítico Selvagem</strong>
+                        <em>2 FV</em>
+                      </div>
+                      <p>Acertos críticos maximizam 1 dado do dano.</p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Fôlego Extra"
+                      data-berserk-triumph="Fôlego Extra"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Fôlego Extra</strong>
+                        <em>4 FV</em>
+                      </div>
+                      <p>Ganha 1 ação padrão adicional no turno.</p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Livre</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Fúria Alucinada"
+                      data-berserk-triumph="Fúria Alucinada"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Fúria Alucinada</strong>
+                        <em>4 FV</em>
+                      </div>
+                      <p>
+                        Com Cogumelo Berserkr, ganha +1 dado em FÚRIA extra na
+                        cena.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Livre</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Golpe Duas Mãos"
+                      data-berserk-triumph="Golpe Duas Mãos"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Golpe Duas Mãos</strong>
+                        <em>6 FV</em>
+                      </div>
+                      <p>Ataque usando uma arma com cada mão por 1d4 turnos.</p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Impacto Trovejante"
+                      data-berserk-triumph="Impacto Trovejante"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Impacto Trovejante</strong>
+                        <em>2 FV</em>
+                      </div>
+                      <p>
+                        Crítico com martelo derruba inimigos em um raio de 5
+                        metros contra teste de Equilíbrio.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Machado Incansável"
+                      data-berserk-triumph="Machado Incansável"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Machado Incansável</strong>
+                        <em>4 FV</em>
+                      </div>
+                      <p>
+                        Com machados, ganha +1d10 para acertar se atacar o mesmo
+                        inimigo até o fim da cena.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Mão de Ferro"
+                      data-berserk-triumph="Mão de Ferro"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Mão de Ferro</strong>
+                        <em>2 FV</em>
+                      </div>
+                      <p>
+                        Com maças ou martelos, ignora até 1d4 de DB da armadura
+                        inimiga por 1d4 turnos.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Olho de Caçador"
+                      data-berserk-triumph="Olho de Caçador"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Olho de Caçador</strong>
+                        <em>2 FV</em>
+                      </div>
+                      <p>
+                        Com armas de longa distância, recebe +2 para acertar e
+                        +1 no dano por ponto de Fúria.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Pele Endurecida"
+                      data-berserk-triumph="Pele Endurecida"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Pele Endurecida</strong>
+                        <em>2 FV</em>
+                      </div>
+                      <p>Reduz 1d8 de dano recebido por uso.</p>
+                      <div class="berserk-triumph-tags">
+                        <small>Reação</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Punhos de Ferro"
+                      data-berserk-triumph="Punhos de Ferro"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Punhos de Ferro</strong>
+                        <em>1 FV</em>
+                      </div>
+                      <p>Causa mais dano quando luta desarmado (1d6).</p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Quebra-Armadura"
+                      data-berserk-triumph="Quebra-Armadura"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Quebra-Armadura</strong>
+                        <em>4 FV</em>
+                      </div>
+                      <p>Crítico com arma pesada ignora armadura do inimigo.</p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Rasteira"
+                      data-berserk-triumph="Rasteira"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Rasteira</strong>
+                        <em>2 FV</em>
+                      </div>
+                      <p>
+                        Teste de brutalidade com o inimigo. Se vencer, ele cai e
+                        gasta 1 ação para se levantar.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Toque</small>
+                        <small>Brutalidade com fúria</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Rugido de Guerra"
+                      data-berserk-triumph="Rugido de Guerra"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Rugido de Guerra</strong>
+                        <em>4 FV</em>
+                      </div>
+                      <p>Fortalece e revigora suas energias. +1d10 de FV.</p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Sangue Quente"
+                      data-berserk-triumph="Sangue Quente"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Sangue Quente</strong>
+                        <em>4 FV</em>
+                      </div>
+                      <p>
+                        Ao ficar com menos de 50% de Vida, ganha +2 de bônus em
+                        FÚRIA até o fim da cena.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Saque Rápido"
+                      data-berserk-triumph="Saque Rápido"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Saque Rápido</strong>
+                        <em>2 FV</em>
+                      </div>
+                      <p>Pode sacar a sua arma ou itens com uma ação livre.</p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Livre</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Carga Imparável"
+                      data-berserk-triumph="Carga Imparável"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Carga Imparável</strong>
+                        <em>4 FV</em>
+                      </div>
+                      <p>
+                        Avança até o inimigo em linha reta e ganha +2 no dano do
+                        primeiro ataque.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Padrão</small>
+                        <small>Curto</small>
+                        <small>Teste de brutalidade com Impulso</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Sangue na Lâmina"
+                      data-berserk-triumph="Sangue na Lâmina"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Sangue na Lâmina</strong>
+                        <em>2 FV</em>
+                      </div>
+                      <p>
+                        Ao chegar pela primeira vez na metade da vida do inimigo
+                        ou menos, recupera 1d10 PV. Uma vez por cena.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Ação Sangrenta"
+                      data-berserk-triumph="Ação Sangrenta"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Ação Sangrenta</strong>
+                        <em>3 FV</em>
+                      </div>
+                      <p>
+                        Quando mata um inimigo corpo a corpo, pode usar a mesma
+                        ação para atacar outro inimigo corpo a corpo.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Toque</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Último Grito"
+                      data-berserk-triumph="Último Grito"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Último Grito</strong>
+                        <em>4 FV</em>
+                      </div>
+                      <p>
+                        Ganha 5 de resistência a um tipo de dano à sua escolha
+                        por 1d4 turno.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Resiliência com espírito</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Salto de Matias"
+                      data-berserk-triumph="Salto de Matias"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Salto de Matias</strong>
+                        <em>4 FV</em>
+                      </div>
+                      <p>
+                        Executa um grande salto, aumentando a movimentação.
+                        Adiciona mais 5 metros na movimentação por 1d4 turnos.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Leveza com Impulso</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Ferro Temperado"
+                      data-berserk-triumph="Ferro Temperado"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Ferro Temperado</strong>
+                        <em>6 FV</em>
+                      </div>
+                      <p>
+                        Empunhando uma arma pesada, seus críticos causam +1 dado
+                        do dano ou ignoram 5 pontos de armadura.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Qualquer</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                  <label class="berserk-triumph-card">
+                    <input
+                      type="checkbox"
+                      value="Cadeia de Sangue"
+                      data-berserk-triumph="Cadeia de Sangue"
+                      data-berserk-triumph-checkbox="true"
+                    />
+                    <span class="berserk-triumph-checkmark"></span>
+                    <div class="berserk-triumph-card-content">
+                      <div class="berserk-triumph-card-head">
+                        <strong>Cadeia de Sangue</strong>
+                        <em>1 FV</em>
+                      </div>
+                      <p>
+                        Ao acertar um inimigo, você pode gastar 1 FV para saltar
+                        para outro inimigo a curto alcance e atacá-lo com -2 na
+                        rolagem.
+                      </p>
+                      <div class="berserk-triumph-tags">
+                        <small>Ação Bônus</small>
+                        <small>Curto</small>
+                        <small>Sem teste</small>
+                      </div>
+                    </div>
+                  </label>
+                </div>
+              </div>
+
+              <div
                 class="normal-triumphs-box"
                 id="normalTriumphsBox"
                 data-hide-when-root="pilar"

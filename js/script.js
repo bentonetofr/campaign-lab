@@ -178,6 +178,201 @@ const ALTHERIUM_GENESIS_OPTIONS = [
 ];
 
 
+const BERSERK_TRIUMPH_OPTIONS = [
+  {
+    "name": "Briga de Bar",
+    "description": "Usa qualquer objeto como arma (1d8).",
+    "action": "Ação Padrão",
+    "cost": "4 FV",
+    "range": "Toque/curto",
+    "test": "Teste de luta com fúria"
+  },
+  {
+    "name": "Corrente Predadora",
+    "description": "Coloca corrente em uma arma pesada ou leve, puxa o inimigo em sua direção e o deixa perto ao acertar.",
+    "action": "Ação Bônus",
+    "cost": "2 FV",
+    "range": "Curto",
+    "test": "Teste de luta com Impulso"
+  },
+  {
+    "name": "Crítico Selvagem",
+    "description": "Acertos críticos maximizam 1 dado do dano.",
+    "action": "Ação Bônus",
+    "cost": "2 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Fôlego Extra",
+    "description": "Ganha 1 ação padrão adicional no turno.",
+    "action": "Ação Livre",
+    "cost": "4 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Fúria Alucinada",
+    "description": "Com Cogumelo Berserkr, ganha +1 dado em FÚRIA extra na cena.",
+    "action": "Ação Livre",
+    "cost": "4 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Golpe Duas Mãos",
+    "description": "Ataque usando uma arma com cada mão por 1d4 turnos.",
+    "action": "Ação Bônus",
+    "cost": "6 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Impacto Trovejante",
+    "description": "Crítico com martelo derruba inimigos em um raio de 5 metros contra teste de Equilíbrio.",
+    "action": "Ação Bônus",
+    "cost": "2 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Machado Incansável",
+    "description": "Com machados, ganha +1d10 para acertar se atacar o mesmo inimigo até o fim da cena.",
+    "action": "Ação Bônus",
+    "cost": "4 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Mão de Ferro",
+    "description": "Com maças ou martelos, ignora até 1d4 de DB da armadura inimiga por 1d4 turnos.",
+    "action": "Ação Bônus",
+    "cost": "2 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Olho de Caçador",
+    "description": "Com armas de longa distância, recebe +2 para acertar e +1 no dano por ponto de Fúria.",
+    "action": "Ação Bônus",
+    "cost": "2 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Pele Endurecida",
+    "description": "Reduz 1d8 de dano recebido por uso.",
+    "action": "Reação",
+    "cost": "2 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Punhos de Ferro",
+    "description": "Causa mais dano quando luta desarmado (1d6).",
+    "action": "Ação Bônus",
+    "cost": "1 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Quebra-Armadura",
+    "description": "Crítico com arma pesada ignora armadura do inimigo.",
+    "action": "Ação Bônus",
+    "cost": "4 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Rasteira",
+    "description": "Teste de brutalidade com o inimigo. Se vencer, ele cai e gasta 1 ação para se levantar.",
+    "action": "Ação Bônus",
+    "cost": "2 FV",
+    "range": "Toque",
+    "test": "Brutalidade com fúria"
+  },
+  {
+    "name": "Rugido de Guerra",
+    "description": "Fortalece e revigora suas energias. +1d10 de FV.",
+    "action": "Ação Bônus",
+    "cost": "4 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Sangue Quente",
+    "description": "Ao ficar com menos de 50% de Vida, ganha +2 de bônus em FÚRIA até o fim da cena.",
+    "action": "Ação Bônus",
+    "cost": "4 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Saque Rápido",
+    "description": "Pode sacar a sua arma ou itens com uma ação livre.",
+    "action": "Ação Livre",
+    "cost": "2 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Carga Imparável",
+    "description": "Avança até o inimigo em linha reta e ganha +2 no dano do primeiro ataque.",
+    "action": "Ação Padrão",
+    "cost": "4 FV",
+    "range": "Curto",
+    "test": "Teste de brutalidade com Impulso"
+  },
+  {
+    "name": "Sangue na Lâmina",
+    "description": "Ao chegar pela primeira vez na metade da vida do inimigo ou menos, recupera 1d10 PV. Uma vez por cena.",
+    "action": "Ação Bônus",
+    "cost": "2 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Ação Sangrenta",
+    "description": "Quando mata um inimigo corpo a corpo, pode usar a mesma ação para atacar outro inimigo corpo a corpo.",
+    "action": "Ação Bônus",
+    "cost": "3 FV",
+    "range": "Toque",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Último Grito",
+    "description": "Ganha 5 de resistência a um tipo de dano à sua escolha por 1d4 turno.",
+    "action": "Ação Bônus",
+    "cost": "4 FV",
+    "range": "Qualquer",
+    "test": "Resiliência com espírito"
+  },
+  {
+    "name": "Salto de Matias",
+    "description": "Executa um grande salto, aumentando a movimentação. Adiciona mais 5 metros na movimentação por 1d4 turnos.",
+    "action": "Ação Bônus",
+    "cost": "4 FV",
+    "range": "Qualquer",
+    "test": "Leveza com Impulso"
+  },
+  {
+    "name": "Ferro Temperado",
+    "description": "Empunhando uma arma pesada, seus críticos causam +1 dado do dano ou ignoram 5 pontos de armadura.",
+    "action": "Ação Bônus",
+    "cost": "6 FV",
+    "range": "Qualquer",
+    "test": "Sem teste"
+  },
+  {
+    "name": "Cadeia de Sangue",
+    "description": "Ao acertar um inimigo, você pode gastar 1 FV para saltar para outro inimigo a curto alcance e atacá-lo com -2 na rolagem.",
+    "action": "Ação Bônus",
+    "cost": "1 FV",
+    "range": "Curto",
+    "test": "Sem teste"
+  }
+];
+
 const PILAR_TRIUMPH_GROUPS = [
   {
     cards: 1,
@@ -330,6 +525,10 @@ const PILAR_TRIUMPH_GROUPS = [
     ],
   },
 ];
+
+
+const BERSERK_TRIUMPH_NOTES_START = "===== TRIUNFOS BERSERK SELECIONADOS =====";
+const BERSERK_TRIUMPH_NOTES_END = "===== FIM DOS TRIUNFOS BERSERK =====";
 
 const DND_SKILLS = [
   ["skillAcrobatics", "Acrobacia"],
@@ -1661,6 +1860,7 @@ function getDefaultSheet(campaignId, playerId, system) {
     weapon4Damage: "",
     weapon4Range: "",
     hacksilvers: "550",
+    berserkTriumphs: "[]",
     triumphs: "",
     notes: "",
   };
@@ -2045,6 +2245,8 @@ async function saveSheetFromModal(showAlert = false) {
 
   if (!campaignId || !playerId) return;
 
+  syncBerserkTriumphSelection(form);
+  syncBerserkTriumphsToTriumphNotes(form);
   await updateCampaignSheet(campaignId, playerId, Object.fromEntries(new FormData(form)));
   await refreshCurrentMasterPanel();
 
@@ -2139,6 +2341,8 @@ async function savePlayerSheet(showAlert) {
   updateAltheriumRootSections(form);
   updateAltheriumGenesisSections(form);
 
+  syncBerserkTriumphSelection(form);
+  syncBerserkTriumphsToTriumphNotes(form);
   await updateCampaignSheet(campaign.id, user.id, Object.fromEntries(new FormData(form)));
   updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
   updatePlayerSheetPreview();
@@ -6670,6 +6874,37 @@ function setupAltheriumRootDynamicControls() {
     const form = event.target.closest("form");
     updateAltheriumRootSections(form);
   });
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      const card = event.target.closest(".berserk-triumph-card");
+      if (!card) return;
+
+      const checkbox = card.querySelector("[data-berserk-triumph-checkbox]");
+      if (!checkbox || checkbox.disabled) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      checkbox.checked = !checkbox.checked;
+      updateBerserkTriumphCheckboxState(checkbox);
+
+      checkbox.dispatchEvent(new Event("input", { bubbles: true }));
+      checkbox.dispatchEvent(new Event("change", { bubbles: true }));
+    },
+    true
+  );
+
+  document.addEventListener(
+    "change",
+    (event) => {
+      if (!event.target.matches("[data-berserk-triumph-checkbox]")) return;
+
+      updateBerserkTriumphCheckboxState(event.target);
+    },
+    true
+  );
 }
 
 function setupAltheriumRootFeatureSections(form, sheet = {}) {
@@ -6733,14 +6968,21 @@ function getAltheriumRootValue(normalized, originalValue = "") {
 function ensureAltheriumRootFeatureSections(form, sheet = {}) {
   if (!form) return;
 
-  /*
-    Importante:
-    Antes essa função colocava NR e Triunfos de Pilar logo depois de .rune-resource-list.
-    Isso fazia essas partes aparecerem no começo da ficha.
-    Agora, se o HTML já tem #runaskinNrBox ou #pilarTriumphsBox, não injetamos nada.
-  */
-  if (form.querySelector("#runaskinNrBox") || form.querySelector("#pilarTriumphsBox")) return;
-  if (form.querySelector("[data-root-dynamic-zone]")) return;
+  if (form.querySelector("[data-root-dynamic-zone]")) {
+    hydrateBerserkTriumphSelection(form, sheet);
+    return;
+  }
+
+  const hasFixedRootSections =
+    form.querySelector("#runaskinNrBox") ||
+    form.querySelector("#pilarTriumphsBox") ||
+    form.querySelector("#berserkTriumphsBox");
+
+  if (hasFixedRootSections) {
+    ensureBerserkTriumphBox(form, sheet);
+    hydrateBerserkTriumphSelection(form, sheet);
+    return;
+  }
 
   const triumphTextarea = form.querySelector("textarea[name='triumphs']");
   if (!triumphTextarea) return;
@@ -6749,6 +6991,7 @@ function ensureAltheriumRootFeatureSections(form, sheet = {}) {
   const target = normalTriumphsBox || triumphTextarea;
 
   target.insertAdjacentHTML("beforebegin", buildAltheriumRootDynamicSections(sheet));
+  hydrateBerserkTriumphSelection(form, sheet);
 }
 
 function updateAltheriumRootSections(form) {
@@ -6757,12 +7000,24 @@ function updateAltheriumRootSections(form) {
   const rootField = form.elements.root;
   const root = normalizeAltheriumRoot(rootField ? rootField.value : "");
 
+  ensureBerserkTriumphBox(form);
+
   form.querySelectorAll("[data-root-section]").forEach((section) => {
     const shouldShow = section.dataset.rootSection === root;
 
     section.hidden = !shouldShow;
     section.classList.toggle("active", shouldShow);
+    section.classList.toggle("show", shouldShow);
   });
+
+  const berserkBox = form.querySelector("#berserkTriumphsBox");
+  if (berserkBox && !berserkBox.matches("[data-root-section]")) {
+    const showBerserk = root === "berserk";
+
+    berserkBox.classList.toggle("active", showBerserk);
+    berserkBox.classList.toggle("show", showBerserk);
+    berserkBox.style.display = showBerserk ? "block" : "none";
+  }
 
   const runaskinBox = form.querySelector("#runaskinNrBox");
   if (runaskinBox && !runaskinBox.matches("[data-root-section]")) {
@@ -6789,6 +7044,11 @@ function updateAltheriumRootSections(form) {
     normalTriumphsBox.classList.toggle("hidden-by-root", hideNormalTriumphs);
     normalTriumphsBox.style.display = hideNormalTriumphs ? "none" : "block";
   }
+
+  hydrateBerserkTriumphSelection(form);
+  syncBerserkTriumphSelection(form);
+  syncBerserkTriumphsToTriumphNotes(form);
+  updateBerserkTriumphCounter(form);
 }
 
 function normalizeAltheriumRoot(value) {
@@ -6850,9 +7110,251 @@ function genesisSelectInput(label, name, value) {
 }
 
 
+function ensureBerserkTriumphBox(form, sheet = {}) {
+  if (!form || form.querySelector("#berserkTriumphsBox")) return;
+
+  const normalTriumphsBox = form.querySelector("#normalTriumphsBox, .normal-triumphs-box");
+  const triumphTextarea = form.querySelector("textarea[name='triumphs']");
+  const target = normalTriumphsBox || triumphTextarea;
+
+  if (!target) return;
+
+  target.insertAdjacentHTML("beforebegin", buildBerserkTriumphSection(sheet, false));
+}
+
+function getBerserkTriumphsFromSheet(sheet = {}) {
+  return parseBerserkTriumphsValue(
+    sheet.berserkTriumphs ??
+      sheet.berserk_triumphs ??
+      sheet.berserkSelectedTriumphs ??
+      "[]"
+  );
+}
+
+function parseBerserkTriumphsValue(value) {
+  if (Array.isArray(value)) {
+    return value.map((item) => String(item || "").trim()).filter(Boolean);
+  }
+
+  const text = String(value || "").trim();
+
+  if (!text) return [];
+
+  try {
+    const parsed = JSON.parse(text);
+    if (Array.isArray(parsed)) {
+      return parsed.map((item) => String(item || "").trim()).filter(Boolean);
+    }
+  } catch (error) {
+    // Permite compatibilidade com valores antigos separados por vírgula.
+  }
+
+  return text
+    .split(/[,;\n]/)
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function hydrateBerserkTriumphSelection(form, sheet = null) {
+  if (!form) return;
+
+  const hiddenInput = form.querySelector("input[name='berserkTriumphs']");
+  const sourceValue = sheet ? sheet.berserkTriumphs : hiddenInput?.value;
+  const selected = new Set(parseBerserkTriumphsValue(sourceValue));
+
+  if (hiddenInput && sheet && sheet.berserkTriumphs !== undefined) {
+    hiddenInput.value = JSON.stringify(Array.from(selected));
+  }
+
+  form.querySelectorAll("[data-berserk-triumph-checkbox]").forEach((checkbox) => {
+    const triumphName = checkbox.dataset.berserkTriumph || checkbox.value;
+    const checked = selected.has(triumphName);
+
+    checkbox.checked = checked;
+    checkbox.closest(".berserk-triumph-card")?.classList.toggle("selected", checked);
+  });
+
+  updateBerserkTriumphCounter(form);
+}
+
+function syncBerserkTriumphSelection(form) {
+  if (!form) return [];
+
+  const selected = Array.from(form.querySelectorAll("[data-berserk-triumph-checkbox]:checked"))
+    .map((checkbox) => checkbox.dataset.berserkTriumph || checkbox.value)
+    .filter(Boolean);
+
+  const hiddenInput = form.querySelector("input[name='berserkTriumphs']");
+
+  if (hiddenInput) {
+    hiddenInput.value = JSON.stringify(selected);
+  }
+
+  return selected;
+}
+
+function updateBerserkTriumphCheckboxState(checkbox) {
+  if (!checkbox) return;
+
+  const form = checkbox.closest("form");
+  const card = checkbox.closest(".berserk-triumph-card");
+
+  if (card) {
+    card.classList.toggle("selected", checkbox.checked);
+  }
+
+  syncBerserkTriumphSelection(form);
+  syncBerserkTriumphsToTriumphNotes(form);
+  updateBerserkTriumphCounter(form);
+}
+
+function syncBerserkTriumphsToTriumphNotes(form) {
+  if (!form) return;
+
+  const triumphsTextarea = form.querySelector("textarea[name='triumphs']");
+  if (!triumphsTextarea) return;
+
+  const selected = parseBerserkTriumphsValue(
+    form.querySelector("input[name='berserkTriumphs']")?.value
+  );
+
+  const manualText = removeBerserkTriumphNotesBlock(triumphsTextarea.value);
+  const autoBlock = selected.length ? buildBerserkTriumphNotesBlock(selected) : "";
+  const nextValue = autoBlock
+    ? `${manualText ? `${manualText}\n\n` : ""}${autoBlock}`
+    : manualText;
+
+  if (triumphsTextarea.value === nextValue) return;
+
+  triumphsTextarea.value = nextValue;
+  triumphsTextarea.dispatchEvent(new Event("input", { bubbles: true }));
+  triumphsTextarea.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function removeBerserkTriumphNotesBlock(value) {
+  const text = String(value || "");
+  const blockRegex = new RegExp(
+    `\\n*${escapeRegExp(BERSERK_TRIUMPH_NOTES_START)}[\\s\\S]*?${escapeRegExp(BERSERK_TRIUMPH_NOTES_END)}\\n*`,
+    "g"
+  );
+
+  return text
+    .replace(blockRegex, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function buildBerserkTriumphNotesBlock(selectedNames = []) {
+  const selectedBlocks = selectedNames
+    .map((name) => getBerserkTriumphByName(name))
+    .filter(Boolean)
+    .map((triumph) => {
+      return [
+        `◆ ${triumph.name}`,
+        `Ação: ${triumph.action}`,
+        `Custo: ${triumph.cost}`,
+        `Alcance: ${triumph.range}`,
+        `Teste: ${triumph.test}`,
+        `Efeito: ${triumph.description}`,
+      ].join("\n");
+    });
+
+  if (!selectedBlocks.length) return "";
+
+  return [
+    BERSERK_TRIUMPH_NOTES_START,
+    selectedBlocks.join("\n\n"),
+    BERSERK_TRIUMPH_NOTES_END,
+  ].join("\n");
+}
+
+function getBerserkTriumphByName(name) {
+  return BERSERK_TRIUMPH_OPTIONS.find(
+    (triumph) => String(triumph.name) === String(name)
+  );
+}
+
+function escapeRegExp(value) {
+  return String(value || "").replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+}
+
+function updateBerserkTriumphCounter(form) {
+  if (!form) return;
+
+  const selected = parseBerserkTriumphsValue(form.querySelector("input[name='berserkTriumphs']")?.value);
+  const counter = form.querySelector("[data-berserk-triumph-counter]");
+
+  if (counter) {
+    counter.textContent = String(selected.length);
+  }
+}
+
+function buildBerserkTriumphSection(sheet = {}, useRootSection = true) {
+  const selected = new Set(getBerserkTriumphsFromSheet(sheet));
+  const selectedValue = escapeHtml(JSON.stringify(Array.from(selected)));
+  const rootAttrs = useRootSection
+    ? 'data-root-section="berserk" hidden'
+    : 'data-root-extra="berserk" style="display: none"';
+
+  return `
+    <section class="altherium-root-section root-extra-box root-extra-box--berserk berserk-triumphs-box" id="berserkTriumphsBox" ${rootAttrs}>
+      <input type="hidden" name="berserkTriumphs" value="${selectedValue}" />
+
+      <div class="rune-section-title centered berserk-triumphs-title">
+        <h3>Triunfos Berserk</h3>
+        <p>Escolha os triunfos que o personagem possui. Ao selecionar, eles entram automaticamente nas anotações de triunfos.</p>
+      </div>
+
+      <div class="berserk-triumphs-summary">
+        <span>Selecionados</span>
+        <strong data-berserk-triumph-counter>${selected.size}</strong>
+      </div>
+
+      <div class="berserk-triumphs-grid">
+        ${BERSERK_TRIUMPH_OPTIONS.map((triumph) => buildBerserkTriumphCard(triumph, selected)).join("")}
+      </div>
+    </section>
+  `;
+}
+
+function buildBerserkTriumphCard(triumph, selectedSet = new Set()) {
+  const checked = selectedSet.has(triumph.name);
+
+  return `
+    <label class="berserk-triumph-card ${checked ? "selected" : ""}">
+      <input
+        type="checkbox"
+        value="${escapeHtml(triumph.name)}"
+        data-berserk-triumph="${escapeHtml(triumph.name)}"
+        data-berserk-triumph-checkbox="true"
+        ${checked ? "checked" : ""}
+      />
+
+      <span class="berserk-triumph-checkmark"></span>
+
+      <div class="berserk-triumph-card-content">
+        <div class="berserk-triumph-card-head">
+          <strong>${escapeHtml(triumph.name)}</strong>
+          <em>${escapeHtml(triumph.cost)}</em>
+        </div>
+
+        <p>${escapeHtml(triumph.description)}</p>
+
+        <div class="berserk-triumph-tags">
+          <small>${escapeHtml(triumph.action)}</small>
+          <small>${escapeHtml(triumph.range)}</small>
+          <small>${escapeHtml(triumph.test)}</small>
+        </div>
+      </div>
+    </label>
+  `;
+}
+
 function buildAltheriumRootDynamicSections(sheet = {}) {
   return `
     <div class="altherium-root-dynamic-zone" data-root-dynamic-zone>
+      ${buildBerserkTriumphSection(sheet)}
+
       <section class="altherium-root-section runaskin-root-section runaskin-nr-mini" data-root-section="runaskin" hidden>
         <div class="runaskin-nr-mini-field">
           <span>NR</span>
