@@ -2218,6 +2218,7 @@ async function openDndMasterSheetModal(playerId) {
 
   modalTitle.textContent = `Ficha de ${sheet.ownerName}`;
   formFields.innerHTML = buildDndSheetEditor(sheet, true);
+  setupDndSpellSlotTrackers(form);
 
   form.dataset.mode = "edit-dnd-sheet";
   form.dataset.playerId = playerId;
@@ -2392,20 +2393,7 @@ function buildDndSheetEditor(sheet, isModal = false) {
             ${dndInput("Bônus de ataque", "spellAttackBonus", sheet.spellAttackBonus)}
           </div>
 
-          <div class="dnd-spell-slots">
-            <h3>Espaços de magia</h3>
-            <div>
-              ${Array.from({ length: 9 }, (_, index) => index + 1)
-                .map(
-                  (level) => `
-                    <label>${level}º
-                      <input name="spellSlots${level}" type="text" value="${escapeHtml(sheet[`spellSlots${level}`])}" />
-                    </label>
-                  `
-                )
-                .join("")}
-            </div>
-          </div>
+          ${dndSpellSlotsTracker(sheet)}
 
           <div class="dnd-spells-grid">
             ${dndTextareaBox("Truques", "cantrips", sheet.cantrips, 10)}
@@ -2446,6 +2434,7 @@ async function setupDndPlayerSheet() {
   await getOrCreateDndSheet(campaign.id, user.id, campaign.sistema);
   await loadDndSheetIntoPlayerForm();
   setupDndRestControls();
+  setupDndSpellSlotTrackers(form);
 
   form.addEventListener("input", () => {
     updateDndRestPreview();
@@ -2468,6 +2457,7 @@ async function loadDndSheetIntoPlayerForm() {
     updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
     updateDndPlayerPreview();
     updateDndAutoNumbers();
+    setupDndSpellSlotTrackers(form);
     updateDndRestPreview();
   refreshCharacterPortraitFloatingPanels();
     return;
@@ -2485,6 +2475,7 @@ async function loadDndSheetIntoPlayerForm() {
   updateDndPlayerPreview();
   updateDndAutoNumbers();
   setupDndRestControls();
+  setupDndSpellSlotTrackers(form);
   updateDndRestPreview();
 }
 
@@ -5837,6 +5828,131 @@ function attributeInput(label, name, value) {
 
 function bodyInput(label, roll, name, value) {
   return `<label><span>${label}</span><small>${roll}</small><input type="text" name="${name}" value="${escapeHtml(value)}" /></label>`;
+}
+
+
+const DND_SPELL_SLOT_COUNTS = {
+  1: 4,
+  2: 3,
+  3: 3,
+  4: 3,
+  5: 3,
+  6: 2,
+  7: 2,
+  8: 1,
+  9: 1,
+};
+
+function dndSpellSlotsTracker(sheet = {}) {
+  return `
+    <div class="dnd-spell-slots dnd-spell-slots--tracker">
+      <h3>Espaços de magia</h3>
+      <div class="dnd-spell-slot-board">
+        ${Array.from({ length: 9 }, (_, index) => index + 1)
+          .map((level) => dndSpellSlotLevel(level, sheet[`spellSlots${level}`]))
+          .join("")}
+      </div>
+    </div>
+  `;
+}
+
+function dndSpellSlotLevel(level, value = "") {
+  const total = DND_SPELL_SLOT_COUNTS[level] || 1;
+  const state = normalizeDndSpellSlotState(value, total);
+
+  return `
+    <div class="dnd-spell-slot-level" data-spell-slot-level="${level}">
+      <input
+        type="hidden"
+        name="spellSlots${level}"
+        value="${escapeHtml(state)}"
+        data-spell-slot-hidden="${level}"
+      />
+      <strong>${level}º</strong>
+      <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de ${level}º nível">
+        ${Array.from({ length: total }, (_, index) => {
+          const active = state[index] === "1";
+          return `
+            <button
+              type="button"
+              class="dnd-spell-slot-dot ${active ? "is-checked" : ""}"
+              data-spell-slot-dot="${index}"
+              aria-pressed="${active ? "true" : "false"}"
+              title="${level}º nível - espaço ${index + 1}"
+            ></button>
+          `;
+        }).join("")}
+      </div>
+    </div>
+  `;
+}
+
+function setupDndSpellSlotTrackers(scope = document) {
+  const root = scope || document;
+  const container = root.querySelector ? root : document;
+
+  container.querySelectorAll(".dnd-spell-slot-level").forEach((levelBox) => {
+    refreshDndSpellSlotLevel(levelBox);
+  });
+
+  if (document.body.dataset.dndSpellSlotsReady === "true") return;
+  document.body.dataset.dndSpellSlotsReady = "true";
+
+  document.addEventListener("click", (event) => {
+    const dot = event.target.closest("[data-spell-slot-dot]");
+    if (!dot) return;
+
+    const levelBox = dot.closest(".dnd-spell-slot-level");
+    if (!levelBox) return;
+
+    dot.classList.toggle("is-checked");
+    dot.setAttribute("aria-pressed", dot.classList.contains("is-checked") ? "true" : "false");
+    updateDndSpellSlotHiddenValue(levelBox);
+  });
+}
+
+function refreshDndSpellSlotLevel(levelBox) {
+  if (!levelBox) return;
+
+  const hidden = levelBox.querySelector("[data-spell-slot-hidden]");
+  const dots = Array.from(levelBox.querySelectorAll("[data-spell-slot-dot]"));
+  const state = normalizeDndSpellSlotState(hidden ? hidden.value : "", dots.length);
+
+  dots.forEach((dot, index) => {
+    const active = state[index] === "1";
+    dot.classList.toggle("is-checked", active);
+    dot.setAttribute("aria-pressed", active ? "true" : "false");
+  });
+
+  if (hidden) hidden.value = state;
+}
+
+function updateDndSpellSlotHiddenValue(levelBox) {
+  const hidden = levelBox.querySelector("[data-spell-slot-hidden]");
+  const dots = Array.from(levelBox.querySelectorAll("[data-spell-slot-dot]"));
+
+  if (!hidden) return;
+
+  hidden.value = dots.map((dot) => (dot.classList.contains("is-checked") ? "1" : "0")).join("");
+  hidden.dispatchEvent(new Event("input", { bubbles: true }));
+  hidden.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function normalizeDndSpellSlotState(value, total) {
+  const safeTotal = Math.max(1, Number(total) || 1);
+  const text = String(value || "").trim();
+
+  if (/^[01]+$/.test(text)) {
+    return text.padEnd(safeTotal, "0").slice(0, safeTotal);
+  }
+
+  const numberValue = Number(text.replace(/[^0-9]/g, ""));
+  if (Number.isFinite(numberValue) && numberValue > 0) {
+    const marked = Math.max(0, Math.min(safeTotal, Math.floor(numberValue)));
+    return `${"1".repeat(marked)}${"0".repeat(safeTotal - marked)}`;
+  }
+
+  return "0".repeat(safeTotal);
 }
 
 function dndInput(label, name, value, type = "text") {

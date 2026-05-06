@@ -535,18 +535,289 @@
                 /></label>
               </div>
 
-              <div class="dnd-spell-slots">
+              <div class="dnd-spell-slots dnd-spell-slots--tracker">
                 <h3>Espaços de magia</h3>
-                <div>
-                  <label>1º <input name="spellSlots1" type="text" /></label>
-                  <label>2º <input name="spellSlots2" type="text" /></label>
-                  <label>3º <input name="spellSlots3" type="text" /></label>
-                  <label>4º <input name="spellSlots4" type="text" /></label>
-                  <label>5º <input name="spellSlots5" type="text" /></label>
-                  <label>6º <input name="spellSlots6" type="text" /></label>
-                  <label>7º <input name="spellSlots7" type="text" /></label>
-                  <label>8º <input name="spellSlots8" type="text" /></label>
-                  <label>9º <input name="spellSlots9" type="text" /></label>
+                <div class="dnd-spell-slot-board">
+                  <div class="dnd-spell-slot-level" data-spell-slot-level="1">
+                    <input
+                      type="hidden"
+                      name="spellSlots1"
+                      value="0000"
+                      data-spell-slot-hidden="1"
+                    />
+                    <strong>1º</strong>
+                    <div
+                      class="dnd-spell-slot-dots"
+                      aria-label="Espaços de magia de 1º nível"
+                    >
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="0"
+                        aria-pressed="false"
+                        title="1º nível - espaço 1"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="1"
+                        aria-pressed="false"
+                        title="1º nível - espaço 2"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="2"
+                        aria-pressed="false"
+                        title="1º nível - espaço 3"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="3"
+                        aria-pressed="false"
+                        title="1º nível - espaço 4"
+                      ></button>
+                    </div>
+                  </div>
+                  <div class="dnd-spell-slot-level" data-spell-slot-level="2">
+                    <input
+                      type="hidden"
+                      name="spellSlots2"
+                      value="000"
+                      data-spell-slot-hidden="2"
+                    />
+                    <strong>2º</strong>
+                    <div
+                      class="dnd-spell-slot-dots"
+                      aria-label="Espaços de magia de 2º nível"
+                    >
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="0"
+                        aria-pressed="false"
+                        title="2º nível - espaço 1"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="1"
+                        aria-pressed="false"
+                        title="2º nível - espaço 2"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="2"
+                        aria-pressed="false"
+                        title="2º nível - espaço 3"
+                      ></button>
+                    </div>
+                  </div>
+                  <div class="dnd-spell-slot-level" data-spell-slot-level="3">
+                    <input
+                      type="hidden"
+                      name="spellSlots3"
+                      value="000"
+                      data-spell-slot-hidden="3"
+                    />
+                    <strong>3º</strong>
+                    <div
+                      class="dnd-spell-slot-dots"
+                      aria-label="Espaços de magia de 3º nível"
+                    >
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="0"
+                        aria-pressed="false"
+                        title="3º nível - espaço 1"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="1"
+                        aria-pressed="false"
+                        title="3º nível - espaço 2"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="2"
+                        aria-pressed="false"
+                        title="3º nível - espaço 3"
+                      ></button>
+                    </div>
+                  </div>
+                  <div class="dnd-spell-slot-level" data-spell-slot-level="4">
+                    <input
+                      type="hidden"
+                      name="spellSlots4"
+                      value="000"
+                      data-spell-slot-hidden="4"
+                    />
+                    <strong>4º</strong>
+                    <div
+                      class="dnd-spell-slot-dots"
+                      aria-label="Espaços de magia de 4º nível"
+                    >
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="0"
+                        aria-pressed="false"
+                        title="4º nível - espaço 1"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="1"
+                        aria-pressed="false"
+                        title="4º nível - espaço 2"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="2"
+                        aria-pressed="false"
+                        title="4º nível - espaço 3"
+                      ></button>
+                    </div>
+                  </div>
+                  <div class="dnd-spell-slot-level" data-spell-slot-level="5">
+                    <input
+                      type="hidden"
+                      name="spellSlots5"
+                      value="000"
+                      data-spell-slot-hidden="5"
+                    />
+                    <strong>5º</strong>
+                    <div
+                      class="dnd-spell-slot-dots"
+                      aria-label="Espaços de magia de 5º nível"
+                    >
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="0"
+                        aria-pressed="false"
+                        title="5º nível - espaço 1"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="1"
+                        aria-pressed="false"
+                        title="5º nível - espaço 2"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="2"
+                        aria-pressed="false"
+                        title="5º nível - espaço 3"
+                      ></button>
+                    </div>
+                  </div>
+                  <div class="dnd-spell-slot-level" data-spell-slot-level="6">
+                    <input
+                      type="hidden"
+                      name="spellSlots6"
+                      value="00"
+                      data-spell-slot-hidden="6"
+                    />
+                    <strong>6º</strong>
+                    <div
+                      class="dnd-spell-slot-dots"
+                      aria-label="Espaços de magia de 6º nível"
+                    >
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="0"
+                        aria-pressed="false"
+                        title="6º nível - espaço 1"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="1"
+                        aria-pressed="false"
+                        title="6º nível - espaço 2"
+                      ></button>
+                    </div>
+                  </div>
+                  <div class="dnd-spell-slot-level" data-spell-slot-level="7">
+                    <input
+                      type="hidden"
+                      name="spellSlots7"
+                      value="00"
+                      data-spell-slot-hidden="7"
+                    />
+                    <strong>7º</strong>
+                    <div
+                      class="dnd-spell-slot-dots"
+                      aria-label="Espaços de magia de 7º nível"
+                    >
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="0"
+                        aria-pressed="false"
+                        title="7º nível - espaço 1"
+                      ></button>
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="1"
+                        aria-pressed="false"
+                        title="7º nível - espaço 2"
+                      ></button>
+                    </div>
+                  </div>
+                  <div class="dnd-spell-slot-level" data-spell-slot-level="8">
+                    <input
+                      type="hidden"
+                      name="spellSlots8"
+                      value="0"
+                      data-spell-slot-hidden="8"
+                    />
+                    <strong>8º</strong>
+                    <div
+                      class="dnd-spell-slot-dots"
+                      aria-label="Espaços de magia de 8º nível"
+                    >
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="0"
+                        aria-pressed="false"
+                        title="8º nível - espaço 1"
+                      ></button>
+                    </div>
+                  </div>
+                  <div class="dnd-spell-slot-level" data-spell-slot-level="9">
+                    <input
+                      type="hidden"
+                      name="spellSlots9"
+                      value="0"
+                      data-spell-slot-hidden="9"
+                    />
+                    <strong>9º</strong>
+                    <div
+                      class="dnd-spell-slot-dots"
+                      aria-label="Espaços de magia de 9º nível"
+                    >
+                      <button
+                        type="button"
+                        class="dnd-spell-slot-dot"
+                        data-spell-slot-dot="0"
+                        aria-pressed="false"
+                        title="9º nível - espaço 1"
+                      ></button>
+                    </div>
+                  </div>
                 </div>
               </div>
 
