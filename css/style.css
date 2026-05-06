@@ -13775,3 +13775,393 @@ html
 .dnd-spell-slot-button {
   margin: 0 !important;
 }
+
+/* =========================================================
+   ALTHERIUM - GENESIS IGUAL À RAIZ, CORRIGIDO PELO JS
+========================================================= */
+.rune-page-header .altherium-genesis-field {
+  position: relative !important;
+  display: grid !important;
+  gap: 8px !important;
+  width: 100% !important;
+}
+
+.rune-page-header .altherium-genesis-field > span {
+  display: block !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+
+/* Desliga qualquer seta antiga criada por seletor genérico */
+label:has(select[name="genesis"][data-genesis-selector="true"])::after {
+  content: none !important;
+  display: none !important;
+}
+
+/* Seta nova, específica do Genesis */
+.rune-page-header .altherium-genesis-field::after {
+  content: "⌄" !important;
+  position: absolute !important;
+  right: 16px !important;
+  bottom: 14px !important;
+  top: auto !important;
+  z-index: 5 !important;
+
+  width: 30px !important;
+  height: 30px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.28) !important;
+  border-radius: 999px !important;
+
+  background: rgba(34, 211, 238, 0.08) !important;
+  color: #67e8f9 !important;
+
+  font-family: Arial, sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  pointer-events: none !important;
+  box-shadow: none !important;
+}
+
+.rune-page-header .altherium-genesis-field select[name="genesis"],
+.rune-page-header select[name="genesis"][data-genesis-selector="true"],
+.rune-page-header .altherium-genesis-select {
+  position: relative !important;
+  opacity: 1 !important;
+  pointer-events: auto !important;
+
+  width: 100% !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  margin: 0 !important;
+  padding: 0 50px 0 20px !important;
+
+  display: block !important;
+
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+
+  border: none !important;
+  border-bottom: 2px solid rgba(34, 211, 238, 0.32) !important;
+  border-radius: 16px !important;
+
+  background: rgba(2, 6, 23, 0.88) !important;
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 22px !important;
+  font-weight: 400 !important;
+  line-height: 64px !important;
+  letter-spacing: 0.5px !important;
+
+  text-align: center !important;
+  text-align-last: center !important;
+  text-transform: uppercase !important;
+
+  cursor: pointer !important;
+  outline: none !important;
+
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+  transition: 0.25s ease !important;
+}
+
+.rune-page-header .altherium-genesis-field select[name="genesis"]:hover,
+.rune-page-header select[name="genesis"][data-genesis-selector="true"]:hover,
+.rune-page-header .altherium-genesis-select:hover {
+  border-bottom-color: rgba(34, 211, 238, 0.55) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 22px rgba(34, 211, 238, 0.08) !important;
+}
+
+.rune-page-header .altherium-genesis-field select[name="genesis"]:focus,
+.rune-page-header select[name="genesis"][data-genesis-selector="true"]:focus,
+.rune-page-header .altherium-genesis-select:focus {
+  border-bottom-color: rgba(34, 211, 238, 0.85) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 0 4px rgba(34, 211, 238, 0.1),
+    0 0 26px rgba(34, 211, 238, 0.14) !important;
+}
+
+.rune-page-header .altherium-genesis-field select[name="genesis"] option,
+.rune-page-header select[name="genesis"][data-genesis-selector="true"] option,
+.rune-page-header .altherium-genesis-select option {
+  background: #020617 !important;
+  color: #f8fafc !important;
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 18px !important;
+  text-align: center !important;
+}
+
+/* =========================================================
+   ALTHERIUM - GENESIS FINAL IGUAL À RAIZ
+   Funciona mesmo se o JS ainda não colocou a classe no label.
+========================================================= */
+.rune-page-header label:has(select[name="genesis"]),
+.rune-page-header .altherium-genesis-field {
+  position: relative !important;
+  display: grid !important;
+  gap: 8px !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+}
+
+.rune-page-header label:has(select[name="genesis"]) > span,
+.rune-page-header .altherium-genesis-field > span {
+  display: block !important;
+  width: 100% !important;
+  text-align: center !important;
+}
+
+/* Força o campo Genesis a ter o mesmo tamanho visual da Raiz */
+.rune-page-header label:has(select[name="genesis"]) select[name="genesis"],
+.rune-page-header .altherium-genesis-field select[name="genesis"],
+.rune-page-header select[name="genesis"][data-genesis-selector="true"],
+.rune-page-header .altherium-genesis-select {
+  position: relative !important;
+
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 0 !important;
+
+  height: 64px !important;
+  min-height: 64px !important;
+
+  margin: 0 !important;
+  padding: 0 58px 0 58px !important;
+
+  display: block !important;
+
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+
+  border: none !important;
+  border-bottom: 2px solid rgba(34, 211, 238, 0.32) !important;
+  border-radius: 16px !important;
+
+  background: rgba(2, 6, 23, 0.88) !important;
+  color: #f8fafc !important;
+
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 22px !important;
+  font-weight: 400 !important;
+  line-height: 64px !important;
+  letter-spacing: 0.5px !important;
+
+  text-align: center !important;
+  text-align-last: center !important;
+  text-transform: uppercase !important;
+
+  cursor: pointer !important;
+  outline: none !important;
+
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+  transition: 0.25s ease !important;
+}
+
+/* Seta redonda do Genesis, igual à Raiz */
+.rune-page-header label:has(select[name="genesis"])::after,
+.rune-page-header .altherium-genesis-field::after {
+  content: "⌄" !important;
+
+  position: absolute !important;
+  right: 16px !important;
+  bottom: 14px !important;
+  top: auto !important;
+  z-index: 20 !important;
+
+  width: 30px !important;
+  height: 30px !important;
+
+  display: grid !important;
+  place-items: center !important;
+
+  border: 1px solid rgba(34, 211, 238, 0.28) !important;
+  border-radius: 999px !important;
+
+  background: rgba(34, 211, 238, 0.08) !important;
+  color: #67e8f9 !important;
+
+  font-family: Arial, sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+
+  pointer-events: none !important;
+  box-shadow: none !important;
+}
+
+.rune-page-header
+  label:has(select[name="genesis"])
+  select[name="genesis"]:hover,
+.rune-page-header .altherium-genesis-field select[name="genesis"]:hover,
+.rune-page-header select[name="genesis"][data-genesis-selector="true"]:hover,
+.rune-page-header .altherium-genesis-select:hover {
+  border-bottom-color: rgba(34, 211, 238, 0.55) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 22px rgba(34, 211, 238, 0.08) !important;
+}
+
+.rune-page-header
+  label:has(select[name="genesis"])
+  select[name="genesis"]:focus,
+.rune-page-header .altherium-genesis-field select[name="genesis"]:focus,
+.rune-page-header select[name="genesis"][data-genesis-selector="true"]:focus,
+.rune-page-header .altherium-genesis-select:focus {
+  border-bottom-color: rgba(34, 211, 238, 0.85) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 0 4px rgba(34, 211, 238, 0.1),
+    0 0 26px rgba(34, 211, 238, 0.14) !important;
+}
+
+/* =========================================================
+   ALTHERIUM - GENESIS COM O MESMO TAMANHO E SETA DA RAIZ
+   Correção final em cima da estrutura root-field.
+========================================================= */
+.rune-page-header > .altherium-genesis-field,
+.rune-page-header > label.altherium-genesis-field,
+.rune-page-header > .root-field.altherium-genesis-field {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-height: 112px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  position: relative !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  border: none !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.rune-page-header > .altherium-genesis-field .root-field-label,
+.rune-page-header > label.altherium-genesis-field > span,
+.rune-page-header > .root-field.altherium-genesis-field > span {
+  width: 100% !important;
+  min-height: 48px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  color: #f8fafc !important;
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: clamp(30px, 5vw, 52px) !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  letter-spacing: 1px !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+}
+
+.rune-page-header > .altherium-genesis-field select[name="genesis"],
+.rune-page-header > label.altherium-genesis-field select[name="genesis"],
+.rune-page-header select[name="genesis"].root-native-select,
+.rune-page-header select[name="genesis"].altherium-genesis-select {
+  width: 100% !important;
+  max-width: 100% !important;
+  min-width: 100% !important;
+  height: 64px !important;
+  min-height: 64px !important;
+  max-height: 64px !important;
+  margin: 0 !important;
+  padding: 0 50px 0 20px !important;
+  display: block !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  -moz-appearance: none !important;
+  border: none !important;
+  border-bottom: 2px solid rgba(34, 211, 238, 0.32) !important;
+  border-radius: 16px !important;
+  background: rgba(2, 6, 23, 0.88) !important;
+  color: #f8fafc !important;
+  font-family: "Caesar Dressing", cursive !important;
+  font-size: 22px !important;
+  font-weight: 400 !important;
+  line-height: 1 !important;
+  letter-spacing: 0.5px !important;
+  text-align: center !important;
+  text-align-last: center !important;
+  text-transform: uppercase !important;
+  cursor: pointer !important;
+  outline: none !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+}
+
+.rune-page-header > .altherium-genesis-field::after,
+.rune-page-header > label.altherium-genesis-field::after {
+  content: "⌄" !important;
+  position: absolute !important;
+  right: 16px !important;
+  bottom: 17px !important;
+  top: auto !important;
+  z-index: 20 !important;
+  width: 30px !important;
+  height: 30px !important;
+  display: grid !important;
+  place-items: center !important;
+  border: 1px solid rgba(34, 211, 238, 0.28) !important;
+  border-radius: 999px !important;
+  background: rgba(34, 211, 238, 0.08) !important;
+  color: #67e8f9 !important;
+  font-family: Arial, sans-serif !important;
+  font-size: 20px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  pointer-events: none !important;
+}
+
+.rune-page-header > .altherium-genesis-field select[name="genesis"]:hover,
+.rune-page-header > label.altherium-genesis-field select[name="genesis"]:hover {
+  border-bottom-color: rgba(34, 211, 238, 0.55) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.03),
+    0 0 22px rgba(34, 211, 238, 0.08) !important;
+}
+
+.rune-page-header > .altherium-genesis-field select[name="genesis"]:focus,
+.rune-page-header > label.altherium-genesis-field select[name="genesis"]:focus {
+  border-bottom-color: rgba(34, 211, 238, 0.75) !important;
+  box-shadow:
+    0 0 0 4px rgba(34, 211, 238, 0.1),
+    0 0 24px rgba(34, 211, 238, 0.1) !important;
+}
+
+@media (max-width: 700px) {
+  .rune-page-header > .altherium-genesis-field,
+  .rune-page-header > label.altherium-genesis-field {
+    min-height: 104px !important;
+  }
+
+  .rune-page-header > .altherium-genesis-field select[name="genesis"],
+  .rune-page-header > label.altherium-genesis-field select[name="genesis"] {
+    height: 58px !important;
+    min-height: 58px !important;
+    max-height: 58px !important;
+    padding: 0 46px 0 16px !important;
+    font-size: 20px !important;
+  }
+
+  .rune-page-header > .altherium-genesis-field::after,
+  .rune-page-header > label.altherium-genesis-field::after {
+    right: 14px !important;
+    bottom: 12px !important;
+    width: 28px !important;
+    height: 28px !important;
+    font-size: 18px !important;
+  }
+}

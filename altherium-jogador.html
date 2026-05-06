@@ -97,14 +97,32 @@
                   </select>
                 </div>
 
-                <label>
-                  <span>Genesis</span>
-                  <input
-                    type="text"
+                <div class="root-field altherium-genesis-field">
+                  <label for="genesisSelect" class="root-field-label">
+                    Genesis
+                  </label>
+
+                  <select
+                    id="genesisSelect"
                     name="genesis"
-                    placeholder="Origem, linhagem ou chamado"
-                  />
-                </label>
+                    class="root-native-select altherium-genesis-select"
+                    data-genesis-selector="true"
+                  >
+                    <option value="">Selecione o Genesis</option>
+                    <option value="Caçador">Caçador</option>
+                    <option value="Curandeiro">Curandeiro</option>
+                    <option value="Determinado">Determinado</option>
+                    <option value="Devoto">Devoto</option>
+                    <option value="Filho de mercante">Filho de mercante</option>
+                    <option value="Guerreiro">Guerreiro</option>
+                    <option value="Guia espiritual">Guia espiritual</option>
+                    <option value="Corredor">Corredor</option>
+                    <option value="Peregrino">Peregrino</option>
+                    <option value="Rastreador">Rastreador</option>
+                    <option value="Robusto">Robusto</option>
+                    <option value="Sem passado">Sem passado</option>
+                  </select>
+                </div>
               </div>
               <div class="rune-resource-list">
                 <div class="rune-resource-line">

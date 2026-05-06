@@ -43,6 +43,141 @@ const ALTHERIUM_ROOT_OPTIONS = [
   { value: "Pilar", label: "Pilar" },
 ];
 
+
+const ALTHERIUM_GENESIS_OPTIONS = [
+  {
+    key: "",
+    value: "",
+    label: "Selecione o Genesis",
+    description: "Escolha o passado do personagem para aplicar os bônus automáticos.",
+    automatic: [],
+    notes: [],
+  },
+  {
+    key: "cacador",
+    value: "Caçador",
+    label: "Caçador",
+    description: "Adiciona +1d4 no acerto em armas à distância.",
+    automatic: [
+      { type: "number", field: "domain_furtividade", bonus: 1, label: "Furtividade" },
+    ],
+    notes: [],
+  },
+  {
+    key: "curandeiro",
+    value: "Curandeiro",
+    label: "Curandeiro",
+    description: "Adiciona +1d10 na cura.",
+    automatic: [
+      { type: "number", field: "domain_medicina", bonus: 1, label: "Medicina" },
+    ],
+    notes: [],
+  },
+  {
+    key: "determinado",
+    value: "Determinado",
+    label: "Determinado",
+    description: "Adiciona +1d10 em Equilíbrio.",
+    automatic: [
+      { type: "number", field: "domain_determinacao", bonus: 1, label: "Determinação" },
+    ],
+    notes: [],
+  },
+  {
+    key: "devoto",
+    value: "Devoto",
+    label: "Devoto",
+    description: "Pode usar a Religião no lugar de qualquer teste social.",
+    automatic: [],
+    notes: [],
+  },
+  {
+    key: "filho_de_mercante",
+    value: "Filho de mercante",
+    label: "Filho de mercante",
+    description: "Ganha ¤800 adicionais na criação do personagem.",
+    automatic: [
+      { type: "number", field: "hacksilvers", bonus: 800, label: "Hacksilvers" },
+      { type: "number", field: "domain_persuasao", bonus: 1, label: "Persuasão" },
+    ],
+    notes: [],
+  },
+  {
+    key: "guerreiro",
+    value: "Guerreiro",
+    label: "Guerreiro",
+    description: "Adiciona +1d4 no acerto em armas corpo a corpo.",
+    automatic: [
+      { type: "number", field: "domain_intimidacao", bonus: 1, label: "Intimidação" },
+    ],
+    notes: [],
+  },
+  {
+    key: "guia_espiritual",
+    value: "Guia espiritual",
+    label: "Guia espiritual",
+    description: "Adiciona +1d10 na cura do equilíbrio.",
+    automatic: [
+      { type: "number", field: "domain_pressentimento", bonus: 1, label: "Pressentimento" },
+    ],
+    notes: [],
+  },
+  {
+    key: "corredor",
+    value: "Corredor",
+    label: "Corredor",
+    description: "Tem +5m de movimento no deslocamento.",
+    automatic: [
+      { type: "number", field: "domain_leveza", bonus: 1, label: "Leveza" },
+    ],
+    notes: [],
+  },
+  {
+    key: "peregrino",
+    value: "Peregrino",
+    label: "Peregrino",
+    description: "Pode recuperar +1d10 em todos os pontos básicos em cenas de descanso.",
+    automatic: [
+      { type: "number", field: "domain_sobrevivencia", bonus: 1, label: "Sobrevivência" },
+    ],
+    notes: [],
+  },
+  {
+    key: "rastreador",
+    value: "Rastreador",
+    label: "Rastreador",
+    description: "Recebe +1d10 em teste de investigação.",
+    automatic: [
+      { type: "number", field: "domain_investigacao", bonus: 1, label: "Investigação" },
+      { type: "number", field: "domain_percepcao", bonus: 1, label: "Percepção" },
+    ],
+    notes: [],
+  },
+  {
+    key: "robusto",
+    value: "Robusto",
+    label: "Robusto",
+    description: "Consegue +1 de DB em todas as partes do corpo.",
+    automatic: [
+      { type: "number", field: "bodyLegs", bonus: 1, label: "DB Pernas" },
+      { type: "number", field: "bodyArms", bonus: 1, label: "DB Braços" },
+      { type: "number", field: "bodyTorso", bonus: 1, label: "DB Tronco" },
+      { type: "number", field: "bodyHead", bonus: 1, label: "DB Cabeça" },
+      { type: "number", field: "domain_resiliencia", bonus: 1, label: "Resiliência" },
+    ],
+    notes: [],
+  },
+  {
+    key: "sem_passado",
+    value: "Sem passado",
+    label: "Sem passado",
+    description: "O mestre define sua habilidade.",
+    automatic: [],
+    notes: [],
+  },
+];
+
+
 const PILAR_TRIUMPH_GROUPS = [
   {
     cards: 1,
@@ -234,6 +369,7 @@ document.addEventListener("DOMContentLoaded", async () => {
   setupCampaignLabNumberControls();
   setupHeaderBackButton();
   setupAltheriumRootDynamicControls();
+  setupAltheriumGenesisDynamicControls();
   setupCharacterPortraitControls();
   setupFloatingSheetSaveButton();
   if (!DB) {
@@ -1619,12 +1755,14 @@ async function setupAltheriumMasterSheets() {
     form.addEventListener("input", () => {
       if (form.dataset.mode !== "edit-sheet") return;
       updateAltheriumRootSections(form);
+      updateAltheriumGenesisSections(form);
       saveDebounced(() => saveSheetFromModal(false));
     });
 
     form.addEventListener("change", () => {
       if (form.dataset.mode !== "edit-sheet") return;
       updateAltheriumRootSections(form);
+      updateAltheriumGenesisSections(form);
       saveDebounced(() => saveSheetFromModal(false));
     });
   }
@@ -1712,6 +1850,7 @@ async function openMasterSheetModal(playerId) {
   modalTitle.textContent = `Ficha de ${sheet.ownerName}`;
   formFields.innerHTML = buildMasterSheetEditor(sheet);
   setupAltheriumRootFeatureSections(form, sheet);
+  setupAltheriumGenesisFeatureSections(form, sheet);
 
   form.dataset.mode = "edit-sheet";
   form.dataset.playerId = playerId;
@@ -1738,7 +1877,7 @@ function buildMasterSheetEditor(sheet) {
           <div class="rune-page-header">
             ${textInput("Nome", "characterName", sheet.characterName)}
             ${rootSelectInput("Raíz", "root", sheet.root)}
-            ${textInput("Genesis", "genesis", sheet.genesis)}
+            ${genesisSelectInput("Genesis", "genesis", sheet.genesis)}
           </div>
 
           <div class="rune-resource-list">
@@ -1877,7 +2016,9 @@ async function loadSheetIntoPlayerForm() {
 
   if (focused && form.contains(focused) && !focused.matches("[data-character-portrait-input]")) {
     setupAltheriumRootFeatureSections(form);
+    setupAltheriumGenesisFeatureSections(form);
     updateAltheriumRootSections(form);
+    updateAltheriumGenesisSections(form);
     updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
     updatePlayerSheetPreview();
     updateResourceBars();
@@ -1888,6 +2029,7 @@ async function loadSheetIntoPlayerForm() {
   const sheet = await getOrCreateCampaignSheet(campaign.id, user.id, campaign.sistema);
 
   setupAltheriumRootFeatureSections(form, sheet);
+  setupAltheriumGenesisFeatureSections(form, sheet);
   ensureCharacterPortraitFieldInForm(form, sheet, "Altherium");
 
   Object.keys(sheet).forEach((key) => {
@@ -1895,8 +2037,10 @@ async function loadSheetIntoPlayerForm() {
   });
 
   setAltheriumRootSelectorValue(form.elements.root, sheet.root);
+  setAltheriumGenesisSelectorValue(form.elements.genesis, sheet.genesis);
   updateCharacterPortraitFields(form, sheet);
   updateAltheriumRootSections(form);
+  updateAltheriumGenesisSections(form);
   updatePlayerSheetPreview();
   updateResourceBars();
 }
@@ -1909,7 +2053,9 @@ async function savePlayerSheet(showAlert) {
   if (!user || !campaign || !form) return;
 
   setupAltheriumRootFeatureSections(form);
+  setupAltheriumGenesisFeatureSections(form);
   updateAltheriumRootSections(form);
+  updateAltheriumGenesisSections(form);
 
   await updateCampaignSheet(campaign.id, user.id, Object.fromEntries(new FormData(form)));
   updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
@@ -2218,7 +2364,6 @@ async function openDndMasterSheetModal(playerId) {
 
   modalTitle.textContent = `Ficha de ${sheet.ownerName}`;
   formFields.innerHTML = buildDndSheetEditor(sheet, true);
-  setupDndSpellSlotTrackers(form);
 
   form.dataset.mode = "edit-dnd-sheet";
   form.dataset.playerId = playerId;
@@ -2304,18 +2449,11 @@ function buildDndSheetEditor(sheet, isModal = false) {
                 ${dndStat("Bônus prof.", "proficiencyBonus", sheet.proficiencyBonus)}
               </div>
 
-              <div class="initiative-sheet-box dnd-initiative-box dnd-initiative-box--fixed">
-                <div class="dnd-initiative-box__top">
+              <div class="initiative-sheet-box dnd-initiative-box">
+                <label>
                   <span>Iniciativa de combate</span>
-                  <input
-                    class="dnd-combat-initiative-input"
-                    type="number"
-                    name="combatInitiative"
-                    value="${escapeHtml(sheet.combatInitiative)}"
-                    placeholder="0"
-                    data-no-number-control="true"
-                  />
-                </div>
+                  <input type="number" name="combatInitiative" value="${escapeHtml(sheet.combatInitiative)}" placeholder="0" />
+                </label>
                 <p>Esse valor entra automaticamente na ordem de iniciativa.</p>
               </div>
 
@@ -2393,7 +2531,20 @@ function buildDndSheetEditor(sheet, isModal = false) {
             ${dndInput("Bônus de ataque", "spellAttackBonus", sheet.spellAttackBonus)}
           </div>
 
-          ${dndSpellSlotsTracker(sheet)}
+          <div class="dnd-spell-slots">
+            <h3>Espaços de magia</h3>
+            <div>
+              ${Array.from({ length: 9 }, (_, index) => index + 1)
+                .map(
+                  (level) => `
+                    <label>${level}º
+                      <input name="spellSlots${level}" type="text" value="${escapeHtml(sheet[`spellSlots${level}`])}" />
+                    </label>
+                  `
+                )
+                .join("")}
+            </div>
+          </div>
 
           <div class="dnd-spells-grid">
             ${dndTextareaBox("Truques", "cantrips", sheet.cantrips, 10)}
@@ -2434,7 +2585,6 @@ async function setupDndPlayerSheet() {
   await getOrCreateDndSheet(campaign.id, user.id, campaign.sistema);
   await loadDndSheetIntoPlayerForm();
   setupDndRestControls();
-  setupDndSpellSlotTrackers(form);
 
   form.addEventListener("input", () => {
     updateDndRestPreview();
@@ -2457,7 +2607,6 @@ async function loadDndSheetIntoPlayerForm() {
     updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
     updateDndPlayerPreview();
     updateDndAutoNumbers();
-    setupDndSpellSlotTrackers(form);
     updateDndRestPreview();
   refreshCharacterPortraitFloatingPanels();
     return;
@@ -2475,7 +2624,6 @@ async function loadDndSheetIntoPlayerForm() {
   updateDndPlayerPreview();
   updateDndAutoNumbers();
   setupDndRestControls();
-  setupDndSpellSlotTrackers(form);
   updateDndRestPreview();
 }
 
@@ -5537,6 +5685,416 @@ function escapeHtml(value) {
 }
 
 
+
+
+/* =========================================================
+   GENESIS AUTOMÁTICO DE ALTHERIUM
+========================================================= */
+
+function setupAltheriumGenesisDynamicControls() {
+  injectAltheriumGenesisStyles();
+
+  if (window.altheriumGenesisDynamicControlsReady) return;
+
+  window.altheriumGenesisDynamicControlsReady = true;
+
+  document.addEventListener("change", (event) => {
+    if (!event.target.matches("[name='genesis']")) return;
+
+    const form = event.target.closest("form");
+    updateAltheriumGenesisSections(form, true);
+  });
+
+  document.addEventListener("input", (event) => {
+    if (!event.target.matches("[name='genesis']")) return;
+
+    const form = event.target.closest("form");
+    updateAltheriumGenesisSections(form);
+  });
+}
+
+function setupAltheriumGenesisFeatureSections(form, sheet = {}) {
+  if (!form) return;
+
+  injectAltheriumGenesisStyles();
+  enhanceAltheriumGenesisSelector(form, sheet.genesis);
+  ensureAltheriumGenesisStateInput(form);
+  ensureAltheriumGenesisInfoPanel(form);
+  updateAltheriumGenesisSections(form);
+}
+
+function enhanceAltheriumGenesisSelector(form, genesisValue = "") {
+  if (!form || !form.elements.genesis) return;
+
+  const currentField = form.elements.genesis;
+  const fieldWrapper =
+    currentField.closest(".root-field") ||
+    currentField.closest("label") ||
+    currentField.parentElement;
+
+  if (fieldWrapper) {
+    fieldWrapper.classList.add("root-field", "altherium-genesis-field");
+
+    const title =
+      fieldWrapper.querySelector(".root-field-label") ||
+      fieldWrapper.querySelector("span") ||
+      fieldWrapper.querySelector("label");
+
+    if (title) title.classList.add("root-field-label");
+  }
+
+  if (currentField.tagName === "SELECT") {
+    ensureAltheriumGenesisOptions(currentField);
+    setAltheriumGenesisSelectorValue(currentField, currentField.value || genesisValue);
+    currentField.dataset.genesisSelector = "true";
+    currentField.classList.add("root-native-select", "altherium-genesis-select");
+    return;
+  }
+
+  const select = document.createElement("select");
+  select.name = currentField.name;
+  select.className = `${currentField.className || ""} root-native-select altherium-genesis-select`.trim();
+  select.dataset.genesisSelector = "true";
+
+  ensureAltheriumGenesisOptions(select);
+  setAltheriumGenesisSelectorValue(select, currentField.value || genesisValue);
+
+  currentField.replaceWith(select);
+}
+
+function ensureAltheriumGenesisOptions(select) {
+  if (!select || select.dataset.genesisOptionsReady) return;
+
+  select.innerHTML = ALTHERIUM_GENESIS_OPTIONS
+    .map((option) => {
+      const disabled = option.key ? "" : "disabled";
+      return `<option value="${escapeHtml(option.value)}" ${disabled}>${escapeHtml(option.label)}</option>`;
+    })
+    .join("");
+
+  select.dataset.genesisOptionsReady = "true";
+}
+
+function setAltheriumGenesisSelectorValue(field, value) {
+  if (!field) return;
+
+  const genesis = getAltheriumGenesisByValue(value);
+  field.value = genesis ? genesis.value : "";
+}
+
+function ensureAltheriumGenesisStateInput(form) {
+  if (!form) return null;
+
+  let input = form.querySelector("input[name='genesisAppliedState']");
+
+  if (!input) {
+    input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "genesisAppliedState";
+    input.value = "";
+    form.appendChild(input);
+  }
+
+  return input;
+}
+
+function ensureAltheriumGenesisInfoPanel(form) {
+  removeAltheriumGenesisInfoPanel(form);
+  return null;
+}
+
+function removeAltheriumGenesisInfoPanel(form = document) {
+  const root = form || document;
+
+  root.querySelectorAll("[data-altherium-genesis-panel], .altherium-genesis-panel").forEach((panel) => {
+    panel.remove();
+  });
+}
+
+function updateAltheriumGenesisSections(form, forceApply = false) {
+  if (!form || !form.elements.genesis) return;
+
+  setupAltheriumGenesisDynamicControls();
+  ensureAltheriumGenesisStateInput(form);
+  removeAltheriumGenesisInfoPanel(form);
+
+  const genesis = getAltheriumGenesisByValue(form.elements.genesis.value);
+  const currentKey = genesis ? genesis.key : "";
+  const state = getAltheriumGenesisAppliedState(form);
+  const hasLegacyMarkers = hasLegacyAltheriumGenesisMarkers(form);
+
+  if (forceApply || state.key !== currentKey || hasLegacyMarkers) {
+    applyAltheriumGenesisBonuses(form, genesis);
+  }
+
+  updateAltheriumGenesisNotes(form, genesis);
+}
+
+function applyAltheriumGenesisBonuses(form, genesis) {
+  const previousState = getAltheriumGenesisAppliedState(form);
+
+  removeAltheriumGenesisBonuses(form, previousState);
+  removeLooseAltheriumGenesisTextMarkers(form);
+
+  const nextState = {
+    key: genesis ? genesis.key : "",
+    textBonuses: [],
+    numberBonuses: [],
+  };
+
+  if (genesis && Array.isArray(genesis.automatic)) {
+    genesis.automatic.forEach((effect) => {
+      if (effect.type === "text") {
+        const applied = applyAltheriumGenesisTextBonus(form, effect, genesis);
+        if (applied) nextState.textBonuses.push(applied);
+      }
+
+      if (effect.type === "number") {
+        const applied = applyAltheriumGenesisNumberBonus(form, effect);
+        if (applied) nextState.numberBonuses.push(applied);
+      }
+    });
+  }
+
+  setAltheriumGenesisAppliedState(form, nextState);
+}
+
+function applyAltheriumGenesisTextBonus(form, effect, genesis) {
+  const field = form.elements[effect.field];
+  if (!field) return null;
+
+  const marker = `${effect.bonus} [Genesis: ${genesis.label}]`;
+  const value = String(field.value || "").trim();
+
+  if (value.includes(marker)) {
+    return {
+      field: effect.field,
+      marker,
+    };
+  }
+
+  field.value = value ? `${value} ${marker}` : marker;
+
+  return {
+    field: effect.field,
+    marker,
+  };
+}
+
+function applyAltheriumGenesisNumberBonus(form, effect) {
+  const field = form.elements[effect.field];
+  if (!field) return null;
+
+  field.value = cleanLegacyAltheriumGenesisMarkers(field.value);
+
+  const current = getAltheriumGenesisNumber(field.value);
+  const bonus = Number(effect.bonus) || 0;
+
+  field.value = String(current + bonus);
+
+  return {
+    field: effect.field,
+    bonus,
+  };
+}
+
+function removeAltheriumGenesisBonuses(form, state = {}) {
+  if (!form || !state) return;
+
+  (state.textBonuses || []).forEach((bonus) => {
+    const field = form.elements[bonus.field];
+    if (!field || !bonus.marker) return;
+
+    field.value = removeAltheriumGenesisMarkerFromText(field.value, bonus.marker);
+  });
+
+  (state.numberBonuses || []).forEach((bonus) => {
+    const field = form.elements[bonus.field];
+    if (!field) return;
+
+    const current = getAltheriumGenesisNumber(field.value);
+    const next = current - (Number(bonus.bonus) || 0);
+
+    field.value = String(Math.max(0, next));
+  });
+}
+
+function removeLooseAltheriumGenesisTextMarkers(form) {
+  if (!form) return;
+
+  Array.from(form.elements || []).forEach((field) => {
+    if (!field || typeof field.value !== "string") return;
+
+    field.value = cleanLegacyAltheriumGenesisMarkers(field.value);
+  });
+}
+
+function hasLegacyAltheriumGenesisMarkers(form) {
+  if (!form) return false;
+
+  return Array.from(form.elements || []).some((field) => {
+    if (!field || typeof field.value !== "string") return false;
+    return /\+?\d+d\d+\s*\[Genesis:/i.test(field.value);
+  });
+}
+
+function cleanLegacyAltheriumGenesisMarkers(value) {
+  return String(value || "")
+    .replace(/\s*\+?\d+d\d+\s*\[Genesis:[^\]]*\]?/gi, "")
+    .replace(/\s*\+?\d+d\d+\s*\[G[eê]nesis:[^\]]*\]?/gi, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function removeAltheriumGenesisMarkerFromText(value, marker) {
+  return String(value || "")
+    .replace(marker, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function getAltheriumGenesisAppliedState(form) {
+  const input = ensureAltheriumGenesisStateInput(form);
+  if (!input || !input.value) return { key: "", textBonuses: [], numberBonuses: [] };
+
+  try {
+    const parsed = JSON.parse(input.value);
+
+    return {
+      key: parsed.key || "",
+      textBonuses: Array.isArray(parsed.textBonuses) ? parsed.textBonuses : [],
+      numberBonuses: Array.isArray(parsed.numberBonuses) ? parsed.numberBonuses : [],
+    };
+  } catch (error) {
+    return { key: "", textBonuses: [], numberBonuses: [] };
+  }
+}
+
+function setAltheriumGenesisAppliedState(form, state) {
+  const input = ensureAltheriumGenesisStateInput(form);
+  if (!input) return;
+
+  input.value = JSON.stringify(state || { key: "", textBonuses: [], numberBonuses: [] });
+}
+
+function renderAltheriumGenesisPanel(form, genesis) {
+  removeAltheriumGenesisInfoPanel(form);
+}
+
+
+
+function updateAltheriumGenesisNotes(form, genesis) {
+  if (!form || !form.elements.notes) return;
+
+  const notesField = form.elements.notes;
+  const cleanNotes = removeAltheriumGenesisNotesBlock(notesField.value);
+
+  if (!genesis || !genesis.key) {
+    notesField.value = cleanNotes;
+    return;
+  }
+
+  const genesisText = buildAltheriumGenesisNotesText(genesis);
+  notesField.value = cleanNotes
+    ? `${cleanNotes}\n\n${genesisText}`
+    : genesisText;
+}
+
+function buildAltheriumGenesisNotesText(genesis) {
+  const notes = Array.isArray(genesis.notes) ? genesis.notes.filter(Boolean) : [];
+  const lines = [
+    "[Genesis]",
+    `${genesis.label}: ${genesis.description}`,
+    ...notes,
+  ];
+
+  return lines.join("\n");
+}
+
+function removeAltheriumGenesisNotesBlock(value) {
+  let text = String(value || "");
+
+  text = text.replace(/\n?\[Genesis\][\s\S]*?\[\/Genesis\]\n?/gi, "\n");
+
+  const startIndex = text.search(/\[Genesis\]/i);
+  if (startIndex >= 0) {
+    text = text.slice(0, startIndex);
+  }
+
+  return text
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
+}
+
+function getAltheriumGenesisByValue(value) {
+  const normalized = normalizeAltheriumGenesis(value);
+
+  return (
+    ALTHERIUM_GENESIS_OPTIONS.find((option) => option.key && option.key === normalized) ||
+    ALTHERIUM_GENESIS_OPTIONS.find((option) => option.value === value) ||
+    null
+  );
+}
+
+function normalizeAltheriumGenesis(value) {
+  const normalized = String(value || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .replace(/ç/g, "c")
+    .replace(/[^a-z0-9]+/g, "_")
+    .replace(/^_+|_+$/g, "");
+
+  const aliases = {
+    cacador: "cacador",
+    caçador: "cacador",
+    curandeiro: "curandeiro",
+    determinado: "determinado",
+    devoto: "devoto",
+    filho_de_mercante: "filho_de_mercante",
+    filho_mercante: "filho_de_mercante",
+    guerreiro: "guerreiro",
+    guia_espiritual: "guia_espiritual",
+    corredor: "corredor",
+    peregrino: "peregrino",
+    rastreador: "rastreador",
+    robusto: "robusto",
+    sem_passado: "sem_passado",
+  };
+
+  return aliases[normalized] || normalized;
+}
+
+function getAltheriumGenesisNumber(value) {
+  const cleanedValue = cleanLegacyAltheriumGenesisMarkers(value);
+  const text = String(cleanedValue || "0").replace(",", ".").trim();
+
+  if (!/^-?\d+(\.\d+)?$/.test(text)) return 0;
+
+  const number = Number(text);
+  return Number.isFinite(number) ? number : 0;
+}
+
+function injectAltheriumGenesisStyles() {
+  if (document.getElementById("altherium-genesis-auto-style")) return;
+
+  const style = document.createElement("style");
+  style.id = "altherium-genesis-auto-style";
+  style.textContent = `
+    .altherium-genesis-select {
+      cursor: pointer;
+    }
+
+    .altherium-genesis-panel {
+      display: none !important;
+    }
+  `;
+
+  document.head.appendChild(style);
+}
+
+
 function setupAltheriumRootDynamicControls() {
   if (window.altheriumRootDynamicControlsReady) return;
 
@@ -5711,6 +6269,30 @@ function rootSelectInput(label, name, value) {
   `;
 }
 
+function genesisSelectInput(label, name, value) {
+  const genesis = getAltheriumGenesisByValue(value);
+  const selectedValue = genesis ? genesis.value : "";
+
+  return `
+    <div class="root-field altherium-genesis-field">
+      <label class="root-field-label">${label}</label>
+      <select name="${name}" class="root-native-select altherium-genesis-select" data-genesis-selector="true">
+        ${ALTHERIUM_GENESIS_OPTIONS
+          .map((option) => {
+            const disabled = option.key ? "" : "disabled";
+            return `
+              <option value="${escapeHtml(option.value)}" ${disabled} ${option.value === selectedValue ? "selected" : ""}>
+                ${escapeHtml(option.label)}
+              </option>
+            `;
+          })
+          .join("")}
+      </select>
+    </div>
+  `;
+}
+
+
 function buildAltheriumRootDynamicSections(sheet = {}) {
   return `
     <div class="altherium-root-dynamic-zone" data-root-dynamic-zone>
@@ -5828,131 +6410,6 @@ function attributeInput(label, name, value) {
 
 function bodyInput(label, roll, name, value) {
   return `<label><span>${label}</span><small>${roll}</small><input type="text" name="${name}" value="${escapeHtml(value)}" /></label>`;
-}
-
-
-const DND_SPELL_SLOT_COUNTS = {
-  1: 4,
-  2: 3,
-  3: 3,
-  4: 3,
-  5: 3,
-  6: 2,
-  7: 2,
-  8: 1,
-  9: 1,
-};
-
-function dndSpellSlotsTracker(sheet = {}) {
-  return `
-    <div class="dnd-spell-slots dnd-spell-slots--tracker">
-      <h3>Espaços de magia</h3>
-      <div class="dnd-spell-slot-board">
-        ${Array.from({ length: 9 }, (_, index) => index + 1)
-          .map((level) => dndSpellSlotLevel(level, sheet[`spellSlots${level}`]))
-          .join("")}
-      </div>
-    </div>
-  `;
-}
-
-function dndSpellSlotLevel(level, value = "") {
-  const total = DND_SPELL_SLOT_COUNTS[level] || 1;
-  const state = normalizeDndSpellSlotState(value, total);
-
-  return `
-    <div class="dnd-spell-slot-level" data-spell-slot-level="${level}">
-      <input
-        type="hidden"
-        name="spellSlots${level}"
-        value="${escapeHtml(state)}"
-        data-spell-slot-hidden="${level}"
-      />
-      <strong>${level}º</strong>
-      <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de ${level}º nível">
-        ${Array.from({ length: total }, (_, index) => {
-          const active = state[index] === "1";
-          return `
-            <button
-              type="button"
-              class="dnd-spell-slot-dot ${active ? "is-checked" : ""}"
-              data-spell-slot-dot="${index}"
-              aria-pressed="${active ? "true" : "false"}"
-              title="${level}º nível - espaço ${index + 1}"
-            ></button>
-          `;
-        }).join("")}
-      </div>
-    </div>
-  `;
-}
-
-function setupDndSpellSlotTrackers(scope = document) {
-  const root = scope || document;
-  const container = root.querySelector ? root : document;
-
-  container.querySelectorAll(".dnd-spell-slot-level").forEach((levelBox) => {
-    refreshDndSpellSlotLevel(levelBox);
-  });
-
-  if (document.body.dataset.dndSpellSlotsReady === "true") return;
-  document.body.dataset.dndSpellSlotsReady = "true";
-
-  document.addEventListener("click", (event) => {
-    const dot = event.target.closest("[data-spell-slot-dot]");
-    if (!dot) return;
-
-    const levelBox = dot.closest(".dnd-spell-slot-level");
-    if (!levelBox) return;
-
-    dot.classList.toggle("is-checked");
-    dot.setAttribute("aria-pressed", dot.classList.contains("is-checked") ? "true" : "false");
-    updateDndSpellSlotHiddenValue(levelBox);
-  });
-}
-
-function refreshDndSpellSlotLevel(levelBox) {
-  if (!levelBox) return;
-
-  const hidden = levelBox.querySelector("[data-spell-slot-hidden]");
-  const dots = Array.from(levelBox.querySelectorAll("[data-spell-slot-dot]"));
-  const state = normalizeDndSpellSlotState(hidden ? hidden.value : "", dots.length);
-
-  dots.forEach((dot, index) => {
-    const active = state[index] === "1";
-    dot.classList.toggle("is-checked", active);
-    dot.setAttribute("aria-pressed", active ? "true" : "false");
-  });
-
-  if (hidden) hidden.value = state;
-}
-
-function updateDndSpellSlotHiddenValue(levelBox) {
-  const hidden = levelBox.querySelector("[data-spell-slot-hidden]");
-  const dots = Array.from(levelBox.querySelectorAll("[data-spell-slot-dot]"));
-
-  if (!hidden) return;
-
-  hidden.value = dots.map((dot) => (dot.classList.contains("is-checked") ? "1" : "0")).join("");
-  hidden.dispatchEvent(new Event("input", { bubbles: true }));
-  hidden.dispatchEvent(new Event("change", { bubbles: true }));
-}
-
-function normalizeDndSpellSlotState(value, total) {
-  const safeTotal = Math.max(1, Number(total) || 1);
-  const text = String(value || "").trim();
-
-  if (/^[01]+$/.test(text)) {
-    return text.padEnd(safeTotal, "0").slice(0, safeTotal);
-  }
-
-  const numberValue = Number(text.replace(/[^0-9]/g, ""));
-  if (Number.isFinite(numberValue) && numberValue > 0) {
-    const marked = Math.max(0, Math.min(safeTotal, Math.floor(numberValue)));
-    return `${"1".repeat(marked)}${"0".repeat(safeTotal - marked)}`;
-  }
-
-  return "0".repeat(safeTotal);
 }
 
 function dndInput(label, name, value, type = "text") {
@@ -8076,8 +8533,6 @@ function setupCampaignLabNumberControls() {
 
   function upgradeNumberInput(input) {
     if (!input || input.dataset.numberControlReady === "true") return;
-    if (input.closest(".dnd-initiative-box")) return;
-    if (input.matches("[data-no-number-control='true']")) return;
     if (input.closest(".number-control")) return;
 
     input.dataset.numberControlReady = "true";
