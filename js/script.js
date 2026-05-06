@@ -9238,6 +9238,7 @@ function ensureCampaignDiceRoller(system) {
   localStorage.removeItem("campaignLabDiceOpen");
 
   ensureCampaignDicePrivacyToggle(widget);
+  ensureCampaignDiceGenitalSizeRoll(widget);
   updateCampaignDicePrivacyToggle(widget);
 
   const toggleButton = widget.querySelector("[data-dice-toggle]");
@@ -9250,6 +9251,48 @@ function ensureCampaignDiceRoller(system) {
     block.hidden = Boolean(allowedSystem && allowedSystem !== system);
   });
 }
+
+
+
+function ensureCampaignDiceGenitalSizeRoll(widget) {
+  if (!widget || widget.querySelector("[data-dice-genital-size-box]")) return;
+
+  const box = document.createElement("div");
+  box.className = "campaign-dice-genital-size-box";
+  box.dataset.diceGenitalSizeBox = "true";
+  box.innerHTML = `
+    <div>
+      <span>Tamanho do órgão genital</span>
+      <small>Rolagem simples 1d3</small>
+    </div>
+
+    <button
+      type="button"
+      class="campaign-dice-genital-size-btn"
+      data-dice-formula="1d3"
+      data-dice-label="Tamanho do órgão genital"
+    >
+      Rolar 1d3
+    </button>
+  `;
+
+  const customForm = widget.querySelector("[data-dice-custom-form]");
+
+  if (customForm && customForm.parentNode) {
+    customForm.insertAdjacentElement("afterend", box);
+    return;
+  }
+
+  const history = widget.querySelector("#campaignDiceHistory") || widget.querySelector("[data-dice-history]");
+  if (history && history.parentNode) {
+    history.parentNode.insertBefore(box, history);
+    return;
+  }
+
+  const body = widget.querySelector(".campaign-dice-body");
+  if (body) body.appendChild(box);
+}
+
 
 function ensureCampaignDicePrivacyToggle(widget) {
   if (!widget || widget.querySelector("[data-dice-hidden-toggle]")) return;

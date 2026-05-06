@@ -14598,3 +14598,96 @@ label:has(select[name="genesis"][data-genesis-selector="true"])::after {
   clip-path: none !important;
   clip: auto !important;
 }
+
+/* =========================================================
+   ROLADOR - TAMANHO DO ÓRGÃO GENITAL 1D3
+========================================================= */
+.campaign-dice-genital-size-box {
+  width: 100%;
+  margin: 10px 0 12px;
+  padding: 10px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  border: 1px solid rgba(34, 211, 238, 0.22);
+  border-radius: 14px;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.76), rgba(2, 6, 23, 0.9)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.12),
+      transparent 45%
+    );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 0 18px rgba(34, 211, 238, 0.06);
+}
+
+.campaign-dice-genital-size-box span {
+  display: block;
+  color: #f8fafc;
+  font-size: 12px;
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.campaign-dice-genital-size-box small {
+  display: block;
+  margin-top: 3px;
+  color: rgba(226, 232, 240, 0.7);
+  font-size: 11px;
+  line-height: 1.2;
+}
+
+.campaign-dice-genital-size-btn {
+  min-width: 86px;
+  min-height: 38px;
+  padding: 0 12px;
+  border: 1px solid rgba(34, 211, 238, 0.45);
+  border-radius: 12px;
+  background: rgba(34, 211, 238, 0.12);
+  color: #67e8f9;
+  font-family: inherit;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.campaign-dice-genital-size-btn:hover {
+  transform: translateY(-1px);
+  border-color: rgba(34, 211, 238, 0.78);
+  background: rgba(34, 211, 238, 0.18);
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.12);
+}
+
+.campaign-dice-genital-size-btn:active {
+  transform: translateY(0);
+}
+
+@media (max-width: 520px) {
+  .campaign-dice-genital-size-box {
+    grid-template-columns: 1fr;
+  }
+
+  .campaign-dice-genital-size-btn {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   ROLADOR - POSIÇÃO ABAIXO DA FÓRMULA PERSONALIZADA
+========================================================= */
+[data-dice-custom-form] + .campaign-dice-genital-size-box {
+  margin-top: 10px !important;
+  margin-bottom: 14px !important;
+}
