@@ -2036,6 +2036,8 @@ async function loadSheetIntoPlayerForm() {
     if (form.elements[key]) form.elements[key].value = sheet[key] || "";
   });
 
+  syncRunaskinNrFieldsFromSheet(form, sheet);
+
   setAltheriumRootSelectorValue(form.elements.root, sheet.root);
   setAltheriumGenesisSelectorValue(form.elements.genesis, sheet.genesis);
   updateCharacterPortraitFields(form, sheet);
@@ -2043,6 +2045,23 @@ async function loadSheetIntoPlayerForm() {
   updateAltheriumGenesisSections(form);
   updatePlayerSheetPreview();
   updateResourceBars();
+}
+
+
+
+function syncRunaskinNrFieldsFromSheet(form, sheet = {}) {
+  if (!form) return;
+
+  const currentField = form.elements.nrCurrent;
+  const maxField = form.elements.nrMax;
+
+  if (currentField) {
+    currentField.value = sheet.nrCurrent || sheet.nr || "0";
+  }
+
+  if (maxField) {
+    maxField.value = sheet.nrMax || "0";
+  }
 }
 
 async function savePlayerSheet(showAlert) {
@@ -3514,6 +3533,7 @@ async function setupCampaignDiceRoller(system) {
   ensureCampaignDiceRoller(system);
   setupCampaignDiceWidgetPositioning();
   bindCampaignDiceRollerEvents(system);
+  setupCampaignDiceGlobalFallback();
   positionCampaignDiceWidgetNearPortrait();
   await renderCampaignDiceHistory();
   subscribeDiceRollsRealtime();
@@ -4050,8 +4070,8 @@ function rollCampaignDiceFormula(formula, variables = {}, options = {}) {
       Regra:
       - Em testes de perícia de Altherium, os pontos da perícia viram dados extras.
       - A perícia não soma como bônus.
-      - Rola todos os d10 e usa o melhor.
-      - Soma somente o atributo e outros bônus fixos.
+      - Se o atributo do teste for maior que 0, rola os dados e usa o melhor.
+      - Se o atributo do teste for 0, rola pelo menos 2 dados e usa o pior.
       - O símbolo # força pegar o melhor dado em qualquer rolagem.
     */
     const bestDiceMatch = token.match(/^(\d+)#d(\d+)$/i);
@@ -4071,10 +4091,31 @@ function rollCampaignDiceFormula(formula, variables = {}, options = {}) {
         ? Math.max(0, Number(altheriumSkillInfo.skillValue) || 0)
         : 0;
 
-      const count = Math.max(1, Math.min(100, baseCount + skillExtraDice));
-      const useBestDie = forcedBest || isAltheriumSkillTest;
+      const hasZeroAttributePenalty =
+        isAltheriumSkillTest &&
+        !forcedBest &&
+        altheriumSkillInfo &&
+        Number(altheriumSkillInfo.attributeValue) === 0;
+
+      const countBeforePenalty = baseCount + skillExtraDice;
+      const countAfterZeroAttributePenalty = hasZeroAttributePenalty
+        ? countBeforePenalty - 1
+        : countBeforePenalty;
+
+      const count = hasZeroAttributePenalty
+        ? Math.max(2, Math.min(100, countAfterZeroAttributePenalty))
+        : Math.max(1, Math.min(100, countAfterZeroAttributePenalty));
+
+      const useWorstDie = hasZeroAttributePenalty;
+      const useBestDie = forcedBest || (isAltheriumSkillTest && !useWorstDie);
+
       const rolls = Array.from({ length: count }, () => getCampaignDiceRandomInt(sides));
-      const chosen = useBestDie ? Math.max(...rolls) : rolls.reduce((sum, value) => sum + value, 0);
+      const chosen = useWorstDie
+        ? Math.min(...rolls)
+        : useBestDie
+          ? Math.max(...rolls)
+          : rolls.reduce((sum, value) => sum + value, 0);
+
       const subtotal = chosen * sign;
       const rawDice = forcedBest
         ? `${sign < 0 ? "-" : "+"}${baseCount}#d${sides}`
@@ -4091,12 +4132,16 @@ function rollCampaignDiceFormula(formula, variables = {}, options = {}) {
         rolls,
         chosen,
         subtotal,
-        mode: useBestDie ? "best" : "sum",
+        mode: useWorstDie ? "worst" : useBestDie ? "best" : "sum",
         forcedBest,
         skillTest: isAltheriumSkillTest,
         skillExtraDice,
         skillName: altheriumSkillInfo ? altheriumSkillInfo.skillName : "",
         skillValue: altheriumSkillInfo ? altheriumSkillInfo.skillValue : 0,
+        attributeName: altheriumSkillInfo ? altheriumSkillInfo.attributeName : "",
+        attributeValue: altheriumSkillInfo ? altheriumSkillInfo.attributeValue : null,
+        zeroAttributePenalty: hasZeroAttributePenalty,
+        lostDiceByZeroAttribute: hasZeroAttributePenalty ? 1 : 0,
       });
 
       resolvedParts.push(`${subtotal >= 0 ? "+" : ""}${subtotal}`);
@@ -4174,12 +4219,28 @@ function buildCampaignDiceRollSummary(parts = []) {
       const raw = part.raw.replace(/^\+/, "");
       const rollsText = part.rolls.join(", ");
 
+      if (part.mode === "worst") {
+        const attrText = part.attributeName
+          ? ` | atributo ${part.attributeName}: 0`
+          : "";
+
+        const penaltyText = part.lostDiceByZeroAttribute
+          ? " | penalidade: -1 dado"
+          : "";
+
+        const skillText = part.skillTest
+          ? ` | perícia ${part.skillName || "domínio"}: +${part.skillValue} dados`
+          : "";
+
+        return `${raw}: resultados ${rollsText} | usado pior ${part.chosen}${attrText}${penaltyText}${skillText}`;
+      }
+
       if (part.mode === "best") {
         const skillText = part.skillTest
           ? ` | perícia ${part.skillName || "domínio"}: +${part.skillValue} dados`
           : "";
 
-        return `${raw}: resultados ${rollsText} | usado ${part.chosen}${skillText}`;
+        return `${raw}: resultados ${rollsText} | usado melhor ${part.chosen}${skillText}`;
       }
 
       return `${raw}: resultados ${rollsText} | soma ${part.chosen}`;
@@ -4215,6 +4276,37 @@ function buildCampaignDiceRollSummary(parts = []) {
 }
 
 function getAltheriumSkillDiceFormulaInfo(terms = [], variables = {}) {
+  const attributeKeys = [
+    "furia",
+    "destino",
+    "espirito",
+    "impulso",
+    "estrategia",
+    "runico",
+    "fúria",
+    "espírito",
+    "estratégia",
+    "rúnico",
+  ].map((key) => normalizeCampaignDiceToken(key));
+
+  let attributeKey = "";
+  let attributeName = "";
+  let attributeValue = null;
+
+  for (const rawTerm of terms) {
+    const token = String(rawTerm || "").replace(/^[+-]/, "");
+    const normalized = normalizeCampaignDiceToken(token);
+
+    if (!attributeKeys.includes(normalized)) continue;
+
+    if (!Object.prototype.hasOwnProperty.call(variables, normalized)) continue;
+
+    attributeKey = normalized;
+    attributeName = token;
+    attributeValue = Number(variables[normalized]) || 0;
+    break;
+  }
+
   for (const rawTerm of terms) {
     const token = String(rawTerm || "").replace(/^[+-]/, "");
     const normalized = normalizeCampaignDiceToken(token);
@@ -4245,6 +4337,9 @@ function getAltheriumSkillDiceFormulaInfo(terms = [], variables = {}) {
       skillKey: foundKey || normalizeCampaignDiceToken(`domain_${domain.key}`),
       skillName: domain.label,
       skillValue,
+      attributeKey,
+      attributeName,
+      attributeValue,
     };
   }
 
@@ -5978,12 +6073,12 @@ function updateAltheriumGenesisSections(form, forceApply = false) {
   const currentKey = genesis ? genesis.key : "";
   const state = getAltheriumGenesisAppliedState(form);
   const hasLegacyMarkers = hasLegacyAltheriumGenesisMarkers(form);
+  const shouldRefreshGenesis = forceApply || state.key !== currentKey || hasLegacyMarkers;
 
-  if (forceApply || state.key !== currentKey || hasLegacyMarkers) {
+  if (shouldRefreshGenesis) {
     applyAltheriumGenesisBonuses(form, genesis);
+    updateAltheriumGenesisNotes(form, genesis);
   }
-
-  updateAltheriumGenesisNotes(form, genesis);
 }
 
 function applyAltheriumGenesisBonuses(form, genesis) {
@@ -6162,6 +6257,8 @@ function buildAltheriumGenesisNotesText(genesis) {
     "[Genesis]",
     `${genesis.label}: ${genesis.description}`,
     ...notes,
+    "",
+    "[Suas anotações]",
   ];
 
   return lines.join("\n");
@@ -6170,14 +6267,45 @@ function buildAltheriumGenesisNotesText(genesis) {
 function removeAltheriumGenesisNotesBlock(value) {
   let text = String(value || "");
 
+  // Remove blocos antigos com fechamento, caso ainda existam.
   text = text.replace(/\n?\[Genesis\][\s\S]*?\[\/Genesis\]\n?/gi, "\n");
 
   const startIndex = text.search(/\[Genesis\]/i);
-  if (startIndex >= 0) {
-    text = text.slice(0, startIndex);
+  if (startIndex < 0) {
+    return text.replace(/\n{3,}/g, "\n\n").trim();
   }
 
-  return text
+  const beforeGenesis = text.slice(0, startIndex).trim();
+  const afterGenesis = text.slice(startIndex);
+
+  const userMarkerMatch = afterGenesis.match(/\[Suas anotações\]/i);
+
+  if (userMarkerMatch) {
+    const markerEnd = userMarkerMatch.index + userMarkerMatch[0].length;
+    const userText = afterGenesis.slice(markerEnd).trim();
+
+    return [beforeGenesis, userText]
+      .filter(Boolean)
+      .join("\n\n")
+      .replace(/\n{3,}/g, "\n\n")
+      .trim();
+  }
+
+  // Compatibilidade com o formato antigo sem fechamento:
+  // remove só as linhas iniciais do bloco Genesis, mas preserva qualquer texto
+  // que o jogador escreveu depois de uma linha em branco.
+  const lines = afterGenesis.split("\n");
+  let cutIndex = lines.findIndex((line, index) => index > 0 && !line.trim());
+
+  if (cutIndex < 0) {
+    return beforeGenesis.replace(/\n{3,}/g, "\n\n").trim();
+  }
+
+  const userText = lines.slice(cutIndex + 1).join("\n").trim();
+
+  return [beforeGenesis, userText]
+    .filter(Boolean)
+    .join("\n\n")
     .replace(/\n{3,}/g, "\n\n")
     .trim();
 }
@@ -6453,16 +6581,35 @@ function buildAltheriumRootDynamicSections(sheet = {}) {
   return `
     <div class="altherium-root-dynamic-zone" data-root-dynamic-zone>
       <section class="altherium-root-section runaskin-root-section runaskin-nr-mini" data-root-section="runaskin" hidden>
-        <label class="runaskin-nr-mini-field">
+        <div class="runaskin-nr-mini-field">
           <span>NR</span>
-          <input
-            type="number"
-            min="0"
-            name="nr"
-            value="${escapeHtml(sheet.nr || sheet.nrCurrent || "0")}"
-            placeholder="0"
-          />
-        </label>
+
+          <div class="runaskin-nr-mini-values">
+            <label>
+              <small>Atual</small>
+              <input
+                type="number"
+                min="0"
+                name="nrCurrent"
+                value="${escapeHtml(sheet.nrCurrent || sheet.nr || "0")}"
+                placeholder="0"
+              />
+            </label>
+
+            <strong class="runaskin-nr-divider">/</strong>
+
+            <label>
+              <small>Máximo</small>
+              <input
+                type="number"
+                min="0"
+                name="nrMax"
+                value="${escapeHtml(sheet.nrMax || "0")}"
+                placeholder="0"
+              />
+            </label>
+          </div>
+        </div>
       </section>
 
       <section class="altherium-root-section pilar-root-section" data-root-section="pilar" hidden>
@@ -9600,4 +9747,127 @@ async function isCurrentUserCampaignMaster() {
   if (!campaign) return false;
 
   return String(campaign.mestreId || campaign.master_id || "") === String(user.id || "");
+}
+
+
+/* =========================================================
+   PATCH - FALLBACK DO ROLADOR DE DADOS
+   Garante que abrir/fechar, dados rápidos e formulário funcionem
+   mesmo se o listener interno do widget falhar.
+========================================================= */
+
+function setupCampaignDiceGlobalFallback() {
+  if (window.campaignDiceGlobalFallbackReady) return;
+
+  window.campaignDiceGlobalFallbackReady = true;
+
+  document.addEventListener(
+    "click",
+    async (event) => {
+      const widget = event.target.closest("#campaignDiceWidget");
+      if (!widget) return;
+
+      const toggleButton = event.target.closest("[data-dice-toggle]");
+      const hiddenToggle = event.target.closest("[data-dice-hidden-toggle]");
+      const refreshButton = event.target.closest("[data-dice-refresh]");
+      const rollButton = event.target.closest("[data-dice-formula]");
+
+      if (!toggleButton && !hiddenToggle && !refreshButton && !rollButton) return;
+
+      stopCampaignDiceDuplicateEvent(event);
+
+      const system = getCampaignDiceFallbackSystem(widget);
+
+      if (toggleButton) {
+        const isOpen = !widget.classList.contains("campaign-dice-widget--open");
+
+        if (typeof setCampaignDiceWidgetOpen === "function") {
+          setCampaignDiceWidgetOpen(widget, isOpen);
+        } else {
+          widget.classList.toggle("campaign-dice-widget--open", isOpen);
+          widget.classList.toggle("campaign-dice-widget--modal", isOpen);
+          document.body.classList.toggle("campaign-dice-modal-open", isOpen);
+          toggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+        }
+
+        return;
+      }
+
+      if (hiddenToggle) {
+        if (typeof setCampaignDiceHiddenMode === "function") {
+          setCampaignDiceHiddenMode(!isCampaignDiceHiddenModeEnabled());
+        }
+
+        if (typeof updateCampaignDicePrivacyToggle === "function") {
+          updateCampaignDicePrivacyToggle(widget);
+        }
+
+        return;
+      }
+
+      if (refreshButton) {
+        if (typeof renderCampaignDiceHistory === "function") {
+          await renderCampaignDiceHistory();
+        }
+
+        return;
+      }
+
+      if (rollButton) {
+        await handleCampaignDiceRoll({
+          system,
+          formula: rollButton.dataset.diceFormula,
+          label: rollButton.dataset.diceLabel,
+        });
+      }
+    },
+    true
+  );
+
+  document.addEventListener(
+    "submit",
+    async (event) => {
+      const form = event.target.closest("#campaignDiceWidget [data-dice-custom-form]");
+      if (!form) return;
+
+      stopCampaignDiceDuplicateEvent(event);
+
+      const widget = form.closest("#campaignDiceWidget");
+      const system = getCampaignDiceFallbackSystem(widget);
+
+      await handleCampaignDiceRoll({
+        system,
+        formula: form.elements.diceFormula ? form.elements.diceFormula.value : "",
+        label:
+          form.elements.diceLabel && form.elements.diceLabel.value
+            ? form.elements.diceLabel.value
+            : "Rolagem personalizada",
+      });
+    },
+    true
+  );
+}
+
+function stopCampaignDiceDuplicateEvent(event) {
+  event.preventDefault();
+  event.stopPropagation();
+
+  if (typeof event.stopImmediatePropagation === "function") {
+    event.stopImmediatePropagation();
+  }
+}
+
+function getCampaignDiceFallbackSystem(widget) {
+  return (
+    (widget && widget.dataset && widget.dataset.diceSystem) ||
+    sessionStorage.getItem("system") ||
+    document.body.dataset.system ||
+    "Altherium"
+  );
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", setupCampaignDiceGlobalFallback);
+} else {
+  setupCampaignDiceGlobalFallback();
 }

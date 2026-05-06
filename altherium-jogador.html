@@ -709,10 +709,33 @@
                   data-root-extra="runaskin"
                   style="display: none"
                 >
-                  <label class="runaskin-nr-mini-field">
+                  <div class="runaskin-nr-mini-field">
                     <span>NR</span>
-                    <input type="number" min="0" name="nr" placeholder="0" />
-                  </label>
+
+                    <div class="runaskin-nr-mini-values">
+                      <label>
+                        <small>Atual</small>
+                        <input
+                          type="number"
+                          min="0"
+                          name="nrCurrent"
+                          placeholder="0"
+                        />
+                      </label>
+
+                      <strong class="runaskin-nr-divider">/</strong>
+
+                      <label>
+                        <small>Máximo</small>
+                        <input
+                          type="number"
+                          min="0"
+                          name="nrMax"
+                          placeholder="0"
+                        />
+                      </label>
+                    </div>
+                  </div>
                 </div>
 
                 <textarea
