@@ -3717,7 +3717,8 @@ textarea:focus {
     0 0 0 1px rgba(34, 211, 238, 0.14),
     0 20px 50px rgba(0, 0, 0, 0.28);
 }
-.dnd-master-page .initiative-row.active {
+.dnd-master-page .initiative-row.active,
+.dnd-player-page .initiative-row.active {
   border-color: rgba(239, 68, 68, 0.52);
   box-shadow:
     0 0 0 1px rgba(239, 68, 68, 0.14),
@@ -3752,13 +3753,15 @@ textarea:focus {
 .initiative-position--fallback span {
   line-height: 1;
 }
-.dnd-master-page .initiative-position {
+.dnd-master-page .initiative-position,
+.dnd-player-page .initiative-position {
   border-color: rgba(248, 113, 113, 0.58);
   box-shadow:
     0 0 0 3px rgba(248, 113, 113, 0.08),
     0 0 22px rgba(248, 113, 113, 0.16);
 }
-.dnd-master-page .initiative-position--fallback {
+.dnd-master-page .initiative-position--fallback,
+.dnd-player-page .initiative-position--fallback {
   background: linear-gradient(135deg, #f87171, #dc2626);
 }
 .initiative-character {
@@ -8436,7 +8439,8 @@ html body .dnd-banner > .character-portrait-field {
 */
 
 .dnd-master-page #dndInitiativeBoardNextTurnBtn,
-.dnd-master-page .initiative-next-btn {
+.dnd-master-page .initiative-next-btn,
+.dnd-player-page .initiative-next-btn {
   border: 1px solid rgba(34, 211, 238, 0.34) !important;
 
   background: linear-gradient(
@@ -8453,7 +8457,8 @@ html body .dnd-banner > .character-portrait-field {
 }
 
 .dnd-master-page #dndInitiativeBoardNextTurnBtn:hover,
-.dnd-master-page .initiative-next-btn:hover {
+.dnd-master-page .initiative-next-btn:hover,
+.dnd-player-page .initiative-next-btn:hover {
   transform: translateY(-2px) !important;
 
   border-color: rgba(34, 211, 238, 0.75) !important;
@@ -8472,7 +8477,8 @@ html body .dnd-banner > .character-portrait-field {
 }
 
 .dnd-master-page #dndInitiativeBoardNextTurnBtn:disabled,
-.dnd-master-page .initiative-next-btn:disabled {
+.dnd-master-page .initiative-next-btn:disabled,
+.dnd-player-page .initiative-next-btn:disabled {
   opacity: 0.45 !important;
   cursor: not-allowed !important;
   transform: none !important;
@@ -15039,5 +15045,219 @@ button .master-character-health + .sheet-card-footer {
     display: flex;
     justify-content: space-between;
     justify-items: stretch;
+  }
+}
+
+/* =========================================================
+   ABAS DE INICIATIVA DOS PLAYERS
+========================================================= */
+.player-campaign-tabs {
+  margin: 0 0 34px;
+  flex-wrap: wrap;
+}
+
+.altherium-section.active.altherium-sheet-wrapper,
+.altherium-section.active.dnd-sheet-wrapper {
+  display: flex;
+}
+
+.player-initiative-section {
+  margin-top: 0;
+}
+
+.player-initiative-section .altherium-panel {
+  width: 100%;
+}
+
+.player-initiative-section .altherium-panel-header {
+  gap: 18px;
+}
+
+.player-initiative-section .altherium-panel-header > div:first-child {
+  max-width: 760px;
+}
+
+.player-initiative-section .altherium-panel-header .tag {
+  margin-bottom: 12px;
+}
+
+.player-initiative-section .initiative-board {
+  margin-top: 8px;
+}
+
+.dnd-player-page .player-campaign-tabs .altherium-tab.active,
+.dnd-player-page .player-campaign-tabs .altherium-tab:hover {
+  background: linear-gradient(135deg, #f87171, #dc2626);
+  color: #160506;
+}
+
+.dnd-player-page .player-initiative-section .altherium-panel {
+  background:
+    linear-gradient(145deg, rgba(20, 10, 14, 0.86), rgba(2, 6, 23, 0.94)),
+    radial-gradient(
+      circle at top right,
+      rgba(239, 68, 68, 0.12),
+      transparent 42%
+    );
+}
+
+.dnd-player-page .player-initiative-section .tag {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.08);
+  color: #f87171;
+}
+
+@media (max-width: 700px) {
+  .player-initiative-section .altherium-panel-header {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .player-initiative-section .altherium-panel-header .altherium-btn {
+    width: 100%;
+  }
+}
+
+/* =========================================================
+   CORREÇÃO DEFINITIVA DAS ABINHAS DOS PLAYERS
+   Ficha e Iniciativa viram abas reais, sem aparecer uma embaixo da outra.
+========================================================= */
+.player-campaign-tabs {
+  width: 100%;
+  margin: 0 0 28px;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 22px;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.72), rgba(2, 6, 23, 0.9)),
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.1),
+      transparent 42%
+    );
+  backdrop-filter: blur(18px);
+  box-shadow: 0 20px 70px rgba(0, 0, 0, 0.2);
+}
+
+.player-campaign-tabs .altherium-tab {
+  flex: 1;
+  min-height: 52px;
+  display: grid;
+  place-items: center;
+  border-radius: 16px;
+  font-size: 15px;
+  font-weight: 900;
+  letter-spacing: 0.4px;
+}
+
+.player-campaign-tabs .altherium-tab.active {
+  border-color: rgba(34, 211, 238, 0.52);
+  background: linear-gradient(135deg, var(--cyan), var(--violet));
+  color: #020617;
+  box-shadow:
+    0 0 28px rgba(34, 211, 238, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+.player-campaign-tab-panel {
+  display: none !important;
+}
+
+.player-campaign-tab-panel.active {
+  display: block !important;
+}
+
+.player-campaign-tab-panel.active.altherium-sheet-wrapper,
+.player-campaign-tab-panel.active.dnd-sheet-wrapper {
+  display: flex !important;
+}
+
+.player-initiative-section {
+  margin-top: 0 !important;
+}
+
+.player-initiative-section .altherium-panel {
+  min-height: 420px;
+}
+
+.player-initiative-section .altherium-panel-header {
+  align-items: flex-start;
+}
+
+.player-initiative-section .initiative-board {
+  margin-top: 18px;
+}
+
+.dnd-player-page .player-campaign-tabs {
+  background:
+    linear-gradient(145deg, rgba(20, 10, 14, 0.72), rgba(2, 6, 23, 0.9)),
+    radial-gradient(
+      circle at top right,
+      rgba(239, 68, 68, 0.12),
+      transparent 42%
+    );
+}
+
+.dnd-player-page .player-campaign-tabs .altherium-tab.active {
+  border-color: rgba(239, 68, 68, 0.52);
+  background: linear-gradient(135deg, #f87171, #dc2626);
+  color: #160506;
+  box-shadow:
+    0 0 28px rgba(239, 68, 68, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.28);
+}
+
+@media (max-width: 700px) {
+  .player-campaign-tabs {
+    position: sticky;
+    top: 96px;
+    z-index: 70;
+  }
+
+  .player-campaign-tabs .altherium-tab {
+    min-height: 48px;
+    font-size: 14px;
+  }
+}
+
+/* =========================================================
+   CORREÇÃO - BOTÕES DA INICIATIVA DOS PLAYERS JUNTOS À ESQUERDA
+========================================================= */
+.player-initiative-section .altherium-panel-header {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: flex-start !important;
+  flex-wrap: wrap !important;
+  gap: 12px !important;
+}
+
+.player-initiative-section .altherium-panel-header > div:first-child {
+  width: 100% !important;
+  flex: 0 0 100% !important;
+  max-width: none !important;
+  margin-right: 0 !important;
+}
+
+#clearPlayerInitiativeBtn,
+#playerInitiativeBoardNextTurnBtn,
+#clearDndPlayerInitiativeBtn,
+#dndPlayerInitiativeBoardNextTurnBtn,
+.player-initiative-section .initiative-next-btn {
+  width: auto !important;
+  min-width: 150px !important;
+  margin: 0 !important;
+  flex: 0 0 auto !important;
+}
+
+@media (max-width: 700px) {
+  #clearPlayerInitiativeBtn,
+  #playerInitiativeBoardNextTurnBtn,
+  #clearDndPlayerInitiativeBtn,
+  #dndPlayerInitiativeBoardNextTurnBtn,
+  .player-initiative-section .initiative-next-btn {
+    width: 100% !important;
   }
 }

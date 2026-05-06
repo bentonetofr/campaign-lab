@@ -431,8 +431,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     await setupCampaignPresence();
     await setupOnlinePlayersInfoPanel();
     await setupAltheriumPlayerSheet();
+    await setupInitiativeBoard(getAltheriumPlayerInitiativeConfig());
     await setupCampaignDiceRoller("Altherium");
-    subscribeCampaignRealtime(loadSheetIntoPlayerForm);
+    subscribeCampaignRealtime(refreshCurrentPlayerPanel);
   }
 
   if (document.body.classList.contains("dnd-master-page")) {
@@ -467,8 +468,9 @@ document.addEventListener("DOMContentLoaded", async () => {
     await setupCampaignPresence();
     await setupOnlinePlayersInfoPanel();
     await setupDndPlayerSheet();
+    await setupInitiativeBoard(getDndPlayerInitiativeConfig());
     await setupCampaignDiceRoller("D&D");
-    subscribeCampaignRealtime(loadDndSheetIntoPlayerForm);
+    subscribeCampaignRealtime(refreshCurrentPlayerPanel);
   }
 
   setupTabs();
@@ -984,13 +986,38 @@ function setupTabs() {
     const tab = event.target.closest(".altherium-tab");
     if (!tab) return;
 
-    document.querySelectorAll(".altherium-tab").forEach((button) => button.classList.remove("active"));
-    document.querySelectorAll(".altherium-section").forEach((section) => section.classList.remove("active"));
+    const targetId = tab.dataset.tab;
+    const selectedSection = document.getElementById(targetId);
+
+    if (!targetId || !selectedSection) return;
+
+    const tabsContainer = tab.closest(".altherium-tabs");
+    const isPlayerTabs = tabsContainer && tabsContainer.classList.contains("player-campaign-tabs");
+
+    if (isPlayerTabs) {
+      tabsContainer
+        .querySelectorAll(".altherium-tab")
+        .forEach((button) => button.classList.remove("active"));
+
+      document
+        .querySelectorAll(".player-campaign-tab-panel")
+        .forEach((section) => section.classList.remove("active"));
+
+      tab.classList.add("active");
+      selectedSection.classList.add("active");
+      return;
+    }
+
+    document
+      .querySelectorAll(".altherium-tab")
+      .forEach((button) => button.classList.remove("active"));
+
+    document
+      .querySelectorAll(".altherium-section")
+      .forEach((section) => section.classList.remove("active"));
 
     tab.classList.add("active");
-
-    const selectedSection = document.getElementById(tab.dataset.tab);
-    if (selectedSection) selectedSection.classList.add("active");
+    selectedSection.classList.add("active");
   });
 }
 
@@ -3248,6 +3275,26 @@ function getDndNumberValue(value) {
 
 
 
+function getAltheriumPlayerInitiativeConfig() {
+  return {
+    system: "Altherium",
+    boardId: "playerInitiativeBoard",
+    clearButtonId: "clearPlayerInitiativeBtn",
+    getSheet: getOrCreateCampaignSheet,
+    updateSheet: updateCampaignSheet,
+  };
+}
+
+function getDndPlayerInitiativeConfig() {
+  return {
+    system: "D&D",
+    boardId: "dndPlayerInitiativeBoard",
+    clearButtonId: "clearDndPlayerInitiativeBtn",
+    getSheet: getOrCreateDndSheet,
+    updateSheet: updateDndSheet,
+  };
+}
+
 async function setupInitiativeBoard(config) {
   await ensureInitiativeNextButton(config);
   await renderInitiativeBoard(config);
@@ -3327,7 +3374,8 @@ function injectInitiativeNextButtonStyles() {
       box-shadow: none !important;
     }
 
-    .dnd-master-page .initiative-next-btn {
+    .dnd-master-page .initiative-next-btn,
+    .dnd-player-page .initiative-next-btn {
       border-color: rgba(239, 68, 68, 0.34) !important;
       background:
         linear-gradient(135deg, rgba(248, 113, 113, 0.96), rgba(220, 38, 38, 0.96)) !important;
@@ -6034,6 +6082,20 @@ async function refreshCurrentMasterPanel() {
   }
 
   await setupMasterCampaignName();
+}
+
+async function refreshCurrentPlayerPanel() {
+  if (document.body.classList.contains("altherium-player-page")) {
+    await loadSheetIntoPlayerForm();
+    await renderInitiativeBoard(getAltheriumPlayerInitiativeConfig());
+    await renderCampaignOnlinePlayersPanel();
+  }
+
+  if (document.body.classList.contains("dnd-player-page")) {
+    await loadDndSheetIntoPlayerForm();
+    await renderInitiativeBoard(getDndPlayerInitiativeConfig());
+    await renderCampaignOnlinePlayersPanel();
+  }
 }
 
 async function setupMasterCampaignName() {

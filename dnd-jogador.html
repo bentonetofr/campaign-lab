@@ -46,7 +46,27 @@
         <div id="playerOnlinePanelSlot" class="player-online-panel-slot"></div>
       </section>
 
-      <section class="dnd-sheet-wrapper">
+      <div class="altherium-tabs player-campaign-tabs">
+        <button
+          type="button"
+          class="altherium-tab active"
+          data-tab="dndPlayerSheetSection"
+        >
+          Ficha
+        </button>
+        <button
+          type="button"
+          class="altherium-tab"
+          data-tab="dndPlayerInitiativeSection"
+        >
+          Iniciativa
+        </button>
+      </div>
+
+      <section
+        id="dndPlayerSheetSection"
+        class="altherium-section player-campaign-tab-panel active dnd-sheet-wrapper"
+      >
         <div class="dnd-sheet-toolbar">
           <div>
             <p class="tag">Registro de D&D</p>
@@ -837,6 +857,40 @@
             </div>
           </section>
         </form>
+      </section>
+
+      <section
+        id="dndPlayerInitiativeSection"
+        class="altherium-section player-campaign-tab-panel player-initiative-section"
+      >
+        <div class="altherium-panel">
+          <div class="altherium-panel-header">
+            <div>
+              <p class="tag">Combate</p>
+              <h2>Ordem de Iniciativa</h2>
+              <p>
+                Esta é a mesma aba de iniciativa do mestre. A ordem usa o campo
+                <strong>Iniciativa de combate</strong> preenchido nas fichas dos
+                jogadores.
+              </p>
+            </div>
+
+            <button
+              type="button"
+              class="altherium-btn"
+              id="clearDndPlayerInitiativeBtn"
+            >
+              Limpar iniciativa
+            </button>
+          </div>
+
+          <div class="initiative-board" id="dndPlayerInitiativeBoard">
+            <div class="altherium-empty">
+              <h3>Carregando iniciativa</h3>
+              <p>Aguarde enquanto a ordem da mesa é sincronizada.</p>
+            </div>
+          </div>
+        </div>
       </section>
     </main>
 
