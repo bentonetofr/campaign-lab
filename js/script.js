@@ -558,6 +558,7 @@ let campaignsCache = [];
 let realtimeChannel = null;
 let diceRealtimeChannel = null;
 let campaignPresenceChannel = null;
+let campaignChatRealtimeChannel = null;
 let campaignPresenceState = {};
 let campaignPresenceReady = false;
 let saveTimer = null;
@@ -615,6 +616,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     });
     await setupAltheriumBestiary();
     await setupCampaignDiceRoller("Altherium");
+    await setupMasterCampaignChat("Altherium");
     setupAddPlayersToCampaign({
       modalId: "altheriumModal",
       titleId: "altheriumModalTitle",
@@ -634,6 +636,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await setupAltheriumPlayerSheet();
     await setupInitiativeBoard(getAltheriumPlayerInitiativeConfig());
     await setupCampaignDiceRoller("Altherium");
+    await setupPlayerCampaignChat("Altherium");
     subscribeCampaignRealtime(refreshCurrentPlayerPanel);
   }
 
@@ -652,6 +655,7 @@ document.addEventListener("DOMContentLoaded", async () => {
       updateSheet: updateDndSheet,
     });
     await setupCampaignDiceRoller("D&D");
+    await setupMasterCampaignChat("D&D");
     setupAddPlayersToCampaign({
       modalId: "dndModal",
       titleId: "dndModalTitle",
@@ -671,6 +675,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await setupDndPlayerSheet();
     await setupInitiativeBoard(getDndPlayerInitiativeConfig());
     await setupCampaignDiceRoller("D&D");
+    await setupPlayerCampaignChat("D&D");
     subscribeCampaignRealtime(refreshCurrentPlayerPanel);
   }
 
@@ -1176,6 +1181,541 @@ async function protectPage(requiredSystem, requiredProfile) {
     alert("Você não tem acesso a esta campanha.");
     window.location.href = "minhas-campanhas.html";
   }
+}
+
+
+/* =========================================================
+   CHAT DA MESA - JOGADORES
+========================================================= */
+
+async function setupPlayerCampaignChat(system = "") {
+  const campaignId = getCurrentCampaignId();
+  const user = getLoggedUserFromSession();
+
+  if (!campaignId || !user || !DB) return;
+
+  ensurePlayerCampaignChatTab(system);
+  setupPlayerCampaignChatForm(system);
+  await renderPlayerCampaignChatRecipientOptions();
+  await renderPlayerCampaignChat(system);
+  subscribePlayerCampaignChatRealtime(system);
+}
+
+async function setupMasterCampaignChat(system = "") {
+  const campaignId = getCurrentCampaignId();
+  const user = getLoggedUserFromSession();
+
+  if (!campaignId || !user || !DB) return;
+
+  ensureMasterCampaignChatTab(system);
+  setupPlayerCampaignChatForm(system);
+  await renderPlayerCampaignChatRecipientOptions();
+  await renderPlayerCampaignChat(system);
+  subscribePlayerCampaignChatRealtime(system);
+}
+
+function ensureMasterCampaignChatTab(system = "") {
+  if (document.getElementById("masterMessagesSection")) return;
+
+  const tabs = ensureMasterCampaignTabsContainer();
+  const target = findMasterCampaignTabInsertionTarget();
+
+  if (!tabs || !target) return;
+
+  const chatButton = document.createElement("button");
+  chatButton.className = "altherium-tab";
+  chatButton.type = "button";
+  chatButton.dataset.tab = "masterMessagesSection";
+  chatButton.textContent = "Mensagens";
+  tabs.appendChild(chatButton);
+
+  const chatSection = document.createElement("section");
+  chatSection.id = "masterMessagesSection";
+  chatSection.className = "altherium-section master-messages-section player-messages-section";
+  chatSection.innerHTML = buildPlayerCampaignChatMarkup(system);
+
+  target.insertAdjacentElement("afterend", chatSection);
+}
+
+function ensureMasterCampaignTabsContainer() {
+  let tabs = document.querySelector(".altherium-tabs:not(.player-campaign-tabs)");
+
+  if (tabs) return tabs;
+
+  tabs = document.querySelector(".altherium-tabs");
+
+  if (tabs) return tabs;
+
+  const main = document.querySelector(".altherium-main, main");
+  const firstSection = main
+    ? main.querySelector(":scope > .altherium-section, :scope > section")
+    : document.querySelector(".altherium-section, section");
+
+  if (!main) return null;
+
+  tabs = document.createElement("div");
+  tabs.className = "altherium-tabs master-campaign-tabs campaign-chat-auto-tabs";
+
+  if (firstSection && firstSection.parentElement === main) {
+    firstSection.insertAdjacentElement("beforebegin", tabs);
+  } else {
+    main.appendChild(tabs);
+  }
+
+  return tabs;
+}
+
+function findMasterCampaignTabInsertionTarget() {
+  const main = document.querySelector(".altherium-main, main");
+
+  if (main) {
+    const sections = main.querySelectorAll(":scope > .altherium-section, :scope > section");
+
+    if (sections.length) return sections[sections.length - 1];
+  }
+
+  const sections = document.querySelectorAll(".altherium-section");
+
+  if (sections.length) return sections[sections.length - 1];
+
+  return main || document.querySelector("main") || document.body;
+}
+
+function isMasterCampaignChatPage() {
+  return (
+    document.body.classList.contains("altherium-page") ||
+    document.body.classList.contains("dnd-master-page")
+  );
+}
+
+function ensurePlayerCampaignChatTab(system = "") {
+  if (document.getElementById("playerMessagesSection")) return;
+
+  const tabs = ensurePlayerCampaignTabsContainer();
+  const target = findPlayerCampaignTabInsertionTarget();
+
+  if (!tabs || !target) return;
+
+  const chatButton = document.createElement("button");
+  chatButton.className = "altherium-tab";
+  chatButton.type = "button";
+  chatButton.dataset.tab = "playerMessagesSection";
+  chatButton.textContent = "Mensagens";
+  tabs.appendChild(chatButton);
+
+  const chatSection = document.createElement("section");
+  chatSection.id = "playerMessagesSection";
+  chatSection.className = "altherium-section player-campaign-tab-panel player-messages-section";
+  chatSection.innerHTML = buildPlayerCampaignChatMarkup(system);
+
+  target.insertAdjacentElement("afterend", chatSection);
+}
+
+function ensurePlayerCampaignTabsContainer() {
+  let tabs = document.querySelector(".player-campaign-tabs");
+
+  if (tabs) return tabs;
+
+  const main = document.querySelector(".altherium-main, main");
+  const firstSection = document.querySelector(".altherium-section, section");
+
+  if (!main) return null;
+
+  tabs = document.createElement("div");
+  tabs.className = "altherium-tabs player-campaign-tabs campaign-chat-auto-tabs";
+
+  if (firstSection && firstSection.parentElement === main) {
+    firstSection.insertAdjacentElement("beforebegin", tabs);
+  } else {
+    main.appendChild(tabs);
+  }
+
+  return tabs;
+}
+
+function findPlayerCampaignTabInsertionTarget() {
+  const panels = document.querySelectorAll(".player-campaign-tab-panel");
+
+  if (panels.length) return panels[panels.length - 1];
+
+  return document.querySelector(".altherium-section:last-of-type, main > section:last-of-type, main");
+}
+
+function buildPlayerCampaignChatMarkup(system = "") {
+  const systemName = system || sessionStorage.getItem("system") || "Sistema";
+  const isMasterPage = isMasterCampaignChatPage();
+  const description = isMasterPage
+    ? "Converse com os jogadores desta campanha em tempo real."
+    : "Converse com os outros jogadores desta campanha em tempo real.";
+
+  return `
+    <div class="altherium-panel player-chat-panel">
+      <div class="altherium-panel-header player-chat-header">
+        <div>
+          <span class="panel-kicker">Chat da mesa</span>
+          <h2>Mensagens</h2>
+          <p>${escapeHtml(description)}</p>
+        </div>
+        <span class="player-chat-system-pill">${escapeHtml(systemName)}</span>
+      </div>
+
+      <div class="player-chat-shell">
+        <div class="player-chat-messages" id="playerCampaignChatMessages" aria-live="polite">
+          <div class="player-chat-empty">
+            <h3>Carregando mensagens</h3>
+            <p>Aguarde um instante.</p>
+          </div>
+        </div>
+
+        <form class="player-chat-form" id="playerCampaignChatForm" autocomplete="off">
+          <div class="player-chat-recipient-row">
+            <label for="playerCampaignChatRecipient">Enviar para</label>
+            <select id="playerCampaignChatRecipient">
+              <option value="">Mesa inteira</option>
+            </select>
+          </div>
+
+          <div class="player-chat-compose-row">
+            <textarea
+              id="playerCampaignChatInput"
+              maxlength="800"
+              rows="2"
+              placeholder="Digite sua mensagem para a mesa..."
+            ></textarea>
+            <button class="altherium-btn" type="submit" id="playerCampaignChatSendBtn">Enviar</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  `;
+}
+
+async function renderPlayerCampaignChatRecipientOptions() {
+  const select = document.getElementById("playerCampaignChatRecipient");
+  const user = getLoggedUserFromSession();
+
+  if (!select || !user) return;
+
+  const currentValue = select.value;
+  const participants = await getPlayerCampaignChatParticipants();
+  const otherParticipants = participants.filter((participant) => String(participant.id) !== String(user.id));
+
+  select.innerHTML = `
+    <option value="">Mesa inteira</option>
+    ${otherParticipants
+      .map(
+        (participant) => `
+          <option value="${escapeHtml(participant.id)}" data-user-name="${escapeHtml(participant.name)}">
+            ${escapeHtml(participant.label)}
+          </option>
+        `
+      )
+      .join("")}
+  `;
+
+  if (currentValue && otherParticipants.some((participant) => String(participant.id) === String(currentValue))) {
+    select.value = currentValue;
+  }
+}
+
+async function getPlayerCampaignChatParticipants() {
+  const campaign = await getCurrentCampaign();
+  const profiles = await getProfiles();
+  const user = getLoggedUserFromSession();
+
+  if (!campaign) {
+    return user ? [{ id: String(user.id), name: user.name || user.nome || user.id, label: user.name || user.nome || user.id, role: "Jogador" }] : [];
+  }
+
+  const ids = [];
+
+  if (campaign.mestreId) ids.push(String(campaign.mestreId));
+  getCampaignPlayerIds(campaign).forEach((playerId) => ids.push(String(playerId)));
+
+  if (user && !ids.includes(String(user.id))) ids.push(String(user.id));
+
+  return Array.from(new Set(ids))
+    .map((id) => {
+      const profile = profiles.find((item) => String(item.id) === String(id));
+      const isMaster = String(campaign.mestreId) === String(id);
+      const name = profile?.name || (user && String(user.id) === String(id) ? user.name || user.nome : id);
+
+      return {
+        id,
+        name,
+        label: isMaster ? `${name} (Mestre)` : name,
+        role: isMaster ? "Mestre" : "Jogador",
+      };
+    })
+    .sort((a, b) => {
+      if (a.role !== b.role) return a.role === "Mestre" ? -1 : 1;
+      return a.name.localeCompare(b.name, "pt-BR");
+    });
+}
+
+function getPlayerCampaignChatSelectedRecipient() {
+  const select = document.getElementById("playerCampaignChatRecipient");
+
+  if (!select || !select.value) return null;
+
+  const option = select.selectedOptions && select.selectedOptions[0];
+  const name = option?.dataset?.userName || option?.textContent?.trim() || select.value;
+
+  return {
+    id: String(select.value),
+    name,
+  };
+}
+
+async function getPlayerCampaignChatCurrentUserName() {
+  const user = getLoggedUserFromSession();
+  const campaign = await getCurrentCampaign();
+
+  if (!user) return "Jogador";
+
+  const baseUserName = user.nome || user.name || user.id;
+  const isMaster =
+    (campaign && String(campaign.mestreId) === String(user.id)) || isMasterCampaignChatPage();
+
+  return isMaster ? `${baseUserName} (Mestre)` : baseUserName;
+}
+
+function setupPlayerCampaignChatForm(system = "") {
+  const form = document.getElementById("playerCampaignChatForm");
+  const input = document.getElementById("playerCampaignChatInput");
+
+  if (!form || !input || form.dataset.chatReady === "true") return;
+
+  form.dataset.chatReady = "true";
+
+  form.addEventListener("submit", async (event) => {
+    event.preventDefault();
+    await sendPlayerCampaignChatMessage(system);
+  });
+
+  input.addEventListener("keydown", async (event) => {
+    if (event.key !== "Enter" || event.shiftKey) return;
+
+    event.preventDefault();
+    await sendPlayerCampaignChatMessage(system);
+  });
+
+  const recipientSelect = document.getElementById("playerCampaignChatRecipient");
+
+  if (recipientSelect) {
+    recipientSelect.addEventListener("change", () => {
+      const recipient = getPlayerCampaignChatSelectedRecipient();
+      input.placeholder = recipient
+        ? `Mensagem privada para ${recipient.name}...`
+        : "Digite sua mensagem para a mesa...";
+    });
+  }
+}
+
+async function sendPlayerCampaignChatMessage(system = "") {
+  const campaignId = getCurrentCampaignId();
+  const user = getLoggedUserFromSession();
+  const input = document.getElementById("playerCampaignChatInput");
+  const sendButton = document.getElementById("playerCampaignChatSendBtn");
+
+  if (!campaignId || !user || !input || !DB) return;
+
+  const message = input.value.trim();
+
+  if (!message) return;
+
+  input.disabled = true;
+  if (sendButton) sendButton.disabled = true;
+
+  const recipient = getPlayerCampaignChatSelectedRecipient();
+  const row = {
+    campaign_id: String(campaignId),
+    system: system || sessionStorage.getItem("system") || "",
+    user_id: String(user.id),
+    user_name: await getPlayerCampaignChatCurrentUserName(),
+    message,
+    message_scope: recipient ? "private" : "public",
+    recipient_user_id: recipient ? recipient.id : null,
+    recipient_user_name: recipient ? recipient.name : null,
+  };
+
+  const { error } = await DB.from("campaign_messages").insert(row);
+
+  input.disabled = false;
+  if (sendButton) sendButton.disabled = false;
+  input.focus();
+
+  if (error) {
+    console.error("Erro ao enviar mensagem:", error);
+    showPlayerCampaignChatError(
+      "Não consegui enviar. Rode o SQL atualizado do chat no Supabase para ativar mensagens privadas."
+    );
+    return;
+  }
+
+  input.value = "";
+  await renderPlayerCampaignChat(system, { forceScroll: true });
+}
+
+async function renderPlayerCampaignChat(system = "", options = {}) {
+  const messagesBox = document.getElementById("playerCampaignChatMessages");
+  const campaignId = getCurrentCampaignId();
+
+  if (!messagesBox || !campaignId || !DB) return;
+
+  const { data, error } = await DB
+    .from("campaign_messages")
+    .select("id, campaign_id, system, user_id, user_name, message, message_scope, recipient_user_id, recipient_user_name, created_at")
+    .eq("campaign_id", String(campaignId))
+    .order("created_at", { ascending: true })
+    .limit(120);
+
+  if (error) {
+    console.error("Erro ao carregar mensagens:", error);
+    messagesBox.innerHTML = `
+      <div class="player-chat-empty player-chat-empty--error">
+        <h3>Chat ainda não configurado</h3>
+        <p>Rode o SQL atualizado da tabela <strong>campaign_messages</strong> no Supabase para ativar mensagens públicas e privadas.</p>
+      </div>
+    `;
+    return;
+  }
+
+  const visibleMessages = (data || []).filter(isPlayerCampaignChatMessageVisible);
+
+  if (!visibleMessages.length) {
+    messagesBox.innerHTML = `
+      <div class="player-chat-empty">
+        <h3>Nenhuma mensagem ainda</h3>
+        <p>Envie a primeira mensagem da mesa ou uma mensagem privada para alguém.</p>
+      </div>
+    `;
+    return;
+  }
+
+  messagesBox.innerHTML = visibleMessages.map(renderPlayerCampaignChatMessage).join("");
+
+  if (options.forceScroll || isPlayerCampaignChatNearBottom(messagesBox)) {
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  }
+}
+
+function renderPlayerCampaignChatMessage(row = {}) {
+  const user = getLoggedUserFromSession();
+  const isMine = user && String(row.user_id) === String(user.id);
+  const isPrivate = isPlayerCampaignChatMessagePrivate(row);
+  const date = row.created_at ? new Date(row.created_at) : null;
+  const time = date
+    ? date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+    : "--:--";
+  const privateLabel = isPrivate ? getPlayerCampaignChatPrivateLabel(row, isMine) : "";
+
+  return `
+    <article class="player-chat-message ${isMine ? "mine" : ""} ${isPrivate ? "private" : ""}">
+      <div class="player-chat-message-avatar">${escapeHtml(getPlayerCampaignChatInitials(row.user_name || "J"))}</div>
+      <div class="player-chat-message-bubble">
+        <div class="player-chat-message-meta">
+          <strong>${escapeHtml(row.user_name || "Jogador")}</strong>
+          <span>${escapeHtml(time)}</span>
+        </div>
+        ${privateLabel}
+        <p>${formatPlayerCampaignChatText(row.message || "")}</p>
+      </div>
+    </article>
+  `;
+}
+
+function isPlayerCampaignChatMessagePrivate(row = {}) {
+  return row.message_scope === "private" || Boolean(row.recipient_user_id);
+}
+
+function isPlayerCampaignChatMessageVisible(row = {}) {
+  const user = getLoggedUserFromSession();
+
+  if (!isPlayerCampaignChatMessagePrivate(row)) return true;
+  if (!user) return false;
+
+  return (
+    String(row.user_id) === String(user.id) ||
+    String(row.recipient_user_id) === String(user.id)
+  );
+}
+
+function getPlayerCampaignChatPrivateLabel(row = {}, isMine = false) {
+  const user = getLoggedUserFromSession();
+  const recipientName = row.recipient_user_name || "jogador";
+
+  if (isMine) {
+    return `<span class="player-chat-private-label">Privado para ${escapeHtml(recipientName)}</span>`;
+  }
+
+  if (user && String(row.recipient_user_id) === String(user.id)) {
+    return `<span class="player-chat-private-label">Privado para você</span>`;
+  }
+
+  return `<span class="player-chat-private-label">Privado</span>`;
+}
+
+
+function formatPlayerCampaignChatText(value = "") {
+  return escapeHtml(value).replace(/\n/g, "<br>");
+}
+
+function getPlayerCampaignChatInitials(name = "") {
+  const parts = String(name)
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean);
+
+  if (!parts.length) return "J";
+
+  return parts
+    .slice(0, 2)
+    .map((part) => part[0])
+    .join("")
+    .toUpperCase();
+}
+
+function isPlayerCampaignChatNearBottom(element) {
+  if (!element) return true;
+
+  return element.scrollHeight - element.scrollTop - element.clientHeight < 90;
+}
+
+function showPlayerCampaignChatError(message) {
+  const messagesBox = document.getElementById("playerCampaignChatMessages");
+
+  if (!messagesBox) return;
+
+  messagesBox.insertAdjacentHTML(
+    "beforeend",
+    `
+      <div class="player-chat-local-error">
+        ${escapeHtml(message)}
+      </div>
+    `
+  );
+
+  messagesBox.scrollTop = messagesBox.scrollHeight;
+}
+
+function subscribePlayerCampaignChatRealtime(system = "") {
+  const campaignId = getCurrentCampaignId();
+
+  if (!campaignId || !DB) return;
+
+  if (campaignChatRealtimeChannel) DB.removeChannel(campaignChatRealtimeChannel);
+
+  campaignChatRealtimeChannel = DB
+    .channel(`campaign-messages-${campaignId}`)
+    .on(
+      "postgres_changes",
+      { event: "*", schema: "public", table: "campaign_messages", filter: `campaign_id=eq.${campaignId}` },
+      async () => {
+        await renderPlayerCampaignChat(system, { forceScroll: true });
+      }
+    )
+    .subscribe();
 }
 
 /* =========================================================
