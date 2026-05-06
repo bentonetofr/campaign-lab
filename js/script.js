@@ -2283,6 +2283,16 @@ function buildDndSheetEditor(sheet, isModal = false) {
                   ${DND_SKILLS.map(([key, label]) => dndMiniInput(label, key, sheet[key])).join("")}
                 </div>
               </div>
+
+              <div class="dnd-skill-extra-grid dnd-skill-extra-grid--actions dnd-skill-extra-grid--attacks-full">
+                <div class="dnd-box dnd-box--compact dnd-attacks-full-box">
+                  <h3>Ataques & Magia</h3>
+                  <div class="dnd-attack-table">
+                    <div><span>Nome</span><span>Bônus</span><span>Dano / Tipo</span></div>
+                    ${[1, 2, 3].map((index) => dndAttackRow(index, sheet)).join("")}
+                  </div>
+                </div>
+              </div>
             </div>
 
             <div class="dnd-right-column">
@@ -2293,11 +2303,18 @@ function buildDndSheetEditor(sheet, isModal = false) {
                 ${dndStat("Bônus prof.", "proficiencyBonus", sheet.proficiencyBonus)}
               </div>
 
-              <div class="initiative-sheet-box dnd-initiative-box">
-                <label>
+              <div class="initiative-sheet-box dnd-initiative-box dnd-initiative-box--fixed">
+                <div class="dnd-initiative-box__top">
                   <span>Iniciativa de combate</span>
-                  <input type="number" name="combatInitiative" value="${escapeHtml(sheet.combatInitiative)}" placeholder="0" />
-                </label>
+                  <input
+                    class="dnd-combat-initiative-input"
+                    type="number"
+                    name="combatInitiative"
+                    value="${escapeHtml(sheet.combatInitiative)}"
+                    placeholder="0"
+                    data-no-number-control="true"
+                  />
+                </div>
                 <p>Esse valor entra automaticamente na ordem de iniciativa.</p>
               </div>
 
@@ -2326,20 +2343,12 @@ function buildDndSheetEditor(sheet, isModal = false) {
                   ${dndMiniInput("Falhas", "deathFailures", sheet.deathFailures)}
                 </div>
               </div>
+
             </div>
           </div>
 
-          <div class="dnd-bottom-grid">
-            <div class="dnd-box">
-              <h3>Ataques & Magia</h3>
-              <div class="dnd-attack-table">
-                <div><span>Nome</span><span>Bônus</span><span>Dano / Tipo</span></div>
-                ${[1, 2, 3].map((index) => dndAttackRow(index, sheet)).join("")}
-              </div>
-            </div>
-
+          <div class="dnd-bottom-grid dnd-bottom-grid--single">
             ${dndTextareaBox("Equipamento", "equipment", sheet.equipment, 10)}
-            ${dndTextareaBox("Características", "features", sheet.features, 10)}
           </div>
         </div>
       </section>
@@ -2436,8 +2445,12 @@ async function setupDndPlayerSheet() {
 
   await getOrCreateDndSheet(campaign.id, user.id, campaign.sistema);
   await loadDndSheetIntoPlayerForm();
+  setupDndRestControls();
 
-  form.addEventListener("input", () => saveDndPlayerSheet(false));
+  form.addEventListener("input", () => {
+    updateDndRestPreview();
+    saveDndPlayerSheet(false);
+  });
 
   if (saveButton) saveButton.addEventListener("click", () => saveDndPlayerSheet(true));
 }
@@ -2455,6 +2468,7 @@ async function loadDndSheetIntoPlayerForm() {
     updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
     updateDndPlayerPreview();
     updateDndAutoNumbers();
+    updateDndRestPreview();
   refreshCharacterPortraitFloatingPanels();
     return;
   }
@@ -2470,6 +2484,8 @@ async function loadDndSheetIntoPlayerForm() {
   updateCharacterPortraitFields(form, sheet);
   updateDndPlayerPreview();
   updateDndAutoNumbers();
+  setupDndRestControls();
+  updateDndRestPreview();
 }
 
 async function saveDndPlayerSheet(showAlert) {
@@ -2513,6 +2529,386 @@ function updateDndAutoNumbers() {
     form.elements.hpTemp?.value
   );
 }
+
+
+
+/* =========================================================
+   DESCANSO DE D&D
+========================================================= */
+function setupDndRestControls() {
+  const form = document.getElementById("dndPlayerSheetForm");
+  if (!form) return;
+
+  let panel = document.getElementById("dndRestPanel");
+
+  if (!panel) {
+    const hpBox =
+      form.querySelector(".dnd-hp-box") ||
+      form.elements.hpCurrent?.closest(".dnd-hp-box") ||
+      form.elements.hpCurrent?.closest(".dnd-box");
+
+    if (!hpBox) return;
+
+    hpBox.insertAdjacentHTML("beforeend", getDndRestControlsHtml());
+    panel = document.getElementById("dndRestPanel");
+  }
+
+  if (form.dataset.dndRestControlsReady === "true") {
+    updateDndRestPreview();
+    return;
+  }
+
+  form.dataset.dndRestControlsReady = "true";
+
+  const toggleButton = document.getElementById("openDndRestPanel");
+  const shortRestButton = document.getElementById("applyDndShortRest");
+  const longRestButton = document.getElementById("applyDndLongRest");
+  const closeButton = document.getElementById("closeDndRestPanel");
+  const diceTypeSelect = document.getElementById("dndRestHitDieType");
+  const diceAmountInput = document.getElementById("dndRestHitDiceAmount");
+
+  if (toggleButton) {
+    toggleButton.addEventListener("click", () => {
+      const isOpen = panel?.classList.toggle("is-open");
+      toggleButton.setAttribute("aria-expanded", isOpen ? "true" : "false");
+      updateDndRestPreview();
+    });
+  }
+
+  if (closeButton) {
+    closeButton.addEventListener("click", () => {
+      panel?.classList.remove("is-open");
+      toggleButton?.setAttribute("aria-expanded", "false");
+    });
+  }
+
+  if (shortRestButton) shortRestButton.addEventListener("click", applyDndShortRest);
+  if (longRestButton) longRestButton.addEventListener("click", applyDndLongRest);
+
+  if (diceTypeSelect && !diceTypeSelect.dataset.dndRestDefaultReady) {
+    const diceState = getDndHitDiceState(form);
+    diceTypeSelect.value = String(diceState.primarySides || 8);
+    diceTypeSelect.dataset.dndRestDefaultReady = "true";
+  }
+
+  if (diceTypeSelect) {
+    diceTypeSelect.addEventListener("change", () => {
+      diceTypeSelect.dataset.dndRestUserChanged = "true";
+      updateDndRestPreview();
+    });
+  }
+
+  if (diceAmountInput) diceAmountInput.addEventListener("input", updateDndRestPreview);
+
+  updateDndRestPreview();
+}
+
+function getDndRestControlsHtml() {
+  return `
+    <div class="dnd-rest-wrapper">
+      <button
+        type="button"
+        class="dnd-rest-toggle"
+        id="openDndRestPanel"
+        aria-expanded="false"
+      >
+        Gerenciar descanso
+      </button>
+
+      <div class="dnd-rest-panel" id="dndRestPanel">
+        <div class="dnd-rest-panel__head">
+          <div>
+            <span>Recuperação</span>
+            <h4>Descanso de D&D</h4>
+          </div>
+
+          <button type="button" id="closeDndRestPanel" aria-label="Fechar descanso">×</button>
+        </div>
+
+        <div class="dnd-rest-summary" id="dndRestSummary">
+          PV atual: -- / -- • Dados de vida: --
+        </div>
+
+        <div class="dnd-rest-grid">
+          <section class="dnd-rest-card">
+            <h5>Descanso curto</h5>
+            <p>Gaste Dados de Vida para recuperar PV.</p>
+
+            <div class="dnd-rest-fields">
+              <label>
+                <span>Dados gastos</span>
+                <input type="number" min="1" value="1" id="dndRestHitDiceAmount" />
+              </label>
+
+              <label>
+                <span>Dado</span>
+                <select id="dndRestHitDieType">
+                  <option value="4">d4</option>
+                  <option value="6">d6</option>
+                  <option value="8" selected>d8</option>
+                  <option value="10">d10</option>
+                  <option value="12">d12</option>
+                </select>
+              </label>
+            </div>
+
+            <button type="button" class="dnd-rest-action dnd-rest-action--short" id="applyDndShortRest">
+              Rolar descanso curto
+            </button>
+          </section>
+
+          <section class="dnd-rest-card">
+            <h5>Descanso longo</h5>
+            <p>Restaura PV, zera PV temporário e recupera parte dos Dados de Vida.</p>
+
+            <button type="button" class="dnd-rest-action dnd-rest-action--long" id="applyDndLongRest">
+              Aplicar descanso longo
+            </button>
+          </section>
+        </div>
+
+        <div class="dnd-rest-result" id="dndRestResult">
+          Escolha um tipo de descanso.
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+async function applyDndShortRest() {
+  const form = document.getElementById("dndPlayerSheetForm");
+  if (!form) return;
+
+  const amountInput = document.getElementById("dndRestHitDiceAmount");
+  const diceSelect = document.getElementById("dndRestHitDieType");
+
+  const current = getDndNumberValue(form.elements.hpCurrent?.value);
+  const max = getDndNumberValue(form.elements.hpMax?.value);
+  const conMod = getDndAbilityModifierValue(form.elements.conScore?.value);
+  const requestedAmount = Math.max(1, Math.floor(getDndNumberValue(amountInput?.value) || 1));
+  const sides = Math.max(4, Math.floor(getDndNumberValue(diceSelect?.value) || 8));
+
+  const diceState = getDndHitDiceState(form);
+  const available = Math.max(0, diceState.remainingTotal || 0);
+
+  if (max <= 0) {
+    setDndRestResult("Preencha o PV máximo antes de usar descanso.", "warning");
+    return;
+  }
+
+  const spent = requestedAmount;
+  const spentFromSheet = available > 0 ? Math.min(spent, available) : spent;
+  const rolls = Array.from({ length: spent }, () => rollDndDie(sides));
+  const rollTotal = rolls.reduce((sum, value) => sum + value, 0);
+  const constitutionBonus = conMod * spent;
+  const recovered = Math.max(0, rollTotal + constitutionBonus);
+  const missingHp = Math.max(0, max - current);
+  const appliedRecovery = Math.min(missingHp, recovered);
+  const nextHp = Math.min(max, current + recovered);
+
+  form.elements.hpCurrent.value = String(nextHp);
+  updateDndRemainingHitDice(form, -spentFromSheet);
+
+  updateDndAutoNumbers();
+  updateDndRestPreview();
+  await saveDndPlayerSheet(false);
+
+  const conSign = conMod >= 0 ? "+" : "";
+  const conTotalSign = constitutionBonus >= 0 ? "+" : "";
+  const limitedWarning =
+    available > 0 && spent > available
+      ? `<p class="dnd-rest-warning">Você rolou ${spent} dados, mas sua ficha tinha só ${available} Dados de Vida restantes. O restante foi zerado.</p>`
+      : "";
+
+  setDndRestResultHtml(
+    `
+      <div class="dnd-rest-roll-result">
+        <span>Descanso curto</span>
+        <strong>${spent}d${sides}</strong>
+
+        <div class="dnd-rest-roll-line">
+          <small>Dados rolados</small>
+          <b>[${rolls.join(", ")}]</b>
+        </div>
+
+        <div class="dnd-rest-roll-line">
+          <small>Soma dos dados</small>
+          <b>${rollTotal}</b>
+        </div>
+
+        <div class="dnd-rest-roll-line">
+          <small>Constituição</small>
+          <b>${conSign}${conMod} × ${spent} = ${conTotalSign}${constitutionBonus}</b>
+        </div>
+
+        <div class="dnd-rest-roll-total">
+          <small>Total de cura</small>
+          <b>${recovered}</b>
+        </div>
+
+        <div class="dnd-rest-roll-line">
+          <small>Cura aplicada</small>
+          <b>${appliedRecovery}</b>
+        </div>
+
+        <div class="dnd-rest-roll-hp">
+          PV: <strong>${current}</strong> → <strong>${nextHp}</strong> / ${max}
+        </div>
+
+        ${limitedWarning}
+      </div>
+    `,
+    "success"
+  );
+}
+
+async function applyDndLongRest() {
+  const form = document.getElementById("dndPlayerSheetForm");
+  if (!form) return;
+
+  const max = getDndNumberValue(form.elements.hpMax?.value);
+  const diceState = getDndHitDiceState(form);
+  const recoverAmount = Math.max(1, Math.floor(diceState.totalTotal / 2));
+  const nextRemaining = Math.min(diceState.totalTotal, diceState.remainingTotal + recoverAmount);
+
+  if (max <= 0) {
+    setDndRestResult("Preencha o PV máximo antes de usar descanso longo.", "warning");
+    return;
+  }
+
+  form.elements.hpCurrent.value = String(max);
+  if (form.elements.hpTemp) form.elements.hpTemp.value = "0";
+  if (form.elements.deathSuccesses) form.elements.deathSuccesses.value = "";
+  if (form.elements.deathFailures) form.elements.deathFailures.value = "";
+
+  if (form.elements.hitDiceRemaining && diceState.totalTotal > 0) {
+    form.elements.hitDiceRemaining.value = formatDndHitDiceValue(nextRemaining, diceState.primarySides);
+  }
+
+  updateDndAutoNumbers();
+  updateDndRestPreview();
+  await saveDndPlayerSheet(false);
+
+  setDndRestResult(
+    `Descanso longo aplicado. PV voltou para ${max}, PV temporário zerou e Dados de Vida ficaram em ${form.elements.hitDiceRemaining?.value || "--"}.`,
+    "success"
+  );
+}
+
+function getDndHitDiceState(form) {
+  const totalText = form.elements.hitDiceTotal?.value || "";
+  const remainingText = form.elements.hitDiceRemaining?.value || "";
+
+  const totalParsed = parseDndHitDiceValue(totalText);
+  const remainingParsed = parseDndHitDiceValue(remainingText);
+  const primarySides = remainingParsed.primarySides || totalParsed.primarySides || 8;
+
+  return {
+    totalTotal: totalParsed.total || remainingParsed.total || 1,
+    remainingTotal: remainingParsed.total || totalParsed.total || 0,
+    primarySides,
+  };
+}
+
+function parseDndHitDiceValue(value) {
+  const text = String(value || "").toLowerCase().replace(/\s+/g, "");
+  const matches = [...text.matchAll(/(\d*)d(4|6|8|10|12)/g)];
+
+  if (!matches.length) {
+    const numberOnly = Math.max(0, Math.floor(getDndNumberValue(text)));
+    return {
+      total: numberOnly,
+      primarySides: 8,
+    };
+  }
+
+  let total = 0;
+  let primarySides = 8;
+
+  matches.forEach((match, index) => {
+    const amount = Number(match[1] || "1");
+    const sides = Number(match[2] || "8");
+
+    if (index === 0) primarySides = sides;
+    total += amount;
+  });
+
+  return { total, primarySides };
+}
+
+function updateDndRemainingHitDice(form, delta) {
+  const diceState = getDndHitDiceState(form);
+  const nextRemaining = Math.max(0, Math.min(diceState.totalTotal, diceState.remainingTotal + delta));
+
+  if (form.elements.hitDiceRemaining) {
+    form.elements.hitDiceRemaining.value = formatDndHitDiceValue(nextRemaining, diceState.primarySides);
+  }
+}
+
+function formatDndHitDiceValue(amount, sides = 8) {
+  const safeAmount = Math.max(0, Math.floor(Number(amount) || 0));
+  const safeSides = Math.max(4, Math.floor(Number(sides) || 8));
+
+  if (safeAmount <= 0) return `0d${safeSides}`;
+  return `${safeAmount}d${safeSides}`;
+}
+
+function updateDndRestPreview() {
+  const form = document.getElementById("dndPlayerSheetForm");
+  const summary = document.getElementById("dndRestSummary");
+  const diceSelect = document.getElementById("dndRestHitDieType");
+  const amountInput = document.getElementById("dndRestHitDiceAmount");
+
+  if (!form || !summary) return;
+
+  const current = getDndNumberValue(form.elements.hpCurrent?.value);
+  const max = getDndNumberValue(form.elements.hpMax?.value);
+  const temp = getDndNumberValue(form.elements.hpTemp?.value);
+  const diceState = getDndHitDiceState(form);
+  const amount = Math.max(1, Math.floor(getDndNumberValue(amountInput?.value) || 1));
+  const sides = Math.max(4, Math.floor(getDndNumberValue(diceSelect?.value) || diceState.primarySides || 8));
+
+  summary.textContent = `PV atual: ${current} / ${max} • PV temp: ${temp} • Dados de vida: ${form.elements.hitDiceRemaining?.value || "--"} • Vai rolar: ${amount}d${sides}`;
+}
+
+function setDndRestResult(message, type = "neutral") {
+  const resultBox = document.getElementById("dndRestResult");
+
+  if (!resultBox) {
+    if (message) alert(message);
+    return;
+  }
+
+  resultBox.className = `dnd-rest-result dnd-rest-result--${type}`;
+  resultBox.textContent = message;
+}
+
+function setDndRestResultHtml(html, type = "neutral") {
+  const resultBox = document.getElementById("dndRestResult");
+
+  if (!resultBox) return;
+
+  resultBox.className = `dnd-rest-result dnd-rest-result--${type}`;
+  resultBox.innerHTML = html;
+}
+
+
+function rollDndDie(sides) {
+  return Math.floor(Math.random() * sides) + 1;
+}
+
+function getDndAbilityModifierValue(scoreValue) {
+  const score = getDndNumberValue(scoreValue);
+  if (!score) return 0;
+
+  return Math.floor((score - 10) / 2);
+}
+
+function getDndNumberValue(value) {
+  const number = Number(String(value ?? "0").replace(",", ".").replace(/[^\d.-]/g, ""));
+  return Number.isFinite(number) ? number : 0;
+}
+
 
 /* =========================================================
    INICIATIVA
@@ -7564,6 +7960,8 @@ function setupCampaignLabNumberControls() {
 
   function upgradeNumberInput(input) {
     if (!input || input.dataset.numberControlReady === "true") return;
+    if (input.closest(".dnd-initiative-box")) return;
+    if (input.matches("[data-no-number-control='true']")) return;
     if (input.closest(".number-control")) return;
 
     input.dataset.numberControlReady = "true";

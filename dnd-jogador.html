@@ -239,6 +239,41 @@
                       /></label>
                     </div>
                   </div>
+
+                  <div
+                    class="dnd-skill-extra-grid dnd-skill-extra-grid--actions dnd-skill-extra-grid--attacks-full"
+                  >
+                    <div class="dnd-box dnd-box--compact dnd-attacks-full-box">
+                      <h3>Ataques & Magia</h3>
+                      <div class="dnd-attack-table">
+                        <div>
+                          <span>Nome</span><span>Bônus</span
+                          ><span>Dano / Tipo</span>
+                        </div>
+                        <label
+                          ><input name="attack1Name" type="text" /><input
+                            name="attack1Bonus"
+                            type="text" /><input
+                            name="attack1Damage"
+                            type="text"
+                        /></label>
+                        <label
+                          ><input name="attack2Name" type="text" /><input
+                            name="attack2Bonus"
+                            type="text" /><input
+                            name="attack2Damage"
+                            type="text"
+                        /></label>
+                        <label
+                          ><input name="attack3Name" type="text" /><input
+                            name="attack3Bonus"
+                            type="text" /><input
+                            name="attack3Damage"
+                            type="text"
+                        /></label>
+                      </div>
+                    </div>
+                  </div>
                 </div>
 
                 <div class="dnd-right-column">
@@ -259,15 +294,19 @@
                     /></label>
                   </div>
 
-                  <div class="initiative-sheet-box dnd-initiative-box">
-                    <label>
+                  <div
+                    class="initiative-sheet-box dnd-initiative-box dnd-initiative-box--fixed"
+                  >
+                    <div class="dnd-initiative-box__top">
                       <span>Iniciativa de combate</span>
                       <input
+                        class="dnd-combat-initiative-input"
                         type="number"
                         name="combatInitiative"
                         placeholder="0"
+                        data-no-number-control="true"
                       />
-                    </label>
+                    </div>
                     <p>
                       Esse valor entra automaticamente na ordem de iniciativa do
                       mestre.
@@ -291,6 +330,96 @@
                       >PV temporários
                       <input name="hpTemp" type="number" min="0"
                     /></label>
+
+                    <div class="dnd-rest-wrapper">
+                      <button
+                        type="button"
+                        class="dnd-rest-toggle"
+                        id="openDndRestPanel"
+                        aria-expanded="false"
+                      >
+                        Gerenciar descanso
+                      </button>
+
+                      <div class="dnd-rest-panel" id="dndRestPanel">
+                        <div class="dnd-rest-panel__head">
+                          <div>
+                            <span>Recuperação</span>
+                            <h4>Descanso de D&D</h4>
+                          </div>
+
+                          <button
+                            type="button"
+                            id="closeDndRestPanel"
+                            aria-label="Fechar descanso"
+                          >
+                            ×
+                          </button>
+                        </div>
+
+                        <div class="dnd-rest-summary" id="dndRestSummary">
+                          PV atual: -- / -- • Dados de vida: --
+                        </div>
+
+                        <div class="dnd-rest-grid">
+                          <section class="dnd-rest-card">
+                            <h5>Descanso curto</h5>
+                            <p>Gaste Dados de Vida para recuperar PV.</p>
+
+                            <div class="dnd-rest-fields">
+                              <label>
+                                <span>Dados gastos</span>
+                                <input
+                                  type="number"
+                                  min="1"
+                                  value="1"
+                                  id="dndRestHitDiceAmount"
+                                />
+                              </label>
+
+                              <label>
+                                <span>Dado</span>
+                                <select id="dndRestHitDieType">
+                                  <option value="4">d4</option>
+                                  <option value="6">d6</option>
+                                  <option value="8" selected>d8</option>
+                                  <option value="10">d10</option>
+                                  <option value="12">d12</option>
+                                </select>
+                              </label>
+                            </div>
+
+                            <button
+                              type="button"
+                              class="dnd-rest-action dnd-rest-action--short"
+                              id="applyDndShortRest"
+                            >
+                              Rolar descanso curto
+                            </button>
+                          </section>
+
+                          <section class="dnd-rest-card">
+                            <h5>Descanso longo</h5>
+                            <p>
+                              Restaura PV, zera PV temporário e recupera parte
+                              dos Dados de Vida.
+                            </p>
+
+                            <button
+                              type="button"
+                              class="dnd-rest-action dnd-rest-action--long"
+                              id="applyDndLongRest"
+                            >
+                              Aplicar descanso longo
+                            </button>
+                          </section>
+                        </div>
+
+                        <div class="dnd-rest-result" id="dndRestResult">
+                          Escolha um tipo de descanso.
+                        </div>
+                      </div>
+                    </div>
                   </div>
 
                   <div class="dnd-box">
@@ -323,39 +452,10 @@
                 </div>
               </div>
 
-              <div class="dnd-bottom-grid">
-                <div class="dnd-box">
-                  <h3>Ataques & Magia</h3>
-                  <div class="dnd-attack-table">
-                    <div>
-                      <span>Nome</span><span>Bônus</span
-                      ><span>Dano / Tipo</span>
-                    </div>
-                    <label
-                      ><input name="attack1Name" type="text" /><input
-                        name="attack1Bonus"
-                        type="text" /><input name="attack1Damage" type="text"
-                    /></label>
-                    <label
-                      ><input name="attack2Name" type="text" /><input
-                        name="attack2Bonus"
-                        type="text" /><input name="attack2Damage" type="text"
-                    /></label>
-                    <label
-                      ><input name="attack3Name" type="text" /><input
-                        name="attack3Bonus"
-                        type="text" /><input name="attack3Damage" type="text"
-                    /></label>
-                  </div>
-                </div>
-
-                <div class="dnd-box">
+              <div class="dnd-bottom-grid dnd-bottom-grid--single">
+                <div class="dnd-box dnd-box--wide">
                   <h3>Equipamento</h3>
                   <textarea name="equipment" rows="10"></textarea>
-                </div>
-                <div class="dnd-box">
-                  <h3>Características</h3>
-                  <textarea name="features" rows="10"></textarea>
                 </div>
               </div>
             </div>

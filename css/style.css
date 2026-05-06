@@ -12879,3 +12879,751 @@ html
     0 0 14px rgba(34, 197, 94, 0.38);
   transition: width 0.25s ease;
 }
+
+/* =========================================================
+   D&D - PAINEL DE DESCANSO
+========================================================= */
+.dnd-rest-wrapper {
+  margin-top: 16px;
+}
+
+.dnd-rest-toggle {
+  width: 100%;
+  min-height: 44px;
+  border: 1px solid rgba(34, 211, 238, 0.42);
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(34, 211, 238, 0.28),
+      transparent 42%
+    ),
+    rgba(8, 13, 30, 0.9);
+  color: #e0f2fe;
+  font-size: 13px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: 0.25s ease;
+}
+
+.dnd-rest-toggle:hover {
+  transform: translateY(-1px);
+  border-color: rgba(34, 211, 238, 0.85);
+  box-shadow: 0 0 26px rgba(34, 211, 238, 0.22);
+}
+
+.dnd-rest-panel {
+  display: none;
+  margin-top: 14px;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.22);
+  border-radius: 18px;
+  background: linear-gradient(
+    145deg,
+    rgba(15, 23, 42, 0.96),
+    rgba(2, 6, 23, 0.96)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.05),
+    0 18px 38px rgba(0, 0, 0, 0.24);
+}
+
+.dnd-rest-panel.is-open {
+  display: block;
+}
+
+.dnd-rest-panel__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.dnd-rest-panel__head span {
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dnd-rest-panel__head h4 {
+  margin: 4px 0 0;
+  color: #ffffff;
+  font-size: 18px;
+}
+
+.dnd-rest-panel__head button {
+  width: 32px;
+  height: 32px;
+  border: 1px solid rgba(148, 163, 184, 0.28);
+  border-radius: 10px;
+  background: rgba(15, 23, 42, 0.95);
+  color: #e5e7eb;
+  font-size: 22px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.dnd-rest-summary {
+  margin-bottom: 14px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(34, 211, 238, 0.08);
+  color: #dbeafe;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.dnd-rest-grid {
+  display: grid;
+  gap: 12px;
+}
+
+.dnd-rest-card {
+  padding: 13px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+  border-radius: 16px;
+  background: rgba(15, 23, 42, 0.78);
+}
+
+.dnd-rest-card h5 {
+  margin: 0 0 5px;
+  color: #ffffff;
+  font-size: 15px;
+}
+
+.dnd-rest-card p {
+  margin: 0 0 12px;
+  color: #94a3b8;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.dnd-rest-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+}
+
+.dnd-rest-fields label {
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dnd-rest-fields input,
+.dnd-rest-fields select {
+  width: 100%;
+  min-height: 38px;
+  margin-top: 6px;
+  border: 1px solid rgba(148, 163, 184, 0.25);
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.92);
+  color: #ffffff;
+  text-align: center;
+  font-size: 15px;
+  font-weight: 900;
+}
+
+.dnd-rest-action {
+  width: 100%;
+  min-height: 40px;
+  margin-top: 12px;
+  border: 0;
+  border-radius: 13px;
+  color: #020617;
+  font-size: 12px;
+  font-weight: 1000;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.dnd-rest-action--short {
+  background: linear-gradient(135deg, #38bdf8, #22d3ee);
+}
+
+.dnd-rest-action--long {
+  background: linear-gradient(135deg, #86efac, #22c55e);
+}
+
+.dnd-rest-result {
+  margin-top: 12px;
+  padding: 11px 12px;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.78);
+  color: #cbd5e1;
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.dnd-rest-result--success {
+  background: rgba(34, 197, 94, 0.12);
+  color: #bbf7d0;
+}
+
+.dnd-rest-result--warning {
+  background: rgba(251, 191, 36, 0.13);
+  color: #fde68a;
+}
+
+/* =========================================================
+   D&D - RESULTADO CLARO DO DESCANSO CURTO
+========================================================= */
+.dnd-rest-roll-result {
+  display: grid;
+  gap: 9px;
+}
+
+.dnd-rest-roll-result > span {
+  color: #93c5fd;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.dnd-rest-roll-result > strong {
+  color: #ffffff;
+  font-size: 28px;
+  line-height: 1;
+}
+
+.dnd-rest-roll-line,
+.dnd-rest-roll-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 8px 10px;
+  border-radius: 12px;
+  background: rgba(2, 6, 23, 0.42);
+}
+
+.dnd-rest-roll-line small,
+.dnd-rest-roll-total small {
+  color: #94a3b8;
+  font-size: 11px;
+  font-weight: 900;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.dnd-rest-roll-line b,
+.dnd-rest-roll-total b {
+  color: #ffffff;
+  font-size: 14px;
+  text-align: right;
+}
+
+.dnd-rest-roll-total {
+  border: 1px solid rgba(34, 197, 94, 0.36);
+  background: rgba(34, 197, 94, 0.12);
+}
+
+.dnd-rest-roll-total b {
+  color: #bbf7d0;
+  font-size: 20px;
+}
+
+.dnd-rest-roll-hp {
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(34, 211, 238, 0.1);
+  color: #dbeafe;
+  font-size: 13px;
+  font-weight: 900;
+  text-align: center;
+}
+
+.dnd-rest-warning {
+  margin: 0;
+  padding: 10px 12px;
+  border-radius: 12px;
+  background: rgba(251, 191, 36, 0.13);
+  color: #fde68a;
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+/* =========================================================
+   D&D - ATAQUES E EQUIPAMENTO ABAIXO DAS PERÍCIAS
+========================================================= */
+.dnd-skill-extra-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.dnd-skill-extra-grid .dnd-box {
+  min-height: 100%;
+}
+
+.dnd-skill-extra-grid .dnd-box h3 {
+  font-size: 15px;
+  line-height: 1.2;
+}
+
+.dnd-skill-extra-grid .dnd-attack-table label {
+  grid-template-columns: 1.4fr 0.8fr 1.2fr;
+}
+
+.dnd-skill-extra-grid textarea {
+  width: 100%;
+  min-height: 238px;
+  resize: vertical;
+}
+
+.dnd-bottom-grid--single {
+  grid-template-columns: 1fr;
+}
+
+.dnd-bottom-grid--single .dnd-box {
+  width: 100%;
+}
+
+@media (max-width: 980px) {
+  .dnd-skill-extra-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* =========================================================
+   D&D - CORREÇÃO DE LAYOUT + ATAQUES & MAGIA MAIOR
+   Mantém tudo dentro da ficha e aumenta Ataques sem empurrar a coluna direita.
+========================================================= */
+.dnd-paper-page,
+.dnd-frame,
+.dnd-main-grid,
+.dnd-main-grid *,
+.dnd-skill-extra-grid,
+.dnd-skill-extra-grid *,
+.dnd-right-column,
+.dnd-right-column * {
+  box-sizing: border-box;
+}
+
+.dnd-paper-page {
+  max-width: min(1160px, 100%);
+  overflow: visible;
+}
+
+.dnd-frame {
+  max-width: 100%;
+  overflow: visible;
+}
+
+.dnd-main-grid {
+  grid-template-columns:
+    minmax(124px, 0.68fr)
+    minmax(0, 1.7fr)
+    minmax(190px, 0.72fr) !important;
+  gap: 12px !important;
+  align-items: start;
+  max-width: 100%;
+}
+
+.dnd-abilities-column,
+.dnd-middle-column,
+.dnd-right-column,
+.dnd-stats-grid,
+.dnd-hp-box,
+.dnd-box,
+.dnd-skill-extra-grid,
+.dnd-attack-table {
+  min-width: 0;
+  max-width: 100%;
+}
+
+.dnd-right-column {
+  width: 100%;
+  gap: 12px;
+}
+
+.dnd-right-column .dnd-box,
+.dnd-right-column .dnd-hp-box,
+.dnd-right-column .initiative-sheet-box {
+  padding: 12px;
+}
+
+.dnd-stats-grid {
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+}
+
+.dnd-stats-grid label {
+  min-width: 0;
+  padding: 10px;
+}
+
+.dnd-skill-extra-grid--actions {
+  grid-template-columns: minmax(0, 1.85fr) minmax(160px, 0.72fr) !important;
+  gap: 14px !important;
+  align-items: stretch;
+  max-width: 100%;
+  overflow: visible;
+}
+
+.dnd-skill-extra-grid--actions .dnd-box:first-child {
+  margin-left: -48px !important;
+  width: calc(100% + 48px) !important;
+  max-width: none;
+}
+
+.dnd-skill-extra-grid--actions .dnd-attack-table {
+  gap: 13px;
+}
+
+.dnd-skill-extra-grid--actions .dnd-attack-table div,
+.dnd-skill-extra-grid--actions .dnd-attack-table label {
+  grid-template-columns:
+    minmax(128px, 1.65fr)
+    minmax(72px, 0.72fr)
+    minmax(128px, 1.25fr) !important;
+  gap: 10px !important;
+}
+
+.dnd-skill-extra-grid--actions .dnd-attack-table input {
+  width: 100%;
+  min-width: 0;
+  min-height: 58px;
+  font-size: 16px;
+}
+
+.dnd-skill-extra-grid--actions textarea {
+  min-height: 252px;
+}
+
+@media (max-width: 1220px) {
+  .dnd-main-grid {
+    grid-template-columns:
+      minmax(112px, 0.58fr)
+      minmax(0, 1.62fr)
+      minmax(174px, 0.66fr) !important;
+    gap: 10px !important;
+  }
+
+  .dnd-skill-extra-grid--actions .dnd-box:first-child {
+    margin-left: -28px !important;
+    width: calc(100% + 28px) !important;
+  }
+
+  .dnd-skill-extra-grid--actions {
+    grid-template-columns: minmax(0, 1.7fr) minmax(145px, 0.7fr) !important;
+  }
+
+  .dnd-skill-extra-grid--actions .dnd-attack-table div,
+  .dnd-skill-extra-grid--actions .dnd-attack-table label {
+    grid-template-columns:
+      minmax(105px, 1.55fr)
+      minmax(58px, 0.68fr)
+      minmax(105px, 1.2fr) !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .dnd-main-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dnd-skill-extra-grid--actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dnd-skill-extra-grid--actions .dnd-box:first-child {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .dnd-skill-extra-grid--actions .dnd-attack-table div,
+  .dnd-skill-extra-grid--actions .dnd-attack-table label {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* =========================================================
+   D&D - ATAQUES & MAGIA OCUPANDO O ESPAÇO DE CARACTERÍSTICAS
+========================================================= */
+.dnd-skill-extra-grid--attacks-full {
+  grid-template-columns: 1fr !important;
+}
+
+.dnd-skill-extra-grid--attacks-full .dnd-attacks-full-box {
+  width: 100% !important;
+  max-width: none !important;
+  margin-left: -48px !important;
+  width: calc(100% + 48px) !important;
+}
+
+.dnd-skill-extra-grid--attacks-full .dnd-attack-table {
+  gap: 14px;
+}
+
+.dnd-skill-extra-grid--attacks-full .dnd-attack-table div,
+.dnd-skill-extra-grid--attacks-full .dnd-attack-table label {
+  grid-template-columns:
+    minmax(180px, 1.7fr)
+    minmax(100px, 0.7fr)
+    minmax(180px, 1.35fr) !important;
+  gap: 12px !important;
+}
+
+.dnd-skill-extra-grid--attacks-full .dnd-attack-table input {
+  min-height: 62px;
+  font-size: 17px;
+}
+
+@media (max-width: 1220px) {
+  .dnd-skill-extra-grid--attacks-full .dnd-attacks-full-box {
+    margin-left: -28px !important;
+    width: calc(100% + 28px) !important;
+  }
+
+  .dnd-skill-extra-grid--attacks-full .dnd-attack-table div,
+  .dnd-skill-extra-grid--attacks-full .dnd-attack-table label {
+    grid-template-columns:
+      minmax(140px, 1.6fr)
+      minmax(80px, 0.7fr)
+      minmax(140px, 1.25fr) !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .dnd-skill-extra-grid--attacks-full .dnd-attacks-full-box {
+    margin-left: 0 !important;
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .dnd-skill-extra-grid--attacks-full .dnd-attack-table div,
+  .dnd-skill-extra-grid--attacks-full .dnd-attack-table label {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+/* =========================================================
+   D&D - CORREÇÃO DO CAMPO DE INICIATIVA DE COMBATE
+========================================================= */
+.dnd-initiative-box label {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) 62px !important;
+  align-items: start !important;
+  gap: 12px !important;
+}
+
+.dnd-initiative-box span {
+  min-width: 0;
+  font-size: clamp(20px, 2.2vw, 28px) !important;
+  line-height: 1.08 !important;
+  word-break: normal;
+}
+
+.dnd-initiative-box input[name="combatInitiative"] {
+  width: 62px !important;
+  min-width: 62px !important;
+  max-width: 62px !important;
+  height: 62px !important;
+  min-height: 62px !important;
+  max-height: 62px !important;
+  padding: 0 !important;
+  border-radius: 16px !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  flex: 0 0 62px !important;
+}
+
+@media (max-width: 1220px) {
+  .dnd-initiative-box {
+    padding: 12px !important;
+  }
+
+  .dnd-initiative-box label {
+    grid-template-columns: minmax(0, 1fr) 54px !important;
+    gap: 10px !important;
+  }
+
+  .dnd-initiative-box input[name="combatInitiative"] {
+    width: 54px !important;
+    min-width: 54px !important;
+    max-width: 54px !important;
+    height: 54px !important;
+    min-height: 54px !important;
+    max-height: 54px !important;
+    border-radius: 14px !important;
+    font-size: 22px !important;
+  }
+
+  .dnd-initiative-box span {
+    font-size: 22px !important;
+  }
+}
+
+@media (max-width: 1100px) {
+  .dnd-initiative-box label {
+    grid-template-columns: minmax(0, 1fr) 70px !important;
+  }
+
+  .dnd-initiative-box input[name="combatInitiative"] {
+    width: 70px !important;
+    min-width: 70px !important;
+    max-width: 70px !important;
+    height: 64px !important;
+    min-height: 64px !important;
+    max-height: 64px !important;
+  }
+}
+
+/* =========================================================
+   D&D - INICIATIVA SEM SOBREPOR O TÍTULO
+========================================================= */
+.dnd-initiative-box label {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 10px !important;
+}
+
+.dnd-initiative-box span {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding-right: 0 !important;
+  overflow: visible !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+  white-space: normal !important;
+}
+
+.dnd-initiative-box input[name="combatInitiative"] {
+  justify-self: end !important;
+  align-self: start !important;
+  width: 68px !important;
+  min-width: 68px !important;
+  max-width: 68px !important;
+  height: 58px !important;
+  min-height: 58px !important;
+  max-height: 58px !important;
+  margin-top: -4px !important;
+}
+
+@media (max-width: 1220px) {
+  .dnd-initiative-box input[name="combatInitiative"] {
+    width: 62px !important;
+    min-width: 62px !important;
+    max-width: 62px !important;
+    height: 56px !important;
+    min-height: 56px !important;
+    max-height: 56px !important;
+  }
+}
+
+/* =========================================================
+   D&D - INICIATIVA DE COMBATE CORRIGIDA VIA JS/HTML
+   O input sai do mesmo label do título e não recebe number-control.
+========================================================= */
+.dnd-initiative-box--fixed {
+  overflow: hidden !important;
+}
+
+.dnd-initiative-box--fixed label {
+  display: block !important;
+}
+
+.dnd-initiative-box--fixed .dnd-initiative-box__top {
+  display: grid !important;
+  grid-template-columns: 1fr !important;
+  gap: 12px !important;
+  align-items: start !important;
+}
+
+.dnd-initiative-box--fixed .dnd-initiative-box__top > span {
+  display: block !important;
+  width: 100% !important;
+  max-width: 100% !important;
+  padding: 0 !important;
+  margin: 0 !important;
+  color: #f87171 !important;
+  font-size: clamp(22px, 2.1vw, 30px) !important;
+  line-height: 1.08 !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  white-space: normal !important;
+  word-break: normal !important;
+  overflow-wrap: normal !important;
+}
+
+.dnd-initiative-box--fixed input[name="combatInitiative"],
+.dnd-initiative-box--fixed .dnd-combat-initiative-input {
+  position: static !important;
+  display: block !important;
+  justify-self: end !important;
+  width: 78px !important;
+  min-width: 78px !important;
+  max-width: 78px !important;
+  height: 58px !important;
+  min-height: 58px !important;
+  max-height: 58px !important;
+  padding: 0 8px !important;
+  margin: 0 !important;
+  border-radius: 16px !important;
+  text-align: center !important;
+  font-size: 24px !important;
+  line-height: 1 !important;
+  box-sizing: border-box !important;
+  transform: none !important;
+}
+
+.dnd-initiative-box--fixed .number-control,
+.dnd-initiative-box .number-control:has(input[name="combatInitiative"]) {
+  position: static !important;
+  display: block !important;
+  justify-self: end !important;
+  width: 78px !important;
+  min-width: 78px !important;
+  max-width: 78px !important;
+  margin: 0 !important;
+}
+
+.dnd-initiative-box--fixed .number-control input[name="combatInitiative"],
+.dnd-initiative-box
+  .number-control:has(input[name="combatInitiative"])
+  input[name="combatInitiative"] {
+  width: 78px !important;
+  min-width: 78px !important;
+  max-width: 78px !important;
+  padding: 0 8px !important;
+}
+
+.dnd-initiative-box--fixed .number-control-buttons,
+.dnd-initiative-box
+  .number-control:has(input[name="combatInitiative"])
+  .number-control-buttons {
+  display: none !important;
+}
+
+@media (max-width: 1220px) {
+  .dnd-initiative-box--fixed {
+    padding: 12px !important;
+  }
+
+  .dnd-initiative-box--fixed .dnd-initiative-box__top > span {
+    font-size: 22px !important;
+  }
+
+  .dnd-initiative-box--fixed input[name="combatInitiative"],
+  .dnd-initiative-box--fixed .dnd-combat-initiative-input,
+  .dnd-initiative-box--fixed .number-control,
+  .dnd-initiative-box .number-control:has(input[name="combatInitiative"]) {
+    width: 66px !important;
+    min-width: 66px !important;
+    max-width: 66px !important;
+  }
+}
