@@ -6547,6 +6547,8 @@ function openCampaignLabImageCropper(file, options = {}) {
         const outputHeight = Number(options.outputHeight || options.outputSize) || outputWidth;
         const isRectangle = options.mask === "rectangle";
         const mimeType = file.type === "image/png" ? "image/png" : "image/jpeg";
+        const minZoom = Number(options.minZoom) || 0.35;
+        const maxZoom = Number(options.maxZoom) || 3;
 
         let minScale = Math.max(cropWidth / image.naturalWidth, cropHeight / image.naturalHeight);
         let zoom = 1;
@@ -6589,8 +6591,8 @@ function openCampaignLabImageCropper(file, options = {}) {
                 <span>Zoom</span>
                 <input
                   type="range"
-                  min="1"
-                  max="3"
+                  min="${minZoom}"
+                  max="${maxZoom}"
                   step="0.01"
                   value="1"
                   data-crop-zoom
@@ -6599,7 +6601,7 @@ function openCampaignLabImageCropper(file, options = {}) {
 
               <div class="image-cropper-tips">
                 <span>Mouse/toque: arrastar</span>
-                <span>Scroll: zoom</span>
+                <span>Scroll para baixo: zoom out</span>
               </div>
             </div>
 
@@ -6696,7 +6698,7 @@ function openCampaignLabImageCropper(file, options = {}) {
 
         function changeZoom(newZoom, anchorEvent = null) {
           const oldZoom = zoom;
-          zoom = Math.max(1, Math.min(3, Number(newZoom) || 1));
+          zoom = Math.max(minZoom, Math.min(maxZoom, Number(newZoom) || 1));
 
           if (anchorEvent) {
             const ratio = zoom / oldZoom;
@@ -6773,7 +6775,7 @@ function openCampaignLabImageCropper(file, options = {}) {
         canvas.addEventListener("wheel", (event) => {
           event.preventDefault();
 
-          const direction = event.deltaY > 0 ? -0.08 : 0.08;
+          const direction = event.deltaY > 0 ? -0.1 : 0.1;
           changeZoom(zoom + direction, event);
         });
 
