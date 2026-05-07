@@ -17995,17 +17995,11 @@ textarea {
 }
 
 /* =========================================================
-   RUNASKIN - IMAGENS MAIORES NOS CARDS TRIUNFICOS
-   Remove a ideia de imagem pequena/quadrada e aumenta o espaço visual.
+   RUNASKIN - TAMANHO CORRETO DA IMAGEM NO CARD
+   Mantém a imagem editada em formato quadrado dentro do card.
 ========================================================= */
-.runaskin-visual-notes-grid {
-  grid-template-columns: repeat(3, minmax(240px, 1fr)) !important;
-  gap: 18px !important;
-}
-
 .runaskin-visual-note-card[data-runaskin-note-card="true"] {
-  padding: 16px !important;
-  gap: 12px !important;
+  align-content: start !important;
 }
 
 .runaskin-visual-note-card[data-runaskin-note-card="true"]
@@ -18017,9 +18011,11 @@ textarea {
 .runaskin-visual-note-card[data-runaskin-note-card="true"]
   .runaskin-visual-note-preview {
   width: 100% !important;
-  min-height: 230px !important;
-  aspect-ratio: 1 / 0.9 !important;
-  border-radius: 20px !important;
+  height: auto !important;
+  aspect-ratio: 1 / 1 !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  border-radius: 18px !important;
 }
 
 .runaskin-visual-note-card[data-runaskin-note-card="true"]
@@ -18027,6 +18023,8 @@ textarea {
   img {
   width: 100% !important;
   height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
   object-fit: cover !important;
   object-position: center center !important;
   border-radius: inherit !important;
@@ -18035,14 +18033,9 @@ textarea {
 .runaskin-visual-note-card[data-runaskin-note-card="true"]
   .runaskin-visual-note-preview
   span {
-  max-width: 82% !important;
+  max-width: 80% !important;
   text-align: center !important;
   line-height: 1.25 !important;
-}
-
-.altherium-sheet-modal-box .runaskin-visual-notes-grid,
-.master-rune-sheet .runaskin-visual-notes-grid {
-  grid-template-columns: repeat(3, minmax(240px, 1fr)) !important;
 }
 
 .altherium-sheet-modal-box
@@ -18051,40 +18044,13 @@ textarea {
 .master-rune-sheet
   .runaskin-visual-note-card[data-runaskin-note-card="true"]
   .runaskin-visual-note-preview {
-  min-height: 240px !important;
-  aspect-ratio: 1 / 0.92 !important;
+  aspect-ratio: 1 / 1 !important;
 }
 
-@media (max-width: 1180px) {
-  .runaskin-visual-notes-grid,
-  .altherium-sheet-modal-box .runaskin-visual-notes-grid,
-  .master-rune-sheet .runaskin-visual-notes-grid {
-    grid-template-columns: repeat(2, minmax(230px, 1fr)) !important;
-  }
-
+@media (max-width: 560px) {
   .runaskin-visual-note-card[data-runaskin-note-card="true"]
     .runaskin-visual-note-preview {
-    min-height: 220px !important;
-  }
-}
-
-@media (max-width: 680px) {
-  .runaskin-visual-notes-grid,
-  .altherium-sheet-modal-box .runaskin-visual-notes-grid,
-  .master-rune-sheet .runaskin-visual-notes-grid {
-    grid-template-columns: 1fr !important;
-  }
-
-  .runaskin-visual-note-card[data-runaskin-note-card="true"]
-    .runaskin-visual-note-preview {
-    min-height: 260px !important;
-    aspect-ratio: 1 / 0.95 !important;
-  }
-}
-
-@media (max-width: 430px) {
-  .runaskin-visual-note-card[data-runaskin-note-card="true"]
-    .runaskin-visual-note-preview {
-    min-height: 220px !important;
+    aspect-ratio: 1 / 1 !important;
+    border-radius: 16px !important;
   }
 }
