@@ -6551,7 +6551,7 @@ function openCampaignLabImageCropper(file, options = {}) {
         const maxZoom = Number(options.maxZoom) || 3;
 
         let minScale = Math.max(cropWidth / image.naturalWidth, cropHeight / image.naturalHeight);
-        let zoom = 1;
+        let zoom = Math.max(minZoom, Math.min(maxZoom, Number(options.initialZoom) || 1));
         let offsetX = 0;
         let offsetY = 0;
         let dragging = false;
@@ -6594,7 +6594,7 @@ function openCampaignLabImageCropper(file, options = {}) {
                   min="${minZoom}"
                   max="${maxZoom}"
                   step="0.01"
-                  value="1"
+                  value="${zoom}"
                   data-crop-zoom
                 />
               </label>
@@ -6606,6 +6606,10 @@ function openCampaignLabImageCropper(file, options = {}) {
             </div>
 
             <div class="image-cropper-actions">
+              <button type="button" class="image-cropper-btn secondary" data-crop-center>
+                Centralizar
+              </button>
+
               <button type="button" class="image-cropper-btn secondary" data-crop-cancel>
                 Cancelar
               </button>
@@ -6628,8 +6632,14 @@ function openCampaignLabImageCropper(file, options = {}) {
           const width = image.naturalWidth * scale;
           const height = image.naturalHeight * scale;
 
-          const maxOffsetX = Math.max(0, (width - cropWidth) / 2);
-          const maxOffsetY = Math.max(0, (height - cropHeight) / 2);
+          /*
+            Permite arrastar mesmo quando a imagem está em zoom out.
+            Antes, quando a imagem ficava menor que a área de corte, o limite virava 0
+            e a imagem travava no centro. Agora o usuário consegue reposicionar a imagem
+            dentro da área visível sem ela sumir completamente.
+          */
+          const maxOffsetX = Math.abs(width - cropWidth) / 2;
+          const maxOffsetY = Math.abs(height - cropHeight) / 2;
 
           offsetX = Math.max(-maxOffsetX, Math.min(maxOffsetX, offsetX));
           offsetY = Math.max(-maxOffsetY, Math.min(maxOffsetY, offsetY));
@@ -6694,6 +6704,13 @@ function openCampaignLabImageCropper(file, options = {}) {
         function endDrag() {
           dragging = false;
           canvas.classList.remove("is-dragging");
+        }
+
+        function centerCropImage() {
+          offsetX = 0;
+          offsetY = 0;
+          if (zoomInput) zoomInput.value = String(zoom);
+          drawPreview();
         }
 
         function changeZoom(newZoom, anchorEvent = null) {
@@ -6785,6 +6802,11 @@ function openCampaignLabImageCropper(file, options = {}) {
           });
         }
 
+        const centerButton = modal.querySelector("[data-crop-center]");
+        if (centerButton) {
+          centerButton.addEventListener("click", centerCropImage);
+        }
+
         modal.querySelectorAll("[data-crop-cancel]").forEach((button) => {
           button.addEventListener("click", () => closeModal(null));
         });
@@ -6816,7 +6838,7 @@ function openCampaignLabImageCropper(file, options = {}) {
           { once: false }
         );
 
-        drawPreview();
+        centerCropImage();
       };
 
       image.onerror = () => {

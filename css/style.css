@@ -18054,3 +18054,36 @@ textarea {
     border-radius: 16px !important;
   }
 }
+
+/* =========================================================
+   RUNASKIN - CENTRALIZAR IMAGEM NO CARD
+   Mantém a imagem editada visível, centralizada e sem corte.
+========================================================= */
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview {
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at center, rgba(34, 211, 238, 0.1), transparent 54%),
+    rgba(2, 6, 23, 0.78) !important;
+}
+
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  img {
+  width: 100% !important;
+  height: 100% !important;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  display: block !important;
+  object-fit: contain !important;
+  object-position: center center !important;
+  margin: auto !important;
+  border-radius: inherit !important;
+}
+
+.runaskin-visual-note-preview.has-image {
+  display: grid !important;
+  place-items: center !important;
+}
