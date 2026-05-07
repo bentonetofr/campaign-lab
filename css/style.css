@@ -18600,3 +18600,277 @@ textarea {
   background: linear-gradient(135deg, #f87171, #dc2626) !important;
   color: #fff7f7 !important;
 }
+
+/* =========================================================
+   CHAT - NOTIFICAÇÃO DE MENSAGEM NO MEIO ESQUERDO
+========================================================= */
+.player-chat-notification-stack {
+  top: 50% !important;
+  left: 24px !important;
+  right: auto !important;
+  bottom: auto !important;
+  width: min(360px, calc(100vw - 32px)) !important;
+  transform: translateY(-50%) !important;
+  align-items: start !important;
+}
+
+.player-chat-notification:hover {
+  transform: translateX(4px) !important;
+}
+
+@keyframes playerChatNotificationIn {
+  from {
+    opacity: 0;
+    transform: translateX(-28px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+@keyframes playerChatNotificationOut {
+  from {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+
+  to {
+    opacity: 0;
+    transform: translateX(-28px) scale(0.96);
+  }
+}
+
+@media (max-width: 760px) {
+  .player-chat-notification-stack {
+    top: 50% !important;
+    left: 12px !important;
+    right: auto !important;
+    bottom: auto !important;
+    width: min(340px, calc(100vw - 24px)) !important;
+    transform: translateY(-50%) !important;
+  }
+}
+
+/* =========================================================
+   RESPONSIVIDADE - SELEÇÃO / EDIÇÃO DA IMAGEM DA CAMPANHA
+   Ajusta o painel da capa e o modal de edição no tablet/celular.
+========================================================= */
+.campaign-cover-panel {
+  width: 100% !important;
+  max-width: 1180px !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.campaign-cover-panel__preview,
+.campaign-cover-preview,
+[data-campaign-cover-preview] {
+  overflow: hidden !important;
+}
+
+.image-cropper-modal {
+  padding: clamp(10px, 3vw, 22px) !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+.image-cropper-box {
+  width: min(720px, calc(100vw - 24px)) !important;
+  max-height: calc(100dvh - 24px) !important;
+  overflow-y: auto !important;
+  padding: clamp(16px, 3vw, 28px) !important;
+  border-radius: clamp(20px, 4vw, 30px) !important;
+}
+
+.image-cropper-stage-wrap {
+  width: min(
+    var(--image-cropper-stage-w, 560px),
+    calc(100vw - 56px)
+  ) !important;
+  max-width: 100% !important;
+  margin-left: auto !important;
+  margin-right: auto !important;
+}
+
+.image-cropper-canvas {
+  width: 100% !important;
+  height: 100% !important;
+  display: block !important;
+  touch-action: none !important;
+}
+
+.image-cropper-controls,
+.image-cropper-actions {
+  width: 100% !important;
+}
+
+@media (max-width: 980px) {
+  .campaign-cover-panel {
+    grid-template-columns: 220px minmax(0, 1fr) !important;
+    gap: 18px !important;
+    align-items: center !important;
+    padding: 20px !important;
+  }
+
+  .campaign-cover-panel__actions,
+  .campaign-cover-actions,
+  [data-campaign-cover-actions] {
+    grid-column: 1 / -1 !important;
+    width: 100% !important;
+    display: grid !important;
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 12px !important;
+  }
+
+  .campaign-cover-panel button,
+  .campaign-cover-panel label,
+  .campaign-cover-panel__actions button,
+  .campaign-cover-actions button,
+  [data-campaign-cover-actions] button {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 760px) {
+  .campaign-cover-panel {
+    grid-template-columns: 1fr !important;
+    padding: 18px !important;
+    gap: 16px !important;
+    text-align: center !important;
+  }
+
+  .campaign-cover-panel__preview,
+  .campaign-cover-preview,
+  [data-campaign-cover-preview] {
+    width: min(100%, 420px) !important;
+    margin: 0 auto !important;
+    aspect-ratio: 16 / 9 !important;
+  }
+
+  .campaign-cover-panel__content,
+  .campaign-cover-content,
+  [data-campaign-cover-content] {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .campaign-cover-panel__content h3,
+  .campaign-cover-content h3,
+  [data-campaign-cover-content] h3 {
+    font-size: clamp(24px, 7vw, 34px) !important;
+    line-height: 1.05 !important;
+  }
+
+  .campaign-cover-panel__content p,
+  .campaign-cover-content p,
+  [data-campaign-cover-content] p {
+    max-width: 100% !important;
+    font-size: 14px !important;
+    line-height: 1.45 !important;
+  }
+
+  .campaign-cover-panel__actions,
+  .campaign-cover-actions,
+  [data-campaign-cover-actions] {
+    grid-template-columns: 1fr !important;
+  }
+
+  .image-cropper-modal {
+    padding: 8px !important;
+    align-items: flex-start !important;
+    overflow-y: auto !important;
+  }
+
+  .image-cropper-box {
+    width: calc(100vw - 16px) !important;
+    max-height: none !important;
+    min-height: auto !important;
+    margin: 8px auto !important;
+    padding: 16px !important;
+    border-radius: 22px !important;
+  }
+
+  .image-cropper-header {
+    display: grid !important;
+    grid-template-columns: 1fr auto !important;
+    gap: 12px !important;
+    align-items: start !important;
+  }
+
+  .image-cropper-header h2 {
+    font-size: 24px !important;
+    line-height: 1.05 !important;
+  }
+
+  .image-cropper-header p {
+    font-size: 13px !important;
+    line-height: 1.4 !important;
+  }
+
+  .image-cropper-close {
+    position: static !important;
+    width: 40px !important;
+    height: 40px !important;
+  }
+
+  .image-cropper-stage-wrap,
+  .image-cropper-modal--rectangle .image-cropper-stage-wrap {
+    width: min(100%, calc(100vw - 48px)) !important;
+    max-height: 48dvh !important;
+    border-radius: 18px !important;
+  }
+
+  .image-cropper-rect-mask {
+    inset: 8px !important;
+    border-radius: 14px !important;
+  }
+
+  .image-cropper-controls {
+    margin-top: 14px !important;
+  }
+
+  .image-cropper-controls label {
+    gap: 8px !important;
+  }
+
+  .image-cropper-controls input[type="range"] {
+    height: 34px !important;
+  }
+
+  .image-cropper-tips {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 6px !important;
+    text-align: center !important;
+  }
+
+  .image-cropper-actions {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 10px !important;
+  }
+
+  .image-cropper-btn {
+    width: 100% !important;
+    min-height: 48px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .campaign-cover-panel {
+    padding: 14px !important;
+    border-radius: 22px !important;
+  }
+
+  .image-cropper-stage-wrap,
+  .image-cropper-modal--rectangle .image-cropper-stage-wrap {
+    width: min(100%, calc(100vw - 40px)) !important;
+    max-height: 44dvh !important;
+  }
+
+  .image-cropper-box {
+    padding: 14px !important;
+  }
+}
