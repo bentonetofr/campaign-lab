@@ -19396,3 +19396,350 @@ header.header-with-fixed-actions .header-logout-button__text {
     min-width: 24px !important;
   }
 }
+
+/* =========================================================
+   CHAT DA MESA - VISUAL ESTILO WHATSAPP DO SITE
+========================================================= */
+body .player-chat-panel {
+  overflow: visible !important;
+}
+
+body .player-chat-shell {
+  gap: 16px !important;
+}
+
+body .player-chat-messages {
+  min-height: 460px !important;
+  max-height: 60vh !important;
+  padding: 20px !important;
+  gap: 14px !important;
+  border-radius: 24px !important;
+  background:
+    linear-gradient(rgba(3, 10, 19, 0.9), rgba(3, 10, 19, 0.96)),
+    radial-gradient(
+      circle at 20% 20%,
+      rgba(34, 211, 238, 0.06),
+      transparent 22%
+    ),
+    radial-gradient(
+      circle at 80% 0%,
+      rgba(168, 85, 247, 0.05),
+      transparent 20%
+    ),
+    radial-gradient(circle at 30% 80%, rgba(34, 197, 94, 0.04), transparent 22%) !important;
+  background-color: #030712 !important;
+}
+
+body .player-chat-message {
+  width: min(78%, 760px) !important;
+  gap: 12px !important;
+}
+
+body .player-chat-message-avatar {
+  width: 42px !important;
+  height: 42px !important;
+  border-radius: 16px !important;
+}
+
+body .player-chat-message-bubble {
+  position: relative !important;
+  padding: 12px 14px 14px !important;
+  border-radius: 20px 20px 20px 8px !important;
+  border-color: rgba(148, 163, 184, 0.12) !important;
+  background: linear-gradient(
+    180deg,
+    rgba(15, 23, 42, 0.98),
+    rgba(9, 14, 28, 0.98)
+  ) !important;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.18) !important;
+}
+
+body .player-chat-message-bubble::after {
+  content: "" !important;
+  position: absolute !important;
+  left: -6px !important;
+  bottom: 10px !important;
+  width: 14px !important;
+  height: 14px !important;
+  border-radius: 4px !important;
+  background: inherit !important;
+  transform: rotate(45deg) !important;
+  border-left: 1px solid rgba(148, 163, 184, 0.12) !important;
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12) !important;
+}
+
+body .player-chat-message.mine .player-chat-message-bubble {
+  border-radius: 20px 20px 8px 20px !important;
+  background:
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.17),
+      transparent 46%
+    ),
+    linear-gradient(135deg, rgba(8, 47, 73, 0.98), rgba(15, 23, 42, 0.98)) !important;
+}
+
+body .player-chat-message.mine .player-chat-message-bubble::after {
+  left: auto !important;
+  right: -6px !important;
+  border-left: none !important;
+  border-bottom: none !important;
+  border-right: 1px solid rgba(34, 211, 238, 0.16) !important;
+  border-top: 1px solid rgba(34, 211, 238, 0.16) !important;
+}
+
+body .player-chat-message.private .player-chat-message-bubble {
+  border-color: rgba(168, 85, 247, 0.3) !important;
+  background:
+    radial-gradient(
+      circle at top left,
+      rgba(168, 85, 247, 0.16),
+      transparent 44%
+    ),
+    linear-gradient(180deg, rgba(26, 18, 42, 0.98), rgba(9, 14, 28, 0.98)) !important;
+}
+
+body .player-chat-message.private .player-chat-message-bubble::after {
+  border-left-color: rgba(168, 85, 247, 0.18) !important;
+  border-bottom-color: rgba(168, 85, 247, 0.18) !important;
+}
+
+body .player-chat-message.private.mine .player-chat-message-bubble::after {
+  border-right-color: rgba(34, 211, 238, 0.18) !important;
+  border-top-color: rgba(34, 211, 238, 0.18) !important;
+}
+
+body .player-chat-message-meta {
+  margin-bottom: 5px !important;
+}
+
+body .player-chat-message-meta strong {
+  font-size: 13px !important;
+  color: #ffffff !important;
+}
+
+body .player-chat-message-meta span {
+  color: #93c5fd !important;
+  font-size: 11px !important;
+}
+
+body .player-chat-message-badges {
+  margin: 0 0 8px !important;
+  display: flex !important;
+  flex-wrap: wrap !important;
+  gap: 6px !important;
+}
+
+body .player-chat-channel-label,
+body .player-chat-private-label {
+  width: fit-content !important;
+  margin: 0 !important;
+  padding: 4px 8px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  border-radius: 999px !important;
+  font-size: 10px !important;
+  font-weight: 900 !important;
+  letter-spacing: 0.4px !important;
+  text-transform: uppercase !important;
+}
+
+body .player-chat-channel-label {
+  border: 1px solid rgba(34, 211, 238, 0.2) !important;
+  background: rgba(34, 211, 238, 0.1) !important;
+  color: #a5f3fc !important;
+}
+
+body .player-chat-private-label {
+  border-color: rgba(168, 85, 247, 0.28) !important;
+  background: rgba(168, 85, 247, 0.12) !important;
+  color: #e9d5ff !important;
+}
+
+body .player-chat-message-bubble p {
+  color: #e2e8f0 !important;
+  font-size: 14px !important;
+  line-height: 1.5 !important;
+}
+
+body .player-chat-form {
+  padding: 14px !important;
+  gap: 12px !important;
+  border-radius: 22px !important;
+  border: 1px solid rgba(34, 211, 238, 0.16) !important;
+  background:
+    linear-gradient(180deg, rgba(4, 8, 20, 0.94), rgba(8, 13, 26, 0.96)),
+    radial-gradient(
+      circle at top left,
+      rgba(34, 211, 238, 0.08),
+      transparent 36%
+    ) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.04),
+    0 18px 40px rgba(0, 0, 0, 0.18) !important;
+}
+
+body .player-chat-recipient-row {
+  grid-template-columns: auto minmax(220px, 320px) !important;
+  gap: 12px !important;
+  padding: 10px 12px !important;
+  border-radius: 16px !important;
+  background: rgba(15, 23, 42, 0.74) !important;
+}
+
+body .player-chat-recipient-hint {
+  margin-top: -2px !important;
+  padding: 10px 12px !important;
+  border: 1px dashed rgba(34, 211, 238, 0.14) !important;
+  border-radius: 14px !important;
+  background: rgba(8, 13, 26, 0.55) !important;
+  color: #93c5fd !important;
+  font-size: 12px !important;
+  font-weight: 800 !important;
+}
+
+body .player-chat-form--private-target .player-chat-recipient-row {
+  border-color: rgba(168, 85, 247, 0.34) !important;
+  background: rgba(36, 19, 58, 0.62) !important;
+}
+
+body .player-chat-form--private-target .player-chat-recipient-hint {
+  border-color: rgba(168, 85, 247, 0.24) !important;
+  background: rgba(31, 17, 51, 0.58) !important;
+  color: #e9d5ff !important;
+}
+
+body .player-chat-tools--emoji-only {
+  margin-top: 2px !important;
+}
+
+body .player-chat-tool-btn {
+  min-height: 40px !important;
+  padding: 0 14px !important;
+  border-radius: 14px !important;
+}
+
+body .player-chat-picker {
+  border-radius: 16px !important;
+}
+
+body .player-chat-compose-row {
+  grid-template-columns: minmax(0, 1fr) 130px !important;
+  gap: 12px !important;
+}
+
+body .player-chat-form textarea {
+  min-height: 56px !important;
+  max-height: 150px !important;
+  padding: 15px 16px !important;
+  border-radius: 18px !important;
+  resize: none !important;
+}
+
+body .player-chat-form .altherium-btn {
+  min-height: 56px !important;
+  border-radius: 18px !important;
+  font-size: 15px !important;
+  font-weight: 900 !important;
+}
+
+body .player-chat-empty,
+body .player-chat-local-error {
+  border-radius: 22px !important;
+}
+
+@media (max-width: 860px) {
+  body .player-chat-message {
+    width: min(92%, 760px) !important;
+  }
+
+  body .player-chat-recipient-row {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+@media (max-width: 780px) {
+  body .player-chat-messages {
+    min-height: 390px !important;
+    max-height: 58vh !important;
+    padding: 14px !important;
+  }
+
+  body .player-chat-message,
+  body .player-chat-message.mine {
+    width: 100% !important;
+    grid-template-columns: 36px minmax(0, 1fr) !important;
+  }
+
+  body .player-chat-message.mine .player-chat-message-avatar {
+    grid-column: 1 !important;
+  }
+
+  body .player-chat-message.mine .player-chat-message-bubble {
+    grid-column: 2 !important;
+    border-radius: 20px 20px 20px 8px !important;
+  }
+
+  body .player-chat-message.mine .player-chat-message-bubble::after {
+    left: -6px !important;
+    right: auto !important;
+    border-right: none !important;
+    border-top: none !important;
+    border-left: 1px solid rgba(34, 211, 238, 0.16) !important;
+    border-bottom: 1px solid rgba(34, 211, 238, 0.16) !important;
+  }
+
+  body .player-chat-message.private.mine .player-chat-message-bubble::after {
+    border-left-color: rgba(168, 85, 247, 0.18) !important;
+    border-bottom-color: rgba(168, 85, 247, 0.18) !important;
+  }
+
+  body .player-chat-compose-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  body .player-chat-form .altherium-btn {
+    width: 100% !important;
+  }
+}
+
+@media (max-width: 520px) {
+  body .player-chat-header {
+    gap: 10px !important;
+  }
+
+  body .player-chat-messages {
+    min-height: 340px !important;
+  }
+
+  body .player-chat-message-avatar {
+    width: 34px !important;
+    height: 34px !important;
+    border-radius: 12px !important;
+  }
+
+  body .player-chat-message-bubble {
+    padding: 11px 12px 13px !important;
+  }
+
+  body .player-chat-message-meta {
+    flex-direction: row !important;
+    align-items: center !important;
+  }
+
+  body .player-chat-message-meta strong {
+    font-size: 12px !important;
+  }
+
+  body .player-chat-message-meta span {
+    font-size: 10px !important;
+  }
+
+  body .player-chat-message-bubble p {
+    font-size: 13px !important;
+  }
+
+  body .player-chat-recipient-hint {
+    font-size: 11px !important;
+  }
+}

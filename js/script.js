@@ -2340,6 +2340,9 @@ function buildPlayerCampaignChatMarkup(system = "") {
               <option value="">Mesa inteira</option>
             </select>
           </div>
+          <div class="player-chat-recipient-hint" id="playerCampaignChatRecipientHint">
+            Toda a mesa verá essa conversa.
+          </div>
 
           ${buildPlayerCampaignChatToolsMarkup()}
 
@@ -2492,14 +2495,30 @@ function setupPlayerCampaignChatForm(system = "") {
 
   const recipientSelect = document.getElementById("playerCampaignChatRecipient");
 
+  const recipientHint = document.getElementById("playerCampaignChatRecipientHint");
+
+  const updateRecipientUi = () => {
+    const recipient = getPlayerCampaignChatSelectedRecipient();
+    const isPrivateTarget = Boolean(recipient);
+
+    input.placeholder = isPrivateTarget
+      ? `Mensagem privada para ${recipient.name}...`
+      : "Digite sua mensagem para a mesa...";
+
+    form.classList.toggle("player-chat-form--private-target", isPrivateTarget);
+
+    if (recipientHint) {
+      recipientHint.textContent = isPrivateTarget
+        ? `Somente você e ${recipient.name} verão essa conversa.`
+        : "Toda a mesa verá essa conversa.";
+    }
+  };
+
   if (recipientSelect) {
-    recipientSelect.addEventListener("change", () => {
-      const recipient = getPlayerCampaignChatSelectedRecipient();
-      input.placeholder = recipient
-        ? `Mensagem privada para ${recipient.name}...`
-        : "Digite sua mensagem para a mesa...";
-    });
+    recipientSelect.addEventListener("change", updateRecipientUi);
   }
+
+  updateRecipientUi();
 }
 
 function setupPlayerCampaignChatTools(form, input, system = "") {
@@ -2657,7 +2676,7 @@ async function renderPlayerCampaignChat(system = "", options = {}) {
   messagesBox.innerHTML = visibleMessages.map(renderPlayerCampaignChatMessage).join("");
 
   if (options.forceScroll || isPlayerCampaignChatNearBottom(messagesBox)) {
-    messagesBox.scrollTop = messagesBox.scrollHeight;
+    scrollPlayerCampaignChatToBottom({ smooth: false });
   }
 }
 
@@ -2670,6 +2689,9 @@ function renderPlayerCampaignChatMessage(row = {}) {
     ? date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
     : "--:--";
   const privateLabel = isPrivate ? getPlayerCampaignChatPrivateLabel(row, isMine) : "";
+  const scopeBadge = isPrivate
+    ? privateLabel
+    : '<span class="player-chat-channel-label">Mesa inteira</span>';
 
   return `
     <article class="player-chat-message ${isMine ? "mine" : ""} ${isPrivate ? "private" : ""}">
@@ -2679,7 +2701,9 @@ function renderPlayerCampaignChatMessage(row = {}) {
           <strong>${escapeHtml(row.user_name || "Jogador")}</strong>
           <span>${escapeHtml(time)}</span>
         </div>
-        ${privateLabel}
+        <div class="player-chat-message-badges">
+          ${scopeBadge}
+        </div>
         <p>${formatPlayerCampaignChatText(row.message || "")}</p>
       </div>
     </article>
@@ -2997,6 +3021,33 @@ function getPlayerCampaignChatNotificationPreview(message = "") {
   return preview.length > 72 ? `${preview.slice(0, 72)}...` : preview;
 }
 
+function scrollPlayerCampaignChatToBottom(options = {}) {
+  const messagesBox = document.getElementById("playerCampaignChatMessages");
+
+  if (!messagesBox) return;
+
+  const behavior = options.smooth ? "smooth" : "auto";
+  const scroll = () => {
+    if (!messagesBox.isConnected) return;
+
+    if (typeof messagesBox.scrollTo === "function") {
+      messagesBox.scrollTo({ top: messagesBox.scrollHeight, behavior });
+      return;
+    }
+
+    messagesBox.scrollTop = messagesBox.scrollHeight;
+  };
+
+  scroll();
+  requestAnimationFrame(scroll);
+  window.setTimeout(scroll, 80);
+  window.setTimeout(scroll, 220);
+}
+
+function isPlayerCampaignChatTabId(targetId = "") {
+  return targetId === "playerMessagesSection" || targetId === "masterMessagesSection";
+}
+
 function openPlayerCampaignChatTab() {
   const section = document.getElementById("playerMessagesSection") || document.getElementById("masterMessagesSection");
 
@@ -3015,8 +3066,7 @@ function openPlayerCampaignChatTab() {
 
   section.scrollIntoView({ behavior: "smooth", block: "start" });
 
-  const messagesBox = document.getElementById("playerCampaignChatMessages");
-  if (messagesBox) messagesBox.scrollTop = messagesBox.scrollHeight;
+  scrollPlayerCampaignChatToBottom({ smooth: false });
 }
 
 function subscribePlayerCampaignChatRealtime(system = "") {
@@ -3074,6 +3124,11 @@ function setupTabs() {
 
       tab.classList.add("active");
       selectedSection.classList.add("active");
+
+      if (isPlayerCampaignChatTabId(targetId)) {
+        scrollPlayerCampaignChatToBottom({ smooth: false });
+      }
+
       return;
     }
 
@@ -3087,6 +3142,10 @@ function setupTabs() {
 
     tab.classList.add("active");
     selectedSection.classList.add("active");
+
+    if (isPlayerCampaignChatTabId(targetId)) {
+      scrollPlayerCampaignChatToBottom({ smooth: false });
+    }
   });
 }
 
