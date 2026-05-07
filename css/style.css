@@ -18055,7 +18055,6 @@ textarea {
   }
 }
 
-
 /* =========================================================
    RUNASKIN - CARD MOSTRA EXATAMENTE O QUADRADO DA EDIÇÃO
 ========================================================= */
@@ -18063,12 +18062,14 @@ textarea {
   align-content: start !important;
 }
 
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-image-picker {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-image-picker {
   width: 100% !important;
   display: block !important;
 }
 
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview {
   width: 100% !important;
   aspect-ratio: 1 / 1 !important;
   min-height: 220px !important;
@@ -18081,11 +18082,14 @@ textarea {
   place-items: center !important;
 }
 
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview.has-image {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview.has-image {
   background: #020617 !important;
 }
 
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview img {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  img {
   width: 100% !important;
   height: 100% !important;
   display: block !important;
@@ -18094,25 +18098,28 @@ textarea {
   border-radius: inherit !important;
 }
 
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview span {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  span {
   text-align: center !important;
   line-height: 1.25 !important;
   max-width: 80% !important;
 }
 
 @media (max-width: 860px) {
-  .runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
+  .runaskin-visual-note-card[data-runaskin-note-card="true"]
+    .runaskin-visual-note-preview {
     min-height: 190px !important;
   }
 }
 
 @media (max-width: 560px) {
-  .runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
+  .runaskin-visual-note-card[data-runaskin-note-card="true"]
+    .runaskin-visual-note-preview {
     min-height: 0 !important;
     aspect-ratio: 1 / 1 !important;
   }
 }
-
 
 /* =========================================================
    RUNASKIN - CARD EXATAMENTE IGUAL AO QUADRADO DA EDIÇÃO
@@ -18124,13 +18131,15 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-image-picker,
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-image-picker {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-image-picker {
   width: 100% !important;
   display: block !important;
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview,
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview {
   width: 100% !important;
   height: auto !important;
   min-height: 220px !important;
@@ -18145,7 +18154,9 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview img,
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview img {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  img {
   width: 100% !important;
   height: 100% !important;
   min-width: 100% !important;
@@ -18159,7 +18170,9 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview span,
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview span {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  span {
   max-width: 80% !important;
   text-align: center !important;
   line-height: 1.25 !important;
@@ -18167,19 +18180,20 @@ textarea {
 
 @media (max-width: 860px) {
   .runaskin-visual-note-card .runaskin-visual-note-preview,
-  .runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
+  .runaskin-visual-note-card[data-runaskin-note-card="true"]
+    .runaskin-visual-note-preview {
     min-height: 190px !important;
   }
 }
 
 @media (max-width: 560px) {
   .runaskin-visual-note-card .runaskin-visual-note-preview,
-  .runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
+  .runaskin-visual-note-card[data-runaskin-note-card="true"]
+    .runaskin-visual-note-preview {
     min-height: 0 !important;
     aspect-ratio: 1 / 1 !important;
   }
 }
-
 
 /* =========================================================
    RUNASKIN - CORREÇÃO DE ALINHAMENTO DOS CARDS
@@ -18203,7 +18217,8 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-image-picker,
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-image-picker {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-image-picker {
   width: 100% !important;
   height: auto !important;
   display: block !important;
@@ -18211,7 +18226,8 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview,
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview {
   position: relative !important;
   width: 100% !important;
   height: auto !important;
@@ -18229,7 +18245,9 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview img,
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview img {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  img {
   width: 100% !important;
   height: 100% !important;
   min-width: 100% !important;
@@ -18243,13 +18261,21 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview img[hidden],
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview img[hidden],
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  img[hidden],
 .runaskin-visual-note-card .runaskin-visual-note-preview:not(.has-image) img,
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview:not(.has-image) img,
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview:not(.has-image)
+  img,
 .runaskin-visual-note-card .runaskin-visual-note-preview img:not([src]),
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview img:not([src]),
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  img:not([src]),
 .runaskin-visual-note-card .runaskin-visual-note-preview img[src=""],
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview img[src=""] {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  img[src=""] {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
@@ -18258,7 +18284,9 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview span,
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview span {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  span {
   position: absolute !important;
   inset: 0 !important;
   width: 100% !important;
@@ -18274,14 +18302,20 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview span[hidden],
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview span[hidden],
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  span[hidden],
 .runaskin-visual-note-card .runaskin-visual-note-preview.has-image span,
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview.has-image span {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview.has-image
+  span {
   display: none !important;
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview em,
-.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview em {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  em {
   z-index: 3 !important;
 }
 
@@ -18317,11 +18351,11 @@ textarea {
   }
 
   .runaskin-visual-note-card .runaskin-visual-note-preview,
-  .runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
+  .runaskin-visual-note-card[data-runaskin-note-card="true"]
+    .runaskin-visual-note-preview {
     border-radius: 16px !important;
   }
 }
-
 
 /* =========================================================
    NOTIFICAÇÃO - PLAYER ADICIONADO EM CAMPANHA
@@ -18350,7 +18384,11 @@ textarea {
   border-radius: 24px !important;
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.98)),
-    radial-gradient(circle at top right, rgba(34, 211, 238, 0.18), transparent 42%) !important;
+    radial-gradient(
+      circle at top right,
+      rgba(34, 211, 238, 0.18),
+      transparent 42%
+    ) !important;
   box-shadow:
     0 24px 70px rgba(0, 0, 0, 0.42),
     0 0 42px rgba(34, 211, 238, 0.14),
@@ -18515,7 +18553,6 @@ textarea {
   }
 }
 
-
 /* =========================================================
    NOTIFICAÇÃO - PLAYER REMOVIDO DA CAMPANHA
 ========================================================= */
@@ -18523,7 +18560,11 @@ textarea {
   border-color: rgba(248, 113, 113, 0.46) !important;
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.98)),
-    radial-gradient(circle at top right, rgba(239, 68, 68, 0.18), transparent 42%) !important;
+    radial-gradient(
+      circle at top right,
+      rgba(239, 68, 68, 0.18),
+      transparent 42%
+    ) !important;
   box-shadow:
     0 24px 70px rgba(0, 0, 0, 0.42),
     0 0 42px rgba(239, 68, 68, 0.13),
@@ -18549,7 +18590,9 @@ textarea {
   box-shadow: 0 0 24px rgba(239, 68, 68, 0.14) !important;
 }
 
-.campaign-added-notification--removed .campaign-added-notification__content span {
+.campaign-added-notification--removed
+  .campaign-added-notification__content
+  span {
   color: #fca5a5 !important;
 }
 
@@ -18557,7 +18600,6 @@ textarea {
   background: linear-gradient(135deg, #f87171, #dc2626) !important;
   color: #fff7f7 !important;
 }
-
 
 /* =========================================================
    CHAT - NOTIFICAÇÃO DE MENSAGEM NO MEIO ESQUERDO
@@ -18611,7 +18653,6 @@ textarea {
   }
 }
 
-
 /* =========================================================
    RESPONSIVIDADE - SELEÇÃO / EDIÇÃO DA IMAGEM DA CAMPANHA
    Ajusta o painel da capa e o modal de edição no tablet/celular.
@@ -18644,7 +18685,10 @@ textarea {
 }
 
 .image-cropper-stage-wrap {
-  width: min(var(--image-cropper-stage-w, 560px), calc(100vw - 56px)) !important;
+  width: min(
+    var(--image-cropper-stage-w, 560px),
+    calc(100vw - 56px)
+  ) !important;
   max-width: 100% !important;
   margin-left: auto !important;
   margin-right: auto !important;
@@ -18831,7 +18875,6 @@ textarea {
   }
 }
 
-
 /* =========================================================
    NOTIFICAÇÕES DE CAMPANHA - POSIÇÃO RESPONSIVA
    PC: meio direito. Celular/tablet: topo da tela.
@@ -18920,7 +18963,6 @@ textarea {
   }
 }
 
-
 /* =========================================================
    NOTIFICAÇÕES DE CAMPANHA - CORREÇÃO FINAL DE POSIÇÃO
    Desktop: meio direito. Celular/tablet: topo da tela.
@@ -18945,7 +18987,8 @@ body #campaignAddedNotificationStack.campaign-added-notification-stack {
 
 @media (max-width: 1024px) {
   body #campaignAddedNotificationStack.campaign-added-notification-stack,
-  body #campaignAddedNotificationStack.campaign-added-notification-stack.campaign-added-notification-stack--mobile-top {
+  body
+    #campaignAddedNotificationStack.campaign-added-notification-stack.campaign-added-notification-stack--mobile-top {
     top: max(12px, env(safe-area-inset-top)) !important;
     right: 12px !important;
     bottom: auto !important;
@@ -18965,19 +19008,24 @@ body #campaignAddedNotificationStack.campaign-added-notification-stack {
   }
 
   body #campaignAddedNotificationStack .campaign-added-notification.show,
-  body #campaignAddedNotificationStack .campaign-added-notification--removed.show {
+  body
+    #campaignAddedNotificationStack
+    .campaign-added-notification--removed.show {
     transform: translateY(0) scale(1) !important;
   }
 
   body #campaignAddedNotificationStack .campaign-added-notification.hide,
-  body #campaignAddedNotificationStack .campaign-added-notification--removed.hide {
+  body
+    #campaignAddedNotificationStack
+    .campaign-added-notification--removed.hide {
     transform: translateY(-18px) scale(0.98) !important;
   }
 }
 
 @media (max-width: 520px) {
   body #campaignAddedNotificationStack.campaign-added-notification-stack,
-  body #campaignAddedNotificationStack.campaign-added-notification-stack.campaign-added-notification-stack--mobile-top {
+  body
+    #campaignAddedNotificationStack.campaign-added-notification-stack.campaign-added-notification-stack--mobile-top {
     top: max(10px, env(safe-area-inset-top)) !important;
     right: 10px !important;
     left: 10px !important;
@@ -18993,16 +19041,17 @@ body #campaignAddedNotificationStack.campaign-added-notification-stack {
   }
 }
 
-
 /* =========================================================
    CORREÇÃO FINAL MOBILE - NOTIFICAÇÕES NO TOPO
    Vence os blocos antigos que jogavam o chat para o meio.
 ========================================================= */
 @media (max-width: 1024px), (pointer: coarse) and (max-width: 1180px) {
   body #playerCampaignChatNotificationStack.player-chat-notification-stack,
-  body #playerCampaignChatNotificationStack.player-chat-notification-stack.player-chat-notification-stack--mobile-top,
+  body
+    #playerCampaignChatNotificationStack.player-chat-notification-stack.player-chat-notification-stack--mobile-top,
   body #campaignAddedNotificationStack.campaign-added-notification-stack,
-  body #campaignAddedNotificationStack.campaign-added-notification-stack.campaign-added-notification-stack--mobile-top {
+  body
+    #campaignAddedNotificationStack.campaign-added-notification-stack.campaign-added-notification-stack--mobile-top {
     position: fixed !important;
     top: max(10px, env(safe-area-inset-top)) !important;
     right: 10px !important;
@@ -19026,15 +19075,21 @@ body #campaignAddedNotificationStack.campaign-added-notification-stack {
     transform: translateY(-18px) scale(0.98) !important;
   }
 
-  body #playerCampaignChatNotificationStack .player-chat-notification:not(.leaving),
+  body
+    #playerCampaignChatNotificationStack
+    .player-chat-notification:not(.leaving),
   body #campaignAddedNotificationStack .campaign-added-notification.show,
-  body #campaignAddedNotificationStack .campaign-added-notification--removed.show {
+  body
+    #campaignAddedNotificationStack
+    .campaign-added-notification--removed.show {
     transform: translateY(0) scale(1) !important;
   }
 
   body #playerCampaignChatNotificationStack .player-chat-notification.leaving,
   body #campaignAddedNotificationStack .campaign-added-notification.hide,
-  body #campaignAddedNotificationStack .campaign-added-notification--removed.hide {
+  body
+    #campaignAddedNotificationStack
+    .campaign-added-notification--removed.hide {
     transform: translateY(-18px) scale(0.98) !important;
   }
 }
@@ -19053,5 +19108,291 @@ body #campaignAddedNotificationStack.campaign-added-notification-stack {
     padding: 12px !important;
     grid-template-columns: 40px 1fr !important;
     border-radius: 17px !important;
+  }
+}
+
+/* =========================================================
+   HEADER - BOTÕES FIXOS DENTRO DO HEADER
+========================================================= */
+.header.header-with-fixed-actions,
+header.header-with-fixed-actions {
+  overflow: visible !important;
+  isolation: isolate !important;
+}
+
+.header.header-with-fixed-actions > .header-back-area,
+.header.header-with-fixed-actions > .header-logout-area,
+header.header-with-fixed-actions > .header-back-area,
+header.header-with-fixed-actions > .header-logout-area {
+  position: absolute !important;
+  top: 50% !important;
+  z-index: 1005 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  transform: translateY(-50%) !important;
+  pointer-events: auto !important;
+}
+
+.header.header-with-fixed-actions > .header-back-area,
+header.header-with-fixed-actions > .header-back-area {
+  left: 28px !important;
+  right: auto !important;
+}
+
+.header.header-with-fixed-actions > .header-logout-area,
+header.header-with-fixed-actions > .header-logout-area {
+  right: 28px !important;
+  left: auto !important;
+}
+
+.header.header-with-fixed-actions .header-container,
+.header.header-with-fixed-actions .header-container-center,
+header.header-with-fixed-actions .header-container,
+header.header-with-fixed-actions .header-container-center {
+  padding-left: max(5%, 172px) !important;
+  padding-right: max(5%, 92px) !important;
+}
+
+body > .header-back-area,
+body > .header-logout-area,
+.header-nav-actions {
+  display: none !important;
+}
+
+.header.header-with-fixed-actions .header-back-button,
+.header.header-with-fixed-actions .header-logout-button,
+header.header-with-fixed-actions .header-back-button,
+header.header-with-fixed-actions .header-logout-button {
+  margin: 0 !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  border-radius: 999px !important;
+  font-family: "Quantico", sans-serif !important;
+  line-height: 1 !important;
+  cursor: pointer !important;
+  transform: none !important;
+  translate: none !important;
+  transition:
+    border-color 0.22s ease,
+    background 0.22s ease,
+    color 0.22s ease,
+    box-shadow 0.22s ease !important;
+}
+
+.header.header-with-fixed-actions .header-back-button,
+header.header-with-fixed-actions .header-back-button {
+  width: auto !important;
+  min-width: 128px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  max-height: 46px !important;
+  padding: 0 18px 0 10px !important;
+  gap: 9px !important;
+  border: 1px solid rgba(34, 211, 238, 0.68) !important;
+  background: #020617 !important;
+  color: #f8fafc !important;
+  font-size: 14px !important;
+  font-weight: 700 !important;
+  letter-spacing: 0.4px !important;
+  text-transform: uppercase !important;
+  box-shadow:
+    0 0 0 1px rgba(34, 211, 238, 0.1),
+    0 0 22px rgba(34, 211, 238, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.header.header-with-fixed-actions .header-logout-button,
+header.header-with-fixed-actions .header-logout-button {
+  width: 46px !important;
+  min-width: 46px !important;
+  max-width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  max-height: 46px !important;
+  padding: 0 !important;
+  gap: 0 !important;
+  border: 1px solid rgba(248, 113, 113, 0.68) !important;
+  background: #120812 !important;
+  color: #f8fafc !important;
+  box-shadow:
+    0 0 0 1px rgba(248, 113, 113, 0.08),
+    0 0 20px rgba(248, 113, 113, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
+}
+
+.header.header-with-fixed-actions .header-back-button:hover,
+.header.header-with-fixed-actions .header-back-button:active,
+.header.header-with-fixed-actions .header-back-button:focus,
+.header.header-with-fixed-actions .header-back-button:focus-visible,
+.header.header-with-fixed-actions .header-logout-button:hover,
+.header.header-with-fixed-actions .header-logout-button:active,
+.header.header-with-fixed-actions .header-logout-button:focus,
+.header.header-with-fixed-actions .header-logout-button:focus-visible,
+header.header-with-fixed-actions .header-back-button:hover,
+header.header-with-fixed-actions .header-back-button:active,
+header.header-with-fixed-actions .header-back-button:focus,
+header.header-with-fixed-actions .header-back-button:focus-visible,
+header.header-with-fixed-actions .header-logout-button:hover,
+header.header-with-fixed-actions .header-logout-button:active,
+header.header-with-fixed-actions .header-logout-button:focus,
+header.header-with-fixed-actions .header-logout-button:focus-visible {
+  transform: none !important;
+  translate: none !important;
+}
+
+.header.header-with-fixed-actions .header-back-button:hover,
+header.header-with-fixed-actions .header-back-button:hover {
+  border-color: rgba(34, 211, 238, 0.95) !important;
+  background: #062133 !important;
+  color: #ffffff !important;
+}
+
+.header.header-with-fixed-actions .header-logout-button:hover,
+header.header-with-fixed-actions .header-logout-button:hover {
+  border-color: rgba(248, 113, 113, 0.95) !important;
+  background: #2a0d13 !important;
+  color: #ffffff !important;
+}
+
+.header.header-with-fixed-actions .header-back-button__icon,
+.header.header-with-fixed-actions .header-logout-button__icon,
+header.header-with-fixed-actions .header-back-button__icon,
+header.header-with-fixed-actions .header-logout-button__icon {
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  font-family: "Quantico", sans-serif !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+}
+
+.header.header-with-fixed-actions .header-back-button__icon,
+header.header-with-fixed-actions .header-back-button__icon {
+  background: rgba(34, 211, 238, 0.16) !important;
+  color: #67e8f9 !important;
+  font-size: 24px !important;
+}
+
+.header.header-with-fixed-actions .header-logout-button__icon,
+header.header-with-fixed-actions .header-logout-button__icon {
+  background: rgba(248, 113, 113, 0.14) !important;
+  color: #fca5a5 !important;
+  font-size: 13px !important;
+}
+
+.header.header-with-fixed-actions .header-back-button__text,
+header.header-with-fixed-actions .header-back-button__text {
+  display: inline-block !important;
+  color: #f8fafc !important;
+}
+
+.header.header-with-fixed-actions .header-logout-button__text,
+header.header-with-fixed-actions .header-logout-button__text {
+  display: none !important;
+}
+
+@media (max-width: 760px) {
+  .header.header-with-fixed-actions > .header-back-area,
+  header.header-with-fixed-actions > .header-back-area {
+    left: 10px !important;
+  }
+
+  .header.header-with-fixed-actions > .header-logout-area,
+  header.header-with-fixed-actions > .header-logout-area {
+    right: 10px !important;
+  }
+
+  .header.header-with-fixed-actions .header-container,
+  .header.header-with-fixed-actions .header-container-center,
+  header.header-with-fixed-actions .header-container,
+  header.header-with-fixed-actions .header-container-center {
+    padding-left: 64px !important;
+    padding-right: 64px !important;
+  }
+
+  .header.header-with-fixed-actions .logo img,
+  header.header-with-fixed-actions .logo img {
+    max-width: calc(100vw - 140px) !important;
+  }
+
+  .header.header-with-fixed-actions .header-back-button,
+  .header.header-with-fixed-actions .header-logout-button,
+  header.header-with-fixed-actions .header-back-button,
+  header.header-with-fixed-actions .header-logout-button {
+    width: 42px !important;
+    min-width: 42px !important;
+    max-width: 42px !important;
+    height: 42px !important;
+    min-height: 42px !important;
+    max-height: 42px !important;
+    padding: 0 !important;
+    gap: 0 !important;
+  }
+
+  .header.header-with-fixed-actions .header-back-button__text,
+  .header.header-with-fixed-actions .header-logout-button__text,
+  header.header-with-fixed-actions .header-back-button__text,
+  header.header-with-fixed-actions .header-logout-button__text {
+    display: none !important;
+  }
+
+  .header.header-with-fixed-actions .header-back-button__icon,
+  .header.header-with-fixed-actions .header-logout-button__icon,
+  header.header-with-fixed-actions .header-back-button__icon,
+  header.header-with-fixed-actions .header-logout-button__icon {
+    width: 28px !important;
+    height: 28px !important;
+    min-width: 28px !important;
+  }
+}
+
+@media (max-width: 420px) {
+  .header.header-with-fixed-actions > .header-back-area,
+  header.header-with-fixed-actions > .header-back-area {
+    left: 8px !important;
+  }
+
+  .header.header-with-fixed-actions > .header-logout-area,
+  header.header-with-fixed-actions > .header-logout-area {
+    right: 8px !important;
+  }
+
+  .header.header-with-fixed-actions .header-container,
+  .header.header-with-fixed-actions .header-container-center,
+  header.header-with-fixed-actions .header-container,
+  header.header-with-fixed-actions .header-container-center {
+    padding-left: 56px !important;
+    padding-right: 56px !important;
+  }
+
+  .header.header-with-fixed-actions .logo img,
+  header.header-with-fixed-actions .logo img {
+    max-width: calc(100vw - 118px) !important;
+  }
+
+  .header.header-with-fixed-actions .header-back-button,
+  .header.header-with-fixed-actions .header-logout-button,
+  header.header-with-fixed-actions .header-back-button,
+  header.header-with-fixed-actions .header-logout-button {
+    width: 38px !important;
+    min-width: 38px !important;
+    max-width: 38px !important;
+    height: 38px !important;
+    min-height: 38px !important;
+    max-height: 38px !important;
+  }
+
+  .header.header-with-fixed-actions .header-back-button__icon,
+  .header.header-with-fixed-actions .header-logout-button__icon,
+  header.header-with-fixed-actions .header-back-button__icon,
+  header.header-with-fixed-actions .header-logout-button__icon {
+    width: 24px !important;
+    height: 24px !important;
+    min-width: 24px !important;
   }
 }

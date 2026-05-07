@@ -11632,6 +11632,9 @@ function setupHeaderBackButton() {
     .querySelectorAll(".header-nav-actions, .header-back-area, .header-logout-area")
     .forEach((element) => element.remove());
 
+  const header = document.querySelector(".header") || document.querySelector("header") || document.body;
+  header.classList.add("header-with-fixed-actions");
+
   const backArea = document.createElement("div");
   backArea.className = "header-back-area";
 
@@ -11695,10 +11698,28 @@ function setupHeaderBackButton() {
   backArea.appendChild(backButton);
   logoutArea.appendChild(logoutButton);
 
-  document.body.appendChild(backArea);
-  document.body.appendChild(logoutArea);
+  header.appendChild(backArea);
+  header.appendChild(logoutArea);
 
   forceHeaderButtonLayout(backArea, logoutArea, backButton, logoutButton);
+
+  if (!window.campaignLabHeaderButtonsResizeReady) {
+    window.campaignLabHeaderButtonsResizeReady = true;
+    window.addEventListener(
+      "resize",
+      () => {
+        const currentBackArea = document.querySelector(".header-with-fixed-actions > .header-back-area");
+        const currentLogoutArea = document.querySelector(".header-with-fixed-actions > .header-logout-area");
+        const currentBackButton = currentBackArea?.querySelector(".header-back-button");
+        const currentLogoutButton = currentLogoutArea?.querySelector(".header-logout-button");
+
+        if (currentBackArea && currentLogoutArea && currentBackButton && currentLogoutButton) {
+          forceHeaderButtonLayout(currentBackArea, currentLogoutArea, currentBackButton, currentLogoutButton);
+        }
+      },
+      { passive: true }
+    );
+  }
 }
 
 function injectHeaderButtonFixedStyles() {
@@ -11709,11 +11730,19 @@ function injectHeaderButtonFixedStyles() {
   style.id = "campaign-lab-header-buttons-fixed-style";
 
   style.textContent = `
-    body > .header-back-area,
-    body > .header-logout-area {
-      position: fixed !important;
-      top: 46px !important;
-      z-index: 999999 !important;
+    .header.header-with-fixed-actions,
+    header.header-with-fixed-actions {
+      overflow: visible !important;
+      isolation: isolate !important;
+    }
+
+    .header.header-with-fixed-actions > .header-back-area,
+    .header.header-with-fixed-actions > .header-logout-area,
+    header.header-with-fixed-actions > .header-back-area,
+    header.header-with-fixed-actions > .header-logout-area {
+      position: absolute !important;
+      top: 50% !important;
+      z-index: 1005 !important;
       display: flex !important;
       align-items: center !important;
       justify-content: center !important;
@@ -11721,57 +11750,77 @@ function injectHeaderButtonFixedStyles() {
       pointer-events: auto !important;
     }
 
-    body > .header-back-area {
+    .header.header-with-fixed-actions > .header-back-area,
+    header.header-with-fixed-actions > .header-back-area {
       left: 28px !important;
       right: auto !important;
     }
 
-    body > .header-logout-area {
+    .header.header-with-fixed-actions > .header-logout-area,
+    header.header-with-fixed-actions > .header-logout-area {
       right: 28px !important;
       left: auto !important;
     }
 
+    .header.header-with-fixed-actions .header-container,
+    .header.header-with-fixed-actions .header-container-center,
+    header.header-with-fixed-actions .header-container,
+    header.header-with-fixed-actions .header-container-center {
+      padding-left: max(5%, 172px) !important;
+      padding-right: max(5%, 92px) !important;
+    }
+
+    body > .header-back-area,
+    body > .header-logout-area,
     .header-nav-actions {
       display: none !important;
     }
 
-    body > .header-back-area .header-back-button,
-    body > .header-logout-area .header-logout-button,
-    body > .header-back-area .header-back-button:hover,
-    body > .header-logout-area .header-logout-button:hover,
-    body > .header-back-area .header-back-button:active,
-    body > .header-logout-area .header-logout-button:active {
-      transform: none !important;
-    }
-
-    body > .header-back-area .header-back-button {
-      width: auto !important;
-      min-width: 128px !important;
-      height: 46px !important;
-      padding: 0 18px 0 10px !important;
-      gap: 9px !important;
+    .header.header-with-fixed-actions .header-back-button,
+    .header.header-with-fixed-actions .header-logout-button,
+    header.header-with-fixed-actions .header-back-button,
+    header.header-with-fixed-actions .header-logout-button {
+      margin: 0 !important;
       display: inline-flex !important;
       align-items: center !important;
       justify-content: center !important;
       border-radius: 999px !important;
+      font-family: "Quantico", sans-serif !important;
+      line-height: 1 !important;
+      cursor: pointer !important;
+      transform: none !important;
+      translate: none !important;
+      transition:
+        border-color 0.22s ease,
+        background 0.22s ease,
+        color 0.22s ease,
+        box-shadow 0.22s ease !important;
+    }
+
+    .header.header-with-fixed-actions .header-back-button,
+    header.header-with-fixed-actions .header-back-button {
+      width: auto !important;
+      min-width: 128px !important;
+      height: 46px !important;
+      min-height: 46px !important;
+      max-height: 46px !important;
+      padding: 0 18px 0 10px !important;
+      gap: 9px !important;
       border: 1px solid rgba(34, 211, 238, 0.68) !important;
       background: #020617 !important;
       color: #f8fafc !important;
-      font-family: "Quantico", sans-serif !important;
       font-size: 14px !important;
       font-weight: 700 !important;
-      line-height: 1 !important;
       letter-spacing: 0.4px !important;
       text-transform: uppercase !important;
-      cursor: pointer !important;
-      transition: border-color 0.22s ease, background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease !important;
       box-shadow:
         0 0 0 1px rgba(34, 211, 238, 0.1),
         0 0 22px rgba(34, 211, 238, 0.16),
         inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
     }
 
-    body > .header-logout-area .header-logout-button {
+    .header.header-with-fixed-actions .header-logout-button,
+    header.header-with-fixed-actions .header-logout-button {
       width: 46px !important;
       min-width: 46px !important;
       max-width: 46px !important;
@@ -11780,23 +11829,19 @@ function injectHeaderButtonFixedStyles() {
       max-height: 46px !important;
       padding: 0 !important;
       gap: 0 !important;
-      display: inline-flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      border-radius: 999px !important;
       border: 1px solid rgba(248, 113, 113, 0.68) !important;
       background: #120812 !important;
       color: #f8fafc !important;
-      cursor: pointer !important;
-      transition: border-color 0.22s ease, background 0.22s ease, color 0.22s ease, box-shadow 0.22s ease !important;
       box-shadow:
         0 0 0 1px rgba(248, 113, 113, 0.08),
         0 0 20px rgba(248, 113, 113, 0.16),
         inset 0 1px 0 rgba(255, 255, 255, 0.04) !important;
     }
 
-    body > .header-back-area .header-back-button__icon,
-    body > .header-logout-area .header-logout-button__icon {
+    .header.header-with-fixed-actions .header-back-button__icon,
+    .header.header-with-fixed-actions .header-logout-button__icon,
+    header.header-with-fixed-actions .header-back-button__icon,
+    header.header-with-fixed-actions .header-logout-button__icon {
       width: 30px !important;
       height: 30px !important;
       min-width: 30px !important;
@@ -11808,55 +11853,73 @@ function injectHeaderButtonFixedStyles() {
       line-height: 1 !important;
     }
 
-    body > .header-back-area .header-back-button__icon {
+    .header.header-with-fixed-actions .header-back-button__icon,
+    header.header-with-fixed-actions .header-back-button__icon {
       background: rgba(34, 211, 238, 0.16) !important;
       color: #67e8f9 !important;
       font-size: 24px !important;
     }
 
-    body > .header-logout-area .header-logout-button__icon {
+    .header.header-with-fixed-actions .header-logout-button__icon,
+    header.header-with-fixed-actions .header-logout-button__icon {
       background: rgba(248, 113, 113, 0.14) !important;
       color: #fca5a5 !important;
       font-size: 13px !important;
     }
 
-    body > .header-back-area .header-back-button__text {
+    .header.header-with-fixed-actions .header-back-button__text,
+    header.header-with-fixed-actions .header-back-button__text {
       display: inline-block !important;
       color: #f8fafc !important;
     }
 
-    body > .header-logout-area .header-logout-button__text {
+    .header.header-with-fixed-actions .header-logout-button__text,
+    header.header-with-fixed-actions .header-logout-button__text {
       display: none !important;
     }
 
-    body > .header-back-area .header-back-button:hover {
+    .header.header-with-fixed-actions .header-back-button:hover,
+    header.header-with-fixed-actions .header-back-button:hover {
       border-color: rgba(34, 211, 238, 0.95) !important;
       background: #062133 !important;
       color: #ffffff !important;
     }
 
-    body > .header-logout-area .header-logout-button:hover {
+    .header.header-with-fixed-actions .header-logout-button:hover,
+    header.header-with-fixed-actions .header-logout-button:hover {
       border-color: rgba(248, 113, 113, 0.95) !important;
       background: #2a0d13 !important;
       color: #ffffff !important;
     }
 
     @media (max-width: 760px) {
-      body > .header-back-area,
-      body > .header-logout-area {
-        top: 41px !important;
-      }
-
-      body > .header-back-area {
+      .header.header-with-fixed-actions > .header-back-area,
+      header.header-with-fixed-actions > .header-back-area {
         left: 10px !important;
       }
 
-      body > .header-logout-area {
+      .header.header-with-fixed-actions > .header-logout-area,
+      header.header-with-fixed-actions > .header-logout-area {
         right: 10px !important;
       }
 
-      body > .header-back-area .header-back-button,
-      body > .header-logout-area .header-logout-button {
+      .header.header-with-fixed-actions .header-container,
+      .header.header-with-fixed-actions .header-container-center,
+      header.header-with-fixed-actions .header-container,
+      header.header-with-fixed-actions .header-container-center {
+        padding-left: 64px !important;
+        padding-right: 64px !important;
+      }
+
+      .header.header-with-fixed-actions .logo img,
+      header.header-with-fixed-actions .logo img {
+        max-width: calc(100vw - 140px) !important;
+      }
+
+      .header.header-with-fixed-actions .header-back-button,
+      .header.header-with-fixed-actions .header-logout-button,
+      header.header-with-fixed-actions .header-back-button,
+      header.header-with-fixed-actions .header-logout-button {
         width: 42px !important;
         min-width: 42px !important;
         max-width: 42px !important;
@@ -11867,16 +11930,66 @@ function injectHeaderButtonFixedStyles() {
         gap: 0 !important;
       }
 
-      body > .header-back-area .header-back-button__text,
-      body > .header-logout-area .header-logout-button__text {
+      .header.header-with-fixed-actions .header-back-button__text,
+      .header.header-with-fixed-actions .header-logout-button__text,
+      header.header-with-fixed-actions .header-back-button__text,
+      header.header-with-fixed-actions .header-logout-button__text {
         display: none !important;
       }
 
-      body > .header-back-area .header-back-button__icon,
-      body > .header-logout-area .header-logout-button__icon {
+      .header.header-with-fixed-actions .header-back-button__icon,
+      .header.header-with-fixed-actions .header-logout-button__icon,
+      header.header-with-fixed-actions .header-back-button__icon,
+      header.header-with-fixed-actions .header-logout-button__icon {
         width: 28px !important;
         height: 28px !important;
         min-width: 28px !important;
+      }
+    }
+
+    @media (max-width: 420px) {
+      .header.header-with-fixed-actions > .header-back-area,
+      header.header-with-fixed-actions > .header-back-area {
+        left: 8px !important;
+      }
+
+      .header.header-with-fixed-actions > .header-logout-area,
+      header.header-with-fixed-actions > .header-logout-area {
+        right: 8px !important;
+      }
+
+      .header.header-with-fixed-actions .header-container,
+      .header.header-with-fixed-actions .header-container-center,
+      header.header-with-fixed-actions .header-container,
+      header.header-with-fixed-actions .header-container-center {
+        padding-left: 56px !important;
+        padding-right: 56px !important;
+      }
+
+      .header.header-with-fixed-actions .logo img,
+      header.header-with-fixed-actions .logo img {
+        max-width: calc(100vw - 118px) !important;
+      }
+
+      .header.header-with-fixed-actions .header-back-button,
+      .header.header-with-fixed-actions .header-logout-button,
+      header.header-with-fixed-actions .header-back-button,
+      header.header-with-fixed-actions .header-logout-button {
+        width: 38px !important;
+        min-width: 38px !important;
+        max-width: 38px !important;
+        height: 38px !important;
+        min-height: 38px !important;
+        max-height: 38px !important;
+      }
+
+      .header.header-with-fixed-actions .header-back-button__icon,
+      .header.header-with-fixed-actions .header-logout-button__icon,
+      header.header-with-fixed-actions .header-back-button__icon,
+      header.header-with-fixed-actions .header-logout-button__icon {
+        width: 24px !important;
+        height: 24px !important;
+        min-width: 24px !important;
       }
     }
   `;
@@ -11885,24 +11998,28 @@ function injectHeaderButtonFixedStyles() {
 }
 
 function forceHeaderButtonLayout(backArea, logoutArea, backButton, logoutButton) {
-  backArea.style.setProperty("position", "fixed", "important");
-  backArea.style.setProperty("top", "46px", "important");
-  backArea.style.setProperty("left", "28px", "important");
+  const isMobile = window.matchMedia("(max-width: 760px)").matches;
+  const isSmall = window.matchMedia("(max-width: 420px)").matches;
+  const side = isSmall ? "8px" : isMobile ? "10px" : "28px";
+
+  backArea.style.setProperty("position", "absolute", "important");
+  backArea.style.setProperty("top", "50%", "important");
+  backArea.style.setProperty("left", side, "important");
   backArea.style.setProperty("right", "auto", "important");
-  backArea.style.setProperty("z-index", "999999", "important");
+  backArea.style.setProperty("z-index", "1005", "important");
   backArea.style.setProperty("transform", "translateY(-50%)", "important");
 
-  logoutArea.style.setProperty("position", "fixed", "important");
-  logoutArea.style.setProperty("top", "46px", "important");
-  logoutArea.style.setProperty("right", "28px", "important");
+  logoutArea.style.setProperty("position", "absolute", "important");
+  logoutArea.style.setProperty("top", "50%", "important");
+  logoutArea.style.setProperty("right", side, "important");
   logoutArea.style.setProperty("left", "auto", "important");
-  logoutArea.style.setProperty("z-index", "999999", "important");
+  logoutArea.style.setProperty("z-index", "1005", "important");
   logoutArea.style.setProperty("transform", "translateY(-50%)", "important");
 
   backButton.style.setProperty("transform", "none", "important");
   logoutButton.style.setProperty("transform", "none", "important");
 
-  ["mouseenter", "mouseover", "mousemove", "mouseleave", "mousedown", "mouseup"].forEach((eventName) => {
+  ["mouseenter", "mouseover", "mousemove", "mouseleave", "mousedown", "mouseup", "focus", "blur"].forEach((eventName) => {
     backButton.addEventListener(eventName, () => {
       backButton.style.setProperty("transform", "none", "important");
     });
