@@ -985,14 +985,23 @@ function showCampaignAddedNotification(notification, options = {}) {
   const closeButton = card.querySelector(".campaign-added-notification__close");
   const actionButton = card.querySelector(".campaign-added-notification__action");
 
+  const autoCloseTimer = window.setTimeout(async () => {
+    if (!card.isConnected) return;
+
+    await markCampaignAddedNotificationAsRead(notificationId);
+    removeCampaignAddedNotificationCard(card);
+  }, 5000);
+
   closeButton?.addEventListener("click", async (event) => {
     event.stopPropagation();
+    window.clearTimeout(autoCloseTimer);
     await markCampaignAddedNotificationAsRead(notificationId);
     removeCampaignAddedNotificationCard(card);
   });
 
   actionButton?.addEventListener("click", async (event) => {
     event.stopPropagation();
+    window.clearTimeout(autoCloseTimer);
     await markCampaignAddedNotificationAsRead(notificationId);
     removeCampaignAddedNotificationCard(card);
     if (!isRemoved) {
@@ -1001,6 +1010,7 @@ function showCampaignAddedNotification(notification, options = {}) {
   });
 
   card.addEventListener("click", async () => {
+    window.clearTimeout(autoCloseTimer);
     await markCampaignAddedNotificationAsRead(notificationId);
     removeCampaignAddedNotificationCard(card);
     if (!isRemoved) {
