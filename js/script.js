@@ -929,20 +929,81 @@ function subscribeCampaignAddedNotifications(userId) {
 function getCampaignAddedNotificationStack() {
   let stack = document.getElementById("campaignAddedNotificationStack");
 
-  if (stack) return stack;
+  if (stack) {
+    applyCampaignAddedNotificationResponsivePosition(stack);
+    return stack;
+  }
 
   stack = document.createElement("div");
   stack.id = "campaignAddedNotificationStack";
   stack.className = "campaign-added-notification-stack";
   document.body.appendChild(stack);
 
+  applyCampaignAddedNotificationResponsivePosition(stack);
+  setupCampaignAddedNotificationPositionWatcher();
+
   return stack;
+}
+
+function setupCampaignAddedNotificationPositionWatcher() {
+  if (window.campaignAddedNotificationPositionWatcherReady) return;
+
+  window.campaignAddedNotificationPositionWatcherReady = true;
+
+  const refreshPosition = () => {
+    const stack = document.getElementById("campaignAddedNotificationStack");
+    if (stack) applyCampaignAddedNotificationResponsivePosition(stack);
+  };
+
+  window.addEventListener("resize", refreshPosition);
+  window.addEventListener("orientationchange", refreshPosition);
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", refreshPosition);
+  }
+}
+
+function applyCampaignAddedNotificationResponsivePosition(stack) {
+  if (!stack) return;
+
+  const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
+
+  stack.style.setProperty("position", "fixed", "important");
+  stack.style.setProperty("z-index", "99999", "important");
+  stack.style.setProperty("display", "flex", "important");
+  stack.style.setProperty("flex-direction", "column", "important");
+  stack.style.setProperty("gap", "12px", "important");
+  stack.style.setProperty("pointer-events", "none", "important");
+
+  if (isMobileOrTablet) {
+    stack.classList.add("campaign-added-notification-stack--mobile-top");
+    stack.style.setProperty("top", "max(12px, env(safe-area-inset-top))", "important");
+    stack.style.setProperty("right", "12px", "important");
+    stack.style.setProperty("bottom", "auto", "important");
+    stack.style.setProperty("left", "12px", "important");
+    stack.style.setProperty("width", "auto", "important");
+    stack.style.setProperty("max-width", "none", "important");
+    stack.style.setProperty("transform", "none", "important");
+    stack.style.setProperty("align-items", "stretch", "important");
+    return;
+  }
+
+  stack.classList.remove("campaign-added-notification-stack--mobile-top");
+  stack.style.setProperty("top", "50%", "important");
+  stack.style.setProperty("right", "22px", "important");
+  stack.style.setProperty("bottom", "auto", "important");
+  stack.style.setProperty("left", "auto", "important");
+  stack.style.setProperty("width", "min(380px, calc(100vw - 32px))", "important");
+  stack.style.setProperty("max-width", "none", "important");
+  stack.style.setProperty("transform", "translateY(-50%)", "important");
+  stack.style.setProperty("align-items", "stretch", "important");
 }
 
 function showCampaignAddedNotification(notification, options = {}) {
   if (!notification) return;
 
   const stack = getCampaignAddedNotificationStack();
+  applyCampaignAddedNotificationResponsivePosition(stack);
   const notificationId = String(notification.id || "");
 
   if (notificationId && stack.querySelector(`[data-campaign-added-notification-id="${CSS.escape(notificationId)}"]`)) {
