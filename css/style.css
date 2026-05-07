@@ -18874,3 +18874,91 @@ textarea {
     padding: 14px !important;
   }
 }
+
+/* =========================================================
+   NOTIFICAÇÕES DE CAMPANHA - POSIÇÃO RESPONSIVA
+   PC: meio direito. Celular/tablet: topo da tela.
+========================================================= */
+.campaign-added-notification-stack {
+  top: 50% !important;
+  right: 22px !important;
+  bottom: auto !important;
+  left: auto !important;
+  width: min(380px, calc(100vw - 32px)) !important;
+  transform: translateY(-50%) !important;
+  align-items: stretch !important;
+}
+
+.campaign-added-notification,
+.campaign-added-notification--removed {
+  transform: translateX(28px) scale(0.96) !important;
+}
+
+.campaign-added-notification.show,
+.campaign-added-notification--removed.show {
+  transform: translateX(0) scale(1) !important;
+}
+
+.campaign-added-notification.hide,
+.campaign-added-notification--removed.hide {
+  transform: translateX(28px) scale(0.96) !important;
+}
+
+@media (max-width: 760px) {
+  .campaign-added-notification-stack {
+    top: max(12px, env(safe-area-inset-top)) !important;
+    right: 12px !important;
+    bottom: auto !important;
+    left: 12px !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: none !important;
+    align-items: stretch !important;
+  }
+
+  .campaign-added-notification,
+  .campaign-added-notification--removed {
+    width: 100% !important;
+    transform: translateY(-18px) scale(0.98) !important;
+  }
+
+  .campaign-added-notification.show,
+  .campaign-added-notification--removed.show {
+    transform: translateY(0) scale(1) !important;
+  }
+
+  .campaign-added-notification.hide,
+  .campaign-added-notification--removed.hide {
+    transform: translateY(-18px) scale(0.98) !important;
+  }
+}
+
+@media (min-width: 761px) and (max-width: 1024px) {
+  .campaign-added-notification-stack {
+    top: 18px !important;
+    right: 18px !important;
+    bottom: auto !important;
+    left: 18px !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: none !important;
+  }
+
+  .campaign-added-notification,
+  .campaign-added-notification--removed {
+    max-width: 520px !important;
+    margin-left: auto !important;
+    margin-right: auto !important;
+    transform: translateY(-18px) scale(0.98) !important;
+  }
+
+  .campaign-added-notification.show,
+  .campaign-added-notification--removed.show {
+    transform: translateY(0) scale(1) !important;
+  }
+
+  .campaign-added-notification.hide,
+  .campaign-added-notification--removed.hide {
+    transform: translateY(-18px) scale(0.98) !important;
+  }
+}
