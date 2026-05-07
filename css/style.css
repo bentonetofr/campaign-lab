@@ -18056,17 +18056,35 @@ textarea {
 }
 
 /* =========================================================
-   RUNASKIN - CENTRALIZAR IMAGEM NO CARD
-   Mantém a imagem editada visível, centralizada e sem corte.
+   RUNASKIN - CARD MOSTRA EXATAMENTE O QUADRADO DA EDIÇÃO
 ========================================================= */
+.runaskin-visual-note-card[data-runaskin-note-card="true"] {
+  align-content: start !important;
+}
+
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-image-picker {
+  width: 100% !important;
+  display: block !important;
+}
+
 .runaskin-visual-note-card[data-runaskin-note-card="true"]
   .runaskin-visual-note-preview {
+  width: 100% !important;
+  aspect-ratio: 1 / 1 !important;
+  min-height: 220px !important;
+  max-height: none !important;
+  height: auto !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+  padding: 0 !important;
   display: grid !important;
   place-items: center !important;
-  overflow: hidden !important;
-  background:
-    radial-gradient(circle at center, rgba(34, 211, 238, 0.1), transparent 54%),
-    rgba(2, 6, 23, 0.78) !important;
+}
+
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview.has-image {
+  background: #020617 !important;
 }
 
 .runaskin-visual-note-card[data-runaskin-note-card="true"]
@@ -18074,16 +18092,267 @@ textarea {
   img {
   width: 100% !important;
   height: 100% !important;
-  max-width: 100% !important;
-  max-height: 100% !important;
   display: block !important;
-  object-fit: contain !important;
+  object-fit: cover !important;
   object-position: center center !important;
-  margin: auto !important;
   border-radius: inherit !important;
 }
 
-.runaskin-visual-note-preview.has-image {
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  span {
+  text-align: center !important;
+  line-height: 1.25 !important;
+  max-width: 80% !important;
+}
+
+@media (max-width: 860px) {
+  .runaskin-visual-note-card[data-runaskin-note-card="true"]
+    .runaskin-visual-note-preview {
+    min-height: 190px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .runaskin-visual-note-card[data-runaskin-note-card="true"]
+    .runaskin-visual-note-preview {
+    min-height: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+}
+
+/* =========================================================
+   RUNASKIN - CARD EXATAMENTE IGUAL AO QUADRADO DA EDIÇÃO
+   Aplica nos cards estáticos do HTML e nos cards criados pelo JS.
+========================================================= */
+.runaskin-visual-note-card,
+.runaskin-visual-note-card[data-runaskin-note-card="true"] {
+  align-content: start !important;
+}
+
+.runaskin-visual-note-card .runaskin-visual-note-image-picker,
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-image-picker {
+  width: 100% !important;
+  display: block !important;
+}
+
+.runaskin-visual-note-card .runaskin-visual-note-preview,
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview {
+  width: 100% !important;
+  height: auto !important;
+  min-height: 220px !important;
+  max-height: none !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 0 !important;
+  overflow: hidden !important;
   display: grid !important;
   place-items: center !important;
+  border-radius: 18px !important;
+  background: #020617 !important;
+}
+
+.runaskin-visual-note-card .runaskin-visual-note-preview img,
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  img {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  border-radius: inherit !important;
+}
+
+.runaskin-visual-note-card .runaskin-visual-note-preview span,
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  span {
+  max-width: 80% !important;
+  text-align: center !important;
+  line-height: 1.25 !important;
+}
+
+@media (max-width: 860px) {
+  .runaskin-visual-note-card .runaskin-visual-note-preview,
+  .runaskin-visual-note-card[data-runaskin-note-card="true"]
+    .runaskin-visual-note-preview {
+    min-height: 190px !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .runaskin-visual-note-card .runaskin-visual-note-preview,
+  .runaskin-visual-note-card[data-runaskin-note-card="true"]
+    .runaskin-visual-note-preview {
+    min-height: 0 !important;
+    aspect-ratio: 1 / 1 !important;
+  }
+}
+
+/* =========================================================
+   RUNASKIN - CORREÇÃO DE ALINHAMENTO DOS CARDS
+   Corrige imagem quebrada nos cards vazios e padroniza todos os tamanhos.
+========================================================= */
+.runaskin-visual-notes-grid {
+  align-items: start !important;
+}
+
+.runaskin-visual-note-card,
+.runaskin-visual-note-card[data-runaskin-note-card="true"] {
+  width: 100% !important;
+  min-width: 0 !important;
+  height: auto !important;
+  display: flex !important;
+  flex-direction: column !important;
+  align-items: stretch !important;
+  justify-content: flex-start !important;
+  gap: 10px !important;
+  overflow: hidden !important;
+}
+
+.runaskin-visual-note-card .runaskin-visual-note-image-picker,
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-image-picker {
+  width: 100% !important;
+  height: auto !important;
+  display: block !important;
+  flex: 0 0 auto !important;
+}
+
+.runaskin-visual-note-card .runaskin-visual-note-preview,
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview {
+  position: relative !important;
+  width: 100% !important;
+  height: auto !important;
+  min-height: 0 !important;
+  max-height: none !important;
+  aspect-ratio: 1 / 1 !important;
+  padding: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(circle at center, rgba(34, 211, 238, 0.1), transparent 52%),
+    #020617 !important;
+}
+
+.runaskin-visual-note-card .runaskin-visual-note-preview img,
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  img {
+  width: 100% !important;
+  height: 100% !important;
+  min-width: 100% !important;
+  min-height: 100% !important;
+  max-width: none !important;
+  max-height: none !important;
+  display: block !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  border-radius: inherit !important;
+}
+
+.runaskin-visual-note-card .runaskin-visual-note-preview img[hidden],
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  img[hidden],
+.runaskin-visual-note-card .runaskin-visual-note-preview:not(.has-image) img,
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview:not(.has-image)
+  img,
+.runaskin-visual-note-card .runaskin-visual-note-preview img:not([src]),
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  img:not([src]),
+.runaskin-visual-note-card .runaskin-visual-note-preview img[src=""],
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  img[src=""] {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  min-width: 0 !important;
+  min-height: 0 !important;
+}
+
+.runaskin-visual-note-card .runaskin-visual-note-preview span,
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  span {
+  position: absolute !important;
+  inset: 0 !important;
+  width: 100% !important;
+  height: 100% !important;
+  padding: 16px !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  text-align: center !important;
+  line-height: 1.25 !important;
+  max-width: none !important;
+  z-index: 1 !important;
+}
+
+.runaskin-visual-note-card .runaskin-visual-note-preview span[hidden],
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  span[hidden],
+.runaskin-visual-note-card .runaskin-visual-note-preview.has-image span,
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview.has-image
+  span {
+  display: none !important;
+}
+
+.runaskin-visual-note-card .runaskin-visual-note-preview em,
+.runaskin-visual-note-card[data-runaskin-note-card="true"]
+  .runaskin-visual-note-preview
+  em {
+  z-index: 3 !important;
+}
+
+.runaskin-visual-note-card label,
+.runaskin-visual-note-card[data-runaskin-note-card="true"] label {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+.runaskin-visual-note-card input[type="text"],
+.runaskin-visual-note-card[data-runaskin-note-card="true"] input[type="text"],
+.runaskin-visual-note-card textarea,
+.runaskin-visual-note-card[data-runaskin-note-card="true"] textarea {
+  width: 100% !important;
+  min-width: 0 !important;
+}
+
+@media (max-width: 1180px) {
+  .runaskin-visual-notes-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 860px) {
+  .runaskin-visual-notes-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 560px) {
+  .runaskin-visual-notes-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .runaskin-visual-note-card .runaskin-visual-note-preview,
+  .runaskin-visual-note-card[data-runaskin-note-card="true"]
+    .runaskin-visual-note-preview {
+    border-radius: 16px !important;
+  }
 }

@@ -6547,8 +6547,8 @@ function openCampaignLabImageCropper(file, options = {}) {
         const outputHeight = Number(options.outputHeight || options.outputSize) || outputWidth;
         const isRectangle = options.mask === "rectangle";
         const mimeType = file.type === "image/png" ? "image/png" : "image/jpeg";
-        const minZoom = Number(options.minZoom) || 0.35;
-        const maxZoom = Number(options.maxZoom) || 3;
+        const minZoom = Number(options.minZoom) || 0.2;
+        const maxZoom = Number(options.maxZoom) || 4;
 
         let minScale = Math.max(cropWidth / image.naturalWidth, cropHeight / image.naturalHeight);
         let zoom = Math.max(minZoom, Math.min(maxZoom, Number(options.initialZoom) || 1));
@@ -9054,8 +9054,11 @@ async function handleRunaskinVisualNoteFileChange(fileInput) {
       fileNameSuffix: "runaskin",
       cropWidth: 360,
       cropHeight: 360,
-      outputWidth: 720,
-      outputHeight: 720,
+      outputWidth: 900,
+      outputHeight: 900,
+      minZoom: 0.2,
+      maxZoom: 4,
+      initialZoom: 1,
       mask: "rectangle",
     });
 
