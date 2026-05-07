@@ -926,6 +926,17 @@ function subscribeCampaignAddedNotifications(userId) {
     .subscribe();
 }
 
+function isCampaignLabNotificationMobileViewport() {
+  const visualWidth = window.visualViewport && window.visualViewport.width
+    ? window.visualViewport.width
+    : 0;
+  const windowWidth = window.innerWidth || document.documentElement.clientWidth || screen.width || 0;
+  const width = visualWidth || windowWidth;
+  const isTouch = Number(navigator.maxTouchPoints || 0) > 0;
+
+  return width <= 1024 || (isTouch && width <= 1180);
+}
+
 function getCampaignAddedNotificationStack() {
   let stack = document.getElementById("campaignAddedNotificationStack");
 
@@ -966,7 +977,7 @@ function setupCampaignAddedNotificationPositionWatcher() {
 function applyCampaignAddedNotificationResponsivePosition(stack) {
   if (!stack) return;
 
-  const isMobileOrTablet = window.matchMedia("(max-width: 1024px)").matches;
+  const isMobileOrTablet = isCampaignLabNotificationMobileViewport();
 
   stack.style.setProperty("position", "fixed", "important");
   stack.style.setProperty("z-index", "99999", "important");
@@ -2868,7 +2879,10 @@ function createPlayerCampaignChatNotificationTone(context, destination, frequenc
 function ensurePlayerCampaignChatNotificationContainer() {
   let container = document.getElementById("playerCampaignChatNotificationStack");
 
-  if (container) return container;
+  if (container) {
+    applyPlayerCampaignChatNotificationResponsivePosition(container);
+    return container;
+  }
 
   container = document.createElement("div");
   container.id = "playerCampaignChatNotificationStack";
@@ -2878,11 +2892,68 @@ function ensurePlayerCampaignChatNotificationContainer() {
 
   document.body.appendChild(container);
 
+  applyPlayerCampaignChatNotificationResponsivePosition(container);
+  setupPlayerCampaignChatNotificationPositionWatcher();
+
   return container;
+}
+
+function setupPlayerCampaignChatNotificationPositionWatcher() {
+  if (window.playerCampaignChatNotificationPositionWatcherReady) return;
+
+  window.playerCampaignChatNotificationPositionWatcherReady = true;
+
+  const refreshPosition = () => {
+    const container = document.getElementById("playerCampaignChatNotificationStack");
+    if (container) applyPlayerCampaignChatNotificationResponsivePosition(container);
+  };
+
+  window.addEventListener("resize", refreshPosition);
+  window.addEventListener("orientationchange", refreshPosition);
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", refreshPosition);
+  }
+}
+
+function applyPlayerCampaignChatNotificationResponsivePosition(container) {
+  if (!container) return;
+
+  const isMobileOrTablet = isCampaignLabNotificationMobileViewport();
+
+  container.style.setProperty("position", "fixed", "important");
+  container.style.setProperty("z-index", "99999", "important");
+  container.style.setProperty("display", "grid", "important");
+  container.style.setProperty("gap", "10px", "important");
+  container.style.setProperty("pointer-events", "none", "important");
+
+  if (isMobileOrTablet) {
+    container.classList.add("player-chat-notification-stack--mobile-top");
+    container.style.setProperty("top", "max(10px, env(safe-area-inset-top))", "important");
+    container.style.setProperty("right", "10px", "important");
+    container.style.setProperty("bottom", "auto", "important");
+    container.style.setProperty("left", "10px", "important");
+    container.style.setProperty("width", "auto", "important");
+    container.style.setProperty("max-width", "none", "important");
+    container.style.setProperty("transform", "none", "important");
+    container.style.setProperty("align-items", "stretch", "important");
+    return;
+  }
+
+  container.classList.remove("player-chat-notification-stack--mobile-top");
+  container.style.setProperty("top", "50%", "important");
+  container.style.setProperty("right", "auto", "important");
+  container.style.setProperty("bottom", "auto", "important");
+  container.style.setProperty("left", "24px", "important");
+  container.style.setProperty("width", "min(360px, calc(100vw - 32px))", "important");
+  container.style.setProperty("max-width", "none", "important");
+  container.style.setProperty("transform", "translateY(-50%)", "important");
+  container.style.setProperty("align-items", "start", "important");
 }
 
 function showPlayerCampaignChatNotification(row = {}) {
   const container = ensurePlayerCampaignChatNotificationContainer();
+  applyPlayerCampaignChatNotificationResponsivePosition(container);
   const notification = document.createElement("button");
   const isPrivate = isPlayerCampaignChatMessagePrivate(row);
   const senderName = row.user_name || "Jogador";

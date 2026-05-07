@@ -18055,6 +18055,7 @@ textarea {
   }
 }
 
+
 /* =========================================================
    RUNASKIN - CARD MOSTRA EXATAMENTE O QUADRADO DA EDIÇÃO
 ========================================================= */
@@ -18062,14 +18063,12 @@ textarea {
   align-content: start !important;
 }
 
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-image-picker {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-image-picker {
   width: 100% !important;
   display: block !important;
 }
 
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
   width: 100% !important;
   aspect-ratio: 1 / 1 !important;
   min-height: 220px !important;
@@ -18082,14 +18081,11 @@ textarea {
   place-items: center !important;
 }
 
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview.has-image {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview.has-image {
   background: #020617 !important;
 }
 
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview
-  img {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview img {
   width: 100% !important;
   height: 100% !important;
   display: block !important;
@@ -18098,28 +18094,25 @@ textarea {
   border-radius: inherit !important;
 }
 
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview
-  span {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview span {
   text-align: center !important;
   line-height: 1.25 !important;
   max-width: 80% !important;
 }
 
 @media (max-width: 860px) {
-  .runaskin-visual-note-card[data-runaskin-note-card="true"]
-    .runaskin-visual-note-preview {
+  .runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
     min-height: 190px !important;
   }
 }
 
 @media (max-width: 560px) {
-  .runaskin-visual-note-card[data-runaskin-note-card="true"]
-    .runaskin-visual-note-preview {
+  .runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
     min-height: 0 !important;
     aspect-ratio: 1 / 1 !important;
   }
 }
+
 
 /* =========================================================
    RUNASKIN - CARD EXATAMENTE IGUAL AO QUADRADO DA EDIÇÃO
@@ -18131,15 +18124,13 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-image-picker,
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-image-picker {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-image-picker {
   width: 100% !important;
   display: block !important;
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview,
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
   width: 100% !important;
   height: auto !important;
   min-height: 220px !important;
@@ -18154,9 +18145,7 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview img,
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview
-  img {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview img {
   width: 100% !important;
   height: 100% !important;
   min-width: 100% !important;
@@ -18170,9 +18159,7 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview span,
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview
-  span {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview span {
   max-width: 80% !important;
   text-align: center !important;
   line-height: 1.25 !important;
@@ -18180,20 +18167,19 @@ textarea {
 
 @media (max-width: 860px) {
   .runaskin-visual-note-card .runaskin-visual-note-preview,
-  .runaskin-visual-note-card[data-runaskin-note-card="true"]
-    .runaskin-visual-note-preview {
+  .runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
     min-height: 190px !important;
   }
 }
 
 @media (max-width: 560px) {
   .runaskin-visual-note-card .runaskin-visual-note-preview,
-  .runaskin-visual-note-card[data-runaskin-note-card="true"]
-    .runaskin-visual-note-preview {
+  .runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
     min-height: 0 !important;
     aspect-ratio: 1 / 1 !important;
   }
 }
+
 
 /* =========================================================
    RUNASKIN - CORREÇÃO DE ALINHAMENTO DOS CARDS
@@ -18217,8 +18203,7 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-image-picker,
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-image-picker {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-image-picker {
   width: 100% !important;
   height: auto !important;
   display: block !important;
@@ -18226,8 +18211,7 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview,
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
   position: relative !important;
   width: 100% !important;
   height: auto !important;
@@ -18245,9 +18229,7 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview img,
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview
-  img {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview img {
   width: 100% !important;
   height: 100% !important;
   min-width: 100% !important;
@@ -18261,21 +18243,13 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview img[hidden],
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview
-  img[hidden],
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview img[hidden],
 .runaskin-visual-note-card .runaskin-visual-note-preview:not(.has-image) img,
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview:not(.has-image)
-  img,
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview:not(.has-image) img,
 .runaskin-visual-note-card .runaskin-visual-note-preview img:not([src]),
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview
-  img:not([src]),
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview img:not([src]),
 .runaskin-visual-note-card .runaskin-visual-note-preview img[src=""],
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview
-  img[src=""] {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview img[src=""] {
   display: none !important;
   width: 0 !important;
   height: 0 !important;
@@ -18284,9 +18258,7 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview span,
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview
-  span {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview span {
   position: absolute !important;
   inset: 0 !important;
   width: 100% !important;
@@ -18302,20 +18274,14 @@ textarea {
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview span[hidden],
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview
-  span[hidden],
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview span[hidden],
 .runaskin-visual-note-card .runaskin-visual-note-preview.has-image span,
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview.has-image
-  span {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview.has-image span {
   display: none !important;
 }
 
 .runaskin-visual-note-card .runaskin-visual-note-preview em,
-.runaskin-visual-note-card[data-runaskin-note-card="true"]
-  .runaskin-visual-note-preview
-  em {
+.runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview em {
   z-index: 3 !important;
 }
 
@@ -18351,11 +18317,11 @@ textarea {
   }
 
   .runaskin-visual-note-card .runaskin-visual-note-preview,
-  .runaskin-visual-note-card[data-runaskin-note-card="true"]
-    .runaskin-visual-note-preview {
+  .runaskin-visual-note-card[data-runaskin-note-card="true"] .runaskin-visual-note-preview {
     border-radius: 16px !important;
   }
 }
+
 
 /* =========================================================
    NOTIFICAÇÃO - PLAYER ADICIONADO EM CAMPANHA
@@ -18384,11 +18350,7 @@ textarea {
   border-radius: 24px !important;
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.98)),
-    radial-gradient(
-      circle at top right,
-      rgba(34, 211, 238, 0.18),
-      transparent 42%
-    ) !important;
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.18), transparent 42%) !important;
   box-shadow:
     0 24px 70px rgba(0, 0, 0, 0.42),
     0 0 42px rgba(34, 211, 238, 0.14),
@@ -18553,6 +18515,7 @@ textarea {
   }
 }
 
+
 /* =========================================================
    NOTIFICAÇÃO - PLAYER REMOVIDO DA CAMPANHA
 ========================================================= */
@@ -18560,11 +18523,7 @@ textarea {
   border-color: rgba(248, 113, 113, 0.46) !important;
   background:
     linear-gradient(145deg, rgba(15, 23, 42, 0.96), rgba(2, 6, 23, 0.98)),
-    radial-gradient(
-      circle at top right,
-      rgba(239, 68, 68, 0.18),
-      transparent 42%
-    ) !important;
+    radial-gradient(circle at top right, rgba(239, 68, 68, 0.18), transparent 42%) !important;
   box-shadow:
     0 24px 70px rgba(0, 0, 0, 0.42),
     0 0 42px rgba(239, 68, 68, 0.13),
@@ -18590,9 +18549,7 @@ textarea {
   box-shadow: 0 0 24px rgba(239, 68, 68, 0.14) !important;
 }
 
-.campaign-added-notification--removed
-  .campaign-added-notification__content
-  span {
+.campaign-added-notification--removed .campaign-added-notification__content span {
   color: #fca5a5 !important;
 }
 
@@ -18600,6 +18557,7 @@ textarea {
   background: linear-gradient(135deg, #f87171, #dc2626) !important;
   color: #fff7f7 !important;
 }
+
 
 /* =========================================================
    CHAT - NOTIFICAÇÃO DE MENSAGEM NO MEIO ESQUERDO
@@ -18653,6 +18611,7 @@ textarea {
   }
 }
 
+
 /* =========================================================
    RESPONSIVIDADE - SELEÇÃO / EDIÇÃO DA IMAGEM DA CAMPANHA
    Ajusta o painel da capa e o modal de edição no tablet/celular.
@@ -18685,10 +18644,7 @@ textarea {
 }
 
 .image-cropper-stage-wrap {
-  width: min(
-    var(--image-cropper-stage-w, 560px),
-    calc(100vw - 56px)
-  ) !important;
+  width: min(var(--image-cropper-stage-w, 560px), calc(100vw - 56px)) !important;
   max-width: 100% !important;
   margin-left: auto !important;
   margin-right: auto !important;
@@ -18875,6 +18831,7 @@ textarea {
   }
 }
 
+
 /* =========================================================
    NOTIFICAÇÕES DE CAMPANHA - POSIÇÃO RESPONSIVA
    PC: meio direito. Celular/tablet: topo da tela.
@@ -18963,6 +18920,7 @@ textarea {
   }
 }
 
+
 /* =========================================================
    NOTIFICAÇÕES DE CAMPANHA - CORREÇÃO FINAL DE POSIÇÃO
    Desktop: meio direito. Celular/tablet: topo da tela.
@@ -18987,8 +18945,7 @@ body #campaignAddedNotificationStack.campaign-added-notification-stack {
 
 @media (max-width: 1024px) {
   body #campaignAddedNotificationStack.campaign-added-notification-stack,
-  body
-    #campaignAddedNotificationStack.campaign-added-notification-stack.campaign-added-notification-stack--mobile-top {
+  body #campaignAddedNotificationStack.campaign-added-notification-stack.campaign-added-notification-stack--mobile-top {
     top: max(12px, env(safe-area-inset-top)) !important;
     right: 12px !important;
     bottom: auto !important;
@@ -19008,24 +18965,19 @@ body #campaignAddedNotificationStack.campaign-added-notification-stack {
   }
 
   body #campaignAddedNotificationStack .campaign-added-notification.show,
-  body
-    #campaignAddedNotificationStack
-    .campaign-added-notification--removed.show {
+  body #campaignAddedNotificationStack .campaign-added-notification--removed.show {
     transform: translateY(0) scale(1) !important;
   }
 
   body #campaignAddedNotificationStack .campaign-added-notification.hide,
-  body
-    #campaignAddedNotificationStack
-    .campaign-added-notification--removed.hide {
+  body #campaignAddedNotificationStack .campaign-added-notification--removed.hide {
     transform: translateY(-18px) scale(0.98) !important;
   }
 }
 
 @media (max-width: 520px) {
   body #campaignAddedNotificationStack.campaign-added-notification-stack,
-  body
-    #campaignAddedNotificationStack.campaign-added-notification-stack.campaign-added-notification-stack--mobile-top {
+  body #campaignAddedNotificationStack.campaign-added-notification-stack.campaign-added-notification-stack--mobile-top {
     top: max(10px, env(safe-area-inset-top)) !important;
     right: 10px !important;
     left: 10px !important;
@@ -19038,5 +18990,68 @@ body #campaignAddedNotificationStack.campaign-added-notification-stack {
     gap: 12px !important;
     padding: 14px !important;
     border-radius: 18px !important;
+  }
+}
+
+
+/* =========================================================
+   CORREÇÃO FINAL MOBILE - NOTIFICAÇÕES NO TOPO
+   Vence os blocos antigos que jogavam o chat para o meio.
+========================================================= */
+@media (max-width: 1024px), (pointer: coarse) and (max-width: 1180px) {
+  body #playerCampaignChatNotificationStack.player-chat-notification-stack,
+  body #playerCampaignChatNotificationStack.player-chat-notification-stack.player-chat-notification-stack--mobile-top,
+  body #campaignAddedNotificationStack.campaign-added-notification-stack,
+  body #campaignAddedNotificationStack.campaign-added-notification-stack.campaign-added-notification-stack--mobile-top {
+    position: fixed !important;
+    top: max(10px, env(safe-area-inset-top)) !important;
+    right: 10px !important;
+    bottom: auto !important;
+    left: 10px !important;
+    z-index: 99999 !important;
+    width: auto !important;
+    max-width: none !important;
+    transform: none !important;
+    align-items: stretch !important;
+    justify-content: flex-start !important;
+    pointer-events: none !important;
+  }
+
+  body #playerCampaignChatNotificationStack .player-chat-notification,
+  body #campaignAddedNotificationStack .campaign-added-notification,
+  body #campaignAddedNotificationStack .campaign-added-notification--removed {
+    width: 100% !important;
+    max-width: none !important;
+    margin: 0 !important;
+    transform: translateY(-18px) scale(0.98) !important;
+  }
+
+  body #playerCampaignChatNotificationStack .player-chat-notification:not(.leaving),
+  body #campaignAddedNotificationStack .campaign-added-notification.show,
+  body #campaignAddedNotificationStack .campaign-added-notification--removed.show {
+    transform: translateY(0) scale(1) !important;
+  }
+
+  body #playerCampaignChatNotificationStack .player-chat-notification.leaving,
+  body #campaignAddedNotificationStack .campaign-added-notification.hide,
+  body #campaignAddedNotificationStack .campaign-added-notification--removed.hide {
+    transform: translateY(-18px) scale(0.98) !important;
+  }
+}
+
+@media (max-width: 520px) {
+  body #playerCampaignChatNotificationStack.player-chat-notification-stack,
+  body #campaignAddedNotificationStack.campaign-added-notification-stack {
+    top: max(8px, env(safe-area-inset-top)) !important;
+    right: 8px !important;
+    left: 8px !important;
+    gap: 8px !important;
+  }
+
+  body #playerCampaignChatNotificationStack .player-chat-notification {
+    min-height: 74px !important;
+    padding: 12px !important;
+    grid-template-columns: 40px 1fr !important;
+    border-radius: 17px !important;
   }
 }
