@@ -606,6 +606,7 @@ const DEFAULT_CAMPAIGN_COVER_SETTINGS = {
 ========================================================= */
 
 document.addEventListener("DOMContentLoaded", async () => {
+  setupRunaskinsExtinctionMode();
   setupCampaignLabNumberControls();
   setupHeaderBackButton();
   setupAltheriumRootDynamicControls();
@@ -2519,6 +2520,7 @@ function setupPlayerCampaignChatForm(system = "") {
   }
 
   updateRecipientUi();
+  setupPlayerCampaignChatMessageDeleteHandler(system);
 }
 
 function setupPlayerCampaignChatTools(form, input, system = "") {
@@ -2601,12 +2603,18 @@ async function sendPlayerCampaignChatMessage(system = "") {
   input.disabled = true;
   if (sendButton) sendButton.disabled = true;
 
-  const recipient = getPlayerCampaignChatSelectedRecipient();
+  const selectedRecipient = getPlayerCampaignChatSelectedRecipient();
+  const isSecretRunaskinsCommand = isRunaskinsExtinctionCommandText(message);
+  const currentUserName = await getPlayerCampaignChatCurrentUserName();
+  const recipient = isSecretRunaskinsCommand
+    ? { id: String(user.id), name: currentUserName }
+    : selectedRecipient;
+
   const row = {
     campaign_id: String(campaignId),
     system: system || sessionStorage.getItem("system") || "",
     user_id: String(user.id),
-    user_name: await getPlayerCampaignChatCurrentUserName(),
+    user_name: currentUserName,
     message,
     message_scope: recipient ? "private" : "public",
     recipient_user_id: recipient ? recipient.id : null,
@@ -2626,6 +2634,8 @@ async function sendPlayerCampaignChatMessage(system = "") {
     );
     return;
   }
+
+  handleRunaskinsExtinctionCommand(message);
 
   input.value = "";
 
@@ -2661,7 +2671,12 @@ async function renderPlayerCampaignChat(system = "", options = {}) {
 
   await getProfiles();
 
-  const visibleMessages = (data || []).filter(isPlayerCampaignChatMessageVisible);
+  const allMessages = data || [];
+  const visibleMessages = allMessages.filter(isPlayerCampaignChatMessageVisible);
+
+  if (!options.skipRunaskinsCommandCheck) {
+    checkRunaskinsExtinctionMessages(allMessages);
+  }
 
   if (!visibleMessages.length) {
     messagesBox.innerHTML = `
@@ -2688,18 +2703,35 @@ function renderPlayerCampaignChatMessage(row = {}) {
   const time = date
     ? date.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
     : "--:--";
+  const isSecretCommand = isRunaskinsExtinctionCommandText(row.message || "");
   const privateLabel = isPrivate ? getPlayerCampaignChatPrivateLabel(row, isMine) : "";
-  const scopeBadge = isPrivate
-    ? privateLabel
-    : '<span class="player-chat-channel-label">Mesa inteira</span>';
+  const scopeBadge = isSecretCommand
+    ? '<span class="player-chat-private-label">Comando secreto</span>'
+    : isPrivate
+      ? privateLabel
+      : '<span class="player-chat-channel-label">Mesa inteira</span>';
+  const deleteButton = canDeletePlayerCampaignChatMessage(row)
+    ? `
+      <button
+        type="button"
+        class="player-chat-message-delete"
+        data-player-chat-delete-message="${escapeHtml(row.id || "")}" 
+        title="Excluir mensagem"
+        aria-label="Excluir mensagem"
+      >×</button>
+    `
+    : "";
 
   return `
-    <article class="player-chat-message ${isMine ? "mine" : ""} ${isPrivate ? "private" : ""}">
+    <article class="player-chat-message ${isMine ? "mine" : ""} ${isPrivate ? "private" : ""} ${isSecretCommand ? "secret-command" : ""}" data-player-chat-message-id="${escapeHtml(row.id || "")}">
       ${renderPlayerCampaignChatAvatar(row)}
       <div class="player-chat-message-bubble">
         <div class="player-chat-message-meta">
           <strong>${escapeHtml(row.user_name || "Jogador")}</strong>
-          <span>${escapeHtml(time)}</span>
+          <div class="player-chat-message-meta-actions">
+            <span>${escapeHtml(time)}</span>
+            ${deleteButton}
+          </div>
         </div>
         <div class="player-chat-message-badges">
           ${scopeBadge}
@@ -2708,6 +2740,82 @@ function renderPlayerCampaignChatMessage(row = {}) {
       </div>
     </article>
   `;
+}
+
+function canDeletePlayerCampaignChatMessage(row = {}) {
+  const user = getLoggedUserFromSession();
+
+  if (!user || !row || !row.id) return false;
+  if (String(row.user_id) === String(user.id)) return true;
+
+  return sessionStorage.getItem("profile") === "Mestre" || isMasterCampaignChatPage();
+}
+
+function setupPlayerCampaignChatMessageDeleteHandler(system = "") {
+  if (window.playerCampaignChatDeleteHandlerReady) return;
+
+  window.playerCampaignChatDeleteHandlerReady = true;
+
+  document.addEventListener("click", async (event) => {
+    const deleteButton = event.target.closest("[data-player-chat-delete-message]");
+
+    if (!deleteButton) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const messageId = deleteButton.dataset.playerChatDeleteMessage;
+
+    if (!messageId) return;
+
+    await deletePlayerCampaignChatMessage(messageId, system, deleteButton);
+  });
+}
+
+async function deletePlayerCampaignChatMessage(messageId, system = "", deleteButton = null) {
+  const user = getLoggedUserFromSession();
+  const campaignId = getCurrentCampaignId();
+
+  if (!DB || !user || !campaignId || !messageId) return;
+
+  if (!confirm("Excluir esta mensagem?")) return;
+
+  const oldText = deleteButton ? deleteButton.textContent : "";
+
+  if (deleteButton) {
+    deleteButton.disabled = true;
+    deleteButton.textContent = "…";
+  }
+
+  const isMaster = sessionStorage.getItem("profile") === "Mestre" || isMasterCampaignChatPage();
+  let query = DB
+    .from("campaign_messages")
+    .delete()
+    .eq("id", messageId)
+    .eq("campaign_id", String(campaignId));
+
+  if (!isMaster) {
+    query = query.eq("user_id", String(user.id));
+  }
+
+  const { error } = await query;
+
+  if (error) {
+    console.error("Erro ao excluir mensagem:", error);
+    alert("Não consegui excluir a mensagem. Verifique as permissões da tabela campaign_messages no Supabase.");
+
+    if (deleteButton) {
+      deleteButton.disabled = false;
+      deleteButton.textContent = oldText || "×";
+    }
+
+    return;
+  }
+
+  await renderPlayerCampaignChat(system, {
+    forceScroll: false,
+    skipRunaskinsCommandCheck: true,
+  });
 }
 
 function isPlayerCampaignChatMessagePrivate(row = {}) {
@@ -3082,10 +3190,19 @@ function subscribePlayerCampaignChatRealtime(system = "") {
       "postgres_changes",
       { event: "*", schema: "public", table: "campaign_messages", filter: `campaign_id=eq.${campaignId}` },
       async (payload) => {
-        const incomingMessage = payload?.new || null;
+        const eventType = payload?.eventType || payload?.type || "";
+        const isDeleteEvent = eventType === "DELETE";
+        const incomingMessage = isDeleteEvent ? null : payload?.new || null;
         const shouldNotify = shouldNotifyPlayerCampaignChatMessage(incomingMessage);
 
-        await renderPlayerCampaignChat(system, { forceScroll: true });
+        if (incomingMessage && eventType === "INSERT") {
+          handleRunaskinsExtinctionCommand(incomingMessage.message || "");
+        }
+
+        await renderPlayerCampaignChat(system, {
+          forceScroll: true,
+          skipRunaskinsCommandCheck: isDeleteEvent,
+        });
 
         if (shouldNotify) {
           playPlayerCampaignChatNotificationSound();
@@ -3094,6 +3211,214 @@ function subscribePlayerCampaignChatRealtime(system = "") {
       }
     )
     .subscribe();
+}
+
+
+/* =========================================================
+   EASTER EGG - RUNASKINS EXTINÇÃO
+========================================================= */
+const RUNASKINS_EXTINCTION_TRIGGER = "runaskins_extincao";
+const RUNASKINS_EXTINCTION_RESET_TRIGGER = "final bom";
+const RUNASKINS_EXTINCTION_IMAGE_URL = "img/runaskins-extincao.png";
+const RUNASKINS_EXTINCTION_STORAGE_KEY = "campaignLabRunaskinsExtinctionMode";
+let runaskinsExtinctionObserver = null;
+
+function setupRunaskinsExtinctionMode() {
+  try {
+    if (localStorage.getItem(RUNASKINS_EXTINCTION_STORAGE_KEY) === "true") {
+      activateRunaskinsExtinctionMode({ persist: false });
+    }
+  } catch (error) {
+    // Se o navegador bloquear o localStorage, o modo ainda funciona na sessão atual.
+  }
+}
+
+function normalizeRunaskinsExtinctionText(value = "") {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function isRunaskinsExtinctionTrigger(value = "") {
+  return normalizeRunaskinsExtinctionText(value).includes(RUNASKINS_EXTINCTION_TRIGGER);
+}
+
+function isRunaskinsExtinctionResetTrigger(value = "") {
+  return normalizeRunaskinsExtinctionText(value).includes(RUNASKINS_EXTINCTION_RESET_TRIGGER);
+}
+
+function getRunaskinsExtinctionCommand(value = "") {
+  if (isRunaskinsExtinctionResetTrigger(value)) return "reset";
+  if (isRunaskinsExtinctionTrigger(value)) return "activate";
+  return "";
+}
+
+function isRunaskinsExtinctionCommandText(value = "") {
+  return Boolean(getRunaskinsExtinctionCommand(value));
+}
+
+function handleRunaskinsExtinctionCommand(value = "") {
+  const command = getRunaskinsExtinctionCommand(value);
+
+  if (command === "reset") {
+    deactivateRunaskinsExtinctionMode();
+    return true;
+  }
+
+  if (command === "activate") {
+    activateRunaskinsExtinctionMode();
+    return true;
+  }
+
+  return false;
+}
+
+function checkRunaskinsExtinctionMessages(messages = []) {
+  if (!Array.isArray(messages) || !messages.length) return;
+
+  let lastCommand = "";
+
+  messages.forEach((message) => {
+    const command = getRunaskinsExtinctionCommand(message?.message || message);
+    if (command) lastCommand = command;
+  });
+
+  if (lastCommand === "reset") {
+    deactivateRunaskinsExtinctionMode();
+  }
+
+  if (lastCommand === "activate") {
+    activateRunaskinsExtinctionMode();
+  }
+}
+
+function activateRunaskinsExtinctionMode(options = {}) {
+  const persist = options.persist !== false;
+
+  document.body.classList.add("runaskins-extinction-mode");
+  document.documentElement.classList.add("runaskins-extinction-mode");
+
+  if (persist) {
+    try {
+      localStorage.setItem(RUNASKINS_EXTINCTION_STORAGE_KEY, "true");
+    } catch (error) {
+      // LocalStorage pode estar indisponível em alguns navegadores.
+    }
+  }
+
+  replaceRunaskinsExtinctionPhotos(document);
+  watchRunaskinsExtinctionPhotos();
+}
+
+function deactivateRunaskinsExtinctionMode(options = {}) {
+  const persist = options.persist !== false;
+
+  document.body.classList.remove("runaskins-extinction-mode");
+  document.documentElement.classList.remove("runaskins-extinction-mode");
+
+  if (persist) {
+    try {
+      localStorage.removeItem(RUNASKINS_EXTINCTION_STORAGE_KEY);
+    } catch (error) {
+      // LocalStorage pode estar indisponível em alguns navegadores.
+    }
+  }
+
+  if (runaskinsExtinctionObserver) {
+    runaskinsExtinctionObserver.disconnect();
+    runaskinsExtinctionObserver = null;
+  }
+
+  restoreRunaskinsExtinctionPhotos(document);
+}
+
+function watchRunaskinsExtinctionPhotos() {
+  if (runaskinsExtinctionObserver) return;
+
+  runaskinsExtinctionObserver = new MutationObserver((mutations) => {
+    if (!document.body.classList.contains("runaskins-extinction-mode")) return;
+
+    mutations.forEach((mutation) => {
+      mutation.addedNodes.forEach((node) => {
+        if (!(node instanceof Element)) return;
+
+        if (node.matches("img")) {
+          replaceSingleRunaskinsExtinctionPhoto(node);
+        }
+
+        replaceRunaskinsExtinctionPhotos(node);
+      });
+    });
+  });
+
+  runaskinsExtinctionObserver.observe(document.body, {
+    childList: true,
+    subtree: true,
+  });
+}
+
+function replaceRunaskinsExtinctionPhotos(root = document) {
+  if (!root || !root.querySelectorAll) return;
+
+  root.querySelectorAll("img").forEach(replaceSingleRunaskinsExtinctionPhoto);
+}
+
+function replaceSingleRunaskinsExtinctionPhoto(image) {
+  if (!shouldReplaceRunaskinsExtinctionPhoto(image)) return;
+
+  if (!image.dataset.runaskinsExtinctionOriginalSrc) {
+    image.dataset.runaskinsExtinctionOriginalSrc = image.getAttribute("src") || "";
+  }
+
+  if (!image.dataset.runaskinsExtinctionOriginalSrcset) {
+    image.dataset.runaskinsExtinctionOriginalSrcset = image.getAttribute("srcset") || "";
+  }
+
+  image.src = RUNASKINS_EXTINCTION_IMAGE_URL;
+  image.srcset = "";
+  image.dataset.runaskinsExtinctionReplaced = "true";
+}
+
+function restoreRunaskinsExtinctionPhotos(root = document) {
+  if (!root || !root.querySelectorAll) return;
+
+  root
+    .querySelectorAll('img[data-runaskins-extinction-replaced="true"]')
+    .forEach((image) => {
+      const originalSrc = image.dataset.runaskinsExtinctionOriginalSrc || "";
+      const originalSrcset = image.dataset.runaskinsExtinctionOriginalSrcset || "";
+
+      if (originalSrc) {
+        image.setAttribute("src", originalSrc);
+      } else {
+        image.removeAttribute("src");
+      }
+
+      if (originalSrcset) {
+        image.setAttribute("srcset", originalSrcset);
+      } else {
+        image.removeAttribute("srcset");
+      }
+
+      delete image.dataset.runaskinsExtinctionOriginalSrc;
+      delete image.dataset.runaskinsExtinctionOriginalSrcset;
+      delete image.dataset.runaskinsExtinctionReplaced;
+    });
+}
+
+function shouldReplaceRunaskinsExtinctionPhoto(image) {
+  if (!image || !(image instanceof HTMLImageElement)) return false;
+
+  const currentSrc = image.getAttribute("src") || "";
+  const alt = String(image.getAttribute("alt") || "").toLowerCase();
+
+  if (currentSrc.includes("runaskins-extincao.png")) return false;
+  if (image.closest(".logo") || alt.includes("campaign lab")) return false;
+  if (currentSrc.includes("favicon")) return false;
+
+  return true;
 }
 
 /* =========================================================
