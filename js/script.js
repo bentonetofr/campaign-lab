@@ -9001,10 +9001,10 @@ function clearRunaskinVisualNoteImage(card) {
   ensureRunaskinVisualNotesCapacity(card.closest("form"));
 }
 
-function handleRunaskinVisualNoteFileChange(fileInput) {
+async function handleRunaskinVisualNoteFileChange(fileInput) {
   if (!fileInput) return;
 
-  const file = fileInput.files && fileInput.files[0];
+  let file = fileInput.files && fileInput.files[0];
 
   if (!file) return;
 
@@ -9017,23 +9017,45 @@ function handleRunaskinVisualNoteFileChange(fileInput) {
   const card = fileInput.closest(".runaskin-visual-note-card");
   const imageInput = card?.querySelector("[data-runaskin-note-image]");
 
-  if (!card || !imageInput) return;
+  if (!card || !imageInput) {
+    fileInput.value = "";
+    return;
+  }
 
-  readRunaskinVisualNoteFile(file)
-    .then((imageData) => {
-      imageInput.value = imageData;
-      updateRunaskinVisualNotePreview(card);
-
-      imageInput.dispatchEvent(new Event("input", { bubbles: true }));
-      imageInput.dispatchEvent(new Event("change", { bubbles: true }));
-      ensureRunaskinVisualNotesCapacity(card.closest("form"));
-    })
-    .catch(() => {
-      alert("Não foi possível carregar essa imagem. Tente outro arquivo.");
-    })
-    .finally(() => {
-      fileInput.value = "";
+  try {
+    const croppedFile = await openCampaignLabImageCropper(file, {
+      title: "Editar imagem Runaskin",
+      helperText: "Arraste a imagem e use o zoom para enquadrar o card.",
+      buttonText: "Usar imagem",
+      fileNameSuffix: "runaskin",
+      cropWidth: 360,
+      cropHeight: 360,
+      outputWidth: 720,
+      outputHeight: 720,
+      mask: "rectangle",
     });
+
+    if (!croppedFile) {
+      fileInput.value = "";
+      return;
+    }
+
+    file = croppedFile;
+
+    const imageData = await readRunaskinVisualNoteFile(file);
+
+    imageInput.value = imageData;
+    updateRunaskinVisualNotePreview(card);
+
+    imageInput.dispatchEvent(new Event("input", { bubbles: true }));
+    imageInput.dispatchEvent(new Event("change", { bubbles: true }));
+    ensureRunaskinVisualNotesCapacity(card.closest("form"));
+  } catch (error) {
+    console.error("Erro ao editar imagem Runaskin:", error);
+    alert("Não foi possível carregar essa imagem. Tente outro arquivo.");
+  } finally {
+    fileInput.value = "";
+  }
 }
 
 function readRunaskinVisualNoteFile(file) {
