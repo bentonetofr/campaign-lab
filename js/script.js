@@ -575,6 +575,208 @@ const DND_SKILLS = [
   ["skillSurvival", "Sobrevivência"],
 ];
 
+const DND_SAVE_CONFIG = [
+  { ab: "Str", key: "str", label: "Força", score: "strScore", field: "saveStr" },
+  { ab: "Dex", key: "dex", label: "Destreza", score: "dexScore", field: "saveDex" },
+  { ab: "Con", key: "con", label: "Constituição", score: "conScore", field: "saveCon" },
+  { ab: "Int", key: "int", label: "Inteligência", score: "intScore", field: "saveInt" },
+  { ab: "Wis", key: "wis", label: "Sabedoria", score: "wisScore", field: "saveWis" },
+  { ab: "Cha", key: "cha", label: "Carisma", score: "chaScore", field: "saveCha" },
+];
+
+const DND_SKILL_META = {
+  skillAcrobatics: { ability: "dex", abilityLabel: "DES" },
+  skillAnimalHandling: { ability: "wis", abilityLabel: "SAB" },
+  skillArcana: { ability: "int", abilityLabel: "INT" },
+  skillAthletics: { ability: "str", abilityLabel: "FOR" },
+  skillDeception: { ability: "cha", abilityLabel: "CAR" },
+  skillHistory: { ability: "int", abilityLabel: "INT" },
+  skillInsight: { ability: "wis", abilityLabel: "SAB" },
+  skillIntimidation: { ability: "cha", abilityLabel: "CAR" },
+  skillInvestigation: { ability: "int", abilityLabel: "INT" },
+  skillMedicine: { ability: "wis", abilityLabel: "SAB" },
+  skillNature: { ability: "int", abilityLabel: "INT" },
+  skillPerception: { ability: "wis", abilityLabel: "SAB" },
+  skillPerformance: { ability: "cha", abilityLabel: "CAR" },
+  skillPersuasion: { ability: "cha", abilityLabel: "CAR" },
+  skillReligion: { ability: "int", abilityLabel: "INT" },
+  skillSleightOfHand: { ability: "dex", abilityLabel: "DES" },
+  skillStealth: { ability: "dex", abilityLabel: "DES" },
+  skillSurvival: { ability: "wis", abilityLabel: "SAB" },
+};
+
+const DND_OFFICIAL_CLASS_OPTIONS = [
+  "Artífice",
+  "Bárbaro",
+  "Bardo",
+  "Bruxo",
+  "Clérigo",
+  "Druida",
+  "Feiticeiro",
+  "Guerreiro",
+  "Ladino",
+  "Mago",
+  "Monge",
+  "Paladino",
+  "Patrulheiro",
+];
+
+function normalizeCampaignLabDndText(value = "") {
+  return String(value || "")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function getCampaignLabDndClassOptions() {
+  const systemClasses =
+    typeof DND5E !== "undefined" && DND5E && DND5E.classes
+      ? Object.keys(DND5E.classes)
+      : [];
+
+  return Array.from(new Set([...DND_OFFICIAL_CLASS_OPTIONS, ...systemClasses]));
+}
+
+function resolveCampaignLabDndClassName(value = "") {
+  const normalized = normalizeCampaignLabDndText(value);
+  if (!normalized) return "";
+
+  return (getCampaignLabDndClassOptions() || []).find((className) => {
+    const current = normalizeCampaignLabDndText(className);
+    return current === normalized || normalized.startsWith(`${current} `);
+  }) || "";
+}
+
+function extractCampaignLabDndLevel(value = "") {
+  const match = String(value || "").match(/(?:^|\s)([1-9]|1[0-9]|20)(?:\s|$)/);
+  return match ? String(match[1]) : "1";
+}
+
+function getCampaignLabDndSheetClassName(sheet = {}) {
+  return sheet.className || resolveCampaignLabDndClassName(sheet.classLevel || "") || "";
+}
+
+function getCampaignLabDndSheetLevel(sheet = {}) {
+  const rawLevel = Number(sheet.charLevel || 0);
+  if (Number.isFinite(rawLevel) && rawLevel >= 1) {
+    return String(Math.max(1, Math.min(20, Math.floor(rawLevel))));
+  }
+
+  return extractCampaignLabDndLevel(sheet.classLevel || "");
+}
+
+function getCampaignLabDndProficiencyBonus(levelValue = 1) {
+  const level = Math.max(1, Math.min(20, Math.floor(Number(levelValue) || 1)));
+
+  if (level >= 17) return 6;
+  if (level >= 13) return 5;
+  if (level >= 9) return 4;
+  if (level >= 5) return 3;
+  return 2;
+}
+
+function formatCampaignLabDndBonus(value = 0) {
+  const number = Number(value) || 0;
+  return number >= 0 ? `+${number}` : String(number);
+}
+
+function getCampaignLabDndClassLevelLabel(sheet = {}) {
+  const className = getCampaignLabDndSheetClassName(sheet);
+  const level = getCampaignLabDndSheetLevel(sheet);
+
+  if (className) return `${className} ${level}`;
+  return sheet.classLevel || "Sem classe";
+}
+
+function normalizeCampaignLabDndClassData(data = {}) {
+  const className = data.className || resolveCampaignLabDndClassName(data.classLevel || "");
+  const charLevel = data.charLevel || extractCampaignLabDndLevel(data.classLevel || "");
+  const safeLevel = String(Math.max(1, Math.min(20, Math.floor(Number(charLevel) || 1))));
+  const classLevel = className ? `${className} ${safeLevel}` : data.classLevel || "";
+  const proficiencyBonus = formatCampaignLabDndBonus(getCampaignLabDndProficiencyBonus(safeLevel));
+
+  const normalized = {
+    ...data,
+    className,
+    charLevel: safeLevel,
+    classLevel,
+    proficiencyBonus,
+  };
+
+  // MIGRAÇÃO DO PADRÃO ANTIGO:
+  // Antes a ficha nascia com atributos 8, gerando vários -1 logo ao abrir.
+  // Agora toda ficha nova nasce neutra: atributos 10, testes/perícias 0.
+  // Para não ficar preso em fichas antigas salvas no Supabase, esta limpeza roda uma vez.
+  const neutralDefaultAlreadyApplied = dnd_bool(normalized.dndNeutralDefaultApplied);
+  const abilityFields = ["strScore", "dexScore", "conScore", "intScore", "wisScore", "chaScore"];
+  const saveFields = ["saveStr", "saveDex", "saveCon", "saveInt", "saveWis", "saveCha"];
+  const skillFields = DND_SKILLS.map(([key]) => key);
+  const finalBonusFields = [...saveFields, ...skillFields];
+  const manualFields = [
+    "saveStrManual", "saveDexManual", "saveConManual", "saveIntManual", "saveWisManual", "saveChaManual",
+    ...skillFields.map((key) => `${key}Manual`),
+  ];
+
+  const hasManualFinalBonus = manualFields.some((field) => dnd_bool(normalized[field]));
+  const hasOldNegativeDefaults = finalBonusFields.some((field) => String(normalized[field] ?? "") === "-1");
+  const hasEmptyIdentity = !String(normalized.characterName || "").trim();
+  const looksLikeOldStarterSheet = !neutralDefaultAlreadyApplied && !hasManualFinalBonus && (hasOldNegativeDefaults || hasEmptyIdentity);
+
+  if (looksLikeOldStarterSheet) {
+    abilityFields.forEach((field) => {
+      normalized[field] = "10";
+    });
+
+    finalBonusFields.forEach((field) => {
+      normalized[field] = "0";
+      normalized[`${field}Manual`] = "false";
+    });
+
+    if (String(normalized.initiative ?? "") === "-1" || String(normalized.initiative ?? "") === "") {
+      normalized.initiative = "0";
+    }
+
+    normalized.dndNeutralDefaultApplied = "true";
+  } else if (!neutralDefaultAlreadyApplied) {
+    normalized.dndNeutralDefaultApplied = "true";
+  }
+
+  return normalized;
+}
+
+function syncCampaignLabDndClassFieldsInForm(form) {
+  if (!form) return;
+
+  const classSelect = form.elements.className;
+  const levelInput = form.elements.charLevel;
+  const legacyInput = form.elements.classLevel;
+
+  if (classSelect && legacyInput && !classSelect.value && legacyInput.value) {
+    const resolvedClass = resolveCampaignLabDndClassName(legacyInput.value);
+    if (resolvedClass) classSelect.value = resolvedClass;
+  }
+
+  if (levelInput && (!levelInput.value || Number(levelInput.value) <= 0)) {
+    levelInput.value = extractCampaignLabDndLevel(legacyInput?.value || "");
+  }
+
+  const safeLevel = Math.max(1, Math.min(20, Math.floor(Number(levelInput?.value) || 1)));
+
+  if (levelInput) {
+    levelInput.value = String(safeLevel);
+  }
+
+  if (legacyInput && classSelect && classSelect.value) {
+    legacyInput.value = `${classSelect.value} ${safeLevel}`;
+  }
+
+  if (form.elements.proficiencyBonus) {
+    form.elements.proficiencyBonus.value = formatCampaignLabDndBonus(getCampaignLabDndProficiencyBonus(safeLevel));
+  }
+}
+
+
 let profilesCache = [];
 let campaignsCache = [];
 let realtimeChannel = null;
@@ -3811,7 +4013,7 @@ async function getCampaignOnlineSheetMap(campaignId, system) {
 
 function getCampaignOnlineExtraInfo(sheet, system) {
   if (system === "D&D") {
-    return sheet.classLevel || sheet.race || "Ficha D&D";
+    return getCampaignLabDndClassLevelLabel(sheet || {}) || sheet.race || "Ficha D&D";
   }
 
   return sheet.root || sheet.raiz || sheet.classLevel || "Ficha Altherium";
@@ -4562,7 +4764,7 @@ async function loadSheetIntoPlayerForm() {
   ensureCharacterPortraitFieldInForm(form, sheet, "Altherium");
 
   Object.keys(sheet).forEach((key) => {
-    if (form.elements[key]) form.elements[key].value = sheet[key] || "";
+    if (form.elements[key]) dndHydrateFormElement(form.elements[key], sheet[key]);
   });
 
   syncRunaskinNrFieldsFromSheet(form, sheet);
@@ -4647,33 +4849,58 @@ function getDefaultDndSheet(campaignId, playerId, system) {
     characterName: "",
     characterAvatarUrl: "",
     characterPortraitUrl: "",
+    className: "",
+    charLevel: "1",
     classLevel: "",
+    dndNeutralDefaultApplied: "true",
+    classAutoDefaultsAppliedFor: "",
     race: "",
     background: "",
     alignment: "",
     experience: "0",
-    strScore: "8",
-    dexScore: "8",
-    conScore: "8",
-    intScore: "8",
-    wisScore: "8",
-    chaScore: "8",
-    saveStr: "-1",
-    saveDex: "-1",
-    saveCon: "-1",
-    saveInt: "-1",
-    saveWis: "-1",
-    saveCha: "-1",
-    armorClass: "8",
-    initiative: "-1",
+    strScore: "10",
+    dexScore: "10",
+    conScore: "10",
+    intScore: "10",
+    wisScore: "10",
+    chaScore: "10",
+    saveStr: "0",
+    saveDex: "0",
+    saveCon: "0",
+    saveInt: "0",
+    saveWis: "0",
+    saveCha: "0",
+    saveStrProf: "false",
+    saveDexProf: "false",
+    saveConProf: "false",
+    saveIntProf: "false",
+    saveWisProf: "false",
+    saveChaProf: "false",
+    saveStrManual: "false",
+    saveDexManual: "false",
+    saveConManual: "false",
+    saveIntManual: "false",
+    saveWisManual: "false",
+    saveChaManual: "false",
+    armorClass: "10",
+    armorClassManual: "false",
+    armorType: "Sem Armadura",
+    hasShield: "false",
+    initiative: "0",
     combatInitiative: "",
     speed: "40 ft.",
     proficiencyBonus: "+2",
     hpCurrent: "0",
     hpMax: "0",
+    hpMaxManual: "false",
     hpTemp: "0",
     hitDiceTotal: "1d8",
     hitDiceRemaining: "1d8",
+    classSaveProficienciesText: "",
+    classArmorProficienciesText: "",
+    classWeaponProficienciesText: "",
+    classToolProficienciesText: "",
+    classInitialFeaturesText: "",
     deathSuccesses: "",
     deathFailures: "",
     attack1Name: "",
@@ -4712,7 +4939,10 @@ function getDefaultDndSheet(campaignId, playerId, system) {
   };
 
   DND_SKILLS.forEach(([key]) => {
-    sheet[key] = "-1";
+    sheet[key] = "0";
+    sheet[`${key}Prof`] = "false";
+    sheet[`${key}Expert`] = "false";
+    sheet[`${key}Manual`] = "false";
   });
 
   for (let level = 1; level <= 9; level += 1) {
@@ -4739,20 +4969,20 @@ async function getOrCreateDndSheet(campaignId, playerId, system) {
   const profile = profiles.find((item) => item.id === playerId);
 
   if (data) {
-    return {
+    return normalizeCampaignLabDndClassData({
       ...getDefaultDndSheet(campaignId, playerId, system),
       ...(data.data || {}),
       campaignId,
       playerId,
       ownerName: profile ? profile.name : playerId,
       system,
-    };
+    });
   }
 
-  const newSheet = {
+  const newSheet = normalizeCampaignLabDndClassData({
     ...getDefaultDndSheet(campaignId, playerId, system),
     ownerName: profile ? profile.name : playerId,
-  };
+  });
 
   const { error: insertError } = await DB.from("dnd_sheets").insert({
     campaign_id: campaignId,
@@ -4767,10 +4997,11 @@ async function getOrCreateDndSheet(campaignId, playerId, system) {
 
 async function updateDndSheet(campaignId, playerId, data) {
   const oldSheet = await getOrCreateDndSheet(campaignId, playerId, "D&D");
+  const normalizedData = normalizeCampaignLabDndClassData(data || {});
 
   const updatedSheet = {
     ...oldSheet,
-    ...data,
+    ...normalizedData,
     updatedAt: new Date().toISOString(),
   };
 
@@ -4828,6 +5059,17 @@ async function setupDndMasterSheets() {
 
     form.addEventListener("input", () => {
       if (form.dataset.mode !== "edit-dnd-sheet") return;
+      syncCampaignLabDndClassFieldsInForm(form);
+      dndEnsureFinalBonusAutomationFields(form);
+      dndRecalculateAll(form);
+      saveDebounced(() => saveDndSheetFromModal(false));
+    });
+
+    form.addEventListener("change", () => {
+      if (form.dataset.mode !== "edit-dnd-sheet") return;
+      syncCampaignLabDndClassFieldsInForm(form);
+      dndEnsureFinalBonusAutomationFields(form);
+      dndRecalculateAll(form);
       saveDebounced(() => saveDndSheetFromModal(false));
     });
   }
@@ -4880,7 +5122,7 @@ async function renderDndMasterSheets() {
             ${getCharacterPortraitHtml(sheet, "tiny")}
             <span>${escapeHtml(player ? player.name : "Jogador")}</span>
           </span>
-          <strong>${escapeHtml(sheet.classLevel || "Sem classe")}</strong>
+          <strong>${escapeHtml(getCampaignLabDndClassLevelLabel(sheet))}</strong>
         </div>
 
         <h3>${sheet.characterName || "Personagem sem nome"}</h3>
@@ -4917,6 +5159,11 @@ async function openDndMasterSheetModal(playerId) {
 
   modalTitle.textContent = `Ficha de ${sheet.ownerName}`;
   formFields.innerHTML = buildDndSheetEditor(sheet, true);
+  setupCampaignLabDndClassAutomationPanel(form, sheet);
+  syncCampaignLabDndClassFieldsInForm(form);
+  dndEnsureFinalBonusAutomationFields(form);
+  dndBindFinalBonusAutomationEvents();
+  dndRecalculateAll(form);
 
   form.dataset.mode = "edit-dnd-sheet";
   form.dataset.playerId = playerId;
@@ -4942,7 +5189,9 @@ function buildDndSheetEditor(sheet, isModal = false) {
 
           <div class="dnd-identity-grid">
             ${dndInput("Nome do personagem", "characterName", sheet.characterName)}
-            ${dndInput("Classe & Nível", "classLevel", sheet.classLevel)}
+            ${dndClassSelect(getCampaignLabDndSheetClassName(sheet))}
+            ${dndLevelInput(getCampaignLabDndSheetLevel(sheet))}
+            ${dndHiddenInput("classLevel", getCampaignLabDndClassLevelLabel(sheet))}
             ${dndInput("Raça", "race", sheet.race)}
             ${dndInput("Antecedente", "background", sheet.background)}
             ${dndInput("Alinhamento", "alignment", sheet.alignment)}
@@ -4963,19 +5212,14 @@ function buildDndSheetEditor(sheet, isModal = false) {
               <div class="dnd-box">
                 <h3>Testes de resistência</h3>
                 <div class="dnd-list">
-                  ${dndMiniInput("Força", "saveStr", sheet.saveStr)}
-                  ${dndMiniInput("Destreza", "saveDex", sheet.saveDex)}
-                  ${dndMiniInput("Constituição", "saveCon", sheet.saveCon)}
-                  ${dndMiniInput("Inteligência", "saveInt", sheet.saveInt)}
-                  ${dndMiniInput("Sabedoria", "saveWis", sheet.saveWis)}
-                  ${dndMiniInput("Carisma", "saveCha", sheet.saveCha)}
+                  ${DND_SAVE_CONFIG.map((save) => dndSaveRow(save, sheet)).join("")}
                 </div>
               </div>
 
               <div class="dnd-box">
                 <h3>Perícias</h3>
                 <div class="dnd-list two-cols">
-                  ${DND_SKILLS.map(([key, label]) => dndMiniInput(label, key, sheet[key])).join("")}
+                  ${DND_SKILLS.map(([key, label]) => dndSkillRow(key, label, sheet)).join("")}
                 </div>
               </div>
 
@@ -4998,6 +5242,8 @@ function buildDndSheetEditor(sheet, isModal = false) {
                 ${dndStat("Bônus prof.", "proficiencyBonus", sheet.proficiencyBonus)}
               </div>
 
+              ${dndArmorDefenseControls(sheet)}
+
               <div class="initiative-sheet-box dnd-initiative-box">
                 <label>
                   <span>Iniciativa de combate</span>
@@ -5013,6 +5259,7 @@ function buildDndSheetEditor(sheet, isModal = false) {
                   <span>/</span>
                   ${dndHpInput("Máximo", "hpMax", sheet.hpMax)}
                 </div>
+                ${dndHpRuleNote()}
                 ${dndInput("PV temporários", "hpTemp", sheet.hpTemp, "number")}
               </div>
 
@@ -5022,6 +5269,7 @@ function buildDndSheetEditor(sheet, isModal = false) {
                   ${dndMiniInput("Dado total", "hitDiceTotal", sheet.hitDiceTotal)}
                   ${dndMiniInput("Restantes", "hitDiceRemaining", sheet.hitDiceRemaining)}
                 </div>
+                ${dndClassIntegratedFields(sheet)}
               </div>
 
               <div class="dnd-box">
@@ -5117,7 +5365,11 @@ async function saveDndSheetFromModal(showAlert = false) {
 
   if (!campaignId || !playerId) return;
 
-  await updateDndSheet(campaignId, playerId, Object.fromEntries(new FormData(form)));
+  syncCampaignLabDndClassFieldsInForm(form);
+  dndEnsureFinalBonusAutomationFields(form);
+  dndRecalculateAll(form);
+
+  await updateDndSheet(campaignId, playerId, dndGetCompleteFormData(form));
   await refreshCurrentMasterPanel();
 
   if (showAlert) alert("Ficha de D&D salva com sucesso.");
@@ -5135,8 +5387,22 @@ async function setupDndPlayerSheet() {
   await loadDndSheetIntoPlayerForm();
   setupDndSpellSlotTrackers(form);
   setupDndRestControls();
+  dndEnsureFinalBonusAutomationFields(form);
+  dndBindFinalBonusAutomationEvents();
+  dndRecalculateAll(form);
 
   form.addEventListener("input", () => {
+    syncCampaignLabDndClassFieldsInForm(form);
+    dndEnsureFinalBonusAutomationFields(form);
+    dndRecalculateAll(form);
+    updateDndRestPreview();
+    saveDndPlayerSheet(false);
+  });
+
+  form.addEventListener("change", () => {
+    syncCampaignLabDndClassFieldsInForm(form);
+    dndEnsureFinalBonusAutomationFields(form);
+    dndRecalculateAll(form);
     updateDndRestPreview();
     saveDndPlayerSheet(false);
   });
@@ -5154,6 +5420,8 @@ async function loadDndSheetIntoPlayerForm() {
   const focused = document.activeElement;
 
   if (focused && form.contains(focused) && !focused.matches("[data-character-portrait-input]")) {
+    setupCampaignLabDndClassAutomationPanel(form);
+    syncCampaignLabDndClassFieldsInForm(form);
     updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
     updateDndPlayerPreview();
     updateDndAutoNumbers();
@@ -5166,10 +5434,13 @@ async function loadDndSheetIntoPlayerForm() {
   const sheet = await getOrCreateDndSheet(campaign.id, user.id, campaign.sistema);
 
   ensureCharacterPortraitFieldInForm(form, sheet, "D&D");
+  setupCampaignLabDndClassAutomationPanel(form, sheet);
 
   Object.keys(sheet).forEach((key) => {
-    if (form.elements[key]) form.elements[key].value = sheet[key] || "";
+    if (form.elements[key]) dndHydrateFormElement(form.elements[key], sheet[key] || "");
   });
+
+  syncCampaignLabDndClassFieldsInForm(form);
 
   updateCharacterPortraitFields(form, sheet);
   updateDndPlayerPreview();
@@ -5188,8 +5459,11 @@ async function saveDndPlayerSheet(showAlert) {
   if (!user || !campaign || !form) return;
 
   syncAllDndSpellSlotTrackers(form);
+  syncCampaignLabDndClassFieldsInForm(form);
+  dndEnsureFinalBonusAutomationFields(form);
+  dndRecalculateAll(form);
 
-  await updateDndSheet(campaign.id, user.id, Object.fromEntries(new FormData(form)));
+  await updateDndSheet(campaign.id, user.id, dndGetCompleteFormData(form));
   updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
   updateDndPlayerPreview();
   updateDndAutoNumbers();
@@ -5201,14 +5475,28 @@ function updateDndPlayerPreview() {
   const form = document.getElementById("dndPlayerSheetForm");
   if (!form) return;
 
+  syncCampaignLabDndClassFieldsInForm(form);
+
   setText("dndCharacterMini", form.elements.characterName?.value || "---");
-  setText("dndClassMini", form.elements.classLevel?.value || "---");
+  setText("dndClassMini", getCampaignLabDndClassLevelLabel(Object.fromEntries(new FormData(form))) || "---");
   setText("dndInitiativeMini", form.elements.combatInitiative?.value || "--");
 }
 
 function updateDndAutoNumbers() {
   const form = document.getElementById("dndPlayerSheetForm");
   if (!form) return;
+
+  syncCampaignLabDndClassFieldsInForm(form);
+  dndBindEditableArmorHpEvents();
+  dndEnsureArmorAndHpAutomationFields(form);
+  dndEnsureArmorSelectOptions(form);
+
+  const level = Math.max(1, Math.min(20, Math.floor(Number(form.elements.charLevel?.value) || 1)));
+  const proficiencyBonus = getCampaignLabDndProficiencyBonus(level);
+
+  if (form.elements.proficiencyBonus) {
+    form.elements.proficiencyBonus.value = formatCampaignLabDndBonus(proficiencyBonus);
+  }
 
   updateDndModView("strScore", "strModView");
   updateDndModView("dexScore", "dexModView");
@@ -10285,12 +10573,173 @@ function bodyInput(label, roll, name, value) {
   return `<label><span>${label}</span><small>${roll}</small><input type="text" name="${name}" value="${escapeHtml(value)}" /></label>`;
 }
 
+function dndClassSelect(value = "") {
+  const selectedClass = value || "";
+  const options = getCampaignLabDndClassOptions()
+    .map((className) => `<option value="${escapeHtml(className)}"></option>`)
+    .join("");
+
+  return `
+    <label>
+      Classe
+      <input
+        name="className"
+        id="dndClassSelect"
+        type="text"
+        list="dndClassOptionsList"
+        value="${escapeHtml(selectedClass)}"
+        placeholder="Escolha ou escreva uma classe"
+        autocomplete="off"
+      />
+      <datalist id="dndClassOptionsList">
+        ${options}
+      </datalist>
+    </label>
+  `;
+}
+
+function dndLevelInput(value = "1") {
+  const level = Math.max(1, Math.min(20, Number(value) || 1));
+
+  return `
+    <label>
+      Nível
+      <input name="charLevel" id="dndCharLevelInput" type="number" min="1" max="20" value="${escapeHtml(level)}" />
+    </label>
+  `;
+}
+
+function dndHiddenInput(name, value = "") {
+  return `<input name="${name}" type="hidden" value="${escapeHtml(value)}" />`;
+}
+
+function dndArmorDefenseControls(sheet = {}) {
+  const selectedArmor = sheet.armorType || 'Sem Armadura';
+  const shieldChecked = dnd_bool(sheet.hasShield);
+  const options = Object.keys(DND5E?.ARMOR_TYPES || {
+    'Sem Armadura': {},
+  })
+    .filter((name) => name !== 'Armadura Completa')
+    .map((name) => `<option value="${escapeHtml(name)}"${name === selectedArmor ? ' selected' : ''}>${escapeHtml(name)}</option>`)
+    .join('');
+
+  return `
+    <div class="dnd-defense-config-box">
+      <label>
+        <span>Armadura</span>
+        <select name="armorType" id="dndArmorTypeSelect">
+          ${options}
+        </select>
+      </label>
+
+      <label class="dnd-shield-toggle${shieldChecked ? ' is-active' : ''}" id="dndShieldToggle">
+        <input type="checkbox" name="hasShield" id="dndHasShield"${shieldChecked ? ' checked' : ''} />
+        <span>Escudo +2 CA</span>
+      </label>
+
+      <p class="dnd-auto-rule-note" id="dndArmorRuleNote">
+        CA: 10 + DES sem armadura. Armaduras leves somam DES; médias limitam DES a +2; pesadas não somam DES. Escudo soma +2.
+      </p>
+    </div>
+  `;
+}
+
+function dndHpRuleNote() {
+  return `
+    <p class="dnd-auto-rule-note" id="dndHpRuleNote">
+      PV: no nível 1 usa o máximo do dado de vida. Nos níveis seguintes usa a média do dado + CON por nível.
+    </p>
+  `;
+}
+
 function dndInput(label, name, value, type = "text") {
   return `
     <label>
       ${label}
       <input name="${name}" type="${type}" value="${escapeHtml(value)}" />
     </label>
+  `;
+}
+
+function dndCheckedAttr(value) {
+  return dnd_bool(value) ? ' checked' : '';
+}
+
+function dndManualHiddenInput(name, value = 'false') {
+  return `<input type="hidden" name="${name}" value="${dnd_bool(value) ? 'true' : 'false'}" />`;
+}
+
+function dndSaveRow(save, sheet = {}) {
+  const field = save.field;
+  return `
+    <div class="dnd-bonus-row dnd-save-row">
+      <span class="dnd-bonus-name">${escapeHtml(save.label)}</span>
+
+      <label class="dnd-check-mini" title="Proficiência">
+        <input
+          type="checkbox"
+          name="${field}Prof"
+          data-dnd-prof-checkbox="true"
+          data-dnd-target-bonus="${field}"
+          ${dndCheckedAttr(sheet[`${field}Prof`])}
+        />
+        <span>P</span>
+      </label>
+
+      <input
+        class="dnd-bonus-input"
+        name="${field}"
+        type="number"
+        value="${escapeHtml(sheet[field] ?? '')}"
+        data-dnd-final-bonus="${field}"
+      />
+
+      ${dndManualHiddenInput(`${field}Manual`, sheet[`${field}Manual`])}
+    </div>
+  `;
+}
+
+function dndSkillRow(key, label, sheet = {}) {
+  const meta = DND_SKILL_META[key] || {};
+  return `
+    <div class="dnd-bonus-row dnd-skill-row">
+      <span class="dnd-bonus-name">
+        ${escapeHtml(label)}
+        <small>${escapeHtml(meta.abilityLabel || '')}</small>
+      </span>
+
+      <label class="dnd-check-mini" title="Proficiência">
+        <input
+          type="checkbox"
+          name="${key}Prof"
+          data-dnd-prof-checkbox="true"
+          data-dnd-target-bonus="${key}"
+          ${dndCheckedAttr(sheet[`${key}Prof`])}
+        />
+        <span>P</span>
+      </label>
+
+      <label class="dnd-check-mini" title="Expertise">
+        <input
+          type="checkbox"
+          name="${key}Expert"
+          data-dnd-expert-checkbox="true"
+          data-dnd-target-bonus="${key}"
+          ${dndCheckedAttr(sheet[`${key}Expert`])}
+        />
+        <span>E</span>
+      </label>
+
+      <input
+        class="dnd-bonus-input"
+        name="${key}"
+        type="number"
+        value="${escapeHtml(sheet[key] ?? '')}"
+        data-dnd-final-bonus="${key}"
+      />
+
+      ${dndManualHiddenInput(`${key}Manual`, sheet[`${key}Manual`])}
+    </div>
   `;
 }
 
@@ -10314,6 +10763,16 @@ function dndAbility(label, name, value) {
 }
 
 function dndStat(label, name, value) {
+  if (name === 'armorClass') {
+    return `
+      <label class="dnd-armor-class-field" id="dndArmorClassFieldModal">
+        <span>${label}</span>
+        <input name="${name}" type="number" value="${escapeHtml(value)}" data-dnd-editable-result="armorClass" />
+        ${dndManualHiddenInput('armorClassManual', false)}
+      </label>
+    `;
+  }
+
   return `
     <label>
       <span>${label}</span>
@@ -10323,6 +10782,16 @@ function dndStat(label, name, value) {
 }
 
 function dndHpInput(label, name, value) {
+  if (name === 'hpMax') {
+    return `
+      <label>
+        ${label}
+        <input name="${name}" type="number" min="0" value="${escapeHtml(value)}" data-dnd-editable-result="hpMax" />
+        ${dndManualHiddenInput('hpMaxManual', false)}
+      </label>
+    `;
+  }
+
   return `
     <label>
       ${label}
@@ -10348,6 +10817,11 @@ function dndTextareaBox(label, name, value, rows) {
       <textarea name="${name}" rows="${rows}">${escapeHtml(value)}</textarea>
     </label>
   `;
+}
+
+
+function dndClassIntegratedFields(sheet = {}) {
+  return '';
 }
 
 /* =========================================================
@@ -13764,11 +14238,1886 @@ function setupCampaignDiceGlobalFallback() {
 function stopCampaignDiceDuplicateEvent(event) {
   event.preventDefault();
   event.stopPropagation();
-
   if (typeof event.stopImmediatePropagation === "function") {
     event.stopImmediatePropagation();
   }
 }
+
+/**
+ * dnd-automations.js
+ * Motor de automação D&D 5e (Player's Handbook 2014) — Campaign Lab
+ * Inclui: dados completos de classes/raças/antecedentes, cálculos automáticos,
+ * espaços de magia, habilidades com cargas, proficiência + expertise.
+ */
+
+// =============================================================
+// DADOS DO SISTEMA
+// =============================================================
+
+const DND5E = {
+
+  profBonus: [2,2,2,2,3,3,3,3,4,4,4,4,5,5,5,5,6,6,6,6], // índice 0 = nível 1
+
+  ABILITIES: ['str','dex','con','int','wis','cha'],
+
+  ABILITY_NAMES: {
+    str: 'Força', dex: 'Destreza', con: 'Constituição',
+    int: 'Inteligência', wis: 'Sabedoria', cha: 'Carisma'
+  },
+
+  SKILL_ABILITY: {
+    skillAcrobatics:     'dex',
+    skillAnimalHandling: 'wis',
+    skillArcana:         'int',
+    skillAthletics:      'str',
+    skillDeception:      'cha',
+    skillHistory:        'int',
+    skillInsight:        'wis',
+    skillIntimidation:   'cha',
+    skillInvestigation:  'int',
+    skillMedicine:       'wis',
+    skillNature:         'int',
+    skillPerception:     'wis',
+    skillPerformance:    'cha',
+    skillPersuasion:     'cha',
+    skillReligion:       'int',
+    skillSleightOfHand:  'dex',
+    skillStealth:        'dex',
+    skillSurvival:       'wis',
+  },
+
+  SKILL_NAMES: {
+    skillAcrobatics:'Acrobacia', skillAnimalHandling:'Lidar Animais', skillArcana:'Arcanismo',
+    skillAthletics:'Atletismo', skillDeception:'Enganação', skillHistory:'História',
+    skillInsight:'Intuição', skillIntimidation:'Intimidação', skillInvestigation:'Investigação',
+    skillMedicine:'Medicina', skillNature:'Natureza', skillPerception:'Percepção',
+    skillPerformance:'Performance', skillPersuasion:'Persuasão', skillReligion:'Religião',
+    skillSleightOfHand:'Prestidigitação', skillStealth:'Furtividade', skillSurvival:'Sobrevivência',
+  },
+
+  // ----------------------------------------------------------
+  // ESPAÇOS DE MAGIA
+  // ----------------------------------------------------------
+  SPELL_SLOTS: {
+    full: [
+      [2,0,0,0,0,0,0,0,0],[3,0,0,0,0,0,0,0,0],[4,2,0,0,0,0,0,0,0],[4,3,0,0,0,0,0,0,0],
+      [4,3,2,0,0,0,0,0,0],[4,3,3,0,0,0,0,0,0],[4,3,3,1,0,0,0,0,0],[4,3,3,2,0,0,0,0,0],
+      [4,3,3,3,1,0,0,0,0],[4,3,3,3,2,0,0,0,0],[4,3,3,3,2,1,0,0,0],[4,3,3,3,2,1,0,0,0],
+      [4,3,3,3,2,1,1,0,0],[4,3,3,3,2,1,1,0,0],[4,3,3,3,2,1,1,1,0],[4,3,3,3,2,1,1,1,0],
+      [4,3,3,3,2,1,1,1,1],[4,3,3,3,3,1,1,1,1],[4,3,3,3,3,2,1,1,1],[4,3,3,3,3,2,2,1,1],
+    ],
+    half: [
+      [0,0,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,0,0],[3,0,0,0,0,0,0,0,0],[3,0,0,0,0,0,0,0,0],
+      [4,2,0,0,0,0,0,0,0],[4,2,0,0,0,0,0,0,0],[4,3,0,0,0,0,0,0,0],[4,3,0,0,0,0,0,0,0],
+      [4,3,2,0,0,0,0,0,0],[4,3,2,0,0,0,0,0,0],[4,3,3,0,0,0,0,0,0],[4,3,3,0,0,0,0,0,0],
+      [4,3,3,1,0,0,0,0,0],[4,3,3,1,0,0,0,0,0],[4,3,3,2,0,0,0,0,0],[4,3,3,2,0,0,0,0,0],
+      [4,3,3,3,1,0,0,0,0],[4,3,3,3,1,0,0,0,0],[4,3,3,3,2,0,0,0,0],[4,3,3,3,2,0,0,0,0],
+    ],
+    warlock: [
+      [1,0,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,0,0],[0,2,0,0,0,0,0,0,0],[0,2,0,0,0,0,0,0,0],
+      [0,0,2,0,0,0,0,0,0],[0,0,2,0,0,0,0,0,0],[0,0,0,2,0,0,0,0,0],[0,0,0,2,0,0,0,0,0],
+      [0,0,0,0,2,0,0,0,0],[0,0,0,0,2,0,0,0,0],[0,0,0,0,3,0,0,0,0],[0,0,0,0,3,0,0,0,0],
+      [0,0,0,0,3,0,0,0,0],[0,0,0,0,3,0,0,0,0],[0,0,0,0,3,0,0,0,0],[0,0,0,0,3,0,0,0,0],
+      [0,0,0,0,4,0,0,0,0],[0,0,0,0,4,0,0,0,0],[0,0,0,0,4,0,0,0,0],[0,0,0,0,4,0,0,0,0],
+    ],
+    artificer: [
+      [2,0,0,0,0,0,0,0,0],[2,0,0,0,0,0,0,0,0],[3,0,0,0,0,0,0,0,0],[3,0,0,0,0,0,0,0,0],
+      [4,2,0,0,0,0,0,0,0],[4,2,0,0,0,0,0,0,0],[4,3,0,0,0,0,0,0,0],[4,3,0,0,0,0,0,0,0],
+      [4,3,2,0,0,0,0,0,0],[4,3,2,0,0,0,0,0,0],[4,3,3,0,0,0,0,0,0],[4,3,3,0,0,0,0,0,0],
+      [4,3,3,1,0,0,0,0,0],[4,3,3,1,0,0,0,0,0],[4,3,3,2,0,0,0,0,0],[4,3,3,2,0,0,0,0,0],
+      [4,3,3,3,1,0,0,0,0],[4,3,3,3,1,0,0,0,0],[4,3,3,3,2,0,0,0,0],[4,3,3,3,2,0,0,0,0],
+    ],
+    none: Array(20).fill([0,0,0,0,0,0,0,0,0]),
+  },
+
+  // ----------------------------------------------------------
+  // CLASSES
+  // ----------------------------------------------------------
+  classes: {
+    Artífice: {
+      hitDie: 8, saves: ['con','int'], spellAbility: 'int', spellType: 'artificer',
+      armorProf: ['Leves','Médias','Escudos'], weaponProf: ['Simples'],
+      toolProf: ['Ferramentas de Ladrão','Ferramentas de Funileiro','Um tipo de ferramenta de artesão à escolha'],
+      skillChoices: 2,
+      skillOptions: ['skillArcana','skillHistory','skillInvestigation','skillMedicine','skillNature','skillPerception','skillSleightOfHand'],
+      features: [
+        {level:1, name:'Engenhocas Mágicas', source:'Classe',
+         desc:'Você cria pequenos efeitos mágicos em objetos usando ferramentas de artesão.'},
+        {level:1, name:'Conjurar Magia', source:'Classe',
+         desc:'Você usa INT como habilidade de conjuração.'},
+        {level:2, name:'Infundir Item', source:'Classe',
+         desc:'Você imbui objetos mundanos com infusões mágicas.'},
+        {level:3, name:'Especialista Artífice', source:'Subclasse',
+         desc:'Escolha sua especialização: Alquimista, Armeiro, Artilheiro ou Ferreiro de Batalha.'},
+        {level:3, name:'A Ferramenta Certa para o Trabalho', source:'Classe',
+         desc:'Você cria magicamente um conjunto de ferramentas de artesão adequado ao trabalho.'},
+        {level:5, name:'Habilidade de Especialista', source:'Subclasse',
+         desc:'Você recebe uma habilidade extra de acordo com sua especialização.'},
+        {level:6, name:'Especialização em Ferramentas', source:'Classe',
+         desc:'Seu bônus de proficiência é dobrado em testes com ferramentas nas quais você é proficiente.'},
+        {level:7, name:'Lampejo de Genialidade', source:'Classe', recharge:'longo',
+         chargesFormula:'intMod',
+         desc:'Use sua reação para adicionar seu modificador de INT a um teste ou salvaguarda de uma criatura próxima.'},
+        {level:10, name:'Adepto de Itens Mágicos', source:'Classe',
+         desc:'Você sintoniza mais itens mágicos e cria itens comuns/incomuns com mais facilidade.'},
+        {level:11, name:'Item Armazenador de Magia', source:'Classe',
+         desc:'Você armazena uma magia em um item para ser usada por você ou por outra criatura.'},
+        {level:14, name:'Sábio dos Itens Mágicos', source:'Classe',
+         desc:'Você ignora requisitos de classe, raça, magia e nível ao sintonizar itens mágicos.'},
+        {level:18, name:'Mestre dos Itens Mágicos', source:'Classe',
+         desc:'Você consegue se sintonizar com até seis itens mágicos.'},
+        {level:20, name:'Alma do Artifício', source:'Classe',
+         desc:'Você recebe bônus em salvaguardas por item mágico sintonizado e pode sacrificar infusões para evitar cair a 0 PV.'},
+      ],
+    },
+    Bárbaro: {
+      hitDie: 12, saves: ['str','con'], spellAbility: null, spellType: 'none',
+      armorProf: ['Leves','Médias','Escudos'], weaponProf: ['Simples','Marciais'],
+      skillChoices: 2,
+      skillOptions: ['skillAnimalHandling','skillAthletics','skillIntimidation','skillNature','skillPerception','skillSurvival'],
+      features: [
+        {level:1, name:'Fúria', source:'Classe', recharge:'longo',
+         chargesFormula:'2+floor((level-1)/4)', // 2→3→4
+         desc:'Bônus de +2 no dano corpo a corpo, resistência a dano cortante/contundente/perfurante. Dura 1 min.'},
+        {level:1, name:'Defesa sem Armadura', source:'Classe',
+         desc:'CA = 10 + Mod. DES + Mod. CON quando sem armadura e sem escudo.'},
+        {level:2, name:'Ataque Descuidado', source:'Classe',
+         desc:'Vantagem em ataques corpo a corpo com FOR, mas inimigos têm vantagem contra você.'},
+        {level:2, name:'Sentido de Perigo', source:'Classe',
+         desc:'Vantagem em salvaguardas de DES contra efeitos visíveis (armadilhas, magias de área).'},
+        {level:3, name:'Caminho Primitivo', source:'Subclasse',
+         desc:'Escolha uma especialização: Caminho do Berserker ou Caminho do Totem.'},
+        {level:5, name:'Ataque Extra', source:'Classe',
+         desc:'Você pode atacar duas vezes em vez de uma quando usa a ação de Ataque.'},
+        {level:7, name:'Instinto Selvagem', source:'Classe',
+         desc:'Vantagem em rolagens de iniciativa. Você não é surpreendido enquanto não estiver incapacitado.'},
+        {level:9, name:'Crítico Brutal', source:'Classe',
+         desc:'Role um dado de dano adicional ao causar acerto crítico corpo a corpo.'},
+        {level:11, name:'Fúria Implacável', source:'Classe',
+         desc:'Durante a fúria, se chegar a 0 PV, faz salvaguarda de CON CD 10 para ficar com 1 PV.'},
+        {level:15, name:'Poder Persistente', source:'Classe',
+         desc:'A fúria só termina se você estiver incapacitado ou decidir encerrá-la.'},
+        {level:20, name:'Força Primordial', source:'Classe',
+         desc:'FOR e CON aumentam em 4 (sem limite máximo).'},
+      ],
+    },
+    Bardo: {
+      hitDie: 8, saves: ['dex','cha'], spellAbility: 'cha', spellType: 'full',
+      armorProf: ['Leves'],
+      weaponProf: ['Simples','Bestas de Mão','Espada Longa','Rapieira','Estoque'],
+      toolProf: ['Três instrumentos musicais à escolha'],
+      skillChoices: 3, skillOptions: 'any',
+      features: [
+        {level:1, name:'Conjurar Magia', source:'Classe', desc:'Você usa CAR como habilidade de conjuração.'},
+        {level:1, name:'Inspiração de Bardo', source:'Classe', recharge:'curto',
+         chargesFormula:'chaMod', // = modificador de CAR
+         desc:'Dado de inspiração (d6→d8→d10→d12) que um aliado pode usar em teste, ataque ou salvaguarda.'},
+        {level:2, name:'Fazer Tudo Um Pouco', source:'Classe',
+         desc:'Adiciona metade do bônus de proficiência a testes de habilidade sem proficiência.'},
+        {level:3, name:'Colégio de Bardo', source:'Subclasse',
+         desc:'Escolha seu colégio: Eloquência, Espadas, Glamour, Lamento, Sussurros, Valentia.'},
+        {level:5, name:'Fonte de Inspiração', source:'Classe',
+         desc:'Você recupera toda a Inspiração de Bardo gasta em descanso curto OU longo.'},
+        {level:6, name:'Contra-magia', source:'Classe', recharge:'curto',
+         chargesFormula:'1',
+         desc:'Use sua reação para impor desvantagem em uma rolagem de salvaguarda de concentração.'},
+        {level:10, name:'Segredos Mágicos', source:'Classe',
+         desc:'Aprenda 2 magias de qualquer classe. Repita aos níveis 14 e 18.'},
+        {level:20, name:'Inspiração Superior', source:'Classe',
+         desc:'Ao rolar iniciativa com 0 usos de Inspiração de Bardo, recupere 1 uso.'},
+      ],
+    },
+    Clérigo: {
+      hitDie: 8, saves: ['wis','cha'], spellAbility: 'wis', spellType: 'full',
+      armorProf: ['Leves','Médias','Escudos'], weaponProf: ['Simples'],
+      skillChoices: 2,
+      skillOptions: ['skillHistory','skillInsight','skillMedicine','skillPersuasion','skillReligion'],
+      features: [
+        {level:1, name:'Conjurar Magia', source:'Classe', desc:'Você usa SAB como habilidade de conjuração.'},
+        {level:1, name:'Magias de Domínio', source:'Subclasse',
+         desc:'Magias extras do domínio divino escolhido (Conhecimento, Guerra, Luz, Natureza, Tempestade, etc.).'},
+        {level:1, name:'Habilidade de Domínio', source:'Subclasse',
+         desc:'Habilidade inicial concedida pelo domínio escolhido.'},
+        {level:2, name:'Canalizar Divindade', source:'Classe', recharge:'curto',
+         chargesFormula:'1',
+         desc:'Acesse seu poder divino. Usos aumentam: 2 a partir do nível 6, 3 a partir do 18.'},
+        {level:2, name:'Canalizar Divindade: Afastar Mortos-Vivos', source:'Classe',
+         desc:'Mortros-vivos com CR < X são afugentados por 1 min (salvaguarda de SAB).'},
+        {level:5, name:'Destruir Mortos-Vivos', source:'Classe',
+         desc:'Ao usar Afastar, criaturas com CR ≤ X são destruídas automaticamente.'},
+        {level:8, name:'Golpe Divino', source:'Subclasse', recharge:'turno',
+         chargesFormula:'1',
+         desc:'Uma vez por turno, cause 1d8 (depois 2d8) de dano extra com ataques armados.'},
+        {level:10, name:'Intervenção Divina', source:'Classe', recharge:'longo',
+         chargesFormula:'1',
+         desc:'Implore a ajuda da sua divindade (chance = nível%). Nível 20: sempre funciona.'},
+      ],
+    },
+    Druida: {
+      hitDie: 8, saves: ['int','wis'], spellAbility: 'wis', spellType: 'full',
+      armorProf: ['Leves','Médias (não-metálicas)','Escudos (não-metálicos)'],
+      weaponProf: ['Clava','Adaga','Dardo','Azagaia','Maça','Bordão','Cimitarra','Foice','Funda'],
+      toolProf: ['Kit de herbalismo'],
+      skillChoices: 2,
+      skillOptions: ['skillAnimalHandling','skillArcana','skillInsight','skillMedicine','skillNature','skillPerception','skillReligion','skillSurvival'],
+      features: [
+        {level:1, name:'Druídico', source:'Classe',
+         desc:'Você sabe o idioma secreto druídico. Truque menor Orientação.'},
+        {level:1, name:'Conjurar Magia', source:'Classe', desc:'SAB é sua habilidade de conjuração.'},
+        {level:2, name:'Forma Selvagem', source:'Classe', recharge:'curto',
+         chargesFormula:'2',
+         desc:'Transforme-se em uma besta (CR máximo: nível 2=¼, 4=½, 8=1). Você mantém INT, SAB e CAR.'},
+        {level:2, name:'Círculo Druídico', source:'Subclasse',
+         desc:'Escolha: Círculo da Terra, da Lua, do Pastor, das Esporas, dos Sonhos, etc.'},
+        {level:4, name:'Melhoria de Atributo', source:'Classe',
+         desc:'+2 a um atributo ou +1 a dois, ou um Talento.'},
+        {level:18, name:'Forma Ilimitada', source:'Classe',
+         desc:'Pode usar Forma Selvagem indefinidamente.'},
+        {level:20, name:'Arquidruida', source:'Classe',
+         desc:'Pode usar Forma Selvagem um número ilimitado de vezes.'},
+      ],
+    },
+    Guerreiro: {
+      hitDie: 10, saves: ['str','con'], spellAbility: null, spellType: 'none',
+      armorProf: ['Todas','Escudos'], weaponProf: ['Simples','Marciais'],
+      skillChoices: 2,
+      skillOptions: ['skillAcrobatics','skillAnimalHandling','skillAthletics','skillHistory','skillInsight','skillIntimidation','skillPerception','skillSurvival'],
+      features: [
+        {level:1, name:'Estilo de Combate', source:'Classe',
+         desc:'Escolha um estilo especializado: Arqueria, Defesa, Duelo, Luta com Duas Armas, etc.'},
+        {level:1, name:'Retomar o Fôlego', source:'Classe', recharge:'curto',
+         chargesFormula:'1',
+         desc:'Recupera 1d10 + nível de Guerreiro de PV usando uma Ação Bônus.'},
+        {level:2, name:'Surto de Ação', source:'Classe', recharge:'curto',
+         chargesFormula:'1',
+         desc:'Ganha uma ação adicional em seu turno. 2 usos a partir do nível 17.'},
+        {level:3, name:'Arquétipo Marcial', source:'Subclasse',
+         desc:'Campeão, Mestre de Batalha, Cavaleiro Élfico, Samurai, etc.'},
+        {level:5, name:'Ataque Extra', source:'Classe',
+         desc:'Ataque duas vezes por Ação de Ataque. Três ataques ao nível 11, quatro ao nível 20.'},
+        {level:9, name:'Indomável', source:'Classe', recharge:'longo',
+         chargesFormula:'1',
+         desc:'Repete uma salvaguarda que falhou. 2 usos ao nível 13, 3 ao nível 17.'},
+        {level:11, name:'Estudante de Guerra', source:'Subclasse',
+         desc:'Aprenda duas Manobras extras (Mestre de Batalha) ou benefício equivalente.'},
+      ],
+    },
+    Ladino: {
+      hitDie: 8, saves: ['dex','int'], spellAbility: null, spellType: 'none',
+      armorProf: ['Leves'],
+      weaponProf: ['Simples','Bestas de Mão','Espada Longa','Rapieira','Estoque'],
+      toolProf: ['Ferramentas de Ladrão'],
+      skillChoices: 4, skillOptions: 'any',
+      features: [
+        {level:1, name:'Ataque Furtivo', source:'Classe',
+         desc:'1d6 de dano extra (aumenta por nível) com armas filigranadas/à distância ao ter vantagem ou aliado adjacente.'},
+        {level:1, name:'Gíria dos Ladrões', source:'Classe',
+         desc:'Idioma secreto dos ladrões. Pode deixar mensagens codificadas.'},
+        {level:2, name:'Ação Ardilosa', source:'Classe',
+         desc:'Correr, Desengajar ou Esconder como Ação Bônus.'},
+        {level:3, name:'Arquétipo de Ladino', source:'Subclasse',
+         desc:'Assassino, Trapaceiro Arcano, Salteador, Sombra, Alma Inescrutável, etc.'},
+        {level:3, name:'Expertise', source:'Classe',
+         desc:'Dobra o bônus de proficiência em duas perícias escolhidas. Duas mais ao nível 6.'},
+        {level:5, name:'Esquiva Sobrenatural', source:'Classe',
+         desc:'Use sua reação para reduzir à metade o dano de um ataque que te acertou.'},
+        {level:7, name:'Evasão', source:'Classe',
+         desc:'Sem dano em salvaguardas de DES bem-sucedidas, e metade em falhas.'},
+        {level:10, name:'Talento de Ladino', source:'Classe',
+         desc:'Aprenda Ler Pensamentos, Mime, Toque Chocante ou Prestidigitação.'},
+        {level:11, name:'Uso Confiável de Talento', source:'Classe',
+         desc:'Quando rolar Iniciativa, você sempre recebe o mínimo 10 em perícias com proficiência.'},
+        {level:18, name:'Esquiva Elegante', source:'Classe',
+         desc:'Você não pode ser flanqueado e nunca fica com desvantagem por inimigos adjacentes.'},
+      ],
+    },
+    Mago: {
+      hitDie: 6, saves: ['int','wis'], spellAbility: 'int', spellType: 'full',
+      armorProf: [],
+      weaponProf: ['Adaga','Dardo','Funda','Bordão','Besta Leve'],
+      skillChoices: 2,
+      skillOptions: ['skillArcana','skillHistory','skillInsight','skillInvestigation','skillMedicine','skillReligion'],
+      features: [
+        {level:1, name:'Conjurar Magia', source:'Classe', desc:'INT é sua habilidade de conjuração.'},
+        {level:1, name:'Livro de Magias', source:'Classe',
+         desc:'Começa com 6 magias de 1º nível. Aprende 2 por nível. Pode copiar magias encontradas.'},
+        {level:1, name:'Recuperação Arcana', source:'Classe', recharge:'longo',
+         chargesFormula:'1',
+         desc:'Após descanso curto, recupera espaços de magia totalizando até metade do nível (mínimo 1).'},
+        {level:2, name:'Tradição Arcana', source:'Subclasse',
+         desc:'Abjuração, Conjuração, Adivinhação, Encantamento, Evocação, Ilusão, Necromancia, Transmutação.'},
+        {level:18, name:'Maestria em Magias', source:'Classe',
+         desc:'Escolha uma magia de 1º e uma de 2º nível: pode lançá-las de graça uma vez por descanso.'},
+        {level:20, name:'Formas de Assinatura', source:'Classe',
+         desc:'Duas magias de 3º nível que sempre têm espaço disponível para lançamento.'},
+      ],
+    },
+    Monge: {
+      hitDie: 8, saves: ['str','dex'], spellAbility: null, spellType: 'none',
+      armorProf: [], weaponProf: ['Simples','Espadas Curtas'],
+      skillChoices: 2,
+      skillOptions: ['skillAcrobatics','skillAthletics','skillHistory','skillInsight','skillReligion','skillStealth'],
+      features: [
+        {level:1, name:'Defesa sem Armadura', source:'Classe',
+         desc:'CA = 10 + Mod. DES + Mod. SAB quando sem armadura e sem escudo.'},
+        {level:1, name:'Artes Marciais', source:'Classe',
+         desc:'Dano desarmado/arma monge = 1d4 (→d6→d8→d10). FOR ou DES em ataques monge.'},
+        {level:2, name:'Ki', source:'Classe', recharge:'curto',
+         chargesFormula:'level',
+         desc:'Pontos de ki = nível. Chuva de Golpes (2 ataques bônus), Passo do Vento, Defesa de Padrão.'},
+        {level:2, name:'Movimento sem Armadura', source:'Classe',
+         desc:'Velocidade +10 ft. sem armadura. Aumenta conforme o nível.'},
+        {level:3, name:'Tradição Monástica', source:'Subclasse',
+         desc:'Quatro Elementos, Mão Aberta, Sombra, Misericórdia, Sol e Lua, etc.'},
+        {level:3, name:'Desviar Projéteis', source:'Classe',
+         desc:'Use reação para reduzir dano de projéteis; se zerado, pode devolver.'},
+        {level:5, name:'Ataque Extra', source:'Classe',
+         desc:'Ataque duas vezes por Ação de Ataque.'},
+        {level:5, name:'Surto de Golpe Atordoante', source:'Classe',
+         desc:'Gaste 1 ki ao acertar: teste de CON ou alvo fica atordoado até o fim do próximo turno.'},
+        {level:7, name:'Evasão', source:'Classe',
+         desc:'Sem dano em saves de DES bem-sucedidos, metade em falhas.'},
+        {level:10, name:'Pureza do Corpo', source:'Classe',
+         desc:'Imune a doenças e venenos.'},
+        {level:13, name:'Língua do Sol e da Lua', source:'Classe',
+         desc:'Pode se comunicar com qualquer criatura que conheça um idioma.'},
+        {level:14, name:'Alma de Diamante', source:'Classe',
+         desc:'Proficiência em todas as salvaguardas; pode repetir falhas gastando 1 ki.'},
+        {level:18, name:'Corpo Vazio', source:'Classe', recharge:'longo',
+         chargesFormula:'1',
+         desc:'Gaste 4 ki para ficar invisível por 1 minuto (+ outros benefícios).'},
+        {level:20, name:'Ser Perfeito', source:'Classe',
+         desc:'FOR e DES aumentam em 2 (máximo 26). Idade não afeta mais.'},
+      ],
+    },
+    Paladino: {
+      hitDie: 10, saves: ['wis','cha'], spellAbility: 'cha', spellType: 'half',
+      armorProf: ['Todas','Escudos'], weaponProf: ['Simples','Marciais'],
+      skillChoices: 2,
+      skillOptions: ['skillAthletics','skillInsight','skillIntimidation','skillMedicine','skillPersuasion','skillReligion'],
+      features: [
+        {level:1, name:'Sentido Divino', source:'Classe', recharge:'longo',
+         chargesFormula:'chaMod+1',
+         desc:'Detecta celestiais, infernais e mortos-vivos a 60 ft. (sem contagem de bloqueadores).'},
+        {level:1, name:'Imposição de Mãos', source:'Classe', recharge:'longo',
+         chargesFormula:'level*5',
+         desc:'Cura total = nível × 5 PV. Pode curar doenças/venenos gastando 5 PV da piscina.'},
+        {level:2, name:'Estilo de Combate', source:'Classe',
+         desc:'Defesa, Duelo, Proteção ou Luta com Armas Grandes.'},
+        {level:2, name:'Conjurar Magia', source:'Classe', desc:'CAR é sua habilidade de conjuração.'},
+        {level:2, name:'Esmagar Divino', source:'Classe',
+         desc:'Ao acertar com arma, gaste um espaço de magia: 2d8 de dano radiante extra por nível do espaço.'},
+        {level:3, name:'Saúde Divina', source:'Classe',
+         desc:'Imune a doenças.'},
+        {level:3, name:'Juramento Sagrado', source:'Subclasse',
+         desc:'Devoção, Vingança, Ancestrais, Glória, Conquista, Redenção, etc.'},
+        {level:5, name:'Ataque Extra', source:'Classe',
+         desc:'Ataque duas vezes por Ação de Ataque.'},
+        {level:6, name:'Aura de Proteção', source:'Classe',
+         desc:'Você e aliados no raio de 10 ft. (30 ft. ao nível 18) somam Mod. CAR a salvaguardas.'},
+        {level:7, name:'Aura do Juramento', source:'Subclasse',
+         desc:'Aura bônus concedida pelo seu Juramento Sagrado.'},
+        {level:10, name:'Aura de Coragem', source:'Classe',
+         desc:'Você e aliados a 10 ft. (30 ft. ao nível 18) não podem ser assustados enquanto estiver consciente.'},
+        {level:11, name:'Esmagar Divino Aprimorado', source:'Classe',
+         desc:'Todo ataque corpo a corpo bem-sucedido causa 1d8 de dano radiante extra.'},
+        {level:14, name:'Toque Purificador', source:'Classe', recharge:'longo',
+         chargesFormula:'chaMod',
+         desc:'Use uma ação para encerrar uma magia afetando você ou um aliado (toque).'},
+        {level:20, name:'Forma Sagrada', source:'Subclasse',
+         desc:'Poder transformador máximo dependente do Juramento.'},
+      ],
+    },
+    Patrulheiro: {
+      hitDie: 10, saves: ['str','dex'], spellAbility: 'wis', spellType: 'half',
+      armorProf: ['Leves','Médias','Escudos'], weaponProf: ['Simples','Marciais'],
+      skillChoices: 3,
+      skillOptions: ['skillAnimalHandling','skillAthletics','skillInsight','skillInvestigation','skillNature','skillPerception','skillStealth','skillSurvival'],
+      features: [
+        {level:1, name:'Inimigo Favorito', source:'Classe',
+         desc:'Escolha um tipo de inimigo: vantagem em testes de rastreio e memória. +1 tipo ao nível 6 e 14.'},
+        {level:1, name:'Explorador Natural', source:'Classe',
+         desc:'Benefícios em tipo de terreno escolhido: viagem mais rápida, alimento dobrado, etc.'},
+        {level:2, name:'Estilo de Combate', source:'Classe',
+         desc:'Arqueria, Defesa, Duelo, Luta com Duas Armas.'},
+        {level:2, name:'Conjurar Magia', source:'Classe', desc:'SAB é sua habilidade de conjuração.'},
+        {level:3, name:'Consciência Primitiva', source:'Classe', recharge:'longo',
+         chargesFormula:'1',
+         desc:'Gaste uma magia para detectar inimigos favoritos a 1 milha (6 milhas em terreno favorito).'},
+        {level:3, name:'Arquétipo de Patrulheiro', source:'Subclasse',
+         desc:'Caçador, Mestre da Besta, Deslizador de Horizontes, Perseguidor de Monstros, etc.'},
+        {level:5, name:'Ataque Extra', source:'Classe',
+         desc:'Ataque duas vezes por Ação de Ataque.'},
+        {level:8, name:'Passo do Mundo', source:'Classe',
+         desc:'Se mover através de terreno difícil natural não gasta movimento extra.'},
+        {level:10, name:'Mente Escondida', source:'Classe',
+         desc:'Imune ao efeito enfeitiçado e não pode ser adormecido magicamente.'},
+        {level:14, name:'Desaparecer na Natureza', source:'Classe',
+         desc:'Pode se esconder quando obstruído apenas por vegetação, mesmo que não forneça cobertura.'},
+        {level:20, name:'Caçador Primevo', source:'Classe',
+         desc:'+1 bônus de proficiência, Darkvision 60 ft., bônus em ataques contra inimigos favoritos.'},
+      ],
+    },
+    Feiticeiro: {
+      hitDie: 6, saves: ['con','cha'], spellAbility: 'cha', spellType: 'full',
+      armorProf: [],
+      weaponProf: ['Adaga','Dardo','Funda','Bordão','Besta Leve'],
+      skillChoices: 2,
+      skillOptions: ['skillArcana','skillDeception','skillInsight','skillIntimidation','skillPersuasion','skillReligion'],
+      features: [
+        {level:1, name:'Conjurar Magia', source:'Classe', desc:'CAR é sua habilidade de conjuração.'},
+        {level:1, name:'Origem de Feiticeiro', source:'Subclasse',
+         desc:'Linhagem Dracônica, Alma Selvagem, Sombra, Tempestade de Magia, etc.'},
+        {level:2, name:'Pontos de Feitiçaria', source:'Classe', recharge:'longo',
+         chargesFormula:'level',
+         desc:'Crie espaços de magia ou use como recurso para Metamagia.'},
+        {level:2, name:'Metamagia', source:'Classe',
+         desc:'Escolha 2 de 8 opções: Cuidadoso, Distante, Potencializado, Estendido, Elevado, Gêmeo, Rápido, Sutil.'},
+        {level:3, name:'Melhoria de Atributo', source:'Classe', desc:'+2 a um atributo ou +1 a dois, ou Talento.'},
+        {level:20, name:'Restauração de Feitiçaria', source:'Classe',
+         desc:'Recupera 4 Pontos de Feitiçaria ao rolar iniciativa sem pontos restantes.'},
+      ],
+    },
+    Bruxo: {
+      hitDie: 8, saves: ['wis','cha'], spellAbility: 'cha', spellType: 'warlock',
+      armorProf: ['Leves'], weaponProf: ['Simples'],
+      skillChoices: 2,
+      skillOptions: ['skillArcana','skillDeception','skillHistory','skillIntimidation','skillInvestigation','skillNature','skillReligion'],
+      features: [
+        {level:1, name:'Patrono de Além', source:'Subclasse',
+         desc:'Arquidevil, Grande Antigo, Corte Feérica, Cósmos Implacável, Genio, Celestial, Kraken, etc.'},
+        {level:1, name:'Magia do Pacto', source:'Classe',
+         desc:'Espaços de magia recuperados a cada descanso curto. Todos espaços têm o mesmo nível.'},
+        {level:1, name:'Conjurar Magia', source:'Classe', desc:'CAR é sua habilidade de conjuração.'},
+        {level:2, name:'Invocações Eldritch', source:'Classe',
+         desc:'Escolha 2 invocações. Aprenda mais conforme sobe de nível.'},
+        {level:3, name:'Dádiva do Pacto', source:'Classe',
+         desc:'Lâmina do Pacto (arma), Corrente do Pacto (familiar), Tomo do Pacto (grimório).'},
+        {level:11, name:'Arcanum Místico', source:'Classe', recharge:'longo',
+         chargesFormula:'1',
+         desc:'Lança uma magia de 6º nível uma vez sem gastar espaço (7º, 8º e 9º aos níveis 13, 15, 17).'},
+        {level:20, name:'Mestre Eldritch', source:'Classe', recharge:'longo',
+         chargesFormula:'1',
+         desc:'Passe 1 minuto em oração ao patrono para recuperar todos os espaços de Magia do Pacto.'},
+      ],
+    },
+  },
+
+  // ----------------------------------------------------------
+  // RAÇAS
+  // ----------------------------------------------------------
+  races: {
+    'Humano (Padrão)': {
+      abilityBonus: {str:1,dex:1,con:1,int:1,wis:1,cha:1}, speed: 30, size:'Médio',
+      languages: ['Comum','Um idioma à escolha'],
+      traits: ['Versátil: +1 em todos os atributos.','Língua adicional à escolha.'],
+    },
+    'Humano (Variante)': {
+      abilityBonus: {}, speed: 30, size:'Médio',
+      languages: ['Comum','Um idioma à escolha'],
+      traits: ['+1 em dois atributos à escolha.','Proficiência em uma perícia à escolha.','Um Talento à escolha.'],
+    },
+    'Anão (Montanha)': {
+      abilityBonus: {str:2,con:2}, speed: 25, size:'Médio', darkvision: 60,
+      languages: ['Comum','Anão'],
+      traits: ['Resistência Anã: vantagem em saves contra veneno.','Treinamento com Armas Anãs: machados e martelos de guerra.','Proficiência com armaduras leves e médias.'],
+    },
+    'Anão (Colina)': {
+      abilityBonus: {con:2,wis:1}, speed: 25, size:'Médio', darkvision: 60,
+      languages: ['Comum','Anão'],
+      traits: ['Resistência Anã: vantagem em saves contra veneno.','Tenacidade Anã: +1 PV por nível.','Treinamento com Armas Anãs.'],
+    },
+    'Elfo (Alto)': {
+      abilityBonus: {dex:2,int:1}, speed: 30, size:'Médio', darkvision: 60,
+      languages: ['Comum','Élfico','Um idioma à escolha'],
+      skills: ['skillPerception'],
+      traits: ['Ancestral dos Feéricos: vantagem em saves contra enfeitiçado e resistência ao sono mágico.','Transe: 4h de meditação no lugar de 8h de sono.','Sentidos Aguçados: proficiência em Percepção.','Truque menor (cantrip) de Mago extra à escolha.'],
+    },
+    'Elfo (Silvestre)': {
+      abilityBonus: {dex:2,wis:1}, speed: 35, size:'Médio', darkvision: 60,
+      languages: ['Comum','Élfico'],
+      skills: ['skillPerception'],
+      traits: ['Ancestral dos Feéricos.','Transe.','Sentidos Aguçados: proficiência em Percepção.','Passo da Floresta: ignorar terreno difícil natural.','Esconder-se: pode tentar se esconder com obstrução mínima.'],
+    },
+    'Meio-Elfo': {
+      abilityBonus: {cha:2}, speed: 30, size:'Médio', darkvision: 60,
+      languages: ['Comum','Élfico','Um idioma à escolha'],
+      traits: ['+1 em dois atributos à escolha (exceto CAR).','Herança Feérica: vantagem em saves contra enfeitiçado e resistência ao sono.','Versatilidade: proficiência em duas perícias à escolha.'],
+    },
+    'Halfling (Pés-Leves)': {
+      abilityBonus: {dex:2,cha:1}, speed: 25, size:'Pequeno',
+      languages: ['Comum','Halfling'],
+      traits: ['Sortudo: repita 1s naturais em ataques, habilidades e saves.','Corajoso: vantagem em saves contra medo.','Agilidade Halfling: mover-se através de espaço de criatura maior.','Naturalmente Furtivo: pode se esconder atrás de criaturas maiores.'],
+    },
+    'Halfling (Robusto)': {
+      abilityBonus: {dex:2,con:1}, speed: 25, size:'Pequeno',
+      languages: ['Comum','Halfling'],
+      traits: ['Sortudo.','Corajoso.','Agilidade Halfling.','Resistência Robusta: vantagem em saves contra veneno e resistência ao dano de veneno.'],
+    },
+    'Draconato': {
+      abilityBonus: {str:2,cha:1}, speed: 30, size:'Médio',
+      languages: ['Comum','Dracônico'],
+      traits: ['Ancestral Dracônico: escolha um tipo de dragão (determina sopro e resistência).','Sopro: 1 uso por descanso curto (1× por turno de combate). Aumenta com o nível.','Resistência Dracônica: resistência ao tipo de dano do seu ancestral.'],
+    },
+    'Gnomo (Floresta)': {
+      abilityBonus: {int:2,dex:1}, speed: 25, size:'Pequeno', darkvision: 60,
+      languages: ['Comum','Gnômico'],
+      traits: ['Astúcia Gnômica: vantagem em saves de INT/SAB/CAR contra magia.','Ilusão Natural: truque menor Ilusão Menor (INT como habilidade).','Falar com Bichanos: comunicação básica com mamíferos pequenos.'],
+    },
+    'Gnomo (Da Rocha)': {
+      abilityBonus: {int:2,con:1}, speed: 25, size:'Pequeno', darkvision: 60,
+      languages: ['Comum','Gnômico'],
+      traits: ['Astúcia Gnômica: vantagem em saves de INT/SAB/CAR contra magia.','Conhecimento de Ferramentas de Artesão: proficiência em Ferramentas de Relojoeiro ou Ferramentas de Ferreiro.','Sentir Vibrações: não pode ser surpreendido (percebe vibrações a 10 ft.).'],
+    },
+    'Meio-Orc': {
+      abilityBonus: {str:2,con:1}, speed: 30, size:'Médio', darkvision: 60,
+      languages: ['Comum','Orc'],
+      skills: ['skillIntimidation'],
+      traits: ['Ameaçador: proficiência em Intimidação.','Resistência Implacável: fica com 1 PV ao invés de cair a 0 (1× por descanso longo).','Ataques Selvagens: em acertos críticos com arma corpo a corpo, role um dado de dano extra.'],
+    },
+    'Tiefling': {
+      abilityBonus: {cha:2,int:1}, speed: 30, size:'Médio', darkvision: 60,
+      languages: ['Comum','Infernal'],
+      traits: ['Herança Infernal: truque menor Taumaturgia; Chamas Hellish (nivel 3, 1×/longo), Escuridão (nível 5, 1×/longo). INT é a habilidade.','Resistência Infernal: resistência a dano de fogo.'],
+    },
+  },
+
+  // ----------------------------------------------------------
+  // ANTECEDENTES
+  // ----------------------------------------------------------
+  backgrounds: {
+    'Acólito': {
+      skills: ['skillInsight','skillReligion'], languages: 2,
+      feature: 'Abrigo dos Fiéis: recebe abrigo e apoio de templos afiliados.',
+    },
+    'Artista': {
+      skills: ['skillAcrobatics','skillPerformance'],
+      toolProf: ['Um instrumento musical'], languages: 1,
+      feature: 'Por Demanda Popular: sempre encontra lugar para se apresentar.',
+    },
+    'Charlatão': {
+      skills: ['skillDeception','skillSleightOfHand'],
+      toolProf: ['Kit de disfarce','Ferramentas de falsificação'],
+      feature: 'Identidade Falsa: possui uma identidade preparada com documentos.',
+    },
+    'Criminoso': {
+      skills: ['skillDeception','skillStealth'],
+      toolProf: ['Um tipo de jogo','Ferramentas de Ladrão'],
+      feature: 'Contato Criminal: tem um aliado no mundo do crime.',
+    },
+    'Ermitão': {
+      skills: ['skillMedicine','skillReligion'],
+      toolProf: ['Kit de herbalismo'], languages: 1,
+      feature: 'Descoberta: revelação ou conhecimento único obtido no isolamento.',
+    },
+    'Erudito': {
+      skills: ['skillArcana','skillHistory'], languages: 2,
+      feature: 'Pesquisador: sabe onde encontrar qualquer informação.',
+    },
+    'Forasteiro': {
+      skills: ['skillAthletics','skillSurvival'],
+      toolProf: ['Um instrumento musical'], languages: 1,
+      feature: 'Viajante do Mundo: pode passar por assentamentos sem problemas.',
+    },
+    'Herói do Povo': {
+      skills: ['skillAnimalHandling','skillSurvival'],
+      toolProf: ['Ferramentas de artesão','Veículos (terrestres)'],
+      feature: 'Apelo Rústico: recebe simpatia e ajuda de pessoas comuns.',
+    },
+    'Marinheiro': {
+      skills: ['skillAthletics','skillPerception'],
+      toolProf: ['Ferramentas de navegador','Veículos (aquáticos)'],
+      feature: 'Passagem Segura: pode garantir transporte marítimo gratuito.',
+    },
+    'Nobre': {
+      skills: ['skillHistory','skillPersuasion'],
+      toolProf: ['Um tipo de jogo'], languages: 1,
+      feature: 'Privilégio de Posição: o título abre portas e concede respeito.',
+    },
+    'Órfão': {
+      skills: ['skillSleightOfHand','skillStealth'],
+      toolProf: ['Kit de disfarce','Ferramentas de Ladrão'],
+      feature: 'Criança das Ruas: conhece rotas secretas e abrigos na cidade.',
+    },
+    'Sábio': {
+      skills: ['skillArcana','skillHistory'], languages: 2,
+      feature: 'Pesquisador: sabe onde buscar conhecimento raro.',
+    },
+    'Soldado': {
+      skills: ['skillAthletics','skillIntimidation'],
+      toolProf: ['Um tipo de jogo','Veículos (terrestres)'],
+      feature: 'Hierarquia Militar: mantém conexões com unidades militares.',
+    },
+  },
+
+  // ----------------------------------------------------------
+  // ARMADURAS
+  // ----------------------------------------------------------
+  ARMOR_TYPES: {
+    // CA oficial D&D 5e: sem armadura = 10 + DES.
+    // Leves somam DES total; médias limitam DES a +2; pesadas não somam DES.
+    'Sem Armadura':       { base: 10, type: 'none',   maxDex: 99 },
+    'Acolchoada':         { base: 11, type: 'light',  maxDex: 99, stealthDisadv: true },
+    'Couro':              { base: 11, type: 'light',  maxDex: 99 },
+    'Couro Batido':       { base: 12, type: 'light',  maxDex: 99 },
+    'Gibão de Peles':     { base: 12, type: 'medium', maxDex: 2 },
+    'Camisão de Malha':   { base: 13, type: 'medium', maxDex: 2 },
+    'Cota de Escamas':    { base: 14, type: 'medium', maxDex: 2, stealthDisadv: true },
+    'Peitoral':           { base: 14, type: 'medium', maxDex: 2 },
+    'Meia Armadura':      { base: 15, type: 'medium', maxDex: 2, stealthDisadv: true },
+    'Corselete de Anéis': { base: 14, type: 'heavy',  maxDex: 0, stealthDisadv: true },
+    'Cota de Malha':      { base: 16, type: 'heavy',  maxDex: 0, stealthDisadv: true },
+    'Cota de Talas':      { base: 17, type: 'heavy',  maxDex: 0, stealthDisadv: true },
+    'Armadura de Placas': { base: 18, type: 'heavy',  maxDex: 0, stealthDisadv: true },
+    'Armadura Completa':  { base: 18, type: 'heavy',  maxDex: 0, stealthDisadv: true },
+  },
+};
+
+// =============================================================
+// FUNÇÕES AUXILIARES
+// =============================================================
+
+function dnd_mod(score) {
+  return Math.floor((Number(score || 10) - 10) / 2);
+}
+
+function dnd_profBonus(level) {
+  return DND5E.profBonus[Math.max(1, Math.min(20, Number(level) || 1)) - 1];
+}
+
+function dnd_fmt(mod) {
+  return mod >= 0 ? `+${mod}` : String(mod);
+}
+
+function dnd_val(form, name) {
+  const el = form.elements[name];
+  if (!el) return '';
+  if (el.type === 'checkbox') return el.checked;
+  return el.value;
+}
+
+function dnd_bool(value) {
+  return value === true || value === 1 || value === '1' || value === 'true' || value === 'on' || value === 'yes';
+}
+
+function dnd_set(form, name, value) {
+  const el = form.elements[name];
+  if (!el) return;
+  if (el.type === 'checkbox') el.checked = dnd_bool(value);
+  else el.value = String(value ?? '');
+}
+
+function dnd_esc(v) {
+  return String(v||'').replaceAll('&','&amp;').replaceAll('"','&quot;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+}
+
+
+function dndEnsureHiddenInput(form, name, value = "false") {
+  if (!form || form.elements[name]) return form?.elements?.[name] || null;
+
+  const input = document.createElement('input');
+  input.type = 'hidden';
+  input.name = name;
+  input.value = String(value ?? 'false');
+  form.appendChild(input);
+  return input;
+}
+
+function dndEnsureCheckboxInput(form, name, options = {}) {
+  if (!form) return null;
+  const existing = form.elements[name];
+  if (existing) return existing;
+
+  const input = document.createElement('input');
+  input.type = 'checkbox';
+  input.name = name;
+  input.hidden = options.hidden !== false;
+  if (options.target) input.dataset.dndTargetBonus = options.target;
+  if (options.kind === 'prof') input.dataset.dndProfCheckbox = 'true';
+  if (options.kind === 'expert') input.dataset.dndExpertCheckbox = 'true';
+  form.appendChild(input);
+  return input;
+}
+
+function dndFinalManualFieldName(fieldName) {
+  return `${fieldName}Manual`;
+}
+
+function dndIsFinalBonusManual(form, fieldName) {
+  const field = form?.elements?.[fieldName];
+  const manualField = form?.elements?.[dndFinalManualFieldName(fieldName)];
+  return dnd_bool(manualField?.value) || field?.dataset?.dndManual === 'true';
+}
+
+function dndSetFinalBonusManual(form, fieldName, manual = true) {
+  if (!form || !fieldName) return;
+
+  const field = form.elements[fieldName];
+  const manualField = dndEnsureHiddenInput(form, dndFinalManualFieldName(fieldName), 'false');
+
+  if (manualField) manualField.value = manual ? 'true' : 'false';
+  if (field) field.dataset.dndManual = manual ? 'true' : 'false';
+}
+
+function dndSetCalculatedFinalBonus(form, fieldName, value, options = {}) {
+  const field = form?.elements?.[fieldName];
+  if (!field) return;
+
+  if (options.force) {
+    dndSetFinalBonusManual(form, fieldName, false);
+  }
+
+  if (dndIsFinalBonusManual(form, fieldName)) return;
+
+  const finalValue = String(Number.isFinite(Number(value)) ? Number(value) : 0);
+  field.value = finalValue;
+  field.dataset.dndAutoValue = finalValue;
+  field.dataset.dndManual = 'false';
+
+  const manualField = dndEnsureHiddenInput(form, dndFinalManualFieldName(fieldName), 'false');
+  if (manualField) manualField.value = 'false';
+}
+
+function dndEditableResultManualFieldName(fieldName) {
+  return `${fieldName}Manual`;
+}
+
+function dndIsEditableResultManual(form, fieldName) {
+  const field = form?.elements?.[fieldName];
+  const manualField = form?.elements?.[dndEditableResultManualFieldName(fieldName)];
+  return dnd_bool(manualField?.value) || field?.dataset?.dndManual === 'true';
+}
+
+function dndSetEditableResultManual(form, fieldName, manual = true) {
+  if (!form || !fieldName) return;
+
+  const field = form.elements[fieldName];
+  const manualField = dndEnsureHiddenInput(form, dndEditableResultManualFieldName(fieldName), 'false');
+
+  if (manualField) manualField.value = manual ? 'true' : 'false';
+  if (field) field.dataset.dndManual = manual ? 'true' : 'false';
+}
+
+function dndSetCalculatedEditableNumber(form, fieldName, value, options = {}) {
+  const field = form?.elements?.[fieldName];
+  if (!field) return;
+
+  field.type = 'number';
+  field.dataset.dndEditableResult = fieldName;
+
+  if (options.force) {
+    dndSetEditableResultManual(form, fieldName, false);
+  }
+
+  if (dndIsEditableResultManual(form, fieldName)) return;
+
+  const finalValue = String(Math.max(0, Math.floor(Number(value) || 0)));
+  field.value = finalValue;
+  field.dataset.dndAutoValue = finalValue;
+  field.dataset.dndManual = 'false';
+
+  const manualField = dndEnsureHiddenInput(form, dndEditableResultManualFieldName(fieldName), 'false');
+  if (manualField) manualField.value = 'false';
+}
+
+function dndEnsureArmorAndHpAutomationFields(form) {
+  if (!form) return;
+
+  dndEnsureHiddenInput(form, 'armorClassManual', 'false');
+  dndEnsureHiddenInput(form, 'hpMaxManual', 'false');
+
+  if (!form.elements.armorType) {
+    const select = document.createElement('select');
+    select.name = 'armorType';
+    select.id = 'dndArmorTypeSelect';
+    select.innerHTML = dndArmorTypeOptionsHtml('Sem Armadura');
+    form.appendChild(select);
+  }
+
+  if (!form.elements.hasShield) {
+    const checkbox = document.createElement('input');
+    checkbox.type = 'checkbox';
+    checkbox.name = 'hasShield';
+    checkbox.hidden = true;
+    form.appendChild(checkbox);
+  }
+
+  if (form.elements.armorClass) {
+    form.elements.armorClass.type = 'number';
+    form.elements.armorClass.dataset.dndEditableResult = 'armorClass';
+    form.elements.armorClass.dataset.dndManual = dnd_bool(form.elements.armorClassManual?.value) ? 'true' : 'false';
+  }
+
+  if (form.elements.hpMax) {
+    form.elements.hpMax.type = 'number';
+    form.elements.hpMax.dataset.dndEditableResult = 'hpMax';
+    form.elements.hpMax.dataset.dndManual = dnd_bool(form.elements.hpMaxManual?.value) ? 'true' : 'false';
+  }
+}
+
+function dndArmorTypeOptionsHtml(selectedValue = 'Sem Armadura') {
+  return Object.keys(DND5E.ARMOR_TYPES || {})
+    .filter((name) => name !== 'Armadura Completa')
+    .map((name) => `<option value="${dnd_esc(name)}"${name === selectedValue ? ' selected' : ''}>${dnd_esc(name)}</option>`)
+    .join('');
+}
+
+function dndEnsureArmorSelectOptions(form) {
+  const select = form?.elements?.armorType;
+  if (!select || select.tagName !== 'SELECT') return;
+
+  const current = select.value || 'Sem Armadura';
+  const options = Object.keys(DND5E.ARMOR_TYPES || {}).filter((name) => name !== 'Armadura Completa');
+
+  if (select.dataset.dndArmorOptionsReady === 'true' && options.includes(current)) return;
+
+  select.innerHTML = dndArmorTypeOptionsHtml(options.includes(current) ? current : 'Sem Armadura');
+  select.value = options.includes(current) ? current : 'Sem Armadura';
+  select.dataset.dndArmorOptionsReady = 'true';
+}
+
+function dndGetHitDieFromForm(form) {
+  const className = dndResolveClassName(form?.elements?.className?.value || '') || form?.elements?.className?.value;
+  const cd = DND5E.classes[className];
+
+  if (cd?.hitDie) return Number(cd.hitDie);
+
+  const hitDiceText = String(form?.elements?.hitDiceTotal?.value || '').toLowerCase();
+  const match = hitDiceText.match(/d(4|6|8|10|12)/);
+  return match ? Number(match[1]) : 8;
+}
+
+function dndAverageHitDieGain(hitDie) {
+  return Math.floor(Number(hitDie || 8) / 2) + 1;
+}
+
+function dndCalculateMaxHp(form, level, conMod) {
+  const safeLevel = Math.max(1, Math.min(20, Math.floor(Number(level) || 1)));
+  const hitDie = dndGetHitDieFromForm(form);
+  const averagePerLevel = dndAverageHitDieGain(hitDie);
+  const total = Math.max(
+    safeLevel,
+    hitDie + Math.max(0, safeLevel - 1) * averagePerLevel + conMod * safeLevel
+  );
+
+  return {
+    total,
+    hitDie,
+    averagePerLevel,
+    explanation: `PV = ${hitDie} no nível 1 + ${Math.max(0, safeLevel - 1)} × ${averagePerLevel} + CON ${conMod >= 0 ? '+' : ''}${conMod} × ${safeLevel} = ${total}`,
+  };
+}
+
+function dndCalculateArmorClass(form, mods = {}) {
+  const armorType = dnd_val(form, 'armorType') || 'Sem Armadura';
+  const armor = DND5E.ARMOR_TYPES[armorType] || DND5E.ARMOR_TYPES['Sem Armadura'];
+  const dexMod = Number(mods.dex || 0);
+  const shieldActive = Boolean(form?.elements?.hasShield?.checked);
+
+  let dexApplied = dexMod;
+  let base = 10;
+  let total = 10 + dexMod;
+  let formula = '10 + Mod. DES';
+
+  if (armor) {
+    base = armor.base;
+
+    if (armor.type === 'none') {
+      dexApplied = dexMod;
+      total = 10 + dexMod;
+      formula = '10 + Mod. DES';
+    } else if (armor.type === 'light') {
+      dexApplied = dexMod;
+      total = armor.base + dexMod;
+      formula = `${armor.base} + Mod. DES`;
+    } else if (armor.type === 'medium') {
+      dexApplied = Math.min(dexMod, 2);
+      total = armor.base + dexApplied;
+      formula = `${armor.base} + DES limitado a +2`;
+    } else if (armor.type === 'heavy') {
+      dexApplied = 0;
+      total = armor.base;
+      formula = `${armor.base} sem DES`;
+    }
+  }
+
+  if (shieldActive) {
+    total += 2;
+    formula += ' + Escudo 2';
+  }
+
+  return {
+    total,
+    armorType,
+    armor,
+    base,
+    dexApplied,
+    shieldActive,
+    formula,
+    explanation: `CA = ${formula} = ${total}`,
+  };
+}
+
+function dndSyncDefenseVisualState(form, armorCalc = null) {
+  const field = form?.elements?.armorClass;
+  const box = document.getElementById('dndArmorClassField') || field?.closest('label');
+  const shieldToggle = document.getElementById('dndShieldToggle');
+  const note = document.getElementById('dndArmorRuleNote');
+
+  const shieldActive = Boolean(form?.elements?.hasShield?.checked);
+
+  if (field) field.classList.toggle('dnd-armor-class-input--shielded', shieldActive);
+  if (box) box.classList.toggle('dnd-armor-class-field--shielded', shieldActive);
+  if (shieldToggle) shieldToggle.classList.toggle('is-active', shieldActive);
+
+  if (note && armorCalc) {
+    note.textContent = `${armorCalc.explanation}. Médias limitam DES a +2; pesadas usam DES 0. Resultados finais ficam editáveis para homebrew.`;
+  }
+}
+
+function dndSyncHpAutomationNote(form, hpCalc = null) {
+  const note = document.getElementById('dndHpRuleNote');
+  if (!note || !hpCalc) return;
+
+  note.textContent = `${hpCalc.explanation}. O campo Máximo continua editável para regras da casa, itens mágicos ou ajustes do mestre.`;
+}
+
+function dndBindEditableArmorHpEvents() {
+  if (window.dndEditableArmorHpEventsReady) return;
+  window.dndEditableArmorHpEventsReady = true;
+
+  document.addEventListener('input', (event) => {
+    const input = event.target.closest?.('[data-dnd-editable-result]');
+    if (!input) return;
+
+    const form = input.closest('form');
+    if (!form || !input.name) return;
+
+    dndSetEditableResultManual(form, input.name, true);
+  }, true);
+}
+
+function dndFinalBonusFieldNames() {
+  return [
+    ...DND_SAVE_CONFIG.map((item) => item.field),
+    ...DND_SKILLS.map(([key]) => key),
+  ];
+}
+
+function dndEnsureFinalBonusAutomationFields(form) {
+  if (!form) return;
+
+  DND_SAVE_CONFIG.forEach((save) => {
+    dndEnsureCheckboxInput(form, `${save.field}Prof`, {
+      hidden: true,
+      target: save.field,
+      kind: 'prof',
+    });
+    const saveManual = dndEnsureHiddenInput(form, dndFinalManualFieldName(save.field), 'false');
+
+    const finalInput = form.elements[save.field];
+    if (finalInput) {
+      finalInput.type = 'number';
+      finalInput.dataset.dndFinalBonus = save.field;
+      finalInput.dataset.dndManual = dnd_bool(saveManual?.value) ? 'true' : 'false';
+    }
+  });
+
+  DND_SKILLS.forEach(([key]) => {
+    dndEnsureCheckboxInput(form, `${key}Prof`, {
+      hidden: true,
+      target: key,
+      kind: 'prof',
+    });
+    dndEnsureCheckboxInput(form, `${key}Expert`, {
+      hidden: true,
+      target: key,
+      kind: 'expert',
+    });
+    const skillManual = dndEnsureHiddenInput(form, dndFinalManualFieldName(key), 'false');
+
+    const finalInput = form.elements[key];
+    if (finalInput) {
+      finalInput.type = 'number';
+      finalInput.dataset.dndFinalBonus = key;
+      finalInput.dataset.dndManual = dnd_bool(skillManual?.value) ? 'true' : 'false';
+    }
+  });
+}
+
+function dndGetCompleteFormData(form) {
+  const data = Object.fromEntries(new FormData(form));
+
+  form.querySelectorAll('input[type="checkbox"][name]').forEach((checkbox) => {
+    data[checkbox.name] = checkbox.checked ? 'true' : 'false';
+  });
+
+  dndFinalBonusFieldNames().forEach((fieldName) => {
+    const manualName = dndFinalManualFieldName(fieldName);
+    if (form.elements[manualName]) {
+      data[manualName] = dnd_bool(form.elements[manualName].value) ? 'true' : 'false';
+    }
+  });
+
+  return data;
+}
+
+function dndHydrateFormElement(element, value) {
+  if (!element) return;
+
+  if (element instanceof RadioNodeList) {
+    Array.from(element).forEach((item) => dndHydrateFormElement(item, value));
+    return;
+  }
+
+  if (element.type === 'checkbox') {
+    element.checked = dnd_bool(value);
+    return;
+  }
+
+  element.value = value ?? '';
+}
+
+function dndBindFinalBonusAutomationEvents() {
+  if (window.dndFinalBonusAutomationEventsReady) return;
+  window.dndFinalBonusAutomationEventsReady = true;
+
+  document.addEventListener('input', (event) => {
+    const input = event.target.closest?.('[data-dnd-final-bonus]');
+    if (!input) return;
+
+    const form = input.closest('form');
+    if (!form || !input.name) return;
+
+    dndSetFinalBonusManual(form, input.name, true);
+  }, true);
+
+  document.addEventListener('change', (event) => {
+    const checkbox = event.target.closest?.('[data-dnd-prof-checkbox], [data-dnd-expert-checkbox]');
+    if (!checkbox) return;
+
+    const form = checkbox.closest('form');
+    if (!form) return;
+
+    const target = checkbox.dataset.dndTargetBonus;
+    if (target) dndSetFinalBonusManual(form, target, false);
+
+    if (checkbox.dataset.dndExpertCheckbox === 'true' && checkbox.checked) {
+      const profName = checkbox.name.replace(/Expert$/, 'Prof');
+      const prof = form.elements[profName];
+      if (prof) prof.checked = true;
+    }
+
+    if (checkbox.dataset.dndProfCheckbox === 'true' && !checkbox.checked) {
+      const expertName = checkbox.name.replace(/Prof$/, 'Expert');
+      const expert = form.elements[expertName];
+      if (expert) expert.checked = false;
+    }
+
+    dndRecalculateAll(form);
+    dndDispatchSheetInput(form);
+  }, true);
+}
+
+function dndNormalizeBlankStarterValues(form) {
+  if (!form) return;
+
+  const abilityFields = ["strScore", "dexScore", "conScore", "intScore", "wisScore", "chaScore"];
+  const saveFields = ["saveStr", "saveDex", "saveCon", "saveInt", "saveWis", "saveCha"];
+  const skillFields = DND_SKILLS.map(([key]) => key);
+  const finalFields = [...saveFields, ...skillFields];
+
+  abilityFields.forEach((field) => {
+    const input = form.elements[field];
+    if (input && String(input.value || "").trim() === "") {
+      input.value = "10";
+    }
+  });
+
+  finalFields.forEach((field) => {
+    const input = form.elements[field];
+    const manual = form.elements[`${field}Manual`];
+    if (input && !dnd_bool(manual?.value) && String(input.value || "").trim() === "") {
+      input.value = "0";
+    }
+  });
+
+  if (form.elements.initiative && String(form.elements.initiative.value || "").trim() === "") {
+    form.elements.initiative.value = "0";
+  }
+}
+
+// =============================================================
+// RECALCULAR TUDO
+// =============================================================
+
+function dndRecalculateAll(form) {
+  if (!form) return;
+
+  dndNormalizeBlankStarterValues(form);
+
+  const level = Number(form.elements.charLevel?.value) || 1;
+  const prof  = dnd_profBonus(level);
+
+  // -- Bônus de proficiência
+  if (form.elements.proficiencyBonus) form.elements.proficiencyBonus.value = dnd_fmt(prof);
+  const pbd = document.getElementById('dndProfBonusDisplay');
+  if (pbd) pbd.textContent = dnd_fmt(prof);
+
+  // -- Atributos
+  const mods = {};
+  DND5E.ABILITIES.forEach(ab => {
+    const score = Number(form.elements[`${ab}Score`]?.value) || 10;
+    mods[ab] = dnd_mod(score);
+    const viewId = `${ab}ModView`;
+    const v = document.getElementById(viewId);
+    if (v) v.textContent = dnd_fmt(mods[ab]);
+  });
+
+  dndEnsureFinalBonusAutomationFields(form);
+  dndEnsureArmorAndHpAutomationFields(form);
+  dndEnsureArmorSelectOptions(form);
+
+  // -- Salvaguardas
+  DND_SAVE_CONFIG.forEach((save) => {
+    const base = mods[save.key];
+    const hasP = form.elements[`${save.field}Prof`]?.checked;
+    const bonus = base + (hasP ? prof : 0);
+    dndSetCalculatedFinalBonus(form, save.field, bonus);
+
+    const pd = form.querySelector(`[data-save-pdot="${save.key}"]`);
+    if (pd) pd.classList.toggle('filled', Boolean(hasP));
+  });
+
+  // -- Perícias
+  Object.entries(DND5E.SKILL_ABILITY).forEach(([sk, ab]) => {
+    const base = mods[ab];
+    const hasP = form.elements[`${sk}Prof`]?.checked;
+    const hasE = form.elements[`${sk}Expert`]?.checked;
+    const bonus = base + (hasE ? prof * 2 : hasP ? prof : 0);
+    dndSetCalculatedFinalBonus(form, sk, bonus);
+
+    const pd = form.querySelector(`[data-skill-pdot="${sk}"]`);
+    const ed = form.querySelector(`[data-skill-edot="${sk}"]`);
+    if (pd) pd.classList.toggle('filled', Boolean(hasP));
+    if (ed) ed.classList.toggle('filled', Boolean(hasE));
+  });
+
+  // -- Percepção Passiva
+  const percBonus = Number(String(dnd_val(form,'skillPerception')||'0').replace('+',''));
+  const passPerc = 10 + percBonus;
+  dnd_set(form, 'passivePerception', passPerc);
+  const ppd = document.getElementById('dndPassivePercDisplay');
+  if (ppd) ppd.textContent = passPerc;
+
+  // -- Iniciativa = Mod DES
+  const initVal = dnd_fmt(mods.dex);
+  dnd_set(form, 'initiative', initVal);
+  const ind = document.getElementById('dndInitDisplay');
+  if (ind) ind.textContent = initVal;
+
+  // -- Classe de Armadura
+  const className = dnd_val(form, 'className');
+  const armorCalc = dndCalculateArmorClass(form, mods);
+  dndSetCalculatedEditableNumber(form, 'armorClass', armorCalc.total);
+  dndSyncDefenseVisualState(form, armorCalc);
+  const cad = document.getElementById('dndCADisplay');
+  if (cad) cad.textContent = form.elements.armorClass?.value || armorCalc.total;
+
+  // -- Pontos de Vida máximos
+  const hpCalc = dndCalculateMaxHp(form, level, mods.con);
+  dndSetCalculatedEditableNumber(form, 'hpMax', hpCalc.total);
+  dndSyncHpAutomationNote(form, hpCalc);
+
+  const hpCurrentField = form.elements.hpCurrent;
+  const hpMaxValue = Number(form.elements.hpMax?.value || 0);
+  if (hpCurrentField && hpMaxValue > 0 && String(hpCurrentField.value || '').trim() === '') {
+    hpCurrentField.value = String(hpMaxValue);
+  }
+
+  // -- Spellcasting automático pela classe
+  const cd = DND5E.classes[className];
+  if (cd?.spellAbility) {
+    const sm = mods[cd.spellAbility];
+    dnd_set(form, 'spellAbility', DND5E.ABILITY_NAMES[cd.spellAbility] || '—');
+    dnd_set(form, 'spellSaveDc',  8 + prof + sm);
+    dnd_set(form, 'spellAttackBonus', dnd_fmt(prof + sm));
+  }
+
+  // -- HP bar
+  if (typeof setDndHpBarFillWithTemp === 'function') {
+    setDndHpBarFillWithTemp(
+      dnd_val(form,'hpCurrent'), dnd_val(form,'hpMax'), dnd_val(form,'hpTemp')
+    );
+  }
+
+  // -- Mini-display
+  const nm = form.elements.characterName?.value || '---';
+  const cl = form.elements.className?.value || '---';
+  const ci = form.elements.combatInitiative?.value || '--';
+  const mn1 = document.getElementById('dndCharacterMini');
+  const mn2 = document.getElementById('dndClassMini');
+  const mn3 = document.getElementById('dndInitiativeMini');
+  if (mn1) mn1.textContent = nm;
+  if (mn2) mn2.textContent = cl;
+  if (mn3) mn3.textContent = ci;
+
+  // -- classLevel (backward compat)
+  if (form.elements.classLevel) {
+    form.elements.classLevel.value = `${className} ${level}`;
+  }
+}
+
+// =============================================================
+// APLICAR CLASSE
+// =============================================================
+
+function dndApplyClass(form, className, options = {}) {
+  const resolvedClassName = dndResolveClassName(className) || className;
+  const cd = DND5E.classes[resolvedClassName];
+
+  if (form?.elements?.className && resolvedClassName && DND5E.classes[resolvedClassName]) {
+    form.elements.className.value = resolvedClassName;
+  }
+
+  dndSyncClassFieldsFromLegacy(form);
+
+  if (!cd) {
+    dndRecalculateAll(form);
+    return;
+  }
+
+  className = resolvedClassName;
+  const level = Math.max(1, Math.min(20, Number(form.elements.charLevel?.value) || 1));
+  const force = options.force === true;
+
+  if (force) {
+    dndSetEditableResultManual(form, 'hpMax', false);
+    dndSetEditableResultManual(form, 'armorClass', false);
+  }
+
+  dndApplyClassAutomationFields(form, className, { force });
+  dndApplyClassSavingThrowChecks(form, className, { force });
+
+  // Espaços de magia só são reaplicados ao escolher/reaplicar classe.
+  // Assim o jogador pode gastar espaços sem o sistema restaurar tudo sozinho.
+  if (force && cd.spellType !== 'none') {
+    const table = DND5E.SPELL_SLOTS[cd.spellType];
+    if (table && table[level - 1]) {
+      const row = table[level - 1];
+      for (let i = 1; i <= 9; i += 1) {
+        const n = row[i - 1] || 0;
+        const hidden = form.querySelector(`input[name="spellSlots${i}"][data-spell-slot-hidden]`);
+        if (hidden) {
+          hidden.value = '0'.repeat(Math.max(n, parseInt(hidden.value?.length || 0, 10) || n));
+          const lb = hidden.closest?.('.dnd-spell-slot-level');
+          if (lb && typeof syncDndSpellSlotLevel === 'function') syncDndSpellSlotLevel(lb);
+        }
+      }
+    }
+  }
+
+  dndRenderClassFeatures(form, className, level);
+  dndRecalculateAll(form);
+}
+
+// =============================================================
+// APLICAR RAÇA
+// =============================================================
+
+function dndApplyRace(form, raceName) {
+  const rd = DND5E.races[raceName];
+  if (!rd) { dndRecalculateAll(form); return; }
+
+  dnd_set(form, 'race', raceName);
+  dnd_set(form, 'speed', `${rd.speed} ft.`);
+  dnd_set(form, 'darkvision', rd.darkvision ? `${rd.darkvision} ft.` : '—');
+
+  // Skill proficiencies from race
+  (rd.skills || []).forEach(sk => {
+    const el = form.elements[`${sk}Prof`];
+    if (el) el.checked = true;
+  });
+
+  // Show racial traits
+  dndRenderRaceTraits(rd);
+
+  // Notify about ability bonuses
+  const bonusText = Object.entries(rd.abilityBonus || {})
+    .map(([ab, v]) => `${ab.toUpperCase()} +${v}`).join(', ');
+
+  const hint = document.getElementById('dndRacialBonusHint');
+  if (hint) {
+    hint.textContent = bonusText
+      ? `⚠ Aplique manualmente os bônus raciais: ${bonusText}`
+      : '';
+    hint.style.display = bonusText ? 'block' : 'none';
+  }
+
+  dndRecalculateAll(form);
+}
+
+// =============================================================
+// APLICAR ANTECEDENTE
+// =============================================================
+
+function dndApplyBackground(form, bgName) {
+  const bg = DND5E.backgrounds[bgName];
+  if (!bg) return;
+
+  dnd_set(form, 'background', bgName);
+
+  (bg.skills || []).forEach(sk => {
+    const el = form.elements[`${sk}Prof`];
+    if (el) el.checked = true;
+  });
+
+  dndRecalculateAll(form);
+}
+
+// =============================================================
+// RENDERIZAR HABILIDADES DE CLASSE
+// =============================================================
+
+function dndRenderClassFeatures(form, className, level) {
+  const container = document.getElementById('dndClassFeaturesContainer');
+  if (!container) return;
+
+  const cd = DND5E.classes[className];
+  if (!cd) { container.innerHTML = '<p class="dnd-feature-empty">Selecione uma classe.</p>'; return; }
+
+  const features = (cd.features || []).filter(f => f.level <= level);
+  if (!features.length) { container.innerHTML = '<p class="dnd-feature-empty">Sem habilidades para este nível.</p>'; return; }
+
+  container.innerHTML = features.map((f, i) => {
+    let chargesVal = '';
+    if (f.chargesFormula) {
+      try {
+        const chaMod = dnd_mod(form.elements.chaScore?.value || 10);
+        const wisMod = dnd_mod(form.elements.wisScore?.value || 10);
+        const intMod = dnd_mod(form.elements.intScore?.value || 10);
+        chargesVal = String(eval(f.chargesFormula.replaceAll('level', level).replaceAll('chaMod', chaMod).replaceAll('wisMod', wisMod).replaceAll('intMod', intMod)));
+      } catch { chargesVal = f.chargesFormula; }
+    }
+    return `
+      <div class="dnd-feature-card">
+        <div class="dnd-feature-card-header">
+          <div>
+            <strong class="dnd-feature-name">${dnd_esc(f.name)}</strong>
+            <span class="dnd-feature-badge dnd-feature-badge--${(f.source||'Classe').toLowerCase().replace(/\s+/g,'-')}">${dnd_esc(f.source||'Classe')} · Nv.${f.level}</span>
+          </div>
+          ${f.chargesFormula !== undefined ? `
+            <div class="dnd-feature-charge-row">
+              <label>Cargas
+                <input type="number" name="featureCharge_${i}" min="0" max="99"
+                  value="${chargesVal}" class="dnd-feature-charge-input">
+              </label>
+              ${f.recharge ? `<span class="dnd-feature-recharge">${f.recharge === 'longo' ? '↻ Longo' : f.recharge === 'curto' ? '↻ Curto' : '↻ Turno'}</span>` : ''}
+            </div>` : ''}
+        </div>
+        ${f.desc ? `<p class="dnd-feature-desc">${dnd_esc(f.desc)}</p>` : ''}
+      </div>`;
+  }).join('');
+}
+
+// =============================================================
+// RENDERIZAR TRAÇOS RACIAIS
+// =============================================================
+
+function dndRenderRaceTraits(raceData) {
+  const container = document.getElementById('dndRaceTraitsContainer');
+  if (!container || !raceData) return;
+
+  if (!raceData.traits?.length) {
+    container.innerHTML = '<p class="dnd-feature-empty">Selecione uma raça.</p>';
+    return;
+  }
+
+  const langText = raceData.languages?.length
+    ? `<p class="dnd-feature-desc"><em>Idiomas:</em> ${dnd_esc(raceData.languages.join(', '))}</p>` : '';
+
+  container.innerHTML = raceData.traits.map(t => `
+    <div class="dnd-feature-card">
+      <div class="dnd-feature-card-header">
+        <span class="dnd-feature-badge dnd-feature-badge--racial">Racial</span>
+      </div>
+      <p class="dnd-feature-desc">${dnd_esc(t)}</p>
+    </div>`).join('') + langText;
+}
+
+
+
+// =============================================================
+// CLASSES OFICIAIS - SELECT + COMPATIBILIDADE
+// =============================================================
+
+function dnd_normalizeText(value) {
+  return String(value || '')
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLowerCase()
+    .trim();
+}
+
+function dndClassNames() {
+  return Object.keys(DND5E.classes || {});
+}
+
+function dndResolveClassName(value) {
+  const normalized = dnd_normalizeText(value);
+  if (!normalized) return '';
+
+  return dndClassNames().find((className) => {
+    const current = dnd_normalizeText(className);
+    return current === normalized || normalized.startsWith(`${current} `);
+  }) || '';
+}
+
+function dndExtractLevelFromText(value) {
+  const match = String(value || '').match(/(?:^|\s)([1-9]|1[0-9]|20)(?:\s|$)/);
+  return match ? Number(match[1]) : 1;
+}
+
+function dndEnhanceLegacyClassField(form) {
+  if (!form || form.elements.className) return;
+
+  const legacyInput = form.elements.classLevel;
+  if (!legacyInput || legacyInput.type === 'hidden') return;
+
+  const legacyText = legacyInput.value || '';
+  const resolvedClass = dndResolveClassName(legacyText);
+  const level = dndExtractLevelFromText(legacyText);
+  const holder = legacyInput.closest('label') || legacyInput.parentElement;
+  const wrapper = document.createElement('div');
+  wrapper.className = 'dnd-class-level-select-row';
+  wrapper.innerHTML = `
+    <label>
+      Classe
+      <input
+        name="className"
+        id="dndClassSelect"
+        type="text"
+        list="dndClassOptionsList"
+        value="${dnd_esc(resolvedClass || '')}"
+        placeholder="Escolha ou escreva uma classe"
+        autocomplete="off"
+      />
+      <datalist id="dndClassOptionsList">
+        ${dndClassNames().map((className) => `<option value="${dnd_esc(className)}"></option>`).join('')}
+      </datalist>
+    </label>
+
+    <label>
+      Nível
+      <input name="charLevel" id="dndCharLevelInput" type="number" min="1" max="20" value="${level}" />
+    </label>
+
+    <input name="classLevel" type="hidden" value="${dnd_esc(legacyText)}" />
+  `;
+
+  if (holder && holder.parentNode) {
+    holder.parentNode.replaceChild(wrapper, holder);
+  } else {
+    legacyInput.insertAdjacentElement('beforebegin', wrapper);
+    legacyInput.remove();
+  }
+
+  if (resolvedClass && form.elements.className) {
+    form.elements.className.value = resolvedClass;
+  }
+
+  if (form.elements.charLevel) {
+    form.elements.charLevel.value = level;
+  }
+
+  dndSyncClassFieldsFromLegacy(form);
+}
+
+function dndEnsureClassSelectOptions(form) {
+  if (!form) return;
+
+  dndConvertClassSelectToTextInput(form);
+  dndEnsureClassDatalist(form);
+}
+
+function dndEnsureClassDatalist(form) {
+  if (!form) return;
+
+  let datalist = form.querySelector('#dndClassOptionsList') || document.getElementById('dndClassOptionsList');
+
+  if (!datalist) {
+    datalist = document.createElement('datalist');
+    datalist.id = 'dndClassOptionsList';
+    form.appendChild(datalist);
+  }
+
+  datalist.innerHTML = dndClassNames()
+    .map((className) => `<option value="${dnd_esc(className)}"></option>`)
+    .join('');
+}
+
+function dndConvertClassSelectToTextInput(form) {
+  const field = form?.elements?.className;
+  if (!field || field.tagName !== 'SELECT') return;
+
+  const value = field.value || '';
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.name = 'className';
+  input.id = field.id || 'dndClassSelect';
+  input.value = value;
+  input.placeholder = 'Escolha ou escreva uma classe';
+  input.setAttribute('list', 'dndClassOptionsList');
+  input.setAttribute('autocomplete', 'off');
+  input.className = field.className || '';
+
+  Array.from(field.attributes || []).forEach((attr) => {
+    if (['type', 'name', 'id', 'value', 'list', 'autocomplete', 'class'].includes(attr.name)) return;
+    input.setAttribute(attr.name, attr.value);
+  });
+
+  field.replaceWith(input);
+}
+
+function dndSyncClassFieldsFromLegacy(form) {
+  if (!form) return;
+
+  const select = form.elements.className;
+  const levelInput = form.elements.charLevel;
+  const legacyInput = form.elements.classLevel;
+  const legacyText = legacyInput?.value || '';
+
+  if (select && !select.value && legacyText) {
+    const resolvedClass = dndResolveClassName(legacyText);
+    if (resolvedClass) select.value = resolvedClass;
+  }
+
+  if (levelInput && (!levelInput.value || Number(levelInput.value) <= 0)) {
+    levelInput.value = dndExtractLevelFromText(legacyText);
+  }
+
+  const safeLevel = Math.max(1, Math.min(20, Math.floor(Number(levelInput?.value) || 1)));
+
+  if (levelInput) {
+    levelInput.value = String(safeLevel);
+  }
+
+  if (legacyInput && select && select.value) {
+    legacyInput.value = `${select.value} ${safeLevel}`;
+  }
+
+  if (form.elements.proficiencyBonus) {
+    const prof = typeof dnd_profBonus === 'function'
+      ? dnd_profBonus(safeLevel)
+      : getCampaignLabDndProficiencyBonus(safeLevel);
+    form.elements.proficiencyBonus.value = typeof dnd_fmt === 'function'
+      ? dnd_fmt(prof)
+      : formatCampaignLabDndBonus(prof);
+  }
+}
+
+function dndDispatchSheetInput(form) {
+  if (!form) return;
+
+  window.setTimeout(() => {
+    try {
+      form.dispatchEvent(new Event('input', { bubbles: true }));
+    } catch {}
+  }, 0);
+}
+
+
+// =============================================================
+// D&D - AUTOMAÇÃO EDITÁVEL POR CLASSE
+// =============================================================
+
+function getCampaignLabDndClassAutomationDefaults(className = '', levelValue = 1) {
+  const resolvedClassName = dndResolveClassName(className) || className;
+  const cd = DND5E.classes[resolvedClassName];
+  if (!cd) return null;
+
+  const level = Math.max(1, Math.min(20, Math.floor(Number(levelValue) || 1)));
+
+  const saveNames = (cd.saves || [])
+    .map((ability) => DND5E.ABILITY_NAMES[ability] || ability.toUpperCase())
+    .join(', ');
+
+  const classFeatures = (cd.features || [])
+    .filter((feature) => Number(feature.level || 1) <= level)
+    .map((feature) => {
+      const levelText = feature.level ? `Nv. ${feature.level}` : 'Nv. 1';
+      const source = feature.source ? ` • ${feature.source}` : '';
+      const desc = feature.desc ? `\n${feature.desc}` : '';
+      return `${levelText}${source}\n${feature.name}${desc}`;
+    })
+    .join('\n\n');
+
+  return {
+    hitDiceTotal: `${level}d${cd.hitDie}`,
+    hitDiceRemaining: `${level}d${cd.hitDie}`,
+    classSaveProficienciesText: saveNames || 'Nenhuma proficiência definida.',
+    classArmorProficienciesText: (cd.armorProf || []).join(', ') || 'Nenhuma',
+    classWeaponProficienciesText: (cd.weaponProf || []).join(', ') || 'Nenhuma',
+    classToolProficienciesText: (cd.toolProf || []).join(', ') || 'Nenhuma',
+    classInitialFeaturesText: classFeatures || 'Nenhuma habilidade de classe cadastrada para este nível.',
+    spellcastingClass: cd.spellAbility ? resolvedClassName : '',
+    hitDie: cd.hitDie,
+  };
+}
+
+function setupCampaignLabDndClassAutomationPanel(form, sheet = {}) {
+  if (!form) return;
+  form.querySelectorAll('[data-dnd-class-automation-panel], [data-dnd-class-integrated-fields]').forEach((panel) => panel.remove());
+}
+
+function ensureCampaignLabDndClassIntegratedFields(form, sheet = {}) {
+  if (!form) return;
+  form.querySelectorAll('[data-dnd-class-automation-panel], [data-dnd-class-integrated-fields]').forEach((panel) => panel.remove());
+}
+
+function getDndClassIntegratedFieldsInnerHtml(sheet = {}) {
+  return '';
+}
+
+function bindCampaignLabDndClassResetButton(form) {
+  return;
+}
+
+function injectCampaignLabDndClassAutomationStyles() {
+  const oldStyle = document.getElementById('campaign-lab-dnd-class-automation-style');
+  if (oldStyle) oldStyle.remove();
+}
+
+function dndSetEditableAutoField(form, fieldName, value, options = {}) {
+  const field = form?.elements?.[fieldName];
+  if (!field) return;
+
+  const nextValue = String(value ?? '');
+  const previousAuto = field.dataset.dndAutoValue || '';
+  const currentValue = String(field.value ?? '');
+  const isEmpty = currentValue.trim() === '';
+  const isStillAutomatic = previousAuto !== '' && currentValue === previousAuto;
+  const matchesAutoPattern = options.autoPattern instanceof RegExp && options.autoPattern.test(currentValue.trim());
+  const shouldSet = options.force || isEmpty || isStillAutomatic || matchesAutoPattern;
+
+  if (!shouldSet) return;
+
+  field.value = nextValue;
+  field.dataset.dndAutoValue = nextValue;
+}
+
+function dndClearPrimaryAttributeHighlights(form) {
+  if (!form) return;
+
+  form.querySelectorAll('.dnd-primary-ability').forEach((card) => {
+    card.classList.remove('dnd-primary-ability');
+  });
+}
+
+function dndApplyClassAutomationFields(form, className = '', options = {}) {
+  const level = Math.max(1, Math.min(20, Math.floor(Number(form?.elements?.charLevel?.value) || 1)));
+  const defaults = getCampaignLabDndClassAutomationDefaults(className, level);
+  if (!defaults) return;
+
+  const force = options.force === true;
+  const hitDicePattern = new RegExp(`^\\d+d${defaults.hitDie}$`, 'i');
+
+  dndSetEditableAutoField(form, 'hitDiceTotal', defaults.hitDiceTotal, { force, autoPattern: hitDicePattern });
+  dndSetEditableAutoField(form, 'hitDiceRemaining', defaults.hitDiceRemaining, { force, autoPattern: hitDicePattern });
+  dndSetEditableAutoField(form, 'additionalFeatures', defaults.classInitialFeaturesText, { force });
+  dndSetEditableAutoField(form, 'spellcastingClass', defaults.spellcastingClass, { force });
+
+  const legacyFeatureField = form?.elements?.classInitialFeaturesText;
+  if (legacyFeatureField) {
+    dndSetEditableAutoField(form, 'classInitialFeaturesText', defaults.classInitialFeaturesText, { force });
+  }
+
+}
+
+function dndEnsureSavingThrowProficiencyFields(form) {
+  if (!form) return;
+
+  ['Str','Dex','Con','Int','Wis','Cha'].forEach((ab) => {
+    const name = `save${ab}Prof`;
+    if (form.elements[name]) return;
+
+    const input = document.createElement('input');
+    input.type = 'checkbox';
+    input.name = name;
+    input.hidden = true;
+    input.dataset.dndAutoSaveProf = 'true';
+    form.appendChild(input);
+  });
+}
+
+function dndApplyClassSavingThrowChecks(form, className = '', options = {}) {
+  const resolvedClassName = dndResolveClassName(className) || className;
+  const cd = DND5E.classes[resolvedClassName];
+  if (!form || !cd) return;
+
+  dndEnsureFinalBonusAutomationFields(form);
+
+  const appliedField = dndEnsureHiddenInput(form, 'classAutoDefaultsAppliedFor', '');
+  const alreadyAppliedForClass = appliedField && appliedField.value === resolvedClassName;
+  const shouldApply = options.force === true || !alreadyAppliedForClass;
+
+  if (!shouldApply) return;
+
+  DND_SAVE_CONFIG.forEach((save) => {
+    const el = form.elements[`${save.field}Prof`];
+    if (el) el.checked = cd.saves.includes(save.key);
+    dndSetFinalBonusManual(form, save.field, false);
+  });
+
+  if (appliedField) appliedField.value = resolvedClassName;
+}
+
+// =============================================================
+// INICIALIZAR
+// =============================================================
+
+function initDndAutomations() {
+  const form = document.getElementById('dndPlayerSheetForm');
+  if (!form || form.dataset.dndAutoReady) return;
+  form.dataset.dndAutoReady = 'true';
+
+  dndEnhanceLegacyClassField(form);
+  dndEnsureClassSelectOptions(form);
+  setupCampaignLabDndClassAutomationPanel(form);
+  bindCampaignLabDndClassResetButton(form);
+  dndEnsureSavingThrowProficiencyFields(form);
+  dndEnsureFinalBonusAutomationFields(form);
+  dndBindFinalBonusAutomationEvents();
+  dndBindEditableArmorHpEvents();
+  dndEnsureArmorAndHpAutomationFields(form);
+  dndEnsureArmorSelectOptions(form);
+  dndSyncClassFieldsFromLegacy(form);
+
+  const initialClass = form.elements.className?.value || dndResolveClassName(form.elements.classLevel?.value);
+  if (initialClass) {
+    dndApplyClassAutomationFields(form, initialClass, { force: false });
+    dndApplyClassSavingThrowChecks(form, initialClass, { force: false });
+    dndRenderClassFeatures(form, initialClass, Number(form.elements.charLevel?.value) || 1);
+  }
+
+  // Class
+  const cls = form.elements.className;
+  if (cls) {
+    const handleClassChange = () => {
+      const resolved = dndResolveClassName(cls.value);
+      dndApplyClass(form, resolved || cls.value, { force: Boolean(resolved) });
+      dndDispatchSheetInput(form);
+    };
+
+    cls.addEventListener('change', handleClassChange);
+    cls.addEventListener('input', () => {
+      const resolved = dndResolveClassName(cls.value);
+      if (!resolved) {
+        dndSyncClassFieldsFromLegacy(form);
+        dndClearPrimaryAttributeHighlights(form);
+        dndRecalculateAll(form);
+        dndDispatchSheetInput(form);
+        return;
+      }
+
+      handleClassChange();
+    });
+  }
+
+  // Level
+  const lvl = form.elements.charLevel;
+  if (lvl) {
+    const handleLevelChange = () => {
+      dndSyncClassFieldsFromLegacy(form);
+      dndSetEditableResultManual(form, 'hpMax', false);
+      const cl = form.elements.className?.value;
+      if (cl) {
+        dndApplyClassAutomationFields(form, cl, { force: false });
+        dndApplyClassSavingThrowChecks(form, cl, { force: false });
+        dndRenderClassFeatures(form, cl, Number(form.elements.charLevel?.value) || 1);
+      }
+      dndRecalculateAll(form);
+      dndDispatchSheetInput(form);
+    };
+
+    lvl.addEventListener('input', handleLevelChange);
+    lvl.addEventListener('change', handleLevelChange);
+  }
+
+  // Race
+  const race = form.elements.raceName;
+  if (race) race.addEventListener('change', () => dndApplyRace(form, race.value));
+
+  // Background
+  const bg = form.elements.backgroundSelect;
+  if (bg) bg.addEventListener('change', () => dndApplyBackground(form, bg.value));
+
+  // Armor + Shield
+  const armor = form.elements.armorType;
+  const sh    = form.elements.hasShield;
+  const handleDefenseChange = () => {
+    dndSetEditableResultManual(form, 'armorClass', false);
+    dndRecalculateAll(form);
+    dndDispatchSheetInput(form);
+  };
+  if (armor) armor.addEventListener('change', handleDefenseChange);
+  if (sh)    sh.addEventListener('change', handleDefenseChange);
+
+  // Proficiency/Expertise checkboxes
+  form.querySelectorAll('[data-prof-check],[data-expert-check]').forEach(cb => {
+    cb.addEventListener('change', () => dndRecalculateAll(form));
+  });
+
+  // Extend the existing updateDndAutoNumbers
+  const _orig = window.updateDndAutoNumbers;
+  window.updateDndAutoNumbers = function() {
+    if (typeof _orig === 'function') _orig();
+    dndRecalculateAll(form);
+  };
+
+  dndRecalculateAll(form);
+  console.log('[DND5E] Automações carregadas.');
+}
+
+// Hook after sheet loads from Supabase
+(function() {
+  const _origLoad = window.loadDndSheetIntoPlayerForm;
+  window.loadDndSheetIntoPlayerForm = async function() {
+    if (typeof _origLoad === 'function') await _origLoad.apply(this, arguments);
+    const form = document.getElementById('dndPlayerSheetForm');
+    if (form) {
+      dndEnhanceLegacyClassField(form);
+      dndEnsureClassSelectOptions(form);
+      setupCampaignLabDndClassAutomationPanel(form);
+      bindCampaignLabDndClassResetButton(form);
+      dndEnsureSavingThrowProficiencyFields(form);
+      dndEnsureFinalBonusAutomationFields(form);
+      dndBindFinalBonusAutomationEvents();
+      dndBindEditableArmorHpEvents();
+      dndEnsureArmorAndHpAutomationFields(form);
+      dndEnsureArmorSelectOptions(form);
+      dndSyncClassFieldsFromLegacy(form);
+      const cn = form.elements.className?.value || dndResolveClassName(form.elements.classLevel?.value);
+      const rn = form.elements.raceName?.value  || form.elements.race?.value;
+      const level = form.elements.charLevel?.value;
+      if (cn && form.elements.className) form.elements.className.value = cn;
+      if (cn) {
+        dndApplyClassAutomationFields(form, cn, { force: false });
+        dndApplyClassSavingThrowChecks(form, cn, { force: false });
+        dndRenderClassFeatures(form, cn, Number(level)||1);
+      }
+      if (rn) dndRenderRaceTraits(DND5E.races[rn]);
+      dndRecalculateAll(form);
+    }
+  };
+})();
+
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', () => setTimeout(initDndAutomations, 600));
+} else {
+  setTimeout(initDndAutomations, 600);
+}
+
 
 function getCampaignDiceFallbackSystem(widget) {
   return (
@@ -13784,3 +16133,491 @@ if (document.readyState === "loading") {
 } else {
   setupCampaignDiceGlobalFallback();
 }
+
+/* =========================================================
+   TRANSFERÊNCIA DE FICHAS ENTRE CAMPANHAS
+   Copiar e colar fichas somente dentro do mesmo sistema.
+   Usa localStorage como área de transferência interna do Campaign Lab.
+========================================================= */
+const CAMPAIGN_LAB_SHEET_TRANSFER_KEY = "campaignLabCopiedSheetV1";
+const CAMPAIGN_LAB_SHEET_TRANSFER_TYPE = "campaign-lab-sheet-copy";
+const CAMPAIGN_LAB_SHEET_TRANSFER_BLOCKED_FIELDS = new Set([
+  "id",
+  "campaignId",
+  "campaign_id",
+  "playerId",
+  "player_id",
+  "userId",
+  "user_id",
+  "ownerName",
+  "system",
+  "createdAt",
+  "created_at",
+  "updatedAt",
+  "updated_at",
+]);
+
+function campaignLabGetFormDataComplete(form) {
+  if (!form) return {};
+
+  if (
+    form.id &&
+    String(form.id).toLowerCase().includes("dnd") &&
+    typeof dndGetCompleteFormData === "function"
+  ) {
+    return dndGetCompleteFormData(form);
+  }
+
+  const data = Object.fromEntries(new FormData(form));
+
+  form.querySelectorAll("input[type='checkbox'][name]").forEach((checkbox) => {
+    data[checkbox.name] = checkbox.checked ? "true" : "false";
+  });
+
+  return data;
+}
+
+function campaignLabSanitizeCopiedSheetData(data = {}) {
+  const clean = {};
+
+  Object.entries(data || {}).forEach(([key, value]) => {
+    if (!key || CAMPAIGN_LAB_SHEET_TRANSFER_BLOCKED_FIELDS.has(key)) return;
+
+    if (value === undefined || value === null) {
+      clean[key] = "";
+      return;
+    }
+
+    if (typeof value === "object") {
+      try {
+        clean[key] = JSON.stringify(value);
+      } catch (error) {
+        clean[key] = "";
+      }
+      return;
+    }
+
+    clean[key] = String(value);
+  });
+
+  return clean;
+}
+
+function campaignLabGetSheetNameFromData(data = {}) {
+  return (
+    data.characterName ||
+    data.personagem ||
+    data.name ||
+    data.ownerName ||
+    "Ficha sem nome"
+  );
+}
+
+async function campaignLabCopySheetFromForm(form, system = "") {
+  if (!form) return;
+
+  const safeSystem = system || sessionStorage.getItem("system") || "Sistema";
+  const data = campaignLabSanitizeCopiedSheetData(campaignLabGetFormDataComplete(form));
+
+  const payload = {
+    type: CAMPAIGN_LAB_SHEET_TRANSFER_TYPE,
+    system: safeSystem,
+    copiedAt: new Date().toISOString(),
+    characterName: campaignLabGetSheetNameFromData(data),
+    data,
+  };
+
+  try {
+    localStorage.setItem(CAMPAIGN_LAB_SHEET_TRANSFER_KEY, JSON.stringify(payload));
+  } catch (error) {
+    console.warn("Não foi possível salvar a ficha copiada no localStorage:", error);
+    alert("Não consegui copiar a ficha neste navegador.");
+    return;
+  }
+
+  try {
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
+      await navigator.clipboard.writeText(JSON.stringify(payload, null, 2));
+    }
+  } catch (error) {
+    // O navegador pode bloquear clipboard sem prejudicar a cópia interna.
+  }
+
+  campaignLabShowSheetTransferToast(`Ficha copiada: ${payload.characterName}`, "success");
+}
+
+async function campaignLabReadCopiedSheetPayload() {
+  let raw = "";
+
+  try {
+    raw = localStorage.getItem(CAMPAIGN_LAB_SHEET_TRANSFER_KEY) || "";
+  } catch (error) {
+    raw = "";
+  }
+
+  if (!raw && navigator.clipboard && typeof navigator.clipboard.readText === "function") {
+    try {
+      raw = await navigator.clipboard.readText();
+    } catch (error) {
+      raw = "";
+    }
+  }
+
+  if (!raw) return null;
+
+  try {
+    const payload = JSON.parse(raw);
+    if (!payload || payload.type !== CAMPAIGN_LAB_SHEET_TRANSFER_TYPE) return null;
+    return payload;
+  } catch (error) {
+    return null;
+  }
+}
+
+function campaignLabEnsureHiddenSheetField(form, name, value = "") {
+  if (!form || !name || form.elements[name]) return;
+
+  const input = document.createElement("input");
+  input.type = "hidden";
+  input.name = name;
+  input.value = value ?? "";
+  input.dataset.sheetTransferHidden = "true";
+  form.appendChild(input);
+}
+
+function campaignLabSetFormElementValue(element, value = "") {
+  if (!element) return;
+
+  if (element instanceof RadioNodeList) {
+    Array.from(element).forEach((item) => campaignLabSetFormElementValue(item, value));
+    return;
+  }
+
+  if (element.type === "checkbox") {
+    element.checked = typeof dnd_bool === "function" ? dnd_bool(value) : ["true", "on", "1", "yes", "sim"].includes(String(value).toLowerCase());
+    return;
+  }
+
+  element.value = value ?? "";
+}
+
+function campaignLabHydrateSheetForm(form, data = {}) {
+  if (!form) return;
+
+  Object.entries(data || {}).forEach(([key, value]) => {
+    if (!key || CAMPAIGN_LAB_SHEET_TRANSFER_BLOCKED_FIELDS.has(key)) return;
+
+    if (!form.elements[key]) {
+      campaignLabEnsureHiddenSheetField(form, key, value);
+    }
+
+    campaignLabSetFormElementValue(form.elements[key], value);
+  });
+}
+
+async function campaignLabPasteSheetIntoForm(form, system = "") {
+  if (!form) return;
+
+  const safeSystem = system || sessionStorage.getItem("system") || "Sistema";
+  const payload = await campaignLabReadCopiedSheetPayload();
+
+  if (!payload || !payload.data) {
+    alert("Nenhuma ficha copiada foi encontrada.");
+    return;
+  }
+
+  if (String(payload.system || "") !== String(safeSystem || "")) {
+    alert(`Você copiou uma ficha de ${payload.system || "outro sistema"}, mas está tentando colar em ${safeSystem}.`);
+    return;
+  }
+
+  const name = payload.characterName || campaignLabGetSheetNameFromData(payload.data);
+  const ok = confirm(`Colar a ficha "${name}" nesta ficha atual?\n\nIsso vai substituir os campos editáveis desta ficha.`);
+
+  if (!ok) return;
+
+  campaignLabHydrateSheetForm(form, payload.data);
+
+  if (safeSystem === "D&D") {
+    if (typeof syncCampaignLabDndClassFieldsInForm === "function") syncCampaignLabDndClassFieldsInForm(form);
+    if (typeof dndEnsureSavingThrowProficiencyFields === "function") dndEnsureSavingThrowProficiencyFields(form);
+    if (typeof dndEnsureFinalBonusAutomationFields === "function") dndEnsureFinalBonusAutomationFields(form);
+    if (typeof dndEnsureArmorAndHpAutomationFields === "function") dndEnsureArmorAndHpAutomationFields(form);
+    if (typeof setupDndSpellSlotTrackers === "function") setupDndSpellSlotTrackers(form);
+    if (typeof syncAllDndSpellSlotTrackers === "function") syncAllDndSpellSlotTrackers(form);
+    if (typeof dndRecalculateAll === "function") dndRecalculateAll(form);
+    if (typeof updateDndPlayerPreview === "function") updateDndPlayerPreview();
+    if (typeof updateDndRestPreview === "function") updateDndRestPreview();
+  }
+
+  if (safeSystem === "Altherium") {
+    if (typeof setupAltheriumRootFeatureSections === "function") setupAltheriumRootFeatureSections(form);
+    if (typeof setupAltheriumGenesisFeatureSections === "function") setupAltheriumGenesisFeatureSections(form);
+    if (typeof updateAltheriumRootSections === "function") updateAltheriumRootSections(form);
+    if (typeof updateAltheriumGenesisSections === "function") updateAltheriumGenesisSections(form);
+    if (typeof hydrateRunaskinVisualNotePreviews === "function") hydrateRunaskinVisualNotePreviews(form);
+    if (typeof updatePlayerSheetPreview === "function") updatePlayerSheetPreview();
+    if (typeof updateResourceBars === "function") updateResourceBars();
+  }
+
+  form.dispatchEvent(new Event("input", { bubbles: true }));
+  form.dispatchEvent(new Event("change", { bubbles: true }));
+
+  await campaignLabSaveSheetAfterPaste(form, safeSystem);
+
+  campaignLabShowSheetTransferToast(`Ficha colada: ${name}`, "success");
+}
+
+async function campaignLabSaveSheetAfterPaste(form, system = "") {
+  try {
+    if (form.id === "playerSheetForm" && typeof savePlayerSheet === "function") {
+      await savePlayerSheet(false);
+      return;
+    }
+
+    if (form.id === "dndPlayerSheetForm" && typeof saveDndPlayerSheet === "function") {
+      await saveDndPlayerSheet(false);
+      return;
+    }
+
+    if (form.id === "altheriumForm" && form.dataset.mode === "edit-sheet" && typeof saveSheetFromModal === "function") {
+      await saveSheetFromModal(false);
+      return;
+    }
+
+    if (form.id === "dndForm" && form.dataset.mode === "edit-dnd-sheet" && typeof saveDndSheetFromModal === "function") {
+      await saveDndSheetFromModal(false);
+      return;
+    }
+  } catch (error) {
+    console.error("Erro ao salvar ficha colada:", error);
+    alert("A ficha foi colada, mas não consegui salvar automaticamente.");
+  }
+}
+
+function campaignLabBuildSheetTransferButtons(form, system = "", variant = "default") {
+  const wrapper = document.createElement("div");
+  wrapper.className = `campaign-sheet-transfer-actions campaign-sheet-transfer-actions--${variant}`;
+  wrapper.dataset.sheetTransferActions = system;
+
+  const copyButton = document.createElement("button");
+  copyButton.type = "button";
+  copyButton.className = "campaign-sheet-transfer-btn campaign-sheet-transfer-btn--copy";
+  copyButton.innerHTML = "<span>⧉</span> Copiar ficha";
+
+  const pasteButton = document.createElement("button");
+  pasteButton.type = "button";
+  pasteButton.className = "campaign-sheet-transfer-btn campaign-sheet-transfer-btn--paste";
+  pasteButton.innerHTML = "<span>↧</span> Colar ficha";
+
+  copyButton.addEventListener("click", () => campaignLabCopySheetFromForm(form, system));
+  pasteButton.addEventListener("click", () => campaignLabPasteSheetIntoForm(form, system));
+
+  wrapper.appendChild(copyButton);
+  wrapper.appendChild(pasteButton);
+
+  return wrapper;
+}
+
+function campaignLabSetupSheetTransferForForm(form, system = "", options = {}) {
+  if (!form) return;
+
+  const safeSystem = system || sessionStorage.getItem("system") || "Sistema";
+  const ownerKey = form.id || safeSystem;
+  const existing = Array.from(document.querySelectorAll("[data-sheet-transfer-owner]")).find(
+    (item) => item.dataset.sheetTransferOwner === ownerKey
+  );
+
+  if (existing) return;
+
+  const variant = options.variant || "default";
+  const buttons = campaignLabBuildSheetTransferButtons(form, safeSystem, variant);
+  buttons.dataset.sheetTransferOwner = ownerKey;
+
+  const saveButton = options.saveButton || campaignLabFindSheetTransferSaveButton(form);
+  const submitButton = form.querySelector("button[type='submit']");
+
+  if (saveButton && saveButton.parentElement) {
+    saveButton.insertAdjacentElement("afterend", buttons);
+    return;
+  }
+
+  if (submitButton && submitButton.parentElement) {
+    submitButton.insertAdjacentElement("beforebegin", buttons);
+    return;
+  }
+
+  form.insertAdjacentElement("beforebegin", buttons);
+}
+
+function campaignLabFindSheetTransferSaveButton(form) {
+  if (!form) return null;
+
+  if (form.id === "playerSheetForm") return document.getElementById("savePlayerSheet");
+  if (form.id === "dndPlayerSheetForm") return document.getElementById("saveDndSheet");
+  if (form.id === "altheriumForm") return form.querySelector("button[type='submit']");
+  if (form.id === "dndForm") return form.querySelector("button[type='submit']");
+
+  return form.querySelector("button[type='submit']");
+}
+
+function campaignLabShowSheetTransferToast(message = "", type = "success") {
+  let stack = document.getElementById("campaignSheetTransferToastStack");
+
+  if (!stack) {
+    stack = document.createElement("div");
+    stack.id = "campaignSheetTransferToastStack";
+    stack.className = "campaign-sheet-transfer-toast-stack";
+    document.body.appendChild(stack);
+  }
+
+  const toast = document.createElement("div");
+  toast.className = `campaign-sheet-transfer-toast campaign-sheet-transfer-toast--${type}`;
+  toast.textContent = message;
+  stack.appendChild(toast);
+
+  requestAnimationFrame(() => toast.classList.add("show"));
+
+  window.setTimeout(() => {
+    toast.classList.remove("show");
+    window.setTimeout(() => toast.remove(), 260);
+  }, 2600);
+}
+
+function campaignLabSetupExistingSheetTransferButtons() {
+  const altheriumPlayerForm = document.getElementById("playerSheetForm");
+  const dndPlayerForm = document.getElementById("dndPlayerSheetForm");
+  const altheriumMasterForm = document.getElementById("altheriumForm");
+  const dndMasterForm = document.getElementById("dndForm");
+
+  if (altheriumPlayerForm) {
+    campaignLabSetupSheetTransferForForm(altheriumPlayerForm, "Altherium", {
+      variant: "player",
+      saveButton: document.getElementById("savePlayerSheet"),
+    });
+  }
+
+  if (dndPlayerForm) {
+    campaignLabSetupSheetTransferForForm(dndPlayerForm, "D&D", {
+      variant: "player",
+      saveButton: document.getElementById("saveDndSheet"),
+    });
+  }
+
+  if (altheriumMasterForm) {
+    campaignLabSetupSheetTransferForForm(altheriumMasterForm, "Altherium", {
+      variant: "modal",
+    });
+  }
+
+  if (dndMasterForm) {
+    campaignLabSetupSheetTransferForForm(dndMasterForm, "D&D", {
+      variant: "modal",
+    });
+  }
+}
+
+(function campaignLabWrapSheetTransferHooks() {
+  try {
+    if (typeof setupAltheriumPlayerSheet === "function" && !setupAltheriumPlayerSheet.__sheetTransferWrapped) {
+      const original = setupAltheriumPlayerSheet;
+      setupAltheriumPlayerSheet = async function () {
+        const result = await original.apply(this, arguments);
+        const form = document.getElementById("playerSheetForm");
+        campaignLabSetupSheetTransferForForm(form, "Altherium", {
+          variant: "player",
+          saveButton: document.getElementById("savePlayerSheet"),
+        });
+        return result;
+      };
+      setupAltheriumPlayerSheet.__sheetTransferWrapped = true;
+    }
+  } catch (error) {}
+
+  try {
+    if (typeof setupDndPlayerSheet === "function" && !setupDndPlayerSheet.__sheetTransferWrapped) {
+      const original = setupDndPlayerSheet;
+      setupDndPlayerSheet = async function () {
+        const result = await original.apply(this, arguments);
+        const form = document.getElementById("dndPlayerSheetForm");
+        campaignLabSetupSheetTransferForForm(form, "D&D", {
+          variant: "player",
+          saveButton: document.getElementById("saveDndSheet"),
+        });
+        return result;
+      };
+      setupDndPlayerSheet.__sheetTransferWrapped = true;
+    }
+  } catch (error) {}
+
+  try {
+    if (typeof loadSheetIntoPlayerForm === "function" && !loadSheetIntoPlayerForm.__sheetTransferWrapped) {
+      const original = loadSheetIntoPlayerForm;
+      loadSheetIntoPlayerForm = async function () {
+        const result = await original.apply(this, arguments);
+        const form = document.getElementById("playerSheetForm");
+        campaignLabSetupSheetTransferForForm(form, "Altherium", {
+          variant: "player",
+          saveButton: document.getElementById("savePlayerSheet"),
+        });
+        return result;
+      };
+      loadSheetIntoPlayerForm.__sheetTransferWrapped = true;
+    }
+  } catch (error) {}
+
+  try {
+    if (typeof loadDndSheetIntoPlayerForm === "function" && !loadDndSheetIntoPlayerForm.__sheetTransferWrapped) {
+      const original = loadDndSheetIntoPlayerForm;
+      loadDndSheetIntoPlayerForm = async function () {
+        const result = await original.apply(this, arguments);
+        const form = document.getElementById("dndPlayerSheetForm");
+        campaignLabSetupSheetTransferForForm(form, "D&D", {
+          variant: "player",
+          saveButton: document.getElementById("saveDndSheet"),
+        });
+        return result;
+      };
+      loadDndSheetIntoPlayerForm.__sheetTransferWrapped = true;
+    }
+  } catch (error) {}
+
+  try {
+    if (typeof openMasterSheetModal === "function" && !openMasterSheetModal.__sheetTransferWrapped) {
+      const original = openMasterSheetModal;
+      openMasterSheetModal = async function () {
+        const result = await original.apply(this, arguments);
+        const form = document.getElementById("altheriumForm");
+        campaignLabSetupSheetTransferForForm(form, "Altherium", {
+          variant: "modal",
+        });
+        return result;
+      };
+      openMasterSheetModal.__sheetTransferWrapped = true;
+    }
+  } catch (error) {}
+
+  try {
+    if (typeof openDndMasterSheetModal === "function" && !openDndMasterSheetModal.__sheetTransferWrapped) {
+      const original = openDndMasterSheetModal;
+      openDndMasterSheetModal = async function () {
+        const result = await original.apply(this, arguments);
+        const form = document.getElementById("dndForm");
+        campaignLabSetupSheetTransferForForm(form, "D&D", {
+          variant: "modal",
+        });
+        return result;
+      };
+      openDndMasterSheetModal.__sheetTransferWrapped = true;
+    }
+  } catch (error) {}
+})();
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    window.setTimeout(campaignLabSetupExistingSheetTransferButtons, 900);
+  });
+} else {
+  window.setTimeout(campaignLabSetupExistingSheetTransferButtons, 900);
+}
+

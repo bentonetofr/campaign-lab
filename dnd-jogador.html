@@ -89,13 +89,49 @@
                 <label
                   >Nome do personagem <input name="characterName" type="text"
                 /></label>
-                <label
-                  >Classe & Nível
+                <label>
+                  Classe
                   <input
-                    name="classLevel"
+                    name="className"
+                    id="dndClassSelect"
                     type="text"
-                    placeholder="Ex: Ladino 3"
-                /></label>
+                    list="dndClassOptionsList"
+                    placeholder="Escolha ou escreva uma classe"
+                    autocomplete="off"
+                  />
+                  <datalist id="dndClassOptionsList">
+                    <option value="Artífice"></option>
+                    <option value="Bárbaro"></option>
+                    <option value="Bardo"></option>
+                    <option value="Bruxo"></option>
+                    <option value="Clérigo"></option>
+                    <option value="Druida"></option>
+                    <option value="Feiticeiro"></option>
+                    <option value="Guerreiro"></option>
+                    <option value="Ladino"></option>
+                    <option value="Mago"></option>
+                    <option value="Monge"></option>
+                    <option value="Paladino"></option>
+                    <option value="Patrulheiro"></option>
+                  </datalist>
+                </label>
+                <label>
+                  Nível
+                  <input
+                    name="charLevel"
+                    id="dndCharLevelInput"
+                    type="number"
+                    min="1"
+                    max="20"
+                    value="1"
+                  />
+                </label>
+                <input name="classLevel" type="hidden" />
+                <input
+                  name="classAutoDefaultsAppliedFor"
+                  type="hidden"
+                  value=""
+                />
                 <label>Raça <input name="race" type="text" /></label>
                 <label
                   >Antecedente <input name="background" type="text"
@@ -112,42 +148,42 @@
                 <div class="dnd-abilities-column">
                   <label class="dnd-ability-card"
                     ><span>Força</span
-                    ><input name="strScore" type="number" /><strong
+                    ><input name="strScore" type="number" value="10" /><strong
                       id="strModView"
                       >0</strong
                     ></label
                   >
                   <label class="dnd-ability-card"
                     ><span>Destreza</span
-                    ><input name="dexScore" type="number" /><strong
+                    ><input name="dexScore" type="number" value="10" /><strong
                       id="dexModView"
                       >0</strong
                     ></label
                   >
                   <label class="dnd-ability-card"
                     ><span>Constituição</span
-                    ><input name="conScore" type="number" /><strong
+                    ><input name="conScore" type="number" value="10" /><strong
                       id="conModView"
                       >0</strong
                     ></label
                   >
                   <label class="dnd-ability-card"
                     ><span>Inteligência</span
-                    ><input name="intScore" type="number" /><strong
+                    ><input name="intScore" type="number" value="10" /><strong
                       id="intModView"
                       >0</strong
                     ></label
                   >
                   <label class="dnd-ability-card"
                     ><span>Sabedoria</span
-                    ><input name="wisScore" type="number" /><strong
+                    ><input name="wisScore" type="number" value="10" /><strong
                       id="wisModView"
                       >0</strong
                     ></label
                   >
                   <label class="dnd-ability-card"
                     ><span>Carisma</span
-                    ><input name="chaScore" type="number" /><strong
+                    ><input name="chaScore" type="number" value="10" /><strong
                       id="chaModView"
                       >0</strong
                     ></label
@@ -157,106 +193,787 @@
                 <div class="dnd-middle-column">
                   <div class="dnd-box">
                     <h3>Testes de resistência</h3>
-                    <div class="dnd-list">
-                      <label
-                        ><span>Força</span><input name="saveStr" type="text"
-                      /></label>
-                      <label
-                        ><span>Destreza</span><input name="saveDex" type="text"
-                      /></label>
-                      <label
-                        ><span>Constituição</span
-                        ><input name="saveCon" type="text"
-                      /></label>
-                      <label
-                        ><span>Inteligência</span
-                        ><input name="saveInt" type="text"
-                      /></label>
-                      <label
-                        ><span>Sabedoria</span
-                        ><input name="saveWis" type="text"
-                      /></label>
-                      <label
-                        ><span>Carisma</span><input name="saveCha" type="text"
-                      /></label>
+                    <div class="dnd-bonus-list dnd-save-list">
+                      <div class="dnd-bonus-row dnd-save-row">
+                        <span class="dnd-bonus-name">Força</span>
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="saveStrProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="saveStr"
+                          />
+                          <span>P</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="saveStr"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="saveStr"
+                        />
+                        <input
+                          name="saveStrManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-save-row">
+                        <span class="dnd-bonus-name">Destreza</span>
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="saveDexProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="saveDex"
+                          />
+                          <span>P</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="saveDex"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="saveDex"
+                        />
+                        <input
+                          name="saveDexManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-save-row">
+                        <span class="dnd-bonus-name">Constituição</span>
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="saveConProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="saveCon"
+                          />
+                          <span>P</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="saveCon"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="saveCon"
+                        />
+                        <input
+                          name="saveConManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-save-row">
+                        <span class="dnd-bonus-name">Inteligência</span>
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="saveIntProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="saveInt"
+                          />
+                          <span>P</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="saveInt"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="saveInt"
+                        />
+                        <input
+                          name="saveIntManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-save-row">
+                        <span class="dnd-bonus-name">Sabedoria</span>
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="saveWisProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="saveWis"
+                          />
+                          <span>P</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="saveWis"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="saveWis"
+                        />
+                        <input
+                          name="saveWisManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-save-row">
+                        <span class="dnd-bonus-name">Carisma</span>
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="saveChaProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="saveCha"
+                          />
+                          <span>P</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="saveCha"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="saveCha"
+                        />
+                        <input
+                          name="saveChaManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
                     </div>
                   </div>
 
                   <div class="dnd-box">
                     <h3>Perícias</h3>
-                    <div class="dnd-list two-cols">
-                      <label
-                        ><span>Acrobacia</span
-                        ><input name="skillAcrobatics" type="text"
-                      /></label>
-                      <label
-                        ><span>Arcanismo</span
-                        ><input name="skillArcana" type="text"
-                      /></label>
-                      <label
-                        ><span>Atletismo</span
-                        ><input name="skillAthletics" type="text"
-                      /></label>
-                      <label
-                        ><span>Enganação</span
-                        ><input name="skillDeception" type="text"
-                      /></label>
-                      <label
-                        ><span>Furtividade</span
-                        ><input name="skillStealth" type="text"
-                      /></label>
-                      <label
-                        ><span>História</span
-                        ><input name="skillHistory" type="text"
-                      /></label>
-                      <label
-                        ><span>Intuição</span
-                        ><input name="skillInsight" type="text"
-                      /></label>
-                      <label
-                        ><span>Intimidação</span
-                        ><input name="skillIntimidation" type="text"
-                      /></label>
-                      <label
-                        ><span>Investigação</span
-                        ><input name="skillInvestigation" type="text"
-                      /></label>
-                      <label
-                        ><span>Lidar Animais</span
-                        ><input name="skillAnimalHandling" type="text"
-                      /></label>
-                      <label
-                        ><span>Medicina</span
-                        ><input name="skillMedicine" type="text"
-                      /></label>
-                      <label
-                        ><span>Natureza</span
-                        ><input name="skillNature" type="text"
-                      /></label>
-                      <label
-                        ><span>Percepção</span
-                        ><input name="skillPerception" type="text"
-                      /></label>
-                      <label
-                        ><span>Performance</span
-                        ><input name="skillPerformance" type="text"
-                      /></label>
-                      <label
-                        ><span>Persuasão</span
-                        ><input name="skillPersuasion" type="text"
-                      /></label>
-                      <label
-                        ><span>Prestidigitação</span
-                        ><input name="skillSleightOfHand" type="text"
-                      /></label>
-                      <label
-                        ><span>Religião</span
-                        ><input name="skillReligion" type="text"
-                      /></label>
-                      <label
-                        ><span>Sobrevivência</span
-                        ><input name="skillSurvival" type="text"
-                      /></label>
+                    <div class="dnd-bonus-list dnd-skill-list">
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Acrobacia<small>DES</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillAcrobaticsProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillAcrobatics"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillAcrobaticsExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillAcrobatics"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillAcrobatics"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillAcrobatics"
+                        />
+                        <input
+                          name="skillAcrobaticsManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Arcanismo<small>INT</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillArcanaProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillArcana"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillArcanaExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillArcana"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillArcana"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillArcana"
+                        />
+                        <input
+                          name="skillArcanaManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Atletismo<small>FOR</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillAthleticsProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillAthletics"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillAthleticsExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillAthletics"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillAthletics"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillAthletics"
+                        />
+                        <input
+                          name="skillAthleticsManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Enganação<small>CAR</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillDeceptionProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillDeception"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillDeceptionExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillDeception"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillDeception"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillDeception"
+                        />
+                        <input
+                          name="skillDeceptionManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Furtividade<small>DES</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillStealthProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillStealth"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillStealthExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillStealth"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillStealth"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillStealth"
+                        />
+                        <input
+                          name="skillStealthManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >História<small>INT</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillHistoryProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillHistory"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillHistoryExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillHistory"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillHistory"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillHistory"
+                        />
+                        <input
+                          name="skillHistoryManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Intuição<small>SAB</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillInsightProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillInsight"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillInsightExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillInsight"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillInsight"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillInsight"
+                        />
+                        <input
+                          name="skillInsightManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Intimidação<small>CAR</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillIntimidationProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillIntimidation"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillIntimidationExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillIntimidation"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillIntimidation"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillIntimidation"
+                        />
+                        <input
+                          name="skillIntimidationManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Investigação<small>INT</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillInvestigationProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillInvestigation"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillInvestigationExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillInvestigation"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillInvestigation"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillInvestigation"
+                        />
+                        <input
+                          name="skillInvestigationManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Lidar Animais<small>SAB</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillAnimalHandlingProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillAnimalHandling"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillAnimalHandlingExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillAnimalHandling"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillAnimalHandling"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillAnimalHandling"
+                        />
+                        <input
+                          name="skillAnimalHandlingManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Medicina<small>SAB</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillMedicineProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillMedicine"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillMedicineExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillMedicine"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillMedicine"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillMedicine"
+                        />
+                        <input
+                          name="skillMedicineManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Natureza<small>INT</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillNatureProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillNature"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillNatureExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillNature"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillNature"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillNature"
+                        />
+                        <input
+                          name="skillNatureManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Percepção<small>SAB</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillPerceptionProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillPerception"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillPerceptionExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillPerception"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillPerception"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillPerception"
+                        />
+                        <input
+                          name="skillPerceptionManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Performance<small>CAR</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillPerformanceProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillPerformance"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillPerformanceExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillPerformance"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillPerformance"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillPerformance"
+                        />
+                        <input
+                          name="skillPerformanceManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Persuasão<small>CAR</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillPersuasionProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillPersuasion"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillPersuasionExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillPersuasion"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillPersuasion"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillPersuasion"
+                        />
+                        <input
+                          name="skillPersuasionManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Prestidigitação<small>DES</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillSleightOfHandProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillSleightOfHand"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillSleightOfHandExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillSleightOfHand"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillSleightOfHand"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillSleightOfHand"
+                        />
+                        <input
+                          name="skillSleightOfHandManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Religião<small>INT</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillReligionProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillReligion"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillReligionExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillReligion"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillReligion"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillReligion"
+                        />
+                        <input
+                          name="skillReligionManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
+                      <div class="dnd-bonus-row dnd-skill-row">
+                        <span class="dnd-bonus-name"
+                          >Sobrevivência<small>SAB</small></span
+                        >
+                        <label class="dnd-check-mini" title="Proficiência">
+                          <input
+                            type="checkbox"
+                            name="skillSurvivalProf"
+                            data-dnd-prof-checkbox="true"
+                            data-dnd-target-bonus="skillSurvival"
+                          />
+                          <span>P</span>
+                        </label>
+                        <label class="dnd-check-mini" title="Expertise">
+                          <input
+                            type="checkbox"
+                            name="skillSurvivalExpert"
+                            data-dnd-expert-checkbox="true"
+                            data-dnd-target-bonus="skillSurvival"
+                          />
+                          <span>E</span>
+                        </label>
+                        <input
+                          class="dnd-bonus-input"
+                          name="skillSurvival"
+                          type="number"
+                          value="0"
+                          data-dnd-final-bonus="skillSurvival"
+                        />
+                        <input
+                          name="skillSurvivalManual"
+                          type="hidden"
+                          value="false"
+                        />
+                      </div>
                     </div>
                   </div>
 
@@ -299,19 +1016,76 @@
                 <div class="dnd-right-column">
                   <div class="dnd-stats-grid">
                     <label
-                      ><span>CA</span><input name="armorClass" type="number"
-                    /></label>
-                    <label
-                      ><span>Iniciativa</span
-                      ><input name="initiative" type="text"
-                    /></label>
-                    <label
-                      ><span>Velocidade</span><input name="speed" type="text"
-                    /></label>
-                    <label
-                      ><span>Bônus prof.</span
-                      ><input name="proficiencyBonus" type="text"
-                    /></label>
+                      class="dnd-armor-class-field"
+                      id="dndArmorClassField"
+                    >
+                      <span>CA</span>
+                      <input
+                        id="dndArmorClassInput"
+                        name="armorClass"
+                        type="number"
+                        data-dnd-editable-result="armorClass"
+                      />
+                      <input
+                        name="armorClassManual"
+                        type="hidden"
+                        value="false"
+                      />
+                    </label>
+                    <label>
+                      <span>Iniciativa</span>
+                      <input name="initiative" type="number" value="0" />
+                    </label>
+                    <label>
+                      <span>Velocidade</span>
+                      <input name="speed" type="text" />
+                    </label>
+                    <label>
+                      <span>Bônus prof.</span>
+                      <input name="proficiencyBonus" type="text" />
+                    </label>
+                  </div>
+
+                  <div class="dnd-defense-config-box">
+                    <label>
+                      <span>Armadura</span>
+                      <select name="armorType" id="dndArmorTypeSelect">
+                        <option value="Sem Armadura">Sem Armadura</option>
+                        <option value="Acolchoada">Acolchoada</option>
+                        <option value="Couro">Couro</option>
+                        <option value="Couro Batido">Couro Batido</option>
+                        <option value="Gibão de Peles">Gibão de Peles</option>
+                        <option value="Camisão de Malha">
+                          Camisão de Malha
+                        </option>
+                        <option value="Cota de Escamas">Cota de Escamas</option>
+                        <option value="Peitoral">Peitoral</option>
+                        <option value="Meia Armadura">Meia Armadura</option>
+                        <option value="Corselete de Anéis">
+                          Corselete de Anéis
+                        </option>
+                        <option value="Cota de Malha">Cota de Malha</option>
+                        <option value="Cota de Talas">Cota de Talas</option>
+                        <option value="Armadura de Placas">
+                          Armadura de Placas
+                        </option>
+                      </select>
+                    </label>
+
+                    <label class="dnd-shield-toggle" id="dndShieldToggle">
+                      <input
+                        type="checkbox"
+                        name="hasShield"
+                        id="dndHasShield"
+                      />
+                      <span>Escudo +2 CA</span>
+                    </label>
+
+                    <p class="dnd-auto-rule-note" id="dndArmorRuleNote">
+                      CA: 10 + DES sem armadura. Armaduras leves somam DES;
+                      médias limitam DES a +2; pesadas não somam DES. Escudo
+                      soma +2.
+                    </p>
                   </div>
 
                   <div
@@ -340,12 +1114,23 @@
                         >Atual <input name="hpCurrent" type="number" min="0"
                       /></label>
                       <span>/</span>
-                      <label
-                        >Máximo <input name="hpMax" type="number" min="0"
-                      /></label>
+                      <label>
+                        Máximo
+                        <input
+                          name="hpMax"
+                          type="number"
+                          min="0"
+                          data-dnd-editable-result="hpMax"
+                        />
+                        <input name="hpMaxManual" type="hidden" value="false" />
+                      </label>
                     </div>
 
                     <div class="dnd-hp-bar"><div id="dndHpBarFill"></div></div>
+                    <p class="dnd-auto-rule-note" id="dndHpRuleNote">
+                      PV: no nível 1 usa o máximo do dado de vida. Nos níveis
+                      seguintes usa a média do dado + CON por nível.
+                    </p>
                     <label
                       >PV temporários
                       <input name="hpTemp" type="number" min="0"
