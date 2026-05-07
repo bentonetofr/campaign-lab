@@ -826,10 +826,15 @@ function getLoggedUserFromSession() {
 }
 
 /* =========================================================
-   NOTIFICAÇÕES DE CAMPANHA ADICIONADA
+   NOTIFICAÇÕES DE CAMPANHA ADICIONADA / REMOVIDA
 ========================================================= */
 
-async function createCampaignAddedNotifications(campaign, playerIds = [], masterUser = null) {
+async function createCampaignMemberNotifications(
+  campaign,
+  playerIds = [],
+  masterUser = null,
+  notificationType = "campaign_added"
+) {
   if (!DB || !campaign || !Array.isArray(playerIds) || !playerIds.length) return;
 
   const uniquePlayerIds = [...new Set(playerIds.map((id) => String(id || "").trim()).filter(Boolean))];
@@ -850,15 +855,23 @@ async function createCampaignAddedNotifications(campaign, playerIds = [], master
       campaign_system: campaign.sistema || campaign.system || "Sistema",
       master_id: master.id || campaign.mestreId || campaign.master_id || "",
       master_name: master.nome || master.name || "Mestre",
-      notification_type: "campaign_added",
+      notification_type: notificationType,
     };
   });
 
   const { error } = await DB.from("campaign_added_notifications").insert(rows);
 
   if (error) {
-    console.warn("Não foi possível criar notificação de campanha adicionada:", error);
+    console.warn("Não foi possível criar notificação de campanha:", error);
   }
+}
+
+async function createCampaignAddedNotifications(campaign, playerIds = [], masterUser = null) {
+  await createCampaignMemberNotifications(campaign, playerIds, masterUser, "campaign_added");
+}
+
+async function createCampaignRemovedNotifications(campaign, playerIds = [], masterUser = null) {
+  await createCampaignMemberNotifications(campaign, playerIds, masterUser, "campaign_removed");
 }
 
 async function setupCampaignAddedNotifications() {
@@ -936,21 +949,27 @@ function showCampaignAddedNotification(notification, options = {}) {
     return;
   }
 
+  const isRemoved = notification.notification_type === "campaign_removed";
   const card = document.createElement("article");
-  card.className = "campaign-added-notification";
+  card.className = `campaign-added-notification${isRemoved ? " campaign-added-notification--removed" : ""}`;
   card.dataset.campaignAddedNotificationId = notificationId;
 
   const campaignName = notification.campaign_name || "Campanha";
   const campaignSystem = notification.campaign_system || "Sistema";
   const masterName = notification.master_name || "Mestre";
+  const title = isRemoved
+    ? "Você foi removido de uma campanha"
+    : "Você foi adicionado a uma campanha";
+  const icon = isRemoved ? "−" : "✦";
+  const buttonText = isRemoved ? "Entendi" : "Ver minhas campanhas";
 
   card.innerHTML = `
     <button type="button" class="campaign-added-notification__close" aria-label="Fechar notificação">×</button>
 
-    <div class="campaign-added-notification__icon">✦</div>
+    <div class="campaign-added-notification__icon">${icon}</div>
 
     <div class="campaign-added-notification__content">
-      <span>Você foi adicionado a uma campanha</span>
+      <span>${escapeHtml(title)}</span>
       <strong>${escapeHtml(campaignName)}</strong>
       <p>
         Sistema: <b>${escapeHtml(campaignSystem)}</b><br />
@@ -958,7 +977,7 @@ function showCampaignAddedNotification(notification, options = {}) {
       </p>
 
       <button type="button" class="campaign-added-notification__action">
-        Ver minhas campanhas
+        ${buttonText}
       </button>
     </div>
   `;
@@ -976,13 +995,17 @@ function showCampaignAddedNotification(notification, options = {}) {
     event.stopPropagation();
     await markCampaignAddedNotificationAsRead(notificationId);
     removeCampaignAddedNotificationCard(card);
-    window.location.href = "minhas-campanhas.html";
+    if (!isRemoved) {
+      window.location.href = "minhas-campanhas.html";
+    }
   });
 
   card.addEventListener("click", async () => {
     await markCampaignAddedNotificationAsRead(notificationId);
     removeCampaignAddedNotificationCard(card);
-    window.location.href = "minhas-campanhas.html";
+    if (!isRemoved) {
+      window.location.href = "minhas-campanhas.html";
+    }
   });
 
   stack.appendChild(card);
@@ -3512,6 +3535,8 @@ async function removePlayerFromCampaign(campaignId, playerId) {
     alert("Erro ao remover jogador.");
     return;
   }
+
+  await createCampaignRemovedNotifications(campaign, [playerId], user);
 
   campaignsCache = [];
   await refreshCurrentMasterPanel();
