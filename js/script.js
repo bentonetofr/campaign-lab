@@ -581,6 +581,7 @@ let realtimeChannel = null;
 let diceRealtimeChannel = null;
 let campaignPresenceChannel = null;
 let campaignChatRealtimeChannel = null;
+let campaignAddedNotificationChannel = null;
 let campaignChatAudioContext = null;
 let campaignChatNotificationReady = false;
 let campaignPresenceState = {};
@@ -626,6 +627,10 @@ document.addEventListener("DOMContentLoaded", async () => {
   if (!user && needsLoggedUser()) {
     window.location.href = "index.html";
     return;
+  }
+
+  if (user) {
+    await setupCampaignAddedNotifications();
   }
 
   if (document.body.classList.contains("my-campaigns-page")) {
@@ -818,6 +823,230 @@ function getLoggedUserFromSession() {
     nome: name || id,
     name: name || id,
   };
+}
+
+/* =========================================================
+   NOTIFICAÇÕES DE CAMPANHA ADICIONADA
+========================================================= */
+
+async function createCampaignAddedNotifications(campaign, playerIds = [], masterUser = null) {
+  if (!DB || !campaign || !Array.isArray(playerIds) || !playerIds.length) return;
+
+  const uniquePlayerIds = [...new Set(playerIds.map((id) => String(id || "").trim()).filter(Boolean))];
+  const master = masterUser || getLoggedUserFromSession() || {};
+
+  if (!uniquePlayerIds.length) return;
+
+  const profiles = await getProfiles(true).catch(() => []);
+
+  const rows = uniquePlayerIds.map((playerId) => {
+    const profile = profiles.find((item) => String(item.id) === String(playerId));
+
+    return {
+      recipient_user_id: playerId,
+      recipient_user_name: profile?.name || playerId,
+      campaign_id: String(campaign.id || ""),
+      campaign_name: campaign.nome || campaign.name || "Campanha",
+      campaign_system: campaign.sistema || campaign.system || "Sistema",
+      master_id: master.id || campaign.mestreId || campaign.master_id || "",
+      master_name: master.nome || master.name || "Mestre",
+      notification_type: "campaign_added",
+    };
+  });
+
+  const { error } = await DB.from("campaign_added_notifications").insert(rows);
+
+  if (error) {
+    console.warn("Não foi possível criar notificação de campanha adicionada:", error);
+  }
+}
+
+async function setupCampaignAddedNotifications() {
+  if (!DB || window.campaignAddedNotificationsReady) return;
+
+  const user = getLoggedUserFromSession();
+  if (!user) return;
+
+  window.campaignAddedNotificationsReady = true;
+
+  await loadCampaignAddedNotifications(user.id);
+  subscribeCampaignAddedNotifications(user.id);
+}
+
+async function loadCampaignAddedNotifications(userId) {
+  const { data, error } = await DB
+    .from("campaign_added_notifications")
+    .select("id, campaign_id, campaign_name, campaign_system, master_name, notification_type, read_at, created_at")
+    .eq("recipient_user_id", userId)
+    .is("read_at", null)
+    .order("created_at", { ascending: false })
+    .limit(8);
+
+  if (error) {
+    console.warn("Não foi possível carregar notificações de campanha:", error);
+    return;
+  }
+
+  (data || []).reverse().forEach((notification) => {
+    showCampaignAddedNotification(notification, { playSound: false });
+  });
+}
+
+function subscribeCampaignAddedNotifications(userId) {
+  if (!DB || campaignAddedNotificationChannel) return;
+
+  campaignAddedNotificationChannel = DB.channel(`campaign-added-notifications-${userId}`)
+    .on(
+      "postgres_changes",
+      {
+        event: "INSERT",
+        schema: "public",
+        table: "campaign_added_notifications",
+        filter: `recipient_user_id=eq.${userId}`,
+      },
+      (payload) => {
+        const notification = payload.new;
+        if (!notification || notification.read_at) return;
+        showCampaignAddedNotification(notification, { playSound: true });
+      }
+    )
+    .subscribe();
+}
+
+function getCampaignAddedNotificationStack() {
+  let stack = document.getElementById("campaignAddedNotificationStack");
+
+  if (stack) return stack;
+
+  stack = document.createElement("div");
+  stack.id = "campaignAddedNotificationStack";
+  stack.className = "campaign-added-notification-stack";
+  document.body.appendChild(stack);
+
+  return stack;
+}
+
+function showCampaignAddedNotification(notification, options = {}) {
+  if (!notification) return;
+
+  const stack = getCampaignAddedNotificationStack();
+  const notificationId = String(notification.id || "");
+
+  if (notificationId && stack.querySelector(`[data-campaign-added-notification-id="${CSS.escape(notificationId)}"]`)) {
+    return;
+  }
+
+  const card = document.createElement("article");
+  card.className = "campaign-added-notification";
+  card.dataset.campaignAddedNotificationId = notificationId;
+
+  const campaignName = notification.campaign_name || "Campanha";
+  const campaignSystem = notification.campaign_system || "Sistema";
+  const masterName = notification.master_name || "Mestre";
+
+  card.innerHTML = `
+    <button type="button" class="campaign-added-notification__close" aria-label="Fechar notificação">×</button>
+
+    <div class="campaign-added-notification__icon">✦</div>
+
+    <div class="campaign-added-notification__content">
+      <span>Você foi adicionado a uma campanha</span>
+      <strong>${escapeHtml(campaignName)}</strong>
+      <p>
+        Sistema: <b>${escapeHtml(campaignSystem)}</b><br />
+        Mestre: <b>${escapeHtml(masterName)}</b>
+      </p>
+
+      <button type="button" class="campaign-added-notification__action">
+        Ver minhas campanhas
+      </button>
+    </div>
+  `;
+
+  const closeButton = card.querySelector(".campaign-added-notification__close");
+  const actionButton = card.querySelector(".campaign-added-notification__action");
+
+  closeButton?.addEventListener("click", async (event) => {
+    event.stopPropagation();
+    await markCampaignAddedNotificationAsRead(notificationId);
+    removeCampaignAddedNotificationCard(card);
+  });
+
+  actionButton?.addEventListener("click", async (event) => {
+    event.stopPropagation();
+    await markCampaignAddedNotificationAsRead(notificationId);
+    removeCampaignAddedNotificationCard(card);
+    window.location.href = "minhas-campanhas.html";
+  });
+
+  card.addEventListener("click", async () => {
+    await markCampaignAddedNotificationAsRead(notificationId);
+    removeCampaignAddedNotificationCard(card);
+    window.location.href = "minhas-campanhas.html";
+  });
+
+  stack.appendChild(card);
+
+  requestAnimationFrame(() => {
+    card.classList.add("show");
+  });
+
+  if (options.playSound) {
+    playCampaignAddedNotificationSound();
+  }
+}
+
+async function markCampaignAddedNotificationAsRead(notificationId) {
+  if (!DB || !notificationId) return;
+
+  const { error } = await DB
+    .from("campaign_added_notifications")
+    .update({ read_at: new Date().toISOString() })
+    .eq("id", notificationId);
+
+  if (error) {
+    console.warn("Não foi possível marcar notificação como lida:", error);
+  }
+}
+
+function removeCampaignAddedNotificationCard(card) {
+  if (!card) return;
+
+  card.classList.remove("show");
+  card.classList.add("hide");
+
+  setTimeout(() => {
+    card.remove();
+  }, 240);
+}
+
+function playCampaignAddedNotificationSound() {
+  try {
+    const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+    if (!AudioContextClass) return;
+
+    const audioContext = new AudioContextClass();
+    const gain = audioContext.createGain();
+    gain.gain.value = 0.055;
+    gain.connect(audioContext.destination);
+
+    const notes = [660, 880, 990];
+
+    notes.forEach((frequency, index) => {
+      const oscillator = audioContext.createOscillator();
+      oscillator.type = "sine";
+      oscillator.frequency.value = frequency;
+      oscillator.connect(gain);
+
+      const start = audioContext.currentTime + index * 0.09;
+      oscillator.start(start);
+      oscillator.stop(start + 0.08);
+    });
+
+    setTimeout(() => audioContext.close(), 650);
+  } catch (error) {
+    console.warn("Som de notificação indisponível:", error);
+  }
 }
 
 /* =========================================================
@@ -1771,6 +2000,12 @@ async function setupCreateCampaignPage() {
         await getOrCreateDndSheet(campaign.id, playerId, campaignSystem);
       }
     }
+
+    await createCampaignAddedNotifications(
+      { ...campaign, sistema: campaignSystem, system: campaignSystem },
+      selectedPlayers,
+      user
+    );
 
     campaignsCache = [];
 
@@ -3238,6 +3473,8 @@ async function addSelectedPlayersToCampaign(form, modal, submitButton) {
       await getOrCreateDndSheet(campaign.id, playerId, campaign.sistema);
     }
   }
+
+  await createCampaignAddedNotifications(campaign, selectedPlayers, user);
 
   campaignsCache = [];
 
