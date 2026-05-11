@@ -28283,3 +28283,101 @@ body {
     min-height: 360px !important;
   }
 }
+/* =========================================================
+   AJUSTE MOBILE - D&D
+   1) No celular, o conteúdo da aba aparece antes dos blocos laterais.
+   2) Selecionar imagem e Automação nativa vão para o fim da ficha.
+   3) As abas ficam mais próximas do conteúdo ativo.
+========================================================= */
+
+@media (max-width: 900px) {
+  body.dnd-player-page .dnd-v2-command-bar,
+  body.dnd-design-impecavel .dnd-v2-command-bar {
+    margin-bottom: 10px !important;
+    padding-bottom: 8px !important;
+    gap: 8px !important;
+  }
+
+  body.dnd-player-page .dnd-v2-sheet-tabs,
+  body.dnd-design-impecavel .dnd-v2-sheet-tabs {
+    margin-bottom: 0 !important;
+    padding-bottom: 4px !important;
+  }
+
+  body.dnd-player-page .dnd-v2-layout,
+  body.dnd-design-impecavel .dnd-v2-layout {
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 12px !important;
+    margin-top: 0 !important;
+  }
+
+  body.dnd-player-page .dnd-v2-content,
+  body.dnd-design-impecavel .dnd-v2-content {
+    order: 1 !important;
+    width: 100% !important;
+  }
+
+  body.dnd-player-page .dnd-v2-side-panel,
+  body.dnd-design-impecavel .dnd-v2-side-panel {
+    order: 99 !important;
+    width: 100% !important;
+    margin-top: 18px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    gap: 14px !important;
+  }
+
+  body.dnd-player-page .dnd-v2-roll-result,
+  body.dnd-design-impecavel .dnd-v2-roll-result {
+    order: 1 !important;
+  }
+
+  body.dnd-player-page .dnd-v2-profile-card,
+  body.dnd-player-page .dnd-v2-profile-card--with-upload,
+  body.dnd-design-impecavel .dnd-v2-profile-card,
+  body.dnd-design-impecavel .dnd-v2-profile-card--with-upload {
+    order: 2 !important;
+  }
+
+  body.dnd-player-page .dnd-v2-race-box,
+  body.dnd-design-impecavel .dnd-v2-race-box {
+    order: 3 !important;
+  }
+
+  body.dnd-player-page .dnd-v2-panel,
+  body.dnd-design-impecavel .dnd-v2-panel {
+    margin-top: 0 !important;
+  }
+}
+
+@media (max-width: 560px) {
+  body.dnd-player-page .dnd-v2-command-bar,
+  body.dnd-design-impecavel .dnd-v2-command-bar {
+    margin-bottom: 6px !important;
+    padding: 8px 8px 4px !important;
+    border-radius: 18px !important;
+  }
+
+  body.dnd-player-page .dnd-v2-sheet-tabs,
+  body.dnd-design-impecavel .dnd-v2-sheet-tabs {
+    gap: 6px !important;
+    padding-bottom: 2px !important;
+  }
+
+  body.dnd-player-page .dnd-v2-sheet-tabs button,
+  body.dnd-design-impecavel .dnd-v2-sheet-tabs button {
+    min-height: 38px !important;
+    padding: 8px 12px !important;
+  }
+
+  body.dnd-player-page .dnd-v2-layout,
+  body.dnd-design-impecavel .dnd-v2-layout {
+    gap: 8px !important;
+  }
+
+  body.dnd-player-page .dnd-v2-side-panel,
+  body.dnd-design-impecavel .dnd-v2-side-panel {
+    margin-top: 14px !important;
+  }
+}
