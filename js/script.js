@@ -175,6 +175,104 @@ const ALTHERIUM_GENESIS_OPTIONS = [
     automatic: [],
     notes: [],
   },
+
+];
+
+const DND_ALTHERIUM_BACKGROUND_OPTIONS = [
+  {
+    key: "",
+    value: "",
+    label: "Selecione o antecedente",
+    description: "Escolha um passado de Altherium para aplicar perícias e traços automáticos na ficha de D&D.",
+    skills: [],
+    feature: "",
+  },
+  {
+    key: "cacador",
+    value: "Caçador",
+    label: "Caçador",
+    skills: ["skillStealth", "skillPerception"],
+    feature: "Adiciona +1d4 no acerto em armas à distância.",
+  },
+  {
+    key: "curandeiro",
+    value: "Curandeiro",
+    label: "Curandeiro",
+    skills: ["skillMedicine", "skillNature"],
+    feature: "Adiciona +1d10 na cura.",
+  },
+  {
+    key: "determinado",
+    value: "Determinado",
+    label: "Determinado",
+    skills: ["skillAthletics", "skillInsight"],
+    feature: "Adiciona +1d10 em testes ligados a equilíbrio, firmeza mental ou resistência narrativa.",
+  },
+  {
+    key: "devoto",
+    value: "Devoto",
+    label: "Devoto",
+    skills: ["skillReligion", "skillPersuasion"],
+    feature: "Pode usar Religião no lugar de qualquer teste social quando a cena envolver fé, culto, juramento ou autoridade espiritual.",
+  },
+  {
+    key: "filho_de_mercante",
+    value: "Filho de mercante",
+    label: "Filho de mercante",
+    skills: ["skillPersuasion", "skillInsight"],
+    equipment: "¤800 Hacksilvers adicionais na criação do personagem.",
+    feature: "Começa com ¤800 Hacksilvers adicionais e tem facilidade em negociações, barganhas e leitura de acordos.",
+  },
+  {
+    key: "guerreiro",
+    value: "Guerreiro",
+    label: "Guerreiro",
+    skills: ["skillAthletics", "skillIntimidation"],
+    feature: "Adiciona +1d4 no acerto em armas corpo a corpo.",
+  },
+  {
+    key: "guia_espiritual",
+    value: "Guia espiritual",
+    label: "Guia espiritual",
+    skills: ["skillInsight", "skillReligion"],
+    feature: "Adiciona +1d10 na cura do equilíbrio e em cenas de orientação espiritual definidas pelo mestre.",
+  },
+  {
+    key: "corredor",
+    value: "Corredor",
+    label: "Corredor",
+    skills: ["skillAcrobatics", "skillAthletics"],
+    speed: "+5m [Antecedente: Corredor]",
+    feature: "Tem +5m de movimento no deslocamento.",
+  },
+  {
+    key: "peregrino",
+    value: "Peregrino",
+    label: "Peregrino",
+    skills: ["skillSurvival", "skillNature"],
+    feature: "Pode recuperar +1d10 em todos os pontos básicos em cenas de descanso, conforme aprovação do mestre.",
+  },
+  {
+    key: "rastreador",
+    value: "Rastreador",
+    label: "Rastreador",
+    skills: ["skillInvestigation", "skillPerception"],
+    feature: "Recebe +1d10 em testes de investigação.",
+  },
+  {
+    key: "robusto",
+    value: "Robusto",
+    label: "Robusto",
+    skills: ["skillAthletics", "skillSurvival"],
+    feature: "Consegue +1 de DB em todas as partes do corpo quando a mesa usar a regra de DB de Altherium.",
+  },
+  {
+    key: "sem_passado",
+    value: "Sem passado",
+    label: "Sem passado",
+    skills: [],
+    feature: "O mestre define a habilidade do antecedente.",
+  },
 ];
 
 
@@ -681,6 +779,31 @@ function formatCampaignLabDndBonus(value = 0) {
   return number >= 0 ? `+${number}` : String(number);
 }
 
+
+function campaignLabDndFormatMeterValue(value = 0) {
+  const number = Number(value) || 0;
+  const rounded = Math.round(number * 10) / 10;
+  const text = Number.isInteger(rounded) ? String(rounded) : String(rounded).replace('.', ',');
+  return `${text} m`;
+}
+
+function campaignLabDndMetersFromFeet(feet = 0) {
+  return campaignLabDndFormatMeterValue((Number(feet) || 0) * 0.3);
+}
+
+function campaignLabDndConvertFeetTextToMeters(value = "") {
+  return String(value || "")
+    .replace(/5\s*[×x]\s*30\s*ft\.?/gi, "1,5 × 9 m")
+    .replace(/10\s*ft\.?\s*\(30\s*ft\.?\s*ao nível 18\)/gi, "3 m (9 m ao nível 18)")
+    .replace(/120\s*ft\.?/gi, "36 m")
+    .replace(/60\s*ft\.?/gi, "18 m")
+    .replace(/40\s*ft\.?/gi, "12 m")
+    .replace(/30\s*ft\.?/gi, "9 m")
+    .replace(/15\s*ft\.?/gi, "4,5 m")
+    .replace(/10\s*ft\.?/gi, "3 m")
+    .replace(/5\s*ft\.?/gi, "1,5 m");
+}
+
 function getCampaignLabDndClassLevelLabel(sheet = {}) {
   const className = getCampaignLabDndSheetClassName(sheet);
   const level = getCampaignLabDndSheetLevel(sheet);
@@ -921,7 +1044,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await setupOnlinePlayersInfoPanel();
     await setupDndPlayerSheet();
     await setupInitiativeBoard(getDndPlayerInitiativeConfig());
-    await setupCampaignDiceRoller("D&D");
+    // D&D jogador: rolador de dados lateral removido por pedido.
     await setupPlayerCampaignChat("D&D");
     subscribeCampaignRealtime(refreshCurrentPlayerPanel);
   }
@@ -4856,6 +4979,7 @@ function getDefaultDndSheet(campaignId, playerId, system) {
     classAutoDefaultsAppliedFor: "",
     race: "",
     background: "",
+    dndAltheriumBackgroundAppliedState: "",
     alignment: "",
     experience: "0",
     strScore: "10",
@@ -4888,7 +5012,7 @@ function getDefaultDndSheet(campaignId, playerId, system) {
     hasShield: "false",
     initiative: "0",
     combatInitiative: "",
-    speed: "40 ft.",
+    speed: "12 m",
     proficiencyBonus: "+2",
     hpCurrent: "0",
     hpMax: "0",
@@ -5061,6 +5185,7 @@ async function setupDndMasterSheets() {
       if (form.dataset.mode !== "edit-dnd-sheet") return;
       syncCampaignLabDndClassFieldsInForm(form);
       dndEnsureFinalBonusAutomationFields(form);
+      dndApplyAltheriumBackgroundSelection(form, { silent: true });
       dndRecalculateAll(form);
       saveDebounced(() => saveDndSheetFromModal(false));
     });
@@ -5069,6 +5194,7 @@ async function setupDndMasterSheets() {
       if (form.dataset.mode !== "edit-dnd-sheet") return;
       syncCampaignLabDndClassFieldsInForm(form);
       dndEnsureFinalBonusAutomationFields(form);
+      dndApplyAltheriumBackgroundSelection(form, { silent: true });
       dndRecalculateAll(form);
       saveDebounced(() => saveDndSheetFromModal(false));
     });
@@ -5160,6 +5286,7 @@ async function openDndMasterSheetModal(playerId) {
   modalTitle.textContent = `Ficha de ${sheet.ownerName}`;
   formFields.innerHTML = buildDndSheetEditor(sheet, true);
   setupCampaignLabDndClassAutomationPanel(form, sheet);
+  setupDndAltheriumBackgroundAutomation(form);
   syncCampaignLabDndClassFieldsInForm(form);
   dndEnsureFinalBonusAutomationFields(form);
   dndBindFinalBonusAutomationEvents();
@@ -5192,8 +5319,9 @@ function buildDndSheetEditor(sheet, isModal = false) {
             ${dndClassSelect(getCampaignLabDndSheetClassName(sheet))}
             ${dndLevelInput(getCampaignLabDndSheetLevel(sheet))}
             ${dndHiddenInput("classLevel", getCampaignLabDndClassLevelLabel(sheet))}
-            ${dndInput("Raça", "race", sheet.race)}
-            ${dndInput("Antecedente", "background", sheet.background)}
+            ${dndRaceSelect(sheet.race, sheet)}
+            ${dndAltheriumBackgroundSelect(sheet.background)}
+            ${dndHiddenInput("dndAltheriumBackgroundAppliedState", sheet.dndAltheriumBackgroundAppliedState || "")}
             ${dndInput("Alinhamento", "alignment", sheet.alignment)}
             ${dndInput("Experiência", "experience", sheet.experience, "number")}
           </div>
@@ -5225,7 +5353,7 @@ function buildDndSheetEditor(sheet, isModal = false) {
 
               <div class="dnd-skill-extra-grid dnd-skill-extra-grid--actions dnd-skill-extra-grid--attacks-full">
                 <div class="dnd-box dnd-box--compact dnd-attacks-full-box">
-                  <h3>Ataques & Magia</h3>
+                  <h3>Ataques & Magia Favoritos</h3>
                   <div class="dnd-attack-table">
                     <div><span>Nome</span><span>Bônus</span><span>Dano / Tipo</span></div>
                     ${[1, 2, 3].map((index) => dndAttackRow(index, sheet)).join("")}
@@ -5367,12 +5495,22 @@ async function saveDndSheetFromModal(showAlert = false) {
 
   syncCampaignLabDndClassFieldsInForm(form);
   dndEnsureFinalBonusAutomationFields(form);
+  dndApplyAltheriumBackgroundSelection(form, { silent: true });
   dndRecalculateAll(form);
 
   await updateDndSheet(campaignId, playerId, dndGetCompleteFormData(form));
   await refreshCurrentMasterPanel();
 
   if (showAlert) alert("Ficha de D&D salva com sucesso.");
+}
+
+
+function removeDndPlayerCharacterPortraitPanel(form = document.getElementById("dndPlayerSheetForm")) {
+  if (!form) return;
+
+  form.querySelectorAll("[data-character-portrait-field], .character-portrait-field").forEach((field) => {
+    field.remove();
+  });
 }
 
 async function setupDndPlayerSheet() {
@@ -5389,11 +5527,13 @@ async function setupDndPlayerSheet() {
   setupDndRestControls();
   dndEnsureFinalBonusAutomationFields(form);
   dndBindFinalBonusAutomationEvents();
+  setupDndAltheriumBackgroundAutomation(form);
   dndRecalculateAll(form);
 
   form.addEventListener("input", () => {
     syncCampaignLabDndClassFieldsInForm(form);
     dndEnsureFinalBonusAutomationFields(form);
+    dndApplyAltheriumBackgroundSelection(form, { silent: true });
     dndRecalculateAll(form);
     updateDndRestPreview();
     saveDndPlayerSheet(false);
@@ -5402,6 +5542,7 @@ async function setupDndPlayerSheet() {
   form.addEventListener("change", () => {
     syncCampaignLabDndClassFieldsInForm(form);
     dndEnsureFinalBonusAutomationFields(form);
+    dndApplyAltheriumBackgroundSelection(form, { silent: true });
     dndRecalculateAll(form);
     updateDndRestPreview();
     saveDndPlayerSheet(false);
@@ -5421,28 +5562,30 @@ async function loadDndSheetIntoPlayerForm() {
 
   if (focused && form.contains(focused) && !focused.matches("[data-character-portrait-input]")) {
     setupCampaignLabDndClassAutomationPanel(form);
+    setupDndAltheriumBackgroundAutomation(form);
     syncCampaignLabDndClassFieldsInForm(form);
-    updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
+    removeDndPlayerCharacterPortraitPanel(form);
     updateDndPlayerPreview();
     updateDndAutoNumbers();
     syncAllDndSpellSlotTrackers(form);
     updateDndRestPreview();
-  refreshCharacterPortraitFloatingPanels();
     return;
   }
 
   const sheet = await getOrCreateDndSheet(campaign.id, user.id, campaign.sistema);
 
-  ensureCharacterPortraitFieldInForm(form, sheet, "D&D");
+  // D&D jogador: painel lateral de imagem removido por pedido.
+  removeDndPlayerCharacterPortraitPanel(form);
   setupCampaignLabDndClassAutomationPanel(form, sheet);
 
   Object.keys(sheet).forEach((key) => {
     if (form.elements[key]) dndHydrateFormElement(form.elements[key], sheet[key] || "");
   });
 
+  setupDndAltheriumBackgroundAutomation(form);
   syncCampaignLabDndClassFieldsInForm(form);
 
-  updateCharacterPortraitFields(form, sheet);
+  removeDndPlayerCharacterPortraitPanel(form);
   updateDndPlayerPreview();
   updateDndAutoNumbers();
   setupDndSpellSlotTrackers(form);
@@ -5461,10 +5604,11 @@ async function saveDndPlayerSheet(showAlert) {
   syncAllDndSpellSlotTrackers(form);
   syncCampaignLabDndClassFieldsInForm(form);
   dndEnsureFinalBonusAutomationFields(form);
+  dndApplyAltheriumBackgroundSelection(form, { silent: true });
   dndRecalculateAll(form);
 
   await updateDndSheet(campaign.id, user.id, dndGetCompleteFormData(form));
-  updateCharacterPortraitFields(form, Object.fromEntries(new FormData(form)));
+  removeDndPlayerCharacterPortraitPanel(form);
   updateDndPlayerPreview();
   updateDndAutoNumbers();
 
@@ -5480,6 +5624,7 @@ function updateDndPlayerPreview() {
   setText("dndCharacterMini", form.elements.characterName?.value || "---");
   setText("dndClassMini", getCampaignLabDndClassLevelLabel(Object.fromEntries(new FormData(form))) || "---");
   setText("dndInitiativeMini", form.elements.combatInitiative?.value || "--");
+  updateDndV2AvatarPreview(form, form.elements.characterName?.value || "Personagem");
 }
 
 function updateDndAutoNumbers() {
@@ -5853,6 +5998,10 @@ async function applyDndLongRest() {
 
   if (form.elements.hitDiceRemaining && diceState.totalTotal > 0) {
     form.elements.hitDiceRemaining.value = formatDndHitDiceValue(nextRemaining, diceState.primarySides);
+  }
+
+  if (typeof window.campaignLabRestoreAllManualSpellSlots === "function") {
+    window.campaignLabRestoreAllManualSpellSlots(form);
   }
 
   updateDndAutoNumbers();
@@ -8235,7 +8384,7 @@ function setupFloatingSheetSaveButton() {
 function getFloatingSheetSaveButtons() {
   return [
     document.getElementById("savePlayerSheet"),
-    document.getElementById("saveDndSheet"),
+    document.body.classList.contains("dnd-player-page") ? null : document.getElementById("saveDndSheet"),
   ].filter(Boolean);
 }
 
@@ -8521,6 +8670,10 @@ async function uploadCharacterPortraitFromInput(input, file) {
     characterAvatarUrl: imageUrl,
     characterPortraitUrl: imageUrl,
   });
+
+  if (form.id === "dndPlayerSheetForm" && typeof updateDndV2AvatarPreview === "function") {
+    updateDndV2AvatarPreview(form, form.elements.characterName?.value || "Personagem");
+  }
 
   if (form.id === "playerSheetForm") {
     await savePlayerSheet(false);
@@ -10613,6 +10766,32 @@ function dndHiddenInput(name, value = "") {
   return `<input name="${name}" type="hidden" value="${escapeHtml(value)}" />`;
 }
 
+function dndAltheriumBackgroundOptionsHtml(selectedValue = "") {
+  const selectedBackground = getDndAltheriumBackgroundByValue(selectedValue);
+  const selected = selectedBackground ? selectedBackground.value : "";
+
+  return DND_ALTHERIUM_BACKGROUND_OPTIONS
+    .map((option) => {
+      const selectedAttr = option.value === selected ? " selected" : "";
+      return `<option value="${escapeHtml(option.value)}"${selectedAttr}>${escapeHtml(option.label)}</option>`;
+    })
+    .join("");
+}
+
+function dndAltheriumBackgroundSelect(value = "") {
+  return `
+    <label class="dnd-altherium-background-field">
+      Antecedente
+      <select name="background" data-dnd-altherium-background-select="true">
+        ${dndAltheriumBackgroundOptionsHtml(value)}
+      </select>
+      <small class="dnd-altherium-background-help">
+        Aplica perícias e traços automáticos inspirados nos Genesis de Altherium.
+      </small>
+    </label>
+  `;
+}
+
 function dndArmorDefenseControls(sheet = {}) {
   const selectedArmor = sheet.armorType || 'Sem Armadura';
   const shieldChecked = dnd_bool(sheet.hasShield);
@@ -10822,6 +11001,259 @@ function dndTextareaBox(label, name, value, rows) {
 
 function dndClassIntegratedFields(sheet = {}) {
   return '';
+}
+
+/* =========================================================
+   D&D - ANTECEDENTES DE ALTHERIUM
+========================================================= */
+
+const DND_ALTHERIUM_BACKGROUND_FEATURE_START = "===== ANTECEDENTE DE ALTHERIUM =====";
+const DND_ALTHERIUM_BACKGROUND_FEATURE_END = "===== FIM DO ANTECEDENTE DE ALTHERIUM =====";
+const DND_ALTHERIUM_BACKGROUND_EQUIPMENT_START = "===== EQUIPAMENTO DO ANTECEDENTE =====";
+const DND_ALTHERIUM_BACKGROUND_EQUIPMENT_END = "===== FIM DO EQUIPAMENTO DO ANTECEDENTE =====";
+
+function getDndAltheriumBackgroundByValue(value = "") {
+  const normalized = normalizeAltheriumGenesis(value);
+
+  return (
+    DND_ALTHERIUM_BACKGROUND_OPTIONS.find((option) => option.key && option.key === normalized) ||
+    DND_ALTHERIUM_BACKGROUND_OPTIONS.find((option) => option.value === value) ||
+    null
+  );
+}
+
+function dndEnsureAltheriumBackgroundStateInput(form) {
+  if (!form) return null;
+
+  let input = form.elements.dndAltheriumBackgroundAppliedState;
+
+  if (!input) {
+    input = document.createElement("input");
+    input.type = "hidden";
+    input.name = "dndAltheriumBackgroundAppliedState";
+    input.value = "";
+    form.appendChild(input);
+  }
+
+  return input;
+}
+
+function dndGetAltheriumBackgroundState(form) {
+  const input = dndEnsureAltheriumBackgroundStateInput(form);
+  if (!input || !input.value) return { key: "", skills: [], speed: "" };
+
+  try {
+    const parsed = JSON.parse(input.value);
+    return {
+      key: parsed.key || "",
+      skills: Array.isArray(parsed.skills) ? parsed.skills : [],
+      speed: parsed.speed || "",
+    };
+  } catch (error) {
+    return { key: "", skills: [], speed: "" };
+  }
+}
+
+function dndSetAltheriumBackgroundState(form, state) {
+  const input = dndEnsureAltheriumBackgroundStateInput(form);
+  if (!input) return;
+
+  input.value = JSON.stringify(state || { key: "", skills: [], speed: "" });
+}
+
+function dndEnsureAltheriumBackgroundSelector(form) {
+  if (!form || !form.elements.background) return;
+
+  const currentField = form.elements.background;
+
+  if (currentField.tagName === "SELECT") {
+    currentField.dataset.dndAltheriumBackgroundSelect = "true";
+    currentField.classList.add("dnd-altherium-background-select");
+
+    if (!currentField.dataset.dndAltheriumOptionsReady) {
+      const previousValue = currentField.value;
+      currentField.innerHTML = dndAltheriumBackgroundOptionsHtml(previousValue);
+      currentField.dataset.dndAltheriumOptionsReady = "true";
+    }
+
+    return;
+  }
+
+  const select = document.createElement("select");
+  select.name = currentField.name;
+  select.id = currentField.id || "dndAltheriumBackgroundSelect";
+  select.className = `${currentField.className || ""} dnd-altherium-background-select`.trim();
+  select.dataset.dndAltheriumBackgroundSelect = "true";
+  select.innerHTML = dndAltheriumBackgroundOptionsHtml(currentField.value);
+  select.dataset.dndAltheriumOptionsReady = "true";
+
+  currentField.replaceWith(select);
+}
+
+function setupDndAltheriumBackgroundAutomation(form) {
+  if (!form) return;
+
+  if (!window.dndAltheriumBackgroundAutomationEventsReady) {
+    window.dndAltheriumBackgroundAutomationEventsReady = true;
+
+    document.addEventListener("change", (event) => {
+      const select = event.target.closest?.("[data-dnd-altherium-background-select]");
+      if (!select) return;
+
+      const currentForm = select.closest("form");
+      dndApplyAltheriumBackgroundSelection(currentForm, { force: true });
+    }, true);
+  }
+
+  dndEnsureAltheriumBackgroundSelector(form);
+  dndEnsureAltheriumBackgroundStateInput(form);
+  dndApplyAltheriumBackgroundSelection(form, { silent: true });
+}
+
+function dndApplyAltheriumBackgroundSelection(form, options = {}) {
+  if (!form || !form.elements.background) return;
+
+  const background = getDndAltheriumBackgroundByValue(form.elements.background.value);
+  const currentKey = background ? background.key : "";
+  const previousState = dndGetAltheriumBackgroundState(form);
+  const shouldApply = options.force || previousState.key !== currentKey;
+
+  if (!shouldApply) return;
+
+  dndRemoveAltheriumBackgroundEffects(form, previousState);
+
+  const nextState = {
+    key: currentKey,
+    skills: [],
+    speed: "",
+  };
+
+  if (background && background.key) {
+    (background.skills || []).forEach((skill) => {
+      const checkbox = form.elements[`${skill}Prof`];
+      if (!checkbox) return;
+
+      checkbox.checked = true;
+      dndSetFinalBonusManual(form, skill, false);
+      nextState.skills.push(skill);
+    });
+
+    if (background.speed && form.elements.speed) {
+      form.elements.speed.value = dndAppendTaggedText(form.elements.speed.value, background.speed);
+      nextState.speed = background.speed;
+    }
+
+    dndWriteAltheriumBackgroundFeatureBlock(form, background);
+    dndWriteAltheriumBackgroundEquipmentBlock(form, background);
+  } else {
+    dndWriteAltheriumBackgroundFeatureBlock(form, null);
+    dndWriteAltheriumBackgroundEquipmentBlock(form, null);
+  }
+
+  dndSetAltheriumBackgroundState(form, nextState);
+
+  if (!options.silent) {
+    dndRecalculateAll(form);
+    dndDispatchSheetInput(form);
+  }
+}
+
+function dndRemoveAltheriumBackgroundEffects(form, state = {}) {
+  if (!form || !state) return;
+
+  (state.skills || []).forEach((skill) => {
+    const checkbox = form.elements[`${skill}Prof`];
+    if (!checkbox) return;
+
+    checkbox.checked = false;
+    dndSetFinalBonusManual(form, skill, false);
+  });
+
+  if (state.speed && form.elements.speed) {
+    form.elements.speed.value = dndRemoveTaggedText(form.elements.speed.value, state.speed);
+  }
+}
+
+function dndAppendTaggedText(value = "", marker = "") {
+  const clean = dndRemoveTaggedText(value, marker);
+  return clean ? `${clean} ${marker}`.trim() : marker;
+}
+
+function dndRemoveTaggedText(value = "", marker = "") {
+  if (!marker) return String(value || "").trim();
+
+  return String(value || "")
+    .replace(marker, "")
+    .replace(/\s{2,}/g, " ")
+    .trim();
+}
+
+function dndWriteAltheriumBackgroundFeatureBlock(form, background) {
+  const field = form.elements.features || form.elements.additionalFeatures;
+  if (!field) return;
+
+  const clean = dndRemoveBlock(field.value, DND_ALTHERIUM_BACKGROUND_FEATURE_START, DND_ALTHERIUM_BACKGROUND_FEATURE_END);
+
+  if (!background || !background.key) {
+    field.value = clean;
+    return;
+  }
+
+  const skillLabels = (background.skills || [])
+    .map((skill) => DND5E.SKILL_NAMES?.[skill] || skill)
+    .join(", ");
+
+  const lines = [
+    DND_ALTHERIUM_BACKGROUND_FEATURE_START,
+    `${background.label}: ${background.feature || background.description || "Sem efeito automático."}`,
+  ];
+
+  if (skillLabels) lines.push(`Perícias automáticas: ${skillLabels}.`);
+  if (background.speed) lines.push(`Deslocamento: ${background.speed}.`);
+  if (background.equipment) lines.push(`Equipamento: ${background.equipment}`);
+
+  lines.push(DND_ALTHERIUM_BACKGROUND_FEATURE_END);
+
+  field.value = [clean, lines.join("\n")]
+    .filter(Boolean)
+    .join("\n\n")
+    .trim();
+}
+
+function dndWriteAltheriumBackgroundEquipmentBlock(form, background) {
+  const field = form.elements.equipment;
+  if (!field) return;
+
+  const clean = dndRemoveBlock(field.value, DND_ALTHERIUM_BACKGROUND_EQUIPMENT_START, DND_ALTHERIUM_BACKGROUND_EQUIPMENT_END);
+
+  if (!background || !background.equipment) {
+    field.value = clean;
+    return;
+  }
+
+  const block = [
+    DND_ALTHERIUM_BACKGROUND_EQUIPMENT_START,
+    background.equipment,
+    DND_ALTHERIUM_BACKGROUND_EQUIPMENT_END,
+  ].join("\n");
+
+  field.value = [clean, block]
+    .filter(Boolean)
+    .join("\n\n")
+    .trim();
+}
+
+function dndRemoveBlock(value = "", startMarker = "", endMarker = "") {
+  if (!startMarker || !endMarker) return String(value || "").trim();
+
+  const escapedStart = startMarker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const escapedEnd = endMarker.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const pattern = new RegExp(`\\n?${escapedStart}[\\s\\S]*?${escapedEnd}\\n?`, "gi");
+
+  return String(value || "")
+    .replace(pattern, "\n")
+    .replace(/\n{3,}/g, "\n\n")
+    .trim();
 }
 
 /* =========================================================
@@ -12997,6 +13429,12 @@ function setupCampaignLabNumberControls() {
 
   function upgradeNumberInput(input) {
     if (!input || input.dataset.numberControlReady === "true") return;
+
+    // Os campos manuais de espaços de magia têm layout próprio.
+    // Não podem ser embrulhados pelo controle premium de número,
+    // senão a caixa fica estreita e troca de posição com o título do círculo.
+    if (input.classList?.contains("dnd-spell-slot-max-input") || input.matches?.("[data-spell-slot-max-input]")) return;
+
     if (input.closest(".number-control")) return;
 
     input.dataset.numberControlReady = "true";
@@ -14566,7 +15004,7 @@ const DND5E = {
          chargesFormula:'level',
          desc:'Pontos de ki = nível. Chuva de Golpes (2 ataques bônus), Passo do Vento, Defesa de Padrão.'},
         {level:2, name:'Movimento sem Armadura', source:'Classe',
-         desc:'Velocidade +10 ft. sem armadura. Aumenta conforme o nível.'},
+         desc:'Velocidade +3 m sem armadura. Aumenta conforme o nível.'},
         {level:3, name:'Tradição Monástica', source:'Subclasse',
          desc:'Quatro Elementos, Mão Aberta, Sombra, Misericórdia, Sol e Lua, etc.'},
         {level:3, name:'Desviar Projéteis', source:'Classe',
@@ -14598,7 +15036,7 @@ const DND5E = {
       features: [
         {level:1, name:'Sentido Divino', source:'Classe', recharge:'longo',
          chargesFormula:'chaMod+1',
-         desc:'Detecta celestiais, infernais e mortos-vivos a 60 ft. (sem contagem de bloqueadores).'},
+         desc:'Detecta celestiais, infernais e mortos-vivos a 18 m (sem contagem de bloqueadores).'},
         {level:1, name:'Imposição de Mãos', source:'Classe', recharge:'longo',
          chargesFormula:'level*5',
          desc:'Cura total = nível × 5 PV. Pode curar doenças/venenos gastando 5 PV da piscina.'},
@@ -14614,11 +15052,11 @@ const DND5E = {
         {level:5, name:'Ataque Extra', source:'Classe',
          desc:'Ataque duas vezes por Ação de Ataque.'},
         {level:6, name:'Aura de Proteção', source:'Classe',
-         desc:'Você e aliados no raio de 10 ft. (30 ft. ao nível 18) somam Mod. CAR a salvaguardas.'},
+         desc:'Você e aliados no raio de 3 m (9 m ao nível 18) somam Mod. CAR a salvaguardas.'},
         {level:7, name:'Aura do Juramento', source:'Subclasse',
          desc:'Aura bônus concedida pelo seu Juramento Sagrado.'},
         {level:10, name:'Aura de Coragem', source:'Classe',
-         desc:'Você e aliados a 10 ft. (30 ft. ao nível 18) não podem ser assustados enquanto estiver consciente.'},
+         desc:'Você e aliados a 3 m (9 m ao nível 18) não podem ser assustados enquanto estiver consciente.'},
         {level:11, name:'Esmagar Divino Aprimorado', source:'Classe',
          desc:'Todo ataque corpo a corpo bem-sucedido causa 1d8 de dano radiante extra.'},
         {level:14, name:'Toque Purificador', source:'Classe', recharge:'longo',
@@ -14655,7 +15093,7 @@ const DND5E = {
         {level:14, name:'Desaparecer na Natureza', source:'Classe',
          desc:'Pode se esconder quando obstruído apenas por vegetação, mesmo que não forneça cobertura.'},
         {level:20, name:'Caçador Primevo', source:'Classe',
-         desc:'+1 bônus de proficiência, Darkvision 60 ft., bônus em ataques contra inimigos favoritos.'},
+         desc:'+1 bônus de proficiência, visão no escuro 18 m, bônus em ataques contra inimigos favoritos.'},
       ],
     },
     Feiticeiro: {
@@ -14767,7 +15205,7 @@ const DND5E = {
     'Gnomo (Da Rocha)': {
       abilityBonus: {int:2,con:1}, speed: 25, size:'Pequeno', darkvision: 60,
       languages: ['Comum','Gnômico'],
-      traits: ['Astúcia Gnômica: vantagem em saves de INT/SAB/CAR contra magia.','Conhecimento de Ferramentas de Artesão: proficiência em Ferramentas de Relojoeiro ou Ferramentas de Ferreiro.','Sentir Vibrações: não pode ser surpreendido (percebe vibrações a 10 ft.).'],
+      traits: ['Astúcia Gnômica: vantagem em saves de INT/SAB/CAR contra magia.','Conhecimento de Ferramentas de Artesão: proficiência em Ferramentas de Relojoeiro ou Ferramentas de Ferreiro.','Sentir Vibrações: não pode ser surpreendido (percebe vibrações a 3 m).'],
     },
     'Meio-Orc': {
       abilityBonus: {str:2,con:1}, speed: 30, size:'Médio', darkvision: 60,
@@ -15530,8 +15968,8 @@ function dndApplyRace(form, raceName) {
   if (!rd) { dndRecalculateAll(form); return; }
 
   dnd_set(form, 'race', raceName);
-  dnd_set(form, 'speed', `${rd.speed} ft.`);
-  dnd_set(form, 'darkvision', rd.darkvision ? `${rd.darkvision} ft.` : '—');
+  dnd_set(form, 'speed', campaignLabDndMetersFromFeet(rd.speed));
+  dnd_set(form, 'darkvision', rd.darkvision ? campaignLabDndMetersFromFeet(rd.darkvision) : '—');
 
   // Skill proficiencies from race
   (rd.skills || []).forEach(sk => {
@@ -16092,6 +16530,7 @@ function initDndAutomations() {
       bindCampaignLabDndClassResetButton(form);
       dndEnsureSavingThrowProficiencyFields(form);
       dndEnsureFinalBonusAutomationFields(form);
+      setupDndAltheriumBackgroundAutomation(form);
       dndBindFinalBonusAutomationEvents();
       dndBindEditableArmorHpEvents();
       dndEnsureArmorAndHpAutomationFields(form);
@@ -16423,6 +16862,18 @@ function campaignLabSetupSheetTransferForForm(form, system = "", options = {}) {
   if (!form) return;
 
   const safeSystem = system || sessionStorage.getItem("system") || "Sistema";
+
+  // D&D não usa mais os botões Copiar/Colar ficha.
+  // Mantém a transferência em Altherium, mas remove qualquer botão antigo que já tenha sido criado em D&D.
+  if (String(safeSystem).trim().toLowerCase() === "d&d" || form.id === "dndPlayerSheetForm" || form.id === "dndForm") {
+    document
+      .querySelectorAll(
+        '[data-sheet-transfer-actions="D&D"], [data-sheet-transfer-owner="dndPlayerSheetForm"], [data-sheet-transfer-owner="dndForm"]'
+      )
+      .forEach((item) => item.remove());
+    return;
+  }
+
   const ownerKey = form.id || safeSystem;
   const existing = Array.from(document.querySelectorAll("[data-sheet-transfer-owner]")).find(
     (item) => item.dataset.sheetTransferOwner === ownerKey
@@ -16621,3 +17072,5962 @@ if (document.readyState === "loading") {
   window.setTimeout(campaignLabSetupExistingSheetTransferButtons, 900);
 }
 
+
+
+
+/* =========================================================
+   D&D - RAÇAS 2014 AUTOMATIZADAS
+========================================================= */
+
+const DND_RACE_FEATURE_START = "===== RAÇA DE D&D =====";
+const DND_RACE_FEATURE_END = "===== FIM DA RAÇA DE D&D =====";
+const DND_RACE_STATE_EMPTY = { key: "", bonuses: {}, skills: [], speed: "", darkvision: "", size: "" };
+
+function campaignLabDndPatchOfficialRaceData() {
+  if (!window.DND5E && typeof DND5E === "undefined") return;
+  const data = typeof DND5E !== "undefined" ? DND5E : window.DND5E;
+  if (!data || !data.races) return;
+
+  data.races["Elfo (Drow)"] = data.races["Elfo (Drow)"] || {
+    abilityBonus: { dex: 2, cha: 1 },
+    speed: 30,
+    size: "Médio",
+    darkvision: 120,
+    languages: ["Comum", "Élfico"],
+    skills: ["skillPerception"],
+    traits: [
+      "Visão no Escuro Superior: 36 m",
+      "Ancestral Feérico: vantagem contra enfeitiçado e imunidade a sono mágico.",
+      "Transe: 4h de meditação substituem o sono comum.",
+      "Sensibilidade à Luz Solar: desvantagem em ataques e testes de Percepção baseados em visão sob sol direto.",
+      "Magia Drow: luzes dançantes no nível 1; fogo das fadas no nível 3; escuridão no nível 5.",
+      "Treinamento com Armas Drow: rapieira, espada curta e besta de mão.",
+    ],
+  };
+
+  if (data.races["Humano (Variante)"]) {
+    data.races["Humano (Variante)"].abilityChoices = { count: 2, amount: 1, different: true };
+    data.races["Humano (Variante)"].skillChoiceCount = 1;
+  }
+
+  if (data.races["Meio-Elfo"]) {
+    data.races["Meio-Elfo"].abilityChoices = { count: 2, amount: 1, different: true, exclude: ["cha"] };
+    data.races["Meio-Elfo"].skillChoiceCount = 2;
+  }
+
+  if (data.races["Anão (Colina)"]) {
+    data.races["Anão (Colina)"].hpPerLevelBonus = 1;
+  }
+
+  if (data.races["Draconato"]) {
+    data.races["Draconato"].draconicAncestry = true;
+  }
+}
+
+function dndRaceNames() {
+  campaignLabDndPatchOfficialRaceData();
+  return Object.keys(DND5E.races || {}).sort((a, b) => a.localeCompare(b, "pt-BR"));
+}
+
+function dndResolveRaceName(value = "") {
+  const normalized = dnd_normalizeText(value);
+  if (!normalized) return "";
+
+  return dndRaceNames().find((raceName) => {
+    const current = dnd_normalizeText(raceName);
+    return current === normalized || normalized.startsWith(`${current} `);
+  }) || "";
+}
+
+function dndRaceOptionsHtml(selectedValue = "") {
+  const selectedRace = dndResolveRaceName(selectedValue) || selectedValue;
+  return [`<option value="">Selecione a raça</option>`]
+    .concat(
+      dndRaceNames().map((raceName) => {
+        const selected = raceName === selectedRace ? " selected" : "";
+        return `<option value="${escapeHtml(raceName)}"${selected}>${escapeHtml(raceName)}</option>`;
+      })
+    )
+    .join("");
+}
+
+function dndRaceSelect(value = "", sheet = {}) {
+  const selected = dndResolveRaceName(value) || value || "";
+
+  return `
+    <label class="dnd-race-field">
+      Raça
+      <select name="race" data-dnd-race-select="true">
+        ${dndRaceOptionsHtml(selected)}
+      </select>
+      <small class="dnd-race-help">
+        Aplica atributos, deslocamento, perícias raciais e traços automáticos.
+      </small>
+    </label>
+    <div class="dnd-race-automation-panel" data-dnd-race-panel="true">
+      ${dndRaceChoicePanelHtml(selected, sheet)}
+    </div>
+  `;
+}
+
+function dndAbilitySelectOptions(selectedValue = "", exclude = [], usedValues = []) {
+  const selected = selectedValue || "";
+  const blocked = new Set((exclude || []).filter(Boolean));
+
+  return DND5E.ABILITIES
+    .filter((ability) => !blocked.has(ability) || ability === selected)
+    .map((ability) => {
+      const selectedAttr = ability === selected ? " selected" : "";
+      const used = usedValues.includes(ability) && ability !== selected ? " disabled" : "";
+      return `<option value="${ability}"${selectedAttr}${used}>${escapeHtml(DND5E.ABILITY_NAMES[ability] || ability.toUpperCase())}</option>`;
+    })
+    .join("");
+}
+
+function dndSkillSelectOptions(selectedValue = "", usedValues = []) {
+  const selected = selectedValue || "";
+  return Object.keys(DND5E.SKILL_NAMES || {})
+    .sort((a, b) => DND5E.SKILL_NAMES[a].localeCompare(DND5E.SKILL_NAMES[b], "pt-BR"))
+    .map((skill) => {
+      const selectedAttr = skill === selected ? " selected" : "";
+      const used = usedValues.includes(skill) && skill !== selected ? " disabled" : "";
+      return `<option value="${skill}"${selectedAttr}${used}>${escapeHtml(DND5E.SKILL_NAMES[skill] || skill)}</option>`;
+    })
+    .join("");
+}
+
+function dndGetDraconicAncestryOptions(selectedValue = "") {
+  const options = [
+    ["Preto", "Ácido", "Linha 1,5 × 9 m DES"],
+    ["Azul", "Elétrico", "Linha 1,5 × 9 m DES"],
+    ["Latão", "Fogo", "Linha 1,5 × 9 m DES"],
+    ["Bronze", "Elétrico", "Linha 1,5 × 9 m DES"],
+    ["Cobre", "Ácido", "Linha 1,5 × 9 m DES"],
+    ["Ouro", "Fogo", "Cone 4,5 m DES"],
+    ["Verde", "Veneno", "Cone 4,5 m CON"],
+    ["Vermelho", "Fogo", "Cone 4,5 m DES"],
+    ["Prata", "Frio", "Cone 4,5 m CON"],
+    ["Branco", "Frio", "Cone 4,5 m CON"],
+  ];
+
+  const selected = selectedValue || "Vermelho";
+  return options
+    .map(([name, damage, breath]) => {
+      const value = `${name}|${damage}|${breath}`;
+      return `<option value="${escapeHtml(value)}"${value === selected ? " selected" : ""}>${escapeHtml(name)} · ${escapeHtml(damage)}</option>`;
+    })
+    .join("");
+}
+
+function dndRaceChoicePanelHtml(raceName = "", sheet = {}) {
+  campaignLabDndPatchOfficialRaceData();
+  const resolvedRace = dndResolveRaceName(raceName) || raceName;
+  const race = DND5E.races?.[resolvedRace];
+
+  if (!race) {
+    return `<p class="dnd-race-panel-empty">Selecione uma raça para aplicar bônus automáticos.</p>`;
+  }
+
+  const fixedBonuses = Object.entries(race.abilityBonus || {})
+    .map(([ability, value]) => `${DND5E.ABILITY_NAMES[ability] || ability.toUpperCase()} +${value}`)
+    .join(", ");
+
+  const abilityChoices = race.abilityChoices;
+  const abilityChoiceHtml = abilityChoices
+    ? Array.from({ length: abilityChoices.count }, (_, index) => {
+        const fieldName = `raceAbilityChoice${index + 1}`;
+        const current = sheet[fieldName] || "";
+        return `
+          <label>
+            <span>Bônus racial ${index + 1}</span>
+            <select name="${fieldName}" data-dnd-race-choice="ability">
+              <option value="">Escolha atributo</option>
+              ${dndAbilitySelectOptions(current, abilityChoices.exclude || [], [])}
+            </select>
+          </label>
+        `;
+      }).join("")
+    : "";
+
+  const skillChoiceHtml = race.skillChoiceCount
+    ? Array.from({ length: race.skillChoiceCount }, (_, index) => {
+        const fieldName = `raceSkillChoice${index + 1}`;
+        const current = sheet[fieldName] || "";
+        return `
+          <label>
+            <span>Perícia racial ${index + 1}</span>
+            <select name="${fieldName}" data-dnd-race-choice="skill">
+              <option value="">Escolha perícia</option>
+              ${dndSkillSelectOptions(current, [])}
+            </select>
+          </label>
+        `;
+      }).join("")
+    : "";
+
+  const dragonHtml = race.draconicAncestry
+    ? `
+      <label>
+        <span>Ancestral dracônico</span>
+        <select name="dndDraconicAncestry" data-dnd-race-choice="dragon">
+          ${dndGetDraconicAncestryOptions(sheet.dndDraconicAncestry || "")}
+        </select>
+      </label>
+    `
+    : "";
+
+  const extraHtml = [abilityChoiceHtml, skillChoiceHtml, dragonHtml].filter(Boolean).join("");
+
+  return `
+    <div class="dnd-race-panel-head">
+      <strong>${escapeHtml(resolvedRace)}</strong>
+      <span>${escapeHtml(race.size || "Médio")} · ${escapeHtml(campaignLabDndMetersFromFeet(race.speed || 30))}${race.darkvision ? ` · Visão ${campaignLabDndMetersFromFeet(race.darkvision)}` : ""}</span>
+    </div>
+    ${fixedBonuses ? `<p class="dnd-race-panel-bonuses">Bônus fixos: ${escapeHtml(fixedBonuses)}</p>` : ""}
+    ${extraHtml ? `<div class="dnd-race-panel-grid">${extraHtml}</div>` : ""}
+  `;
+}
+
+function dndEnsureRaceStateInput(form) {
+  return dndEnsureHiddenInput(form, "dndRaceAppliedState", JSON.stringify(DND_RACE_STATE_EMPTY));
+}
+
+function dndGetRaceState(form) {
+  const input = dndEnsureRaceStateInput(form);
+  if (!input || !input.value) return { ...DND_RACE_STATE_EMPTY };
+
+  try {
+    const parsed = JSON.parse(input.value);
+    return {
+      key: parsed.key || "",
+      bonuses: parsed.bonuses && typeof parsed.bonuses === "object" ? parsed.bonuses : {},
+      skills: Array.isArray(parsed.skills) ? parsed.skills : [],
+      speed: parsed.speed || "",
+      darkvision: parsed.darkvision || "",
+      size: parsed.size || "",
+    };
+  } catch (error) {
+    return { ...DND_RACE_STATE_EMPTY };
+  }
+}
+
+function dndSetRaceState(form, state) {
+  const input = dndEnsureRaceStateInput(form);
+  if (!input) return;
+
+  input.value = JSON.stringify(state || DND_RACE_STATE_EMPTY);
+}
+
+function dndEnsureRaceSelector(form) {
+  if (!form) return;
+
+  let currentField = form.elements.race;
+
+  if (!currentField) {
+    const select = document.createElement("select");
+    select.name = "race";
+    select.dataset.dndRaceSelect = "true";
+    select.innerHTML = dndRaceOptionsHtml("");
+    form.appendChild(select);
+    currentField = select;
+  }
+
+  if (currentField instanceof RadioNodeList) return;
+
+  if (currentField.tagName === "SELECT") {
+    const previous = currentField.value || "";
+    currentField.dataset.dndRaceSelect = "true";
+    currentField.classList.add("dnd-race-select");
+    currentField.innerHTML = dndRaceOptionsHtml(previous);
+    currentField.value = dndResolveRaceName(previous) || previous;
+    return;
+  }
+
+  const select = document.createElement("select");
+  select.name = currentField.name;
+  select.id = currentField.id || "dndRaceSelect";
+  select.className = `${currentField.className || ""} dnd-race-select`.trim();
+  select.dataset.dndRaceSelect = "true";
+  select.innerHTML = dndRaceOptionsHtml(currentField.value);
+  select.value = dndResolveRaceName(currentField.value) || currentField.value;
+  currentField.replaceWith(select);
+}
+
+function dndEnsureRaceAutomationPanel(form, sheet = null) {
+  if (!form) return null;
+
+  let panel = form.querySelector("[data-dnd-race-panel]");
+  const raceField = form.elements.race;
+
+  if (!panel) {
+    panel = document.createElement("div");
+    panel.className = "dnd-race-automation-panel";
+    panel.dataset.dndRacePanel = "true";
+
+    const label = raceField?.closest?.("label");
+    if (label && label.parentNode) {
+      label.insertAdjacentElement("afterend", panel);
+    } else {
+      form.appendChild(panel);
+    }
+  }
+
+  const data = sheet || Object.fromEntries(new FormData(form));
+  panel.innerHTML = dndRaceChoicePanelHtml(raceField?.value || "", data);
+  return panel;
+}
+
+function dndGetRaceChoiceSignature(form, race = null) {
+  const raceName = dndResolveRaceName(form?.elements?.race?.value || "") || "";
+  const raceData = race || DND5E.races?.[raceName] || null;
+  const parts = [raceName];
+
+  if (raceData?.abilityChoices) {
+    for (let index = 1; index <= raceData.abilityChoices.count; index += 1) {
+      parts.push(form.elements[`raceAbilityChoice${index}`]?.value || "");
+    }
+  }
+
+  if (raceData?.skillChoiceCount) {
+    for (let index = 1; index <= raceData.skillChoiceCount; index += 1) {
+      parts.push(form.elements[`raceSkillChoice${index}`]?.value || "");
+    }
+  }
+
+  if (raceData?.draconicAncestry) {
+    parts.push(form.elements.dndDraconicAncestry?.value || "");
+  }
+
+  return parts.join("|");
+}
+
+function dndApplyDefaultRaceChoices(form, raceData) {
+  if (!form || !raceData) return;
+
+  if (raceData.abilityChoices) {
+    const exclude = new Set(raceData.abilityChoices.exclude || []);
+    const used = new Set();
+
+    for (let index = 1; index <= raceData.abilityChoices.count; index += 1) {
+      const field = form.elements[`raceAbilityChoice${index}`];
+      if (!field) continue;
+
+      if (field.value && !exclude.has(field.value) && !used.has(field.value)) {
+        used.add(field.value);
+        continue;
+      }
+
+      const fallback = DND5E.ABILITIES.find((ability) => !exclude.has(ability) && !used.has(ability));
+      field.value = fallback || "";
+      if (fallback) used.add(fallback);
+    }
+  }
+
+  if (raceData.skillChoiceCount) {
+    const used = new Set();
+
+    for (let index = 1; index <= raceData.skillChoiceCount; index += 1) {
+      const field = form.elements[`raceSkillChoice${index}`];
+      if (!field) continue;
+
+      if (field.value && !used.has(field.value)) {
+        used.add(field.value);
+        continue;
+      }
+
+      const fallback = Object.keys(DND5E.SKILL_NAMES || {}).find((skill) => !used.has(skill));
+      field.value = fallback || "";
+      if (fallback) used.add(fallback);
+    }
+  }
+
+  if (raceData.draconicAncestry && form.elements.dndDraconicAncestry && !form.elements.dndDraconicAncestry.value) {
+    form.elements.dndDraconicAncestry.value = "Vermelho|Fogo|Cone 4,5 m DES";
+  }
+}
+
+function dndGetRaceAbilityBonuses(form, raceData) {
+  const bonuses = { ...(raceData?.abilityBonus || {}) };
+
+  if (raceData?.abilityChoices) {
+    for (let index = 1; index <= raceData.abilityChoices.count; index += 1) {
+      const ability = form.elements[`raceAbilityChoice${index}`]?.value || "";
+      if (!ability || !DND5E.ABILITIES.includes(ability)) continue;
+      if ((raceData.abilityChoices.exclude || []).includes(ability)) continue;
+      bonuses[ability] = (Number(bonuses[ability]) || 0) + Number(raceData.abilityChoices.amount || 1);
+    }
+  }
+
+  return bonuses;
+}
+
+function dndGetRaceSkillBonuses(form, raceData) {
+  const skills = [...(raceData?.skills || [])];
+
+  if (raceData?.skillChoiceCount) {
+    for (let index = 1; index <= raceData.skillChoiceCount; index += 1) {
+      const skill = form.elements[`raceSkillChoice${index}`]?.value || "";
+      if (skill && DND5E.SKILL_NAMES?.[skill] && !skills.includes(skill)) {
+        skills.push(skill);
+      }
+    }
+  }
+
+  return skills;
+}
+
+function dndRemoveRaceEffects(form, state = {}) {
+  if (!form || !state) return;
+
+  Object.entries(state.bonuses || {}).forEach(([ability, value]) => {
+    const field = form.elements[`${ability}Score`];
+    if (!field) return;
+
+    const current = Number(field.value || 10);
+    const next = Math.max(1, current - (Number(value) || 0));
+    field.value = String(next);
+  });
+
+  (state.skills || []).forEach((skill) => {
+    const checkbox = form.elements[`${skill}Prof`];
+    if (!checkbox) return;
+
+    checkbox.checked = false;
+    dndSetFinalBonusManual(form, skill, false);
+  });
+
+  dndWriteRaceFeatureBlock(form, null, state);
+}
+
+function dndApplyRaceSelection(form, options = {}) {
+  if (!form || !form.elements.race) return;
+
+  campaignLabDndPatchOfficialRaceData();
+  dndEnsureFinalBonusAutomationFields(form);
+  dndEnsureRaceStateInput(form);
+
+  const raceName = dndResolveRaceName(form.elements.race.value) || "";
+  const raceData = raceName ? DND5E.races?.[raceName] : null;
+  const previousState = dndGetRaceState(form);
+  const currentSignature = dndGetRaceChoiceSignature(form, raceData);
+  const shouldApply = options.force || previousState.key !== currentSignature;
+
+  if (!shouldApply) {
+    dndWriteRaceFeatureBlock(form, raceData, previousState);
+    return;
+  }
+
+  dndRemoveRaceEffects(form, previousState);
+
+  if (!raceData) {
+    dndSetRaceState(form, { ...DND_RACE_STATE_EMPTY });
+    dndWriteRaceFeatureBlock(form, null, null);
+    if (!options.silent) {
+      dndRecalculateAll(form);
+      dndDispatchSheetInput(form);
+    }
+    return;
+  }
+
+  if (form.elements.race) form.elements.race.value = raceName;
+  dndApplyDefaultRaceChoices(form, raceData);
+
+  const bonuses = dndGetRaceAbilityBonuses(form, raceData);
+  const skills = dndGetRaceSkillBonuses(form, raceData);
+
+  Object.entries(bonuses).forEach(([ability, value]) => {
+    const field = form.elements[`${ability}Score`];
+    if (!field) return;
+
+    const current = Number(field.value || 10);
+    field.value = String(Math.max(1, current + (Number(value) || 0)));
+  });
+
+  skills.forEach((skill) => {
+    const checkbox = form.elements[`${skill}Prof`];
+    if (!checkbox) return;
+
+    checkbox.checked = true;
+    dndSetFinalBonusManual(form, skill, false);
+  });
+
+  if (form.elements.speed) form.elements.speed.value = campaignLabDndMetersFromFeet(raceData.speed || 30);
+  dndEnsureHiddenInput(form, "darkvision", raceData.darkvision ? campaignLabDndMetersFromFeet(raceData.darkvision) : "—");
+  dndEnsureHiddenInput(form, "size", raceData.size || "Médio");
+  if (form.elements.darkvision) form.elements.darkvision.value = raceData.darkvision ? campaignLabDndMetersFromFeet(raceData.darkvision) : "—";
+  if (form.elements.size) form.elements.size.value = raceData.size || "Médio";
+
+  const nextState = {
+    key: dndGetRaceChoiceSignature(form, raceData),
+    bonuses,
+    skills,
+    speed: campaignLabDndMetersFromFeet(raceData.speed || 30),
+    darkvision: raceData.darkvision ? campaignLabDndMetersFromFeet(raceData.darkvision) : "—",
+    size: raceData.size || "Médio",
+  };
+
+  dndSetRaceState(form, nextState);
+  dndWriteRaceFeatureBlock(form, raceData, nextState);
+
+  if (!options.silent) {
+    dndRecalculateAll(form);
+    dndDispatchSheetInput(form);
+  }
+}
+
+function dndWriteRaceFeatureBlock(form, raceData, state = null) {
+  const field = form?.elements?.features || form?.elements?.additionalFeatures;
+  if (!field) return;
+
+  const clean = dndRemoveBlock(field.value, DND_RACE_FEATURE_START, DND_RACE_FEATURE_END);
+
+  if (!raceData) {
+    field.value = clean;
+    return;
+  }
+
+  const abilityText = Object.entries((state && state.bonuses) || {})
+    .map(([ability, value]) => `${DND5E.ABILITY_NAMES[ability] || ability.toUpperCase()} +${value}`)
+    .join(", ");
+
+  const skillText = ((state && state.skills) || [])
+    .map((skill) => DND5E.SKILL_NAMES?.[skill] || skill)
+    .join(", ");
+
+  const dragonValue = form.elements.dndDraconicAncestry?.value || "";
+  const dragonText = dragonValue ? dragonValue.split("|") : [];
+
+  const lines = [
+    DND_RACE_FEATURE_START,
+    `${form.elements.race?.value || "Raça"}`,
+    `Tamanho: ${raceData.size || "Médio"}.`,
+    `Deslocamento: ${campaignLabDndMetersFromFeet(raceData.speed || 30)}`,
+  ];
+
+  if (raceData.darkvision) lines.push(`Visão no escuro: ${campaignLabDndMetersFromFeet(raceData.darkvision)}`);
+  if (abilityText) lines.push(`Bônus raciais aplicados: ${abilityText}.`);
+  if (skillText) lines.push(`Perícias raciais automáticas: ${skillText}.`);
+  if (raceData.hpPerLevelBonus) lines.push(`PV racial: +${raceData.hpPerLevelBonus} PV por nível.`);
+  if (raceData.languages?.length) lines.push(`Idiomas: ${raceData.languages.join(", ")}.`);
+  if (dragonText.length === 3) {
+    lines.push(`Ancestral dracônico: ${dragonText[0]} · dano ${dragonText[1]} · sopro ${dragonText[2]}.`);
+  }
+
+  (raceData.traits || []).forEach((trait) => lines.push(`- ${trait}`));
+  lines.push(DND_RACE_FEATURE_END);
+
+  field.value = [clean, lines.join("\n")]
+    .filter(Boolean)
+    .join("\n\n")
+    .trim();
+}
+
+function dndRenderRaceChoicesAndApply(form, options = {}) {
+  if (!form) return;
+
+  dndEnsureRaceSelector(form);
+  dndEnsureRaceAutomationPanel(form);
+  dndApplyDefaultRaceChoices(form, DND5E.races?.[dndResolveRaceName(form.elements.race?.value || "")]);
+  dndEnsureRaceAutomationPanel(form);
+  dndApplyRaceSelection(form, options);
+}
+
+function setupCampaignLabDndRaceAutomation(form, sheet = null) {
+  if (!form) return;
+
+  campaignLabDndPatchOfficialRaceData();
+  dndEnsureRaceSelector(form);
+  dndEnsureRaceStateInput(form);
+  dndEnsureRaceAutomationPanel(form, sheet || Object.fromEntries(new FormData(form)));
+
+  if (!window.dndOfficialRaceAutomationEventsReady) {
+    window.dndOfficialRaceAutomationEventsReady = true;
+
+    document.addEventListener("change", (event) => {
+      const target = event.target.closest?.("[data-dnd-race-select], [data-dnd-race-choice]");
+      if (!target) return;
+
+      const currentForm = target.closest("form");
+      if (!currentForm) return;
+
+      if (target.matches("[data-dnd-race-select]")) {
+        dndEnsureRaceAutomationPanel(currentForm);
+      }
+
+      dndRenderRaceChoicesAndApply(currentForm, { force: true });
+    }, true);
+  }
+
+  dndApplyRaceSelection(form, { silent: true });
+  dndRecalculateAll(form);
+}
+
+// Sobrescreve a versão antiga, que só exibia aviso para aplicar bônus raciais manualmente.
+function dndApplyRace(form, raceName) {
+  if (!form) return;
+  if (form.elements.race && raceName !== undefined) form.elements.race.value = dndResolveRaceName(raceName) || raceName || "";
+  dndRenderRaceChoicesAndApply(form, { force: true });
+}
+
+// PV racial: Anão da Colina soma +1 PV por nível.
+function dndCalculateMaxHp(form, level, conMod) {
+  const safeLevel = Math.max(1, Math.min(20, Math.floor(Number(level) || 1)));
+  const hitDie = dndGetHitDieFromForm(form);
+  const averagePerLevel = dndAverageHitDieGain(hitDie);
+  const raceName = dndResolveRaceName(form?.elements?.race?.value || "");
+  const raceData = raceName ? DND5E.races?.[raceName] : null;
+  const raceHpBonus = Number(raceData?.hpPerLevelBonus || 0) * safeLevel;
+  const total = Math.max(
+    safeLevel,
+    hitDie + Math.max(0, safeLevel - 1) * averagePerLevel + conMod * safeLevel + raceHpBonus
+  );
+
+  const raceText = raceHpBonus ? ` + bônus racial ${raceHpBonus}` : "";
+
+  return {
+    total,
+    hitDie,
+    averagePerLevel,
+    raceHpBonus,
+    explanation: `PV = ${hitDie} no nível 1 + ${Math.max(0, safeLevel - 1)} × ${averagePerLevel} + CON ${conMod >= 0 ? "+" : ""}${conMod} × ${safeLevel}${raceText} = ${total}`,
+  };
+}
+
+(function campaignLabWrapDndRaceAutomationHooks() {
+  try {
+    if (typeof setupDndPlayerSheet === "function" && !setupDndPlayerSheet.__raceAutomationWrapped) {
+      const original = setupDndPlayerSheet;
+      setupDndPlayerSheet = async function () {
+        const result = await original.apply(this, arguments);
+        const form = document.getElementById("dndPlayerSheetForm");
+        setupCampaignLabDndRaceAutomation(form);
+        return result;
+      };
+      setupDndPlayerSheet.__raceAutomationWrapped = true;
+    }
+  } catch (error) {}
+
+  try {
+    if (typeof loadDndSheetIntoPlayerForm === "function" && !loadDndSheetIntoPlayerForm.__raceAutomationWrapped) {
+      const original = loadDndSheetIntoPlayerForm;
+      loadDndSheetIntoPlayerForm = async function () {
+        const result = await original.apply(this, arguments);
+        const form = document.getElementById("dndPlayerSheetForm");
+        setupCampaignLabDndRaceAutomation(form);
+        return result;
+      };
+      loadDndSheetIntoPlayerForm.__raceAutomationWrapped = true;
+    }
+  } catch (error) {}
+
+  try {
+    if (typeof saveDndPlayerSheet === "function" && !saveDndPlayerSheet.__raceAutomationWrapped) {
+      const original = saveDndPlayerSheet;
+      saveDndPlayerSheet = async function () {
+        const form = document.getElementById("dndPlayerSheetForm");
+        if (form) dndApplyRaceSelection(form, { silent: true });
+        return original.apply(this, arguments);
+      };
+      saveDndPlayerSheet.__raceAutomationWrapped = true;
+    }
+  } catch (error) {}
+
+  try {
+    if (typeof openDndMasterSheetModal === "function" && !openDndMasterSheetModal.__raceAutomationWrapped) {
+      const original = openDndMasterSheetModal;
+      openDndMasterSheetModal = async function () {
+        const result = await original.apply(this, arguments);
+        const form = document.getElementById("dndForm");
+        setupCampaignLabDndRaceAutomation(form);
+        return result;
+      };
+      openDndMasterSheetModal.__raceAutomationWrapped = true;
+    }
+  } catch (error) {}
+
+  try {
+    if (typeof saveDndSheetFromModal === "function" && !saveDndSheetFromModal.__raceAutomationWrapped) {
+      const original = saveDndSheetFromModal;
+      saveDndSheetFromModal = async function () {
+        const form = document.getElementById("dndForm");
+        if (form) dndApplyRaceSelection(form, { silent: true });
+        return original.apply(this, arguments);
+      };
+      saveDndSheetFromModal.__raceAutomationWrapped = true;
+    }
+  } catch (error) {}
+})();
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    window.setTimeout(() => setupCampaignLabDndRaceAutomation(document.getElementById("dndPlayerSheetForm")), 950);
+  });
+} else {
+  window.setTimeout(() => setupCampaignLabDndRaceAutomation(document.getElementById("dndPlayerSheetForm")), 950);
+}
+
+
+/* =========================================================
+   D&D 5e - PATCH DO REWORK VISUAL CAMPAIGN LAB
+   Mantém Supabase e automações antigas, adiciona abas internas,
+   resumo vivo, exportação/importação e rolagens rápidas.
+========================================================= */
+(function campaignLabDndV2ReworkPatch() {
+  const SYSTEM_KEY = "dnd5e-2014";
+  const ABILITY_FIELDS = {
+    str: "strScore",
+    dex: "dexScore",
+    con: "conScore",
+    int: "intScore",
+    wis: "wisScore",
+    cha: "chaScore",
+  };
+
+  const BONUS_SOURCES = {
+    strMod: "strScore",
+    dexMod: "dexScore",
+    conMod: "conScore",
+    intMod: "intScore",
+    wisMod: "wisScore",
+    chaMod: "chaScore",
+  };
+
+  function q(sel, root = document) {
+    return root.querySelector(sel);
+  }
+
+  function qa(sel, root = document) {
+    return Array.from(root.querySelectorAll(sel));
+  }
+
+  function asNumber(value, fallback = 0) {
+    const n = Number(value);
+    return Number.isFinite(n) ? n : fallback;
+  }
+
+  function mod(score) {
+    return Math.floor((asNumber(score, 10) - 10) / 2);
+  }
+
+  function plus(n) {
+    n = asNumber(n, 0);
+    return n >= 0 ? `+${n}` : `${n}`;
+  }
+
+  function levelFrom(form) {
+    return Math.max(1, Math.min(20, Math.floor(asNumber(form?.elements?.charLevel?.value, 1))));
+  }
+
+  function proficiency(level) {
+    return Math.ceil(level / 4) + 1;
+  }
+
+  function currentSheetData(form) {
+    const data = {};
+    new FormData(form).forEach((value, key) => {
+      if (Object.prototype.hasOwnProperty.call(data, key)) {
+        if (!Array.isArray(data[key])) data[key] = [data[key]];
+        data[key].push(value);
+      } else {
+        data[key] = value;
+      }
+    });
+
+    qa('input[type="checkbox"]', form).forEach((input) => {
+      data[input.name] = input.checked;
+    });
+
+    return data;
+  }
+
+  function fillSheetData(form, data = {}) {
+    Object.entries(data).forEach(([key, value]) => {
+      const el = form.elements[key];
+      if (!el) return;
+
+      const nodes = el instanceof RadioNodeList ? Array.from(el) : [el];
+      nodes.forEach((node) => {
+        if (!node) return;
+        if (node.type === "checkbox") node.checked = value === true || value === "true" || value === "on";
+        else node.value = value ?? "";
+      });
+    });
+
+    form.dispatchEvent(new Event("input", { bubbles: true }));
+    form.dispatchEvent(new Event("change", { bubbles: true }));
+    refresh();
+  }
+
+  function safeJsonExport(form) {
+    return JSON.stringify({
+      system: SYSTEM_KEY,
+      app: "Campaign Lab",
+      version: 2,
+      exportedAt: new Date().toISOString(),
+      sheet: currentSheetData(form),
+    }, null, 2);
+  }
+
+  function normalizeDefaults(form) {
+    if (!form) return;
+
+    Object.values(ABILITY_FIELDS).forEach((field) => {
+      const input = form.elements[field];
+      if (input && (input.value === "" || input.value === "-1")) input.value = "10";
+    });
+
+    ["initiative", "combatInitiative", "hpCurrent", "hpMax", "hpTemp", "armorClass"].forEach((field) => {
+      const input = form.elements[field];
+      if (input && input.value === "") input.value = field === "armorClass" ? "10" : "0";
+    });
+
+    qa('[data-dnd-final-bonus]', form).forEach((input) => {
+      if (input.value === "") input.value = "0";
+    });
+  }
+
+  function valueForToken(form, token) {
+    token = String(token || "").trim();
+    if (!token) return 0;
+    if (/^[+-]?\d+$/.test(token)) return Number(token);
+    if (BONUS_SOURCES[token]) return mod(form.elements[BONUS_SOURCES[token]]?.value);
+
+    const direct = form.elements[token];
+    if (direct) return asNumber(direct.value, 0);
+
+    return 0;
+  }
+
+  function rollDiceFormula(form, formula) {
+    const clean = String(formula || "1d20").replace(/\s+/g, "");
+    const parts = clean.match(/[+-]?[^+-]+/g) || ["1d20"];
+    const detail = [];
+    let total = 0;
+
+    parts.forEach((part) => {
+      const sign = part.startsWith("-") ? -1 : 1;
+      const raw = part.replace(/^[+-]/, "");
+      const dice = raw.match(/^(\d*)d(\d+)$/i);
+
+      if (dice) {
+        const qty = Math.max(1, Number(dice[1] || 1));
+        const faces = Math.max(2, Number(dice[2]));
+        const rolls = Array.from({ length: qty }, () => Math.floor(Math.random() * faces) + 1);
+        const subtotal = rolls.reduce((a, b) => a + b, 0) * sign;
+        total += subtotal;
+        detail.push(`${sign < 0 ? "-" : ""}${qty}d${faces} [${rolls.join(", ")}]`);
+        return;
+      }
+
+      const value = valueForToken(form, raw) * sign;
+      total += value;
+      detail.push(`${sign < 0 ? "-" : "+"}${raw}(${Math.abs(value)})`);
+    });
+
+    return { total, detail: detail.join(" ") };
+  }
+
+
+
+function updateDndV2AvatarPreview(form, fallbackName = "Personagem") {
+  const avatar = document.getElementById("dndV2AvatarPreview");
+  if (!avatar) return;
+
+  const sheet = form
+    ? Object.fromEntries(new FormData(form))
+    : {};
+
+  const characterName =
+    sheet.characterName ||
+    fallbackName ||
+    "Personagem";
+
+  const imageUrl =
+    sheet.characterAvatarUrl ||
+    sheet.characterPortraitUrl ||
+    "";
+
+  if (typeof getCharacterPortraitHtml === "function") {
+    avatar.innerHTML = getCharacterPortraitHtml(
+      {
+        ...sheet,
+        characterName,
+        characterAvatarUrl: imageUrl,
+        characterPortraitUrl: imageUrl,
+      },
+      "large"
+    );
+    return;
+  }
+
+  avatar.textContent = String(characterName).trim().charAt(0).toUpperCase() || "✦";
+}
+
+  function updateSummary(form) {
+    if (!form) return;
+
+    const level = levelFrom(form);
+    const prof = proficiency(level);
+    const ac = form.elements.armorClass?.value || "10";
+    const hpCurrent = form.elements.hpCurrent?.value || "0";
+    const hpMax = form.elements.hpMax?.value || "0";
+    const hpTemp = form.elements.hpTemp?.value || "0";
+    const initiative = form.elements.initiative?.value || form.elements.combatInitiative?.value || "0";
+    const characterName = form.elements.characterName?.value || "Personagem";
+    const className = form.elements.className?.value || "Classe";
+    const raceName = form.elements.race?.value || "Raça não escolhida";
+    const background = form.elements.background?.value || "Antecedente não escolhido";
+    const perception = asNumber(form.elements.skillPerception?.value, 0);
+    const spellDc = form.elements.spellSaveDc?.value || "--";
+
+    const values = {
+      dndV2ArmorClassView: ac,
+      dndV2ArmorClassBig: ac,
+      dndV2HpView: `${hpCurrent} / ${hpMax}`,
+      dndV2HpBig: hpTemp && hpTemp !== "0" ? `${hpCurrent} / ${hpMax} +${hpTemp}` : `${hpCurrent} / ${hpMax}`,
+      dndV2InitiativeView: plus(asNumber(initiative, 0)),
+      dndV2ProficiencyView: plus(prof),
+      dndV2PassivePerception: String(10 + perception),
+      dndV2SpellDcBig: spellDc,
+      dndV2CharacterNameSide: characterName,
+      dndV2ClassSide: `${className} ${level}`,
+      dndV2RaceSummary: `${raceName} • ${background}`,
+    };
+
+    Object.entries(values).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = value;
+    });
+
+    updateDndV2AvatarPreview(form, characterName);
+  }
+
+  function refresh() {
+    const form = document.getElementById("dndPlayerSheetForm");
+    if (!form) return;
+    normalizeDefaults(form);
+
+    try {
+      if (typeof dndRecalculateAll === "function") dndRecalculateAll(form);
+      if (typeof updateDndAutoNumbers === "function") updateDndAutoNumbers();
+      if (typeof updateDndPlayerPreview === "function") updateDndPlayerPreview();
+    } catch (error) {
+      console.warn("D&D rework refresh:", error);
+    }
+
+    updateSummary(form);
+  }
+
+  function setupTabs(form) {
+    const tabButtons = qa("[data-dnd-v2-tab]", form);
+    const panels = qa("[data-dnd-v2-panel]", form);
+
+    tabButtons.forEach((button) => {
+      if (button.dataset.dndV2Ready === "true") return;
+      button.dataset.dndV2Ready = "true";
+
+      button.addEventListener("click", () => {
+        const target = button.dataset.dndV2Tab;
+        tabButtons.forEach((btn) => btn.classList.toggle("active", btn === button));
+        panels.forEach((panel) => panel.classList.toggle("active", panel.dataset.dndV2Panel === target));
+      });
+    });
+  }
+
+  function setupExportImport(form) {
+    const copyBtn = document.getElementById("dndV2CopySheetBtn");
+    const downloadBtn = document.getElementById("dndV2DownloadSheetBtn");
+    const exportBtn = document.getElementById("dndV2ExportIntoBoxBtn");
+    const importBtn = document.getElementById("dndV2ImportSheetBtn");
+    const exportBox = document.getElementById("dndV2ExportBox");
+    const importBox = document.getElementById("dndV2ImportBox");
+
+    function putExport() {
+      const json = safeJsonExport(form);
+      if (exportBox) exportBox.value = json;
+      return json;
+    }
+
+    if (copyBtn && copyBtn.dataset.dndV2Ready !== "true") {
+      copyBtn.dataset.dndV2Ready = "true";
+      copyBtn.addEventListener("click", async () => {
+        const json = putExport();
+        try {
+          await navigator.clipboard.writeText(json);
+          copyBtn.textContent = "Ficha copiada";
+          setTimeout(() => (copyBtn.textContent = "Copiar ficha"), 1600);
+        } catch {
+          alert("Não consegui copiar automaticamente. Use o botão Baixar JSON para exportar a ficha.");
+        }
+      });
+    }
+
+    if (downloadBtn && downloadBtn.dataset.dndV2Ready !== "true") {
+      downloadBtn.dataset.dndV2Ready = "true";
+      downloadBtn.addEventListener("click", () => {
+        const json = putExport();
+        const blob = new Blob([json], { type: "application/json" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        const name = form.elements.characterName?.value?.trim() || "ficha-dnd";
+        a.href = url;
+        a.download = `${name.replace(/[^a-z0-9_-]+/gi, "-").toLowerCase()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+      });
+    }
+
+    if (exportBtn && exportBtn.dataset.dndV2Ready !== "true") {
+      exportBtn.dataset.dndV2Ready = "true";
+      exportBtn.addEventListener("click", putExport);
+    }
+
+    if (importBtn && importBtn.dataset.dndV2Ready !== "true") {
+      importBtn.dataset.dndV2Ready = "true";
+      importBtn.addEventListener("click", () => {
+        try {
+          const parsed = JSON.parse(importBox?.value || "{}");
+          if (parsed.system !== SYSTEM_KEY || !parsed.sheet || typeof parsed.sheet !== "object") {
+            alert("Essa ficha não pertence ao sistema D&D 5e 2014 do Campaign Lab.");
+            return;
+          }
+          fillSheetData(form, parsed.sheet);
+          alert("Ficha importada. Clique em Salvar ficha para gravar no Supabase.");
+        } catch {
+          alert("JSON inválido. Confira se você colou o código completo da ficha.");
+        }
+      });
+    }
+  }
+
+  function setupRolls(form) {
+    if (form.dataset.dndV2RollsReady === "true") return;
+    form.dataset.dndV2RollsReady = "true";
+
+    form.addEventListener("click", (event) => {
+      const rollBtn = event.target.closest("[data-dnd-v2-roll]");
+      const attackBtn = event.target.closest("[data-dnd-v2-attack-row]");
+      if (!rollBtn && !attackBtn) return;
+
+      event.preventDefault();
+      refresh();
+
+      let label = rollBtn?.dataset.dndV2RollLabel || "Rolagem";
+      let formula = rollBtn?.dataset.dndV2Roll || "1d20";
+
+      if (attackBtn) {
+        const row = attackBtn.dataset.dndV2AttackRow;
+        label = form.elements[`attack${row}Name`]?.value || `Ataque ${row}`;
+        const bonus = form.elements[`attack${row}Bonus`]?.value || "+0";
+        formula = `1d20${String(bonus).trim().startsWith("-") ? "" : "+"}${bonus}`;
+      }
+
+      const result = rollDiceFormula(form, formula);
+      const box = document.getElementById("dndV2QuickRollResult");
+      if (box) {
+        const s = box.querySelector("span");
+        const strong = box.querySelector("strong");
+        const p = box.querySelector("p");
+        if (s) s.textContent = label;
+        if (strong) strong.textContent = result.total;
+        if (p) p.textContent = `${formula} → ${result.detail}`;
+      }
+    });
+  }
+
+  function setupLiveRefresh(form) {
+    if (form.dataset.dndV2RefreshReady === "true") return;
+    form.dataset.dndV2RefreshReady = "true";
+    let timer = null;
+    const schedule = () => {
+      clearTimeout(timer);
+      timer = setTimeout(refresh, 80);
+    };
+    form.addEventListener("input", schedule);
+    form.addEventListener("change", schedule);
+  }
+
+  function init() {
+    const form = document.getElementById("dndPlayerSheetForm");
+    if (!form) return;
+    setupTabs(form);
+    setupExportImport(form);
+    setupRolls(form);
+    setupLiveRefresh(form);
+    normalizeDefaults(form);
+    setTimeout(refresh, 120);
+    setTimeout(refresh, 800);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
+})();
+
+/* =========================================================
+   D&D 5e - AJUSTE VISUAL IMPECÁVEL
+   Cole este bloco no final do script.js.
+   Não altera Supabase nem tabelas. Só melhora UI, resumo e feedback.
+========================================================= */
+(function setupCampaignLabDndImpecavelVisualPatch() {
+  function getForm() {
+    return document.getElementById("dndPlayerSheetForm");
+  }
+
+  function toNumber(value, fallback = 0) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+  }
+
+  function formatBonus(value) {
+    const number = toNumber(value, 0);
+    return number >= 0 ? `+${number}` : String(number);
+  }
+
+  function setText(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  }
+
+  function getInitials(name) {
+    const clean = String(name || "").trim();
+    if (!clean) return "✦";
+    const parts = clean.split(/\s+/).filter(Boolean);
+    if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase();
+    return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+  }
+
+  function updateHpBar(form) {
+    const current = Math.max(0, toNumber(form?.elements?.hpCurrent?.value, 0));
+    const max = Math.max(0, toNumber(form?.elements?.hpMax?.value, 0));
+    const percent = max > 0 ? Math.max(0, Math.min(100, (current / max) * 100)) : 0;
+    const bar = document.getElementById("dndHpBarFill");
+    if (bar) bar.style.setProperty("--dnd-hp-percent", `${percent}%`);
+  }
+
+  function updatePremiumSummary() {
+    const form = getForm();
+    if (!form) return;
+
+    const name = form.elements.characterName?.value?.trim() || "Personagem";
+    const className = form.elements.className?.value?.trim() || "Classe";
+    const level = Math.max(1, Math.min(20, Math.floor(toNumber(form.elements.charLevel?.value, 1))));
+    const initiative = form.elements.initiative?.value || form.elements.combatInitiative?.value || "0";
+    const armorClass = form.elements.armorClass?.value || "10";
+    const hpCurrent = form.elements.hpCurrent?.value || "0";
+    const hpMax = form.elements.hpMax?.value || "0";
+    const proficiency = typeof getCampaignLabDndProficiencyBonus === "function"
+      ? getCampaignLabDndProficiencyBonus(level)
+      : Math.ceil(level / 4) + 1;
+
+    setText("dndCharacterMini", name);
+    setText("dndClassMini", `${className} ${level}`);
+    setText("dndInitiativeMini", formatBonus(initiative));
+    setText("dndV2CharacterNameSide", name);
+    setText("dndV2ClassSide", `${className} ${level}`);
+    setText("dndV2ArmorClassView", armorClass);
+    setText("dndV2ArmorClassBig", armorClass);
+    setText("dndV2HpView", `${hpCurrent} / ${hpMax}`);
+    setText("dndV2HpBig", `${hpCurrent} / ${hpMax}`);
+    setText("dndV2InitiativeView", formatBonus(initiative));
+    setText("dndV2ProficiencyView", formatBonus(proficiency));
+
+    updateDndV2AvatarPreview(form, name);
+
+    updateHpBar(form);
+  }
+
+  function enhanceTabs(form) {
+    const labels = {
+      overview: "Visão Geral",
+      attributes: "Atributos",
+      combat: "Combate",
+      skills: "Perícias",
+      spells: "Magias",
+      inventory: "Inventário",
+      story: "História",
+      rest: "Descansar",
+    };
+
+    form.querySelectorAll("[data-dnd-v2-tab]").forEach((button) => {
+      const key = button.dataset.dndV2Tab;
+      button.setAttribute("aria-label", labels[key] || button.textContent.trim());
+      button.setAttribute("type", "button");
+    });
+  }
+
+  function enhanceCards(form) {
+    form.querySelectorAll(".dnd-v2-hero-stats article").forEach((card, index) => {
+      card.dataset.statIndex = String(index + 1);
+    });
+
+    form.querySelectorAll(".dnd-v2-panel").forEach((panel) => {
+      panel.setAttribute("tabindex", "-1");
+    });
+  }
+
+  function setupRollFeedback(form) {
+    if (form.dataset.dndImpecavelRollFeedback === "true") return;
+    form.dataset.dndImpecavelRollFeedback = "true";
+
+    form.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-dnd-v2-roll], [data-dnd-v2-attack-row]");
+      if (!button) return;
+
+      window.setTimeout(() => {
+        const box = document.getElementById("dndV2QuickRollResult");
+        if (!box) return;
+        box.classList.add("is-hot");
+        window.setTimeout(() => box.classList.remove("is-hot"), 620);
+      }, 40);
+    });
+  }
+
+  function setupSaveFeedback() {
+    const button = document.getElementById("saveDndSheet");
+    if (!button || button.dataset.dndImpecavelSaveReady === "true") return;
+    button.dataset.dndImpecavelSaveReady = "true";
+
+    button.addEventListener("click", () => {
+      const original = button.textContent;
+      button.textContent = "Salvando...";
+      window.setTimeout(() => {
+        button.textContent = "Ficha salva";
+        window.setTimeout(() => {
+          button.textContent = original || "Salvar ficha";
+        }, 900);
+      }, 260);
+    });
+  }
+
+  function boot() {
+    const form = getForm();
+    if (!form) return;
+
+    document.body.classList.add("dnd-design-impecavel");
+    form.classList.add("dnd-impecavel-sheet");
+    enhanceTabs(form);
+    enhanceCards(form);
+    setupRollFeedback(form);
+    setupSaveFeedback();
+    updatePremiumSummary();
+
+    if (form.dataset.dndImpecavelRefreshReady !== "true") {
+      form.dataset.dndImpecavelRefreshReady = "true";
+      form.addEventListener("input", updatePremiumSummary);
+      form.addEventListener("change", updatePremiumSummary);
+    }
+
+    window.setTimeout(updatePremiumSummary, 450);
+    window.setTimeout(updatePremiumSummary, 1100);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+
+
+/* =========================================================
+   D&D - CORREÇÃO: CA AUTOMÁTICO COM DESTREZA
+   Cole este bloco no FINAL do script.js.
+   Faz a CA recalcular quando mudar DES, armadura ou escudo.
+========================================================= */
+(function setupCampaignLabDndArmorClassDexFix() {
+  const FALLBACK_ARMOR_TYPES = {
+    "Sem Armadura": { base: 10, type: "none" },
+    "Acolchoada": { base: 11, type: "light" },
+    "Couro": { base: 11, type: "light" },
+    "Couro Batido": { base: 12, type: "light" },
+    "Gibão de Peles": { base: 12, type: "medium" },
+    "Camisão de Malha": { base: 13, type: "medium" },
+    "Cota de Escamas": { base: 14, type: "medium" },
+    "Peitoral": { base: 14, type: "medium" },
+    "Meia Armadura": { base: 15, type: "medium" },
+    "Corselete de Anéis": { base: 14, type: "heavy" },
+    "Cota de Malha": { base: 16, type: "heavy" },
+    "Cota de Talas": { base: 17, type: "heavy" },
+    "Armadura de Placas": { base: 18, type: "heavy" },
+  };
+
+  const DEFENSE_TRIGGER_FIELDS = new Set(["dexScore", "armorType", "hasShield"]);
+
+  function getDndForms() {
+    return [
+      document.getElementById("dndPlayerSheetForm"),
+      document.getElementById("dndForm"),
+    ].filter(Boolean);
+  }
+
+  function isDndForm(form) {
+    return Boolean(
+      form &&
+        form.elements &&
+        form.elements.dexScore &&
+        form.elements.armorClass
+    );
+  }
+
+  function toNumber(value, fallback = 0) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+  }
+
+  function abilityMod(score) {
+    return Math.floor((toNumber(score, 10) - 10) / 2);
+  }
+
+  function toBool(value) {
+    return value === true || value === "true" || value === "on" || value === "1" || value === 1;
+  }
+
+  function getArmorTypes() {
+    try {
+      if (typeof DND5E !== "undefined" && DND5E && DND5E.ARMOR_TYPES) {
+        return DND5E.ARMOR_TYPES;
+      }
+    } catch (error) {}
+
+    if (window.DND5E && window.DND5E.ARMOR_TYPES) {
+      return window.DND5E.ARMOR_TYPES;
+    }
+
+    return FALLBACK_ARMOR_TYPES;
+  }
+
+  function readShield(form) {
+    const shield = form?.elements?.hasShield;
+    if (!shield) return false;
+
+    if (shield instanceof RadioNodeList) {
+      return Array.from(shield).some((item) => item.checked || toBool(item.value));
+    }
+
+    return Boolean(shield.checked) || toBool(shield.value);
+  }
+
+  function unlockArmorClassAutomation(form) {
+    if (!isDndForm(form)) return;
+
+    const manualFieldName = "armorClassManual";
+    let manualField = form.elements[manualFieldName];
+
+    if (!manualField) {
+      manualField = document.createElement("input");
+      manualField.type = "hidden";
+      manualField.name = manualFieldName;
+      form.appendChild(manualField);
+    }
+
+    manualField.value = "false";
+
+    const armorClass = form.elements.armorClass;
+    if (armorClass) {
+      armorClass.dataset.dndManual = "false";
+      armorClass.dataset.dndEditableResult = "armorClass";
+    }
+  }
+
+  function calculateArmorClass(form) {
+    const armorTypes = getArmorTypes();
+    const armorName = form.elements.armorType?.value || "Sem Armadura";
+    const armor = armorTypes[armorName] || armorTypes["Sem Armadura"] || FALLBACK_ARMOR_TYPES["Sem Armadura"];
+    const dexMod = abilityMod(form.elements.dexScore?.value);
+    const hasShield = readShield(form);
+
+    let dexApplied = dexMod;
+    let total = 10 + dexMod;
+    let formula = "10 + DES";
+
+    if (armor.type === "light") {
+      total = armor.base + dexMod;
+      dexApplied = dexMod;
+      formula = `${armor.base} + DES`;
+    } else if (armor.type === "medium") {
+      dexApplied = Math.min(dexMod, 2);
+      total = armor.base + dexApplied;
+      formula = `${armor.base} + DES limitado a +2`;
+    } else if (armor.type === "heavy") {
+      dexApplied = 0;
+      total = armor.base;
+      formula = `${armor.base} sem DES`;
+    } else {
+      total = 10 + dexMod;
+      dexApplied = dexMod;
+      formula = "10 + DES";
+    }
+
+    if (hasShield) {
+      total += 2;
+      formula += " + Escudo 2";
+    }
+
+    return {
+      total,
+      armorType: armorName,
+      armor,
+      dexMod,
+      dexApplied,
+      shieldActive: hasShield,
+      formula,
+      explanation: `CA = ${formula} = ${total}`,
+    };
+  }
+
+  function setText(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  }
+
+  function syncArmorClassViews(form, armorCalc) {
+    const value = String(armorCalc.total);
+
+    setText("dndV2ArmorClassView", value);
+    setText("dndV2ArmorClassBig", value);
+    setText("dndCADisplay", value);
+
+    const note = document.getElementById("dndArmorRuleNote");
+    if (note) {
+      note.textContent = `${armorCalc.explanation}. Leve soma DES. Média limita DES em +2. Pesada não soma DES. Escudo soma +2.`;
+    }
+
+    const field = form.elements.armorClass;
+    const box = document.getElementById("dndArmorClassField") || field?.closest?.("label");
+    const shieldToggle = document.getElementById("dndShieldToggle");
+
+    if (field) field.classList.toggle("dnd-armor-class-input--shielded", armorCalc.shieldActive);
+    if (box) box.classList.toggle("dnd-armor-class-field--shielded", armorCalc.shieldActive);
+    if (shieldToggle) shieldToggle.classList.toggle("is-active", armorCalc.shieldActive);
+  }
+
+  function applyAutomaticArmorClass(form) {
+    if (!isDndForm(form)) return;
+
+    unlockArmorClassAutomation(form);
+
+    try {
+      if (typeof dndRecalculateAll === "function") {
+        dndRecalculateAll(form);
+      }
+    } catch (error) {
+      console.warn("Falha ao recalcular a ficha antes da CA automática:", error);
+    }
+
+    const armorCalc = calculateArmorClass(form);
+    const armorClass = form.elements.armorClass;
+
+    if (armorClass) {
+      armorClass.value = String(armorCalc.total);
+      armorClass.dataset.dndAutoValue = String(armorCalc.total);
+      armorClass.dataset.dndManual = "false";
+    }
+
+    syncArmorClassViews(form, armorCalc);
+  }
+
+  function scheduleArmorClassRefresh(form) {
+    window.clearTimeout(form.__dndArmorClassDexFixTimer);
+    form.__dndArmorClassDexFixTimer = window.setTimeout(() => {
+      applyAutomaticArmorClass(form);
+    }, 0);
+  }
+
+  function handleDefenseInput(event) {
+    const target = event.target;
+    const form = target?.closest?.("form");
+
+    if (!isDndForm(form)) return;
+    if (!DEFENSE_TRIGGER_FIELDS.has(target.name)) return;
+
+    unlockArmorClassAutomation(form);
+    scheduleArmorClassRefresh(form);
+  }
+
+  function setupForm(form) {
+    if (!isDndForm(form) || form.dataset.dndArmorClassDexFixReady === "true") return;
+
+    form.dataset.dndArmorClassDexFixReady = "true";
+    unlockArmorClassAutomation(form);
+    scheduleArmorClassRefresh(form);
+  }
+
+  function scanForms() {
+    getDndForms().forEach(setupForm);
+  }
+
+  document.addEventListener("input", handleDefenseInput, true);
+  document.addEventListener("change", handleDefenseInput, true);
+
+  const originalLoadPlayer = window.loadDndSheetIntoPlayerForm;
+  if (typeof originalLoadPlayer === "function" && !originalLoadPlayer.__dndArmorClassDexFixWrapped) {
+    window.loadDndSheetIntoPlayerForm = async function () {
+      const result = await originalLoadPlayer.apply(this, arguments);
+      scanForms();
+      return result;
+    };
+    window.loadDndSheetIntoPlayerForm.__dndArmorClassDexFixWrapped = true;
+  }
+
+  const originalOpenMaster = window.openDndMasterSheetModal;
+  if (typeof originalOpenMaster === "function" && !originalOpenMaster.__dndArmorClassDexFixWrapped) {
+    window.openDndMasterSheetModal = async function () {
+      const result = await originalOpenMaster.apply(this, arguments);
+      scanForms();
+      return result;
+    };
+    window.openDndMasterSheetModal.__dndArmorClassDexFixWrapped = true;
+  }
+
+  const originalUpdateDndAutoNumbers = window.updateDndAutoNumbers;
+  if (typeof originalUpdateDndAutoNumbers === "function" && !originalUpdateDndAutoNumbers.__dndArmorClassDexFixWrapped) {
+    window.updateDndAutoNumbers = function () {
+      const result = originalUpdateDndAutoNumbers.apply(this, arguments);
+      getDndForms().forEach((form) => {
+        if (isDndForm(form)) {
+          unlockArmorClassAutomation(form);
+          const armorCalc = calculateArmorClass(form);
+          const armorClass = form.elements.armorClass;
+          if (armorClass) armorClass.value = String(armorCalc.total);
+          syncArmorClassViews(form, armorCalc);
+        }
+      });
+      return result;
+    };
+    window.updateDndAutoNumbers.__dndArmorClassDexFixWrapped = true;
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", scanForms);
+  } else {
+    scanForms();
+  }
+
+  window.setTimeout(scanForms, 300);
+  window.setTimeout(scanForms, 1000);
+  window.setTimeout(scanForms, 2000);
+})();
+/* =========================================================
+   D&D 5e - INICIATIVA AUTOMÁTICA SEM LOOP
+   Cole este bloco no FINAL do script.js.
+
+   Corrige o travamento/carregamento infinito causado por eventos
+   input/change disparados por JavaScript.
+
+   O que faz:
+   - Iniciativa base = modificador de Destreza.
+   - O campo initiative recebe número puro: 2, 1, 0, -1.
+   - O campo combatInitiative acompanha DES apenas enquanto estiver automático.
+   - Se o jogador digitar ou rolar, o valor da mesa vira manual e não é sobrescrito.
+   - O botão "Rolar iniciativa" rola 1d20 + DES e salva uma vez, sem loop.
+========================================================= */
+(function setupCampaignLabDndInitiativeNoLoopPatch() {
+  const FORM_IDS = ["dndPlayerSheetForm", "dndForm"];
+  const WATCHED_NAMES = new Set(["dexScore", "initiative", "combatInitiative"]);
+
+  function getForms() {
+    return FORM_IDS.map((id) => document.getElementById(id)).filter(Boolean).filter(isDndForm);
+  }
+
+  function isDndForm(form) {
+    return Boolean(form && form.elements && form.elements.dexScore && (form.elements.initiative || form.elements.combatInitiative));
+  }
+
+  function toNumber(value, fallback = 0) {
+    const number = Number(String(value ?? "").replace(",", ".").replace(/[^\d.-]/g, ""));
+    return Number.isFinite(number) ? number : fallback;
+  }
+
+  function getDexMod(form) {
+    const score = toNumber(form?.elements?.dexScore?.value, 10) || 10;
+    return Math.floor((score - 10) / 2);
+  }
+
+  function formatBonus(value) {
+    const number = toNumber(value, 0);
+    return number >= 0 ? `+${number}` : String(number);
+  }
+
+  function setText(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  }
+
+  function setSilent(field, value) {
+    if (!field) return false;
+
+    const finalValue = String(value);
+    if (String(field.value ?? "") === finalValue) return false;
+
+    field.value = finalValue;
+    return true;
+  }
+
+  function markCombatAuto(form) {
+    if (!form?.elements?.combatInitiative) return;
+    form.elements.combatInitiative.dataset.dndInitiativeSource = "auto";
+    form.dataset.dndCombatInitiativeSource = "auto";
+  }
+
+  function markCombatManual(form, source = "manual") {
+    if (!form?.elements?.combatInitiative) return;
+    form.elements.combatInitiative.dataset.dndInitiativeSource = source;
+    form.dataset.dndCombatInitiativeSource = source;
+  }
+
+  function shouldSyncCombatWithDex(form, dexMod) {
+    const field = form?.elements?.combatInitiative;
+    if (!field) return false;
+
+    const current = String(field.value ?? "").trim();
+    const source = field.dataset.dndInitiativeSource || form.dataset.dndCombatInitiativeSource || "";
+    const lastAuto = form.dataset.dndLastAutoInitiative || "";
+
+    if (current === "") return true;
+    if (source === "auto" || source === "dex") return true;
+    if (lastAuto !== "" && current === lastAuto) return true;
+
+    // Ficha antiga costuma abrir com 0. Se ninguém rolou/digitou ainda, 0 acompanha DES.
+    if (!source && current === "0" && String(dexMod) !== "0") return true;
+
+    return false;
+  }
+
+  function updateInitiativeViews(form) {
+    const dexMod = getDexMod(form);
+    const combatValue = String(form?.elements?.combatInitiative?.value ?? "").trim();
+    const visibleCombat = combatValue || "--";
+    const baseBonus = formatBonus(dexMod);
+
+    setText("dndInitDisplay", baseBonus);
+    setText("dndV2InitiativeView", baseBonus);
+    setText("dndInitiativeMini", visibleCombat);
+  }
+
+  function syncInitiative(form, options = {}) {
+    if (!isDndForm(form)) return;
+
+    const dexMod = getDexMod(form);
+
+    // Input type="number" não aceita "+2". Por isso salvamos número puro.
+    setSilent(form.elements.initiative, dexMod);
+
+    if (form.elements.combatInitiative && (options.forceCombat || shouldSyncCombatWithDex(form, dexMod))) {
+      markCombatAuto(form);
+      setSilent(form.elements.combatInitiative, dexMod);
+      form.dataset.dndLastAutoInitiative = String(dexMod);
+    }
+
+    updateInitiativeViews(form);
+  }
+
+  function rollD20() {
+    return Math.floor(Math.random() * 20) + 1;
+  }
+
+  function updateQuickRollResult(total, dexMod, d20) {
+    const box = document.getElementById("dndV2QuickRollResult");
+    if (!box) return;
+
+    const span = box.querySelector("span");
+    const strong = box.querySelector("strong");
+    const p = box.querySelector("p");
+
+    if (span) span.textContent = "Iniciativa";
+    if (strong) strong.textContent = String(total);
+    if (p) p.textContent = `1d20${formatBonus(dexMod)} → ${d20} ${formatBonus(dexMod)} = ${total}`;
+  }
+
+  function isInitiativeRollButton(button) {
+    if (!button) return false;
+
+    const label = String(button.dataset.dndV2RollLabel || "").toLowerCase();
+    const formula = String(button.dataset.dndV2Roll || "").toLowerCase().replace(/\s+/g, "");
+
+    return label.includes("iniciativa") || formula === "1d20+initiative";
+  }
+
+  function injectActionButtons(form) {
+    const combatField = form?.elements?.combatInitiative;
+    if (!combatField) return;
+
+    const box = combatField.closest(".dnd-initiative-box") || combatField.closest("label") || combatField.parentElement;
+    if (!box || box.querySelector("[data-dnd-initiative-actions]")) return;
+
+    const actions = document.createElement("div");
+    actions.className = "dnd-initiative-auto-actions";
+    actions.dataset.dndInitiativeActions = "true";
+    actions.innerHTML = `
+      <button type="button" data-dnd-roll-combat-initiative="true">Rolar 1d20 + DES</button>
+      <button type="button" data-dnd-use-dex-initiative="true">Usar bônus DES</button>
+      <button type="button" data-dnd-clear-combat-initiative="true">Limpar</button>
+    `;
+
+    const paragraph = box.querySelector("p");
+    if (paragraph) paragraph.insertAdjacentElement("beforebegin", actions);
+    else box.appendChild(actions);
+  }
+
+  function injectStyles() {
+    if (document.getElementById("dnd-initiative-no-loop-style")) return;
+
+    const style = document.createElement("style");
+    style.id = "dnd-initiative-no-loop-style";
+    style.textContent = `
+      .dnd-initiative-auto-actions {
+        width: 100%;
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: flex-end;
+        gap: 8px;
+        margin: 12px 0 6px;
+      }
+
+      .dnd-initiative-auto-actions button {
+        min-height: 38px;
+        padding: 8px 12px;
+        border: 1px solid rgba(248, 113, 113, 0.34);
+        border-radius: 999px;
+        background: rgba(239, 68, 68, 0.1);
+        color: #fecaca;
+        font-size: 12px;
+        font-weight: 900;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+
+      .dnd-initiative-auto-actions button:hover {
+        transform: translateY(-1px);
+        border-color: rgba(248, 113, 113, 0.7);
+        background: rgba(239, 68, 68, 0.18);
+      }
+
+      @media (max-width: 700px) {
+        .dnd-initiative-auto-actions { justify-content: stretch; }
+        .dnd-initiative-auto-actions button { width: 100%; }
+      }
+    `;
+
+    document.head.appendChild(style);
+  }
+
+  function scheduleSave(form) {
+    if (!isDndForm(form)) return;
+
+    window.clearTimeout(form.__dndInitiativeNoLoopSaveTimer);
+    form.__dndInitiativeNoLoopSaveTimer = window.setTimeout(async () => {
+      try {
+        if (form.id === "dndPlayerSheetForm" && typeof saveDndPlayerSheet === "function") {
+          await saveDndPlayerSheet(false);
+        } else if (form.id === "dndForm" && typeof saveDndSheetFromModal === "function") {
+          await saveDndSheetFromModal(false);
+        }
+
+        refreshBoardsSoon();
+      } catch (error) {
+        console.warn("Não foi possível salvar a iniciativa:", error);
+      }
+    }, 250);
+  }
+
+  function refreshBoardsSoon() {
+    window.clearTimeout(window.__dndInitiativeNoLoopBoardTimer);
+    window.__dndInitiativeNoLoopBoardTimer = window.setTimeout(async () => {
+      try {
+        if (typeof renderInitiativeBoard !== "function") return;
+
+        if (document.getElementById("dndPlayerInitiativeBoard") && typeof getDndPlayerInitiativeConfig === "function") {
+          await renderInitiativeBoard(getDndPlayerInitiativeConfig());
+        }
+
+        if (document.getElementById("dndInitiativeBoard")) {
+          await renderInitiativeBoard({
+            system: "D&D",
+            boardId: "dndInitiativeBoard",
+            clearButtonId: "clearDndInitiativeBtn",
+            getSheet: getOrCreateDndSheet,
+            updateSheet: updateDndSheet,
+          });
+        }
+      } catch (error) {
+        console.warn("Não foi possível atualizar a iniciativa:", error);
+      }
+    }, 550);
+  }
+
+  function rollAndApply(form) {
+    if (!isDndForm(form)) return;
+
+    const dexMod = getDexMod(form);
+    const d20 = rollD20();
+    const total = d20 + dexMod;
+
+    setSilent(form.elements.initiative, dexMod);
+    setSilent(form.elements.combatInitiative, total);
+    markCombatManual(form, "roll");
+    updateInitiativeViews(form);
+    updateQuickRollResult(total, dexMod, d20);
+    scheduleSave(form);
+  }
+
+  function useDexAsCombat(form) {
+    if (!isDndForm(form)) return;
+
+    markCombatAuto(form);
+    syncInitiative(form, { forceCombat: true });
+    scheduleSave(form);
+  }
+
+  function clearCombat(form) {
+    if (!isDndForm(form) || !form.elements.combatInitiative) return;
+
+    markCombatAuto(form);
+    setSilent(form.elements.combatInitiative, "");
+    syncInitiative(form, { forceCombat: true });
+    scheduleSave(form);
+  }
+
+  function setupForm(form) {
+    if (!isDndForm(form)) return;
+
+    injectStyles();
+    injectActionButtons(form);
+    syncInitiative(form);
+
+    if (form.dataset.dndInitiativeNoLoopReady === "true") return;
+    form.dataset.dndInitiativeNoLoopReady = "true";
+
+    form.addEventListener("click", (event) => {
+      const rollButton = event.target.closest?.("[data-dnd-roll-combat-initiative]");
+      const useDexButton = event.target.closest?.("[data-dnd-use-dex-initiative]");
+      const clearButton = event.target.closest?.("[data-dnd-clear-combat-initiative]");
+      const quickRollButton = event.target.closest?.("[data-dnd-v2-roll]");
+
+      if (rollButton) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        rollAndApply(form);
+        return;
+      }
+
+      if (useDexButton) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        useDexAsCombat(form);
+        return;
+      }
+
+      if (clearButton) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        clearCombat(form);
+        return;
+      }
+
+      if (quickRollButton && isInitiativeRollButton(quickRollButton)) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        rollAndApply(form);
+      }
+    }, true);
+
+    form.addEventListener("input", (event) => {
+      const target = event.target;
+      if (!target || !WATCHED_NAMES.has(target.name)) return;
+
+      if (target.name === "combatInitiative") {
+        const empty = String(target.value || "").trim() === "";
+        if (empty) markCombatAuto(form);
+        else markCombatManual(form, "manual");
+      }
+
+      if (target.name === "dexScore" || target.name === "initiative") {
+        syncInitiative(form);
+      }
+
+      updateInitiativeViews(form);
+    }, true);
+
+    form.addEventListener("change", (event) => {
+      const target = event.target;
+      if (!target || !WATCHED_NAMES.has(target.name)) return;
+
+      if (target.name === "combatInitiative") {
+        const empty = String(target.value || "").trim() === "";
+        if (empty) markCombatAuto(form);
+        else markCombatManual(form, "manual");
+      }
+
+      if (target.name === "dexScore" || target.name === "initiative") {
+        syncInitiative(form);
+      }
+
+      updateInitiativeViews(form);
+    }, true);
+  }
+
+  function wrapRecalculateAll() {
+    const original = typeof dndRecalculateAll === "function" ? dndRecalculateAll : window.dndRecalculateAll;
+    if (typeof original !== "function" || original.__dndInitiativeNoLoopWrapped) return;
+
+    const wrapped = function dndRecalculateAllInitiativeNoLoopWrapper(form) {
+      const result = original.apply(this, arguments);
+
+      try {
+        if (isDndForm(form)) syncInitiative(form);
+      } catch (error) {
+        console.warn("Falha ao sincronizar iniciativa:", error);
+      }
+
+      return result;
+    };
+
+    wrapped.__dndInitiativeNoLoopWrapped = true;
+    window.dndRecalculateAll = wrapped;
+
+    try {
+      dndRecalculateAll = wrapped;
+    } catch (error) {}
+  }
+
+  function scan() {
+    wrapRecalculateAll();
+    getForms().forEach(setupForm);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", scan);
+  } else {
+    scan();
+  }
+
+  window.setTimeout(scan, 300);
+  window.setTimeout(scan, 1000);
+  window.setTimeout(scan, 2000);
+})();
+
+/* =========================================================
+   D&D - ESPAÇOS DE MAGIA MANUAIS
+   Como funciona:
+   - O jogador coloca um número no campo acima de cada círculo.
+   - O sistema cria exatamente esse número de bolinhas opacas.
+   - Ao clicar, a bolinha fica azul forte, marcando espaço disponível/ativo.
+   - Não depende de classe, nível ou DND5E.
+========================================================= */
+(function campaignLabManualSpellSlots() {
+  const MAX_SLOTS_PER_LEVEL = 12;
+  const DEFAULT_MAX_BY_LEVEL = [4, 3, 3, 3, 3, 2, 2, 1, 1];
+  const MODE_FIELD = 'dndSpellSlotsAvailableMode';
+
+  function clamp(value, min, max) {
+    const number = Math.floor(Number(value));
+    if (!Number.isFinite(number)) return min;
+    return Math.max(min, Math.min(max, number));
+  }
+
+  function normalizeState(value, length, padValue = '1') {
+    const safeLength = clamp(length, 0, MAX_SLOTS_PER_LEVEL);
+    const raw = String(value || '').replace(/[^01]/g, '');
+    return (raw + String(padValue || '1').repeat(safeLength)).slice(0, safeLength);
+  }
+
+  function getSlotLevel(levelBox) {
+    const byBox = Number(levelBox?.dataset?.spellSlotLevel || 0);
+    if (byBox >= 1 && byBox <= 9) return byBox;
+
+    const hidden = levelBox?.querySelector?.('[data-spell-slot-hidden]');
+    const byHidden = Number(hidden?.dataset?.spellSlotHidden || 0);
+    if (byHidden >= 1 && byHidden <= 9) return byHidden;
+
+    return 1;
+  }
+
+  function getForm(scope) {
+    if (scope?.tagName === 'FORM') return scope;
+    if (scope?.closest) {
+      const form = scope.closest('form');
+      if (form) return form;
+    }
+    return document.getElementById('dndPlayerSheetForm') || document.querySelector('form');
+  }
+
+  function getLevelBoxes(scope = document) {
+    const root = scope?.querySelectorAll ? scope : document;
+    return Array.from(root.querySelectorAll('.dnd-spell-slot-level'));
+  }
+
+  function ensureModeField(form) {
+    if (!form) return null;
+    let field = form.elements?.[MODE_FIELD] || form.querySelector(`input[name="${MODE_FIELD}"]`);
+    if (!field) {
+      field = document.createElement('input');
+      field.type = 'hidden';
+      field.name = MODE_FIELD;
+      field.value = '';
+      form.appendChild(field);
+    }
+    return field;
+  }
+
+  function ensureHidden(levelBox, level) {
+    let hidden = levelBox.querySelector(`[data-spell-slot-hidden="${level}"]`) || levelBox.querySelector('[data-spell-slot-hidden]');
+
+    if (!hidden) {
+      hidden = document.createElement('input');
+      hidden.type = 'hidden';
+      hidden.name = `spellSlots${level}`;
+      hidden.value = '';
+      hidden.dataset.spellSlotHidden = String(level);
+      levelBox.prepend(hidden);
+    }
+
+    return hidden;
+  }
+
+  function ensureDotsWrapper(levelBox, level) {
+    let dotsWrapper = levelBox.querySelector('.dnd-spell-slot-dots');
+
+    if (!dotsWrapper) {
+      dotsWrapper = document.createElement('div');
+      dotsWrapper.className = 'dnd-spell-slot-dots';
+      dotsWrapper.setAttribute('aria-label', `Espaços de magia de ${level}º nível`);
+      levelBox.appendChild(dotsWrapper);
+    }
+
+    return dotsWrapper;
+  }
+
+  function ensureMaxInput(levelBox, level) {
+    let input = levelBox.querySelector(`[data-spell-slot-max-input="${level}"]`) || levelBox.querySelector('.dnd-spell-slot-max-input');
+
+    if (!input) {
+      const top = document.createElement('div');
+      top.className = 'dnd-spell-slot-top';
+
+      input = document.createElement('input');
+      input.type = 'number';
+      input.min = '0';
+      input.max = String(MAX_SLOTS_PER_LEVEL);
+      input.step = '1';
+      input.name = `spellSlotsMax${level}`;
+      input.className = 'dnd-spell-slot-max-input';
+      input.dataset.spellSlotMaxInput = String(level);
+      input.dataset.noNumberControl = 'true';
+      input.dataset.numberControlReady = 'true';
+      input.setAttribute('aria-label', `Quantidade máxima de espaços de magia de ${level}º nível`);
+
+      const oldStrong = levelBox.querySelector(':scope > strong');
+      const title = oldStrong || document.createElement('strong');
+      title.textContent = title.textContent || `${level}º`;
+
+      top.appendChild(title);
+      top.appendChild(input);
+
+      const hidden = levelBox.querySelector('[data-spell-slot-hidden]');
+      if (hidden && hidden.nextSibling) {
+        hidden.parentNode.insertBefore(top, hidden.nextSibling);
+      } else {
+        levelBox.prepend(top);
+      }
+    } else if (!input.name) {
+      input.name = `spellSlotsMax${level}`;
+    }
+
+    if (input.value === '') {
+      const hidden = levelBox.querySelector('[data-spell-slot-hidden]');
+      const savedLength = String(hidden?.value || '').replace(/[^01]/g, '').length;
+      input.value = String(savedLength || DEFAULT_MAX_BY_LEVEL[level - 1] || 0);
+    }
+
+    input.type = 'number';
+    input.min = '0';
+    input.max = String(MAX_SLOTS_PER_LEVEL);
+    input.step = '1';
+    input.dataset.spellSlotMaxInput = String(level);
+    input.dataset.noNumberControl = 'true';
+    input.dataset.numberControlReady = 'true';
+
+    return input;
+  }
+
+  function getMaxValue(levelBox, level) {
+    const input = ensureMaxInput(levelBox, level);
+    const max = clamp(input.value, 0, MAX_SLOTS_PER_LEVEL);
+    input.value = String(max);
+    return max;
+  }
+
+  function renderLevel(levelBox) {
+    if (!levelBox) return;
+
+    const level = getSlotLevel(levelBox);
+    const hidden = ensureHidden(levelBox, level);
+    const input = ensureMaxInput(levelBox, level);
+    const dotsWrapper = ensureDotsWrapper(levelBox, level);
+    const max = getMaxValue(levelBox, level);
+
+    let state = normalizeState(hidden.value, max, '1');
+    hidden.value = state;
+    input.value = String(max);
+
+    dotsWrapper.innerHTML = '';
+
+    for (let index = 0; index < max; index += 1) {
+      const dot = document.createElement('button');
+      const available = state[index] === '1';
+
+      dot.type = 'button';
+      dot.className = 'dnd-spell-slot-dot dnd-manual-spell-slot-dot';
+      dot.dataset.spellSlotDot = String(index);
+      dot.dataset.spellSlotAvailable = available ? 'true' : 'false';
+      dot.classList.toggle('is-slot-current', available);
+      dot.classList.toggle('is-current', available);
+      dot.classList.toggle('is-used', available);
+      dot.classList.toggle('is-checked', available);
+      dot.classList.toggle('is-slot-lit', available);
+      dot.classList.toggle('is-slot-empty', !available);
+      dot.classList.toggle('is-slot-spent', !available);
+      dot.classList.toggle('is-available', available);
+      dot.setAttribute('aria-pressed', available ? 'true' : 'false');
+      dot.setAttribute('aria-label', `${level}º nível - espaço ${index + 1}`);
+      dot.title = available
+        ? `${level}º nível - espaço ${index + 1} disponível`
+        : `${level}º nível - espaço ${index + 1} gasto`;
+
+      dotsWrapper.appendChild(dot);
+    }
+
+    levelBox.dataset.spellSlotMax = String(max);
+    levelBox.classList.add('dnd-manual-spell-slot-level');
+    levelBox.classList.toggle('has-spell-slots', max > 0);
+    levelBox.classList.toggle('has-no-spell-slots', max === 0);
+  }
+
+  function migrateOldModeIfNeeded(scope = document) {
+    const form = getForm(scope);
+    if (!form) return;
+
+    const mode = ensureModeField(form);
+    if (!mode || mode.value === 'available-v1') return;
+
+    getLevelBoxes(form).forEach((levelBox) => {
+      const level = getSlotLevel(levelBox);
+      const hidden = ensureHidden(levelBox, level);
+      const max = getMaxValue(levelBox, level);
+      hidden.value = '1'.repeat(max);
+    });
+
+    mode.value = 'available-v1';
+  }
+
+  function renderAll(scope = document) {
+    migrateOldModeIfNeeded(scope);
+    getLevelBoxes(scope).forEach(renderLevel);
+  }
+
+  function toggleDot(dot) {
+    const levelBox = dot?.closest?.('.dnd-spell-slot-level');
+    if (!levelBox) return;
+
+    const level = getSlotLevel(levelBox);
+    const hidden = ensureHidden(levelBox, level);
+    const max = getMaxValue(levelBox, level);
+    const index = clamp(dot.dataset.spellSlotDot, -1, MAX_SLOTS_PER_LEVEL);
+
+    if (index < 0 || index >= max) return;
+
+    const state = normalizeState(hidden.value, max, '1').split('');
+    state[index] = state[index] === '1' ? '0' : '1';
+    hidden.value = state.join('');
+
+    renderLevel(levelBox);
+
+    hidden.dispatchEvent(new Event('input', { bubbles: true }));
+    hidden.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  function handleMaxInput(input) {
+    const levelBox = input?.closest?.('.dnd-spell-slot-level');
+    if (!levelBox) return;
+
+    const level = getSlotLevel(levelBox);
+    const hidden = ensureHidden(levelBox, level);
+    const max = clamp(input.value, 0, MAX_SLOTS_PER_LEVEL);
+    const form = getForm(input);
+    const mode = ensureModeField(form);
+
+    input.value = String(max);
+    hidden.value = '1'.repeat(max);
+    if (mode) mode.value = 'available-v1';
+    renderLevel(levelBox);
+
+    hidden.dispatchEvent(new Event('input', { bubbles: true }));
+    hidden.dispatchEvent(new Event('change', { bubbles: true }));
+  }
+
+  function getLevelBoxByLevel(form, level) {
+    return form?.querySelector?.(`.dnd-spell-slot-level[data-spell-slot-level="${level}"]`)
+      || form?.querySelector?.(`[data-spell-slot-hidden="${level}"]`)?.closest?.('.dnd-spell-slot-level')
+      || null;
+  }
+
+  function getCounts(form, level) {
+    const levelBox = getLevelBoxByLevel(form, level);
+    if (!levelBox) return { level, max: 0, available: 0, spent: 0 };
+
+    const hidden = ensureHidden(levelBox, level);
+    const max = getMaxValue(levelBox, level);
+    const state = normalizeState(hidden.value, max, '1');
+    const available = state.split('').filter((item) => item === '1').length;
+
+    return { level, max, available, spent: Math.max(0, max - available) };
+  }
+
+  function consumeSlot(form, level) {
+    const safeLevel = clamp(level, 1, 9);
+    const levelBox = getLevelBoxByLevel(form, safeLevel);
+
+    if (!levelBox) {
+      alert(`Você não tem espaços configurados para magia de ${safeLevel}º nível.`);
+      return false;
+    }
+
+    const hidden = ensureHidden(levelBox, safeLevel);
+    const max = getMaxValue(levelBox, safeLevel);
+
+    if (max <= 0) {
+      alert(`Você não tem espaços configurados para magia de ${safeLevel}º nível.`);
+      return false;
+    }
+
+    const state = normalizeState(hidden.value, max, '1').split('');
+
+    // Consome a última bolinha disponível no visual.
+    // Como as bolinhas estão em duas colunas e o grid preenche da esquerda para a direita,
+    // apagar o maior índice primeiro resulta em: de baixo para cima e da direita para esquerda.
+    let index = -1;
+    for (let currentIndex = state.length - 1; currentIndex >= 0; currentIndex -= 1) {
+      if (state[currentIndex] === '1') {
+        index = currentIndex;
+        break;
+      }
+    }
+
+    if (index < 0) {
+      alert(`Todos os espaços de ${safeLevel}º nível já foram gastos.`);
+      return false;
+    }
+
+    state[index] = '0';
+    hidden.value = state.join('');
+    renderLevel(levelBox);
+    hidden.dispatchEvent(new Event('input', { bubbles: true }));
+    hidden.dispatchEvent(new Event('change', { bubbles: true }));
+    return true;
+  }
+
+  function restoreAll(form = getForm(document)) {
+    if (!form) return false;
+
+    const mode = ensureModeField(form);
+    if (mode) mode.value = 'available-v1';
+
+    getLevelBoxes(form).forEach((levelBox) => {
+      const level = getSlotLevel(levelBox);
+      const hidden = ensureHidden(levelBox, level);
+      const max = getMaxValue(levelBox, level);
+      hidden.value = '1'.repeat(max);
+      renderLevel(levelBox);
+      hidden.dispatchEvent(new Event('input', { bubbles: true }));
+      hidden.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+
+    return true;
+  }
+
+  function installEvents() {
+    if (window.__campaignLabManualSpellSlotsEventsReady) return;
+    window.__campaignLabManualSpellSlotsEventsReady = true;
+
+    document.addEventListener('click', (event) => {
+      const dot = event.target?.closest?.('.dnd-spell-slot-dot');
+      if (!dot || !dot.closest('.dnd-spell-slot-level')) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      toggleDot(dot);
+    }, true);
+
+    document.addEventListener('keydown', (event) => {
+      const dot = event.target?.closest?.('.dnd-spell-slot-dot');
+      if (!dot || !dot.closest('.dnd-spell-slot-level')) return;
+      if (event.key !== 'Enter' && event.key !== ' ') return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+      toggleDot(dot);
+    }, true);
+
+    document.addEventListener('input', (event) => {
+      const input = event.target?.closest?.('.dnd-spell-slot-max-input');
+      if (!input) return;
+
+      handleMaxInput(input);
+    }, true);
+
+    document.addEventListener('change', (event) => {
+      const input = event.target?.closest?.('.dnd-spell-slot-max-input');
+      if (!input) return;
+
+      handleMaxInput(input);
+    }, true);
+  }
+
+  function installFunctionOverrides() {
+    window.campaignLabRenderManualSpellSlots = renderAll;
+    window.campaignLabRestoreAllManualSpellSlots = restoreAll;
+    window.campaignLabUseManualSpellSlot = consumeSlot;
+    window.campaignLabGetManualSpellSlotCounts = getCounts;
+    window.syncDndSpellSlotLevel = renderLevel;
+    window.syncAllDndSpellSlotTrackers = renderAll;
+    window.setupDndSpellSlotTrackers = renderAll;
+    window.toggleDndSpellSlotDot = function manualToggleDndSpellSlotDot(levelBox, dot) {
+      toggleDot(dot || levelBox?.querySelector?.('.dnd-spell-slot-dot'));
+    };
+
+    try { syncDndSpellSlotLevel = renderLevel; } catch (error) {}
+    try { syncAllDndSpellSlotTrackers = renderAll; } catch (error) {}
+    try { setupDndSpellSlotTrackers = renderAll; } catch (error) {}
+    try { toggleDndSpellSlotDot = window.toggleDndSpellSlotDot; } catch (error) {}
+  }
+
+  function wrapLoadFunction() {
+    if (typeof loadDndSheetIntoPlayerForm !== 'function') return;
+    if (loadDndSheetIntoPlayerForm.__manualSpellSlotsWrapped) return;
+
+    const originalLoad = loadDndSheetIntoPlayerForm;
+    const wrappedLoad = async function wrappedLoadDndSheetIntoPlayerFormManualSlots() {
+      const result = await originalLoad.apply(this, arguments);
+      renderAll(document);
+      return result;
+    };
+
+    wrappedLoad.__manualSpellSlotsWrapped = true;
+
+    try { loadDndSheetIntoPlayerForm = wrappedLoad; } catch (error) {}
+    window.loadDndSheetIntoPlayerForm = wrappedLoad;
+  }
+
+  function boot() {
+    installFunctionOverrides();
+    installEvents();
+    wrapLoadFunction();
+    renderAll(document);
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', boot);
+  } else {
+    boot();
+  }
+
+  window.setTimeout(boot, 100);
+  window.setTimeout(boot, 600);
+  window.setTimeout(boot, 1200);
+})();
+
+/* =========================================================
+   CORREÇÃO JS FINAL - ESPAÇOS DE MAGIA
+   Remove o wrapper premium .number-control apenas dos inputs de
+   quantidade dos espaços de magia, caso algum script antigo tenha
+   embrulhado esses campos.
+   Cole este bloco no FINAL do script.js.
+========================================================= */
+(function () {
+  function unwrapSpellSlotNumberInputs() {
+    document.querySelectorAll(".dnd-spell-slot-max-input").forEach((input) => {
+      input.dataset.noNumberControl = "true";
+      input.dataset.numberControlReady = "true";
+
+      const wrapper = input.closest(".number-control, .dnd-number-control");
+      const top = input.closest(".dnd-spell-slot-top");
+
+      if (!wrapper || !top || wrapper.parentElement !== top) return;
+
+      top.insertBefore(input, wrapper);
+      wrapper.remove();
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      unwrapSpellSlotNumberInputs();
+      setTimeout(unwrapSpellSlotNumberInputs, 300);
+      setTimeout(unwrapSpellSlotNumberInputs, 900);
+    });
+  } else {
+    unwrapSpellSlotNumberInputs();
+    setTimeout(unwrapSpellSlotNumberInputs, 300);
+    setTimeout(unwrapSpellSlotNumberInputs, 900);
+  }
+})();
+
+
+/* =========================================================
+   D&D - GRIMÓRIO DE MAGIAS EM CARDS
+   Salva tudo no campo oculto dndSpellbook como JSON.
+========================================================= */
+(function () {
+  const LEVEL_LABELS = {
+    0: "Truque",
+    1: "1º",
+    2: "2º",
+    3: "3º",
+    4: "4º",
+    5: "5º",
+    6: "6º",
+    7: "7º",
+    8: "8º",
+    9: "9º",
+  };
+
+  const SPELLBOOK_EMPTY = "[]";
+
+  function html(value = "") {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function uid() {
+    return `spell-${Date.now()}-${Math.random().toString(16).slice(2)}`;
+  }
+
+  function getDndSpellbookForms() {
+    return Array.from(document.querySelectorAll("#dndPlayerSheetForm, #dndForm")).filter(Boolean);
+  }
+
+  function getSpellbookSectionHtml() {
+    return `
+      <input type="hidden" name="dndSpellbook" value="[]" />
+      <section class="dnd-grimoire" data-dnd-grimoire>
+        <div class="dnd-grimoire-hero">
+          <div>
+            <p class="tag">Grimório</p>
+            <h3>Livro de magias</h3>
+            <span>Cadastre suas magias em cards completos, filtre por círculo e use durante a sessão.</span>
+          </div>
+          <div class="dnd-grimoire-counters">
+            <article><strong data-dnd-spell-count-total>0</strong><span>Total</span></article>
+            <article><strong data-dnd-spell-count-prepared>0</strong><span>Preparadas</span></article>
+            <article><strong data-dnd-spell-count-favorite>0</strong><span>Favoritas</span></article>
+          </div>
+        </div>
+
+        <div class="dnd-grimoire-toolbar">
+          <label class="dnd-grimoire-search"><span>Buscar magia</span><input type="search" data-dnd-spell-search placeholder="Ex: Bola de Fogo" autocomplete="off" /></label>
+          <label><span>Círculo</span><select data-dnd-spell-level-filter><option value="all">Todos</option><option value="0">Truques</option><option value="1">1º nível</option><option value="2">2º nível</option><option value="3">3º nível</option><option value="4">4º nível</option><option value="5">5º nível</option><option value="6">6º nível</option><option value="7">7º nível</option><option value="8">8º nível</option><option value="9">9º nível</option></select></label>
+          <button type="button" class="dnd-grimoire-filter" data-dnd-spell-filter-prepared="false">Preparadas</button>
+          <button type="button" class="dnd-grimoire-filter" data-dnd-spell-filter-favorite="false">Favoritas</button>
+          <button type="button" class="dnd-grimoire-add" data-dnd-spell-action="add">+ Adicionar magia</button>
+        </div>
+
+        <div class="dnd-grimoire-editor" data-dnd-grimoire-editor hidden>
+          <div class="dnd-grimoire-editor-head"><div><span data-dnd-spell-editor-kicker>Nova magia</span><strong data-dnd-spell-editor-title>Adicionar ao grimório</strong></div><button type="button" data-dnd-spell-action="cancel-edit">×</button></div>
+          <input type="hidden" data-dnd-spell-field="id" />
+          <div class="dnd-grimoire-editor-grid">
+            <label><span>Nome da magia</span><input type="text" data-dnd-spell-field="name" placeholder="Mísseis Mágicos" /></label>
+            <label><span>Círculo</span><select data-dnd-spell-field="level"><option value="0">Truque</option><option value="1">1º nível</option><option value="2">2º nível</option><option value="3">3º nível</option><option value="4">4º nível</option><option value="5">5º nível</option><option value="6">6º nível</option><option value="7">7º nível</option><option value="8">8º nível</option><option value="9">9º nível</option></select></label>
+            <label><span>Escola</span><input type="text" data-dnd-spell-field="school" placeholder="Evocação" /></label>
+            <label><span>Tipo</span><select data-dnd-spell-field="type"><option value="">Escolha</option><option>Dano</option><option>Cura</option><option>Controle</option><option>Defesa</option><option>Utilidade</option><option>Movimento</option><option>Invocação</option><option>Social</option><option>Exploração</option></select></label>
+            <label><span>Tempo de conjuração</span><input type="text" data-dnd-spell-field="castingTime" placeholder="1 ação" /></label>
+            <label><span>Alcance</span><input type="text" data-dnd-spell-field="range" placeholder="36 m" /></label>
+            <label><span>Componentes</span><input type="text" data-dnd-spell-field="components" placeholder="V, S, M" /></label>
+            <label><span>Material</span><input type="text" data-dnd-spell-field="material" placeholder="Opcional" /></label>
+            <label><span>Duração</span><input type="text" data-dnd-spell-field="duration" placeholder="Instantânea" /></label>
+            <label><span>Teste / ataque</span><input type="text" data-dnd-spell-field="saveAttack" placeholder="Ataque mágico / Resistência DES" /></label>
+            <label><span>Dano / cura</span><input type="text" data-dnd-spell-field="damage" placeholder="3d6 fogo" /></label>
+            <div class="dnd-grimoire-switches"><label><input type="checkbox" data-dnd-spell-field="prepared" /> Preparada</label><label><input type="checkbox" data-dnd-spell-field="favorite" /> Favorita</label><label><input type="checkbox" data-dnd-spell-field="concentration" /> Concentração</label><label><input type="checkbox" data-dnd-spell-field="ritual" /> Ritual</label></div>
+            <label class="dnd-grimoire-wide"><span>Descrição</span><textarea data-dnd-spell-field="description" rows="5" placeholder="Explique o efeito principal da magia."></textarea></label>
+            <label class="dnd-grimoire-wide"><span>Em níveis superiores</span><textarea data-dnd-spell-field="higherLevels" rows="3" placeholder="Como a magia melhora quando usa círculo maior."></textarea></label>
+            <label class="dnd-grimoire-wide"><span>Observações</span><textarea data-dnd-spell-field="notes" rows="3" placeholder="Combos, decisões do mestre, detalhes da campanha."></textarea></label>
+          </div>
+          <div class="dnd-grimoire-editor-actions"><button type="button" data-dnd-spell-action="cancel-edit">Cancelar</button><button type="button" class="dnd-grimoire-save" data-dnd-spell-action="save-spell">Salvar magia</button></div>
+        </div>
+
+        <div class="dnd-grimoire-empty" data-dnd-spell-empty>
+          <strong>Nenhuma magia cadastrada ainda.</strong>
+          <span>Clique em “Adicionar magia” para montar o grimório do personagem.</span>
+        </div>
+        <div class="dnd-grimoire-list" data-dnd-spell-list></div>
+      </section>
+    `;
+  }
+
+  function ensureHidden(form) {
+    let hidden = form.querySelector('input[name="dndSpellbook"]');
+    if (!hidden) {
+      hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = "dndSpellbook";
+      hidden.value = SPELLBOOK_EMPTY;
+      form.prepend(hidden);
+    }
+    if (!String(hidden.value || "").trim()) hidden.value = SPELLBOOK_EMPTY;
+    return hidden;
+  }
+
+  function ensureSection(form) {
+    ensureHidden(form);
+    let section = form.querySelector("[data-dnd-grimoire]");
+    if (section) return section;
+
+    const slots = form.querySelector(".dnd-spell-slots");
+    if (!slots) return null;
+
+    slots.insertAdjacentHTML("afterend", getSpellbookSectionHtml());
+    section = form.querySelector("[data-dnd-grimoire]");
+
+    const duplicatedHidden = section?.previousElementSibling?.matches?.('input[name="dndSpellbook"]')
+      ? section.previousElementSibling
+      : null;
+    if (duplicatedHidden && duplicatedHidden !== form.querySelector('input[name="dndSpellbook"]')) duplicatedHidden.remove();
+
+    return section;
+  }
+
+  function readSpells(form) {
+    const hidden = ensureHidden(form);
+    try {
+      const parsed = JSON.parse(hidden.value || SPELLBOOK_EMPTY);
+      return Array.isArray(parsed) ? parsed.filter(Boolean) : [];
+    } catch (error) {
+      hidden.value = SPELLBOOK_EMPTY;
+      return [];
+    }
+  }
+
+  function writeSpells(form, spells, triggerSave = true) {
+    const hidden = ensureHidden(form);
+    hidden.value = JSON.stringify(spells || []);
+    renderSpellbook(form);
+
+    if (triggerSave) {
+      hidden.dispatchEvent(new Event("input", { bubbles: true }));
+      hidden.dispatchEvent(new Event("change", { bubbles: true }));
+    }
+  }
+
+  function getField(section, field) {
+    return section.querySelector(`[data-dnd-spell-field="${field}"]`);
+  }
+
+  function setField(section, field, value) {
+    const el = getField(section, field);
+    if (!el) return;
+    if (el.type === "checkbox") el.checked = Boolean(value);
+    else el.value = value ?? "";
+  }
+
+  function getEditorData(section) {
+    const level = Math.max(0, Math.min(9, Number(getField(section, "level")?.value || 0)));
+    return {
+      id: getField(section, "id")?.value || uid(),
+      name: getField(section, "name")?.value?.trim() || "Magia sem nome",
+      level,
+      school: getField(section, "school")?.value?.trim() || "",
+      type: getField(section, "type")?.value?.trim() || "",
+      castingTime: getField(section, "castingTime")?.value?.trim() || "",
+      range: getField(section, "range")?.value?.trim() || "",
+      components: getField(section, "components")?.value?.trim() || "",
+      material: getField(section, "material")?.value?.trim() || "",
+      duration: getField(section, "duration")?.value?.trim() || "",
+      saveAttack: getField(section, "saveAttack")?.value?.trim() || "",
+      damage: getField(section, "damage")?.value?.trim() || "",
+      description: getField(section, "description")?.value?.trim() || "",
+      higherLevels: getField(section, "higherLevels")?.value?.trim() || "",
+      notes: getField(section, "notes")?.value?.trim() || "",
+      prepared: Boolean(getField(section, "prepared")?.checked),
+      favorite: Boolean(getField(section, "favorite")?.checked),
+      concentration: Boolean(getField(section, "concentration")?.checked),
+      ritual: Boolean(getField(section, "ritual")?.checked),
+      updatedAt: new Date().toISOString(),
+    };
+  }
+
+  function clearEditor(section) {
+    section.querySelectorAll("[data-dnd-spell-field]").forEach((field) => {
+      if (field.type === "checkbox") field.checked = false;
+      else field.value = "";
+    });
+    setField(section, "level", "0");
+  }
+
+  function openEditor(form, spell = null) {
+    const section = ensureSection(form);
+    if (!section) return;
+    const editor = section.querySelector("[data-dnd-grimoire-editor]");
+    if (!editor) return;
+
+    clearEditor(section);
+    if (spell) {
+      Object.entries(spell).forEach(([key, value]) => setField(section, key, value));
+      section.querySelector("[data-dnd-spell-editor-kicker]").textContent = "Editar magia";
+      section.querySelector("[data-dnd-spell-editor-title]").textContent = spell.name || "Editar magia";
+    } else {
+      section.querySelector("[data-dnd-spell-editor-kicker]").textContent = "Nova magia";
+      section.querySelector("[data-dnd-spell-editor-title]").textContent = "Adicionar ao grimório";
+    }
+
+    editor.hidden = false;
+    editor.scrollIntoView({ behavior: "smooth", block: "nearest" });
+  }
+
+  function closeEditor(form) {
+    const section = ensureSection(form);
+    const editor = section?.querySelector("[data-dnd-grimoire-editor]");
+    if (editor) editor.hidden = true;
+  }
+
+  function levelLabel(level) {
+    const number = Number(level) || 0;
+    return LEVEL_LABELS[number] || `${number}º`;
+  }
+
+  function metaLine(label, value) {
+    return value ? `<span><b>${html(label)}:</b>&nbsp;${html(value)}</span>` : "";
+  }
+
+  function tagsFor(spell) {
+    const tags = [];
+    if (spell.prepared) tags.push(`<span class="dnd-spell-tag dnd-spell-tag--prepared">Preparada</span>`);
+    if (spell.favorite) tags.push(`<span class="dnd-spell-tag dnd-spell-tag--favorite">Favorita</span>`);
+    if (spell.concentration) tags.push(`<span class="dnd-spell-tag">Concentração</span>`);
+    if (spell.ritual) tags.push(`<span class="dnd-spell-tag">Ritual</span>`);
+    if (spell.type) tags.push(`<span class="dnd-spell-tag">${html(spell.type)}</span>`);
+    if (!tags.length) tags.push(`<span class="dnd-spell-tag">Sem marcações</span>`);
+    return tags.join("");
+  }
+
+  function spellCard(spell, index, expandedIds) {
+    const expanded = expandedIds.has(spell.id);
+    const level = Number(spell.level) || 0;
+    const canUseSlot = level > 0;
+
+    return `
+      <article class="dnd-spell-card ${spell.favorite ? "is-favorite" : ""} ${expanded ? "is-expanded" : ""}" data-dnd-spell-id="${html(spell.id)}" data-dnd-spell-index="${index}">
+        <div class="dnd-spell-card__top">
+          <div>
+            <h4>${html(spell.name || "Magia sem nome")}</h4>
+            <div class="dnd-spell-card__school">${html(spell.school || "Escola não definida")}</div>
+          </div>
+          <div class="dnd-spell-card__level">${html(levelLabel(level))}</div>
+        </div>
+        <div class="dnd-spell-card__meta">
+          ${metaLine("Conjuração", spell.castingTime)}
+          ${metaLine("Alcance", spell.range)}
+          ${metaLine("Componentes", spell.components)}
+          ${metaLine("Duração", spell.duration)}
+          ${metaLine("Teste", spell.saveAttack)}
+          ${metaLine("Dano/Cura", spell.damage)}
+        </div>
+        <div class="dnd-spell-card__tags">${tagsFor(spell)}</div>
+        <div class="dnd-spell-card__actions">
+          <button type="button" data-dnd-spell-action="toggle-details">Ver detalhes</button>
+          <button type="button" data-dnd-spell-action="toggle-prepared">${spell.prepared ? "Despreparar" : "Preparar"}</button>
+          <button type="button" data-dnd-spell-action="toggle-favorite">${spell.favorite ? "★ Favorita" : "☆ Favoritar"}</button>
+          ${canUseSlot ? `<button type="button" data-dnd-spell-action="use-spell">Usar magia</button>` : ""}
+          <button type="button" data-dnd-spell-action="edit-spell">Editar</button>
+          <button type="button" class="dnd-spell-danger" data-dnd-spell-action="delete-spell">Remover</button>
+        </div>
+        <div class="dnd-spell-card__details">
+          ${spell.material ? `<div><strong>Material</strong><p>${html(spell.material)}</p></div>` : ""}
+          ${spell.description ? `<div><strong>Descrição</strong><p>${html(spell.description).replace(/\n/g, "<br>")}</p></div>` : ""}
+          ${spell.higherLevels ? `<div><strong>Em níveis superiores</strong><p>${html(spell.higherLevels).replace(/\n/g, "<br>")}</p></div>` : ""}
+          ${spell.notes ? `<div><strong>Observações</strong><p>${html(spell.notes).replace(/\n/g, "<br>")}</p></div>` : ""}
+        </div>
+      </article>
+    `;
+  }
+
+  function getExpandedIds(section) {
+    const raw = section?.dataset?.expandedSpellIds || "";
+    return new Set(raw.split(",").filter(Boolean));
+  }
+
+  function setExpandedIds(section, set) {
+    section.dataset.expandedSpellIds = Array.from(set).join(",");
+  }
+
+  function filteredSpells(section, spells) {
+    const search = String(section.querySelector("[data-dnd-spell-search]")?.value || "").trim().toLowerCase();
+    const level = section.querySelector("[data-dnd-spell-level-filter]")?.value || "all";
+    const onlyPrepared = section.querySelector("[data-dnd-spell-filter-prepared]")?.dataset.dndSpellFilterPrepared === "true";
+    const onlyFavorite = section.querySelector("[data-dnd-spell-filter-favorite]")?.dataset.dndSpellFilterFavorite === "true";
+
+    return spells.filter((spell) => {
+      const text = [spell.name, spell.school, spell.type, spell.description, spell.notes].join(" ").toLowerCase();
+      if (search && !text.includes(search)) return false;
+      if (level !== "all" && String(spell.level ?? 0) !== level) return false;
+      if (onlyPrepared && !spell.prepared) return false;
+      if (onlyFavorite && !spell.favorite) return false;
+      return true;
+    });
+  }
+
+  function updateCounters(section, spells) {
+    const total = spells.length;
+    const prepared = spells.filter((spell) => spell.prepared).length;
+    const favorite = spells.filter((spell) => spell.favorite).length;
+    const setTextSafe = (selector, value) => {
+      const el = section.querySelector(selector);
+      if (el) el.textContent = String(value);
+    };
+    setTextSafe("[data-dnd-spell-count-total]", total);
+    setTextSafe("[data-dnd-spell-count-prepared]", prepared);
+    setTextSafe("[data-dnd-spell-count-favorite]", favorite);
+  }
+
+  function renderSpellbook(form) {
+    const section = ensureSection(form);
+    if (!section) return;
+
+    const spells = readSpells(form);
+    updateCounters(section, spells);
+
+    const list = section.querySelector("[data-dnd-spell-list]");
+    const empty = section.querySelector("[data-dnd-spell-empty]");
+    const expandedIds = getExpandedIds(section);
+    const filtered = filteredSpells(section, spells);
+
+    section.querySelectorAll("[data-dnd-spell-filter-prepared], [data-dnd-spell-filter-favorite]").forEach((button) => {
+      const active = button.dataset.dndSpellFilterPrepared === "true" || button.dataset.dndSpellFilterFavorite === "true";
+      button.classList.toggle("is-active", active);
+    });
+
+    if (!list || !empty) return;
+
+    empty.hidden = spells.length > 0;
+    list.innerHTML = filtered.length
+      ? filtered.map((spell) => spellCard(spell, spells.indexOf(spell), expandedIds)).join("")
+      : spells.length
+        ? `<div class="dnd-grimoire-empty"><strong>Nenhuma magia encontrada.</strong><span>Ajuste os filtros ou a busca.</span></div>`
+        : "";
+  }
+
+  function saveEditor(form) {
+    const section = ensureSection(form);
+    if (!section) return;
+
+    const spell = getEditorData(section);
+    const spells = readSpells(form);
+    const index = spells.findIndex((item) => item.id === spell.id);
+
+    if (index >= 0) spells[index] = { ...spells[index], ...spell };
+    else spells.push({ ...spell, createdAt: new Date().toISOString() });
+
+    spells.sort((a, b) => Number(a.level || 0) - Number(b.level || 0) || String(a.name || "").localeCompare(String(b.name || "")));
+    closeEditor(form);
+    writeSpells(form, spells, true);
+  }
+
+  function getSlotUseOptions(form, minimumLevel) {
+    const min = Math.max(1, Math.min(9, Number(minimumLevel) || 1));
+    const options = [];
+
+    for (let level = min; level <= 9; level += 1) {
+      const counts = typeof window.campaignLabGetManualSpellSlotCounts === "function"
+        ? window.campaignLabGetManualSpellSlotCounts(form, level)
+        : { level, max: 0, available: 0, spent: 0 };
+
+      options.push({
+        level,
+        max: Number(counts.max || 0),
+        available: Number(counts.available || 0),
+        spent: Number(counts.spent || 0),
+      });
+    }
+
+    return options;
+  }
+
+  function ensureCastSlotModal(form) {
+    let modal = form.querySelector("[data-dnd-cast-slot-modal]");
+
+    if (modal) return modal;
+
+    modal = document.createElement("div");
+    modal.className = "dnd-cast-slot-modal";
+    modal.setAttribute("data-dnd-cast-slot-modal", "true");
+    modal.hidden = true;
+    modal.innerHTML = `
+      <div class="dnd-cast-slot-modal__box">
+        <div class="dnd-cast-slot-modal__head">
+          <div>
+            <span>Usar magia</span>
+            <strong data-dnd-cast-spell-name>Magia</strong>
+          </div>
+          <button type="button" data-dnd-cast-close aria-label="Fechar">×</button>
+        </div>
+
+        <p data-dnd-cast-help>Escolha qual círculo será gasto. O sistema apagará uma bolinha disponível desse nível.</p>
+
+        <label class="dnd-cast-slot-modal__field">
+          <span>Círculo usado</span>
+          <select data-dnd-cast-level></select>
+        </label>
+
+        <div class="dnd-cast-slot-modal__status" data-dnd-cast-status></div>
+
+        <div class="dnd-cast-slot-modal__actions">
+          <button type="button" data-dnd-cast-close>Cancelar</button>
+          <button type="button" class="dnd-cast-slot-modal__confirm" data-dnd-cast-confirm>Gastar espaço</button>
+        </div>
+      </div>
+    `;
+
+    form.appendChild(modal);
+    return modal;
+  }
+
+  function openCastSlotModal(form, spell) {
+    const baseLevel = Number(spell.level || 0);
+
+    if (baseLevel <= 0) {
+      alert("Truques não gastam espaço de magia.");
+      return;
+    }
+
+    const modal = ensureCastSlotModal(form);
+    const select = modal.querySelector("[data-dnd-cast-level]");
+    const status = modal.querySelector("[data-dnd-cast-status]");
+    const name = modal.querySelector("[data-dnd-cast-spell-name]");
+    const confirm = modal.querySelector("[data-dnd-cast-confirm]");
+    const closeButtons = modal.querySelectorAll("[data-dnd-cast-close]");
+    const options = getSlotUseOptions(form, baseLevel);
+
+    if (name) name.textContent = spell.name || "Magia sem nome";
+
+    if (select) {
+      select.innerHTML = options.map((item) => `
+        <option value="${item.level}" ${item.available <= 0 ? "data-empty='true'" : ""}>
+          ${levelLabel(item.level)} círculo · ${item.available}/${item.max} disponíveis
+        </option>
+      `).join("");
+      select.value = String(baseLevel);
+    }
+
+    const refreshStatus = () => {
+      const selected = Number(select?.value || baseLevel);
+      const found = options.find((item) => item.level === selected);
+      if (!status || !found) return;
+
+      status.textContent = found.max <= 0
+        ? `Nenhum espaço de ${levelLabel(selected)} configurado.`
+        : `${found.available} de ${found.max} espaços de ${levelLabel(selected)} disponíveis.`;
+
+      status.classList.toggle("is-empty", !found || found.available <= 0);
+    };
+
+    refreshStatus();
+
+    if (select) select.onchange = refreshStatus;
+
+    closeButtons.forEach((button) => {
+      button.onclick = () => {
+        modal.hidden = true;
+      };
+    });
+
+    if (confirm) {
+      confirm.onclick = () => {
+        const selected = Number(select?.value || baseLevel);
+        const consumed = typeof window.campaignLabUseManualSpellSlot === "function"
+          ? window.campaignLabUseManualSpellSlot(form, selected)
+          : false;
+
+        if (!consumed) {
+          refreshStatus();
+          return;
+        }
+
+        modal.hidden = true;
+      };
+    }
+
+    modal.hidden = false;
+    modal.scrollIntoView({ behavior: "smooth", block: "center" });
+  }
+
+  function detailBlock(label, value) {
+    const safeValue = String(value || "").trim();
+    if (!safeValue) return "";
+
+    return `
+      <article class="dnd-spell-details-modal__block">
+        <span>${html(label)}</span>
+        <p>${html(safeValue).replace(/\n/g, "<br>")}</p>
+      </article>
+    `;
+  }
+
+  function modalMeta(label, value) {
+    const safeValue = String(value || "").trim();
+    if (!safeValue) return "";
+
+    return `
+      <div class="dnd-spell-details-modal__meta-item">
+        <span>${html(label)}</span>
+        <strong>${html(safeValue)}</strong>
+      </div>
+    `;
+  }
+
+  function ensureSpellDetailsModal() {
+    let modal = document.querySelector("[data-dnd-spell-details-modal]");
+    if (modal) return modal;
+
+    modal = document.createElement("div");
+    modal.className = "dnd-spell-details-modal";
+    modal.setAttribute("data-dnd-spell-details-modal", "true");
+    modal.hidden = true;
+    modal.innerHTML = `
+      <div class="dnd-spell-details-modal__box" role="dialog" aria-modal="true" aria-labelledby="dndSpellDetailsTitle">
+        <button type="button" class="dnd-spell-details-modal__close" data-dnd-spell-details-close aria-label="Fechar detalhes da magia">×</button>
+
+        <div class="dnd-spell-details-modal__head">
+          <div>
+            <span data-dnd-spell-details-kicker>Detalhes da magia</span>
+            <h3 id="dndSpellDetailsTitle" data-dnd-spell-details-title>Magia</h3>
+            <p data-dnd-spell-details-subtitle>Escola e tipo</p>
+          </div>
+          <strong data-dnd-spell-details-level>1º</strong>
+        </div>
+
+        <div class="dnd-spell-details-modal__tags" data-dnd-spell-details-tags></div>
+        <div class="dnd-spell-details-modal__meta" data-dnd-spell-details-meta></div>
+        <div class="dnd-spell-details-modal__content" data-dnd-spell-details-content></div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal || event.target.closest("[data-dnd-spell-details-close]")) {
+        closeSpellDetailsModal();
+      }
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && !modal.hidden) {
+        closeSpellDetailsModal();
+      }
+    });
+
+    return modal;
+  }
+
+  function closeSpellDetailsModal() {
+    const modal = document.querySelector("[data-dnd-spell-details-modal]");
+    if (modal) modal.hidden = true;
+  }
+
+  function openSpellDetailsModal(form, spell) {
+    if (!spell) return;
+
+    const modal = ensureSpellDetailsModal();
+    const title = modal.querySelector("[data-dnd-spell-details-title]");
+    const subtitle = modal.querySelector("[data-dnd-spell-details-subtitle]");
+    const level = modal.querySelector("[data-dnd-spell-details-level]");
+    const tags = modal.querySelector("[data-dnd-spell-details-tags]");
+    const meta = modal.querySelector("[data-dnd-spell-details-meta]");
+    const content = modal.querySelector("[data-dnd-spell-details-content]");
+
+    const spellLevel = Number(spell.level || 0);
+    const spellSchool = spell.school || "Escola não definida";
+    const spellType = spell.type || "Tipo não definido";
+
+    if (title) title.textContent = spell.name || "Magia sem nome";
+    if (subtitle) subtitle.textContent = `${spellSchool} • ${spellType}`;
+    if (level) level.textContent = levelLabel(spellLevel);
+    if (tags) tags.innerHTML = tagsFor(spell);
+
+    if (meta) {
+      meta.innerHTML = [
+        modalMeta("Conjuração", spell.castingTime),
+        modalMeta("Alcance", spell.range),
+        modalMeta("Componentes", spell.components),
+        modalMeta("Duração", spell.duration),
+        modalMeta("Teste / ataque", spell.saveAttack),
+        modalMeta("Dano / cura", spell.damage),
+      ].join("");
+    }
+
+    if (content) {
+      content.innerHTML = [
+        detailBlock("Material", spell.material),
+        detailBlock("Descrição", spell.description || "Sem descrição cadastrada."),
+        detailBlock("Em níveis superiores", spell.higherLevels),
+        detailBlock("Observações", spell.notes),
+      ].join("");
+    }
+
+    modal.hidden = false;
+
+    const closeButton = modal.querySelector("[data-dnd-spell-details-close]");
+    if (closeButton) closeButton.focus({ preventScroll: true });
+  }
+
+  function useSpellSlot(form, spell) {
+    openCastSlotModal(form, spell);
+  }
+
+  function handleAction(event) {
+    const actionButton = event.target.closest("[data-dnd-spell-action]");
+    const section = event.target.closest("[data-dnd-grimoire]");
+    const form = event.target.closest("form");
+
+    if (!section || !form) return;
+
+    const action = actionButton?.dataset?.dndSpellAction;
+
+    if (!action && (event.target.matches("[data-dnd-spell-search]") || event.target.matches("[data-dnd-spell-level-filter]"))) {
+      renderSpellbook(form);
+      return;
+    }
+
+    if (!actionButton) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const spells = readSpells(form);
+    const card = actionButton.closest("[data-dnd-spell-id]");
+    const spellId = card?.dataset?.dndSpellId || "";
+    const index = spells.findIndex((spell) => spell.id === spellId);
+    const spell = index >= 0 ? spells[index] : null;
+
+    if (action === "add") return openEditor(form);
+    if (action === "cancel-edit") return closeEditor(form);
+    if (action === "save-spell") return saveEditor(form);
+
+    if (!spell) return;
+
+    if (action === "edit-spell") return openEditor(form, spell);
+
+    if (action === "delete-spell") {
+      if (!confirm(`Remover a magia "${spell.name}" do grimório?`)) return;
+      spells.splice(index, 1);
+      return writeSpells(form, spells, true);
+    }
+
+    if (action === "toggle-prepared") {
+      spell.prepared = !spell.prepared;
+      return writeSpells(form, spells, true);
+    }
+
+    if (action === "toggle-favorite") {
+      spell.favorite = !spell.favorite;
+      return writeSpells(form, spells, true);
+    }
+
+    if (action === "toggle-details") {
+      return openSpellDetailsModal(form, spell);
+    }
+
+    if (action === "use-spell") return useSpellSlot(form, spell);
+  }
+
+  function setupSpellbook(form) {
+    if (!form) return;
+    const section = ensureSection(form);
+    if (!section) return;
+
+    if (!section.dataset.dndGrimoireReady) {
+      section.dataset.dndGrimoireReady = "true";
+
+      section.addEventListener("click", handleAction);
+      section.addEventListener("input", (event) => {
+        if (event.target.matches("[data-dnd-spell-search], [data-dnd-spell-level-filter]")) {
+          renderSpellbook(form);
+        }
+      });
+      section.addEventListener("change", (event) => {
+        if (event.target.matches("[data-dnd-spell-level-filter]")) {
+          renderSpellbook(form);
+        }
+      });
+    }
+
+    renderSpellbook(form);
+  }
+
+  function bootSpellbooks() {
+    getDndSpellbookForms().forEach(setupSpellbook);
+  }
+
+  const originalLoadDndSheet = window.loadDndSheetIntoPlayerForm;
+  if (typeof originalLoadDndSheet === "function" && !originalLoadDndSheet.__dndSpellbookWrapped) {
+    const wrappedLoad = async function wrappedLoadDndSheetWithSpellbook() {
+      const result = await originalLoadDndSheet.apply(this, arguments);
+      bootSpellbooks();
+      return result;
+    };
+    wrappedLoad.__dndSpellbookWrapped = true;
+    window.loadDndSheetIntoPlayerForm = wrappedLoad;
+    try { loadDndSheetIntoPlayerForm = wrappedLoad; } catch (error) {}
+  }
+
+  const originalOpenDndMasterSheetModal = window.openDndMasterSheetModal || (typeof openDndMasterSheetModal === "function" ? openDndMasterSheetModal : null);
+  if (typeof originalOpenDndMasterSheetModal === "function" && !originalOpenDndMasterSheetModal.__dndSpellbookWrapped) {
+    const wrappedOpenDndMasterSheetModal = async function wrappedOpenDndMasterSheetModalWithSpellbook() {
+      const result = await originalOpenDndMasterSheetModal.apply(this, arguments);
+      bootSpellbooks();
+      return result;
+    };
+    wrappedOpenDndMasterSheetModal.__dndSpellbookWrapped = true;
+    window.openDndMasterSheetModal = wrappedOpenDndMasterSheetModal;
+    try { openDndMasterSheetModal = wrappedOpenDndMasterSheetModal; } catch (error) {}
+  }
+
+  function start() {
+    bootSpellbooks();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+
+  window.setTimeout(bootSpellbooks, 400);
+  window.setTimeout(bootSpellbooks, 1200);
+  window.setTimeout(bootSpellbooks, 2200);
+})();
+/* =========================================================
+   PATCH - CORREÇÃO DO BOTÃO DESCANSO LONGO NA ABA DESCANSAR
+   - O botão funciona mesmo estando fora da antiga área de Combate.
+   - Restaura espaços de magia mesmo se PV máximo estiver vazio/0.
+   - Acende todas as bolinhas de espaços de magia.
+   - Evita conflito com listeners antigos do botão.
+   Cole este bloco NO FINAL do script.js.
+========================================================= */
+(function campaignLabFixDndLongRestButton() {
+  let running = false;
+
+  function getForm() {
+    return document.getElementById('dndPlayerSheetForm');
+  }
+
+  function numberValue(value) {
+    const parsed = Number(String(value ?? '').replace(',', '.'));
+    return Number.isFinite(parsed) ? parsed : 0;
+  }
+
+  function setResult(message, type = 'success') {
+    if (typeof setDndRestResult === 'function') {
+      setDndRestResult(message, type);
+      return;
+    }
+
+    const result = document.getElementById('dndRestResult');
+    if (!result) return;
+
+    result.textContent = message;
+    result.classList.remove('success', 'warning', 'error');
+    result.classList.add(type);
+  }
+
+  function restoreAllSpellSlotDots(form) {
+    if (!form) return false;
+
+    let restoredAny = false;
+
+    form.querySelectorAll('.dnd-spell-slot-level').forEach((levelBox) => {
+      const level = Number(levelBox.dataset.spellSlotLevel || levelBox.querySelector('[data-spell-slot-hidden]')?.dataset.spellSlotHidden || 0);
+      const hidden = levelBox.querySelector(`[data-spell-slot-hidden="${level}"]`) || levelBox.querySelector('[data-spell-slot-hidden]');
+      const input = levelBox.querySelector('.dnd-spell-slot-max-input');
+
+      if (!hidden) return;
+
+      const savedLength = String(hidden.value || '').replace(/[^01]/g, '').length;
+      const max = Math.max(0, Math.min(12, Math.floor(numberValue(input?.value || levelBox.dataset.spellSlotMax || savedLength || 0))));
+
+      if (input) input.value = String(max);
+      hidden.value = '1'.repeat(max);
+      restoredAny = restoredAny || max > 0;
+    });
+
+    if (typeof window.campaignLabRenderManualSpellSlots === 'function') {
+      window.campaignLabRenderManualSpellSlots(form);
+    } else if (typeof syncAllDndSpellSlotTrackers === 'function') {
+      syncAllDndSpellSlotTrackers(form);
+    }
+
+    return restoredAny;
+  }
+
+  function recoverHitDice(form) {
+    try {
+      if (typeof getDndHitDiceState !== 'function' || typeof formatDndHitDiceValue !== 'function') return '';
+
+      const diceState = getDndHitDiceState(form);
+      const recoverAmount = Math.max(1, Math.floor((diceState.totalTotal || 0) / 2));
+      const nextRemaining = Math.min(diceState.totalTotal || 0, (diceState.remainingTotal || 0) + recoverAmount);
+
+      if (form.elements.hitDiceRemaining && diceState.totalTotal > 0) {
+        form.elements.hitDiceRemaining.value = formatDndHitDiceValue(nextRemaining, diceState.primarySides || 8);
+        return form.elements.hitDiceRemaining.value;
+      }
+    } catch (error) {
+      console.warn('Não foi possível recuperar Dados de Vida no descanso longo:', error);
+    }
+
+    return form.elements.hitDiceRemaining?.value || '--';
+  }
+
+  async function applyLongRestFromTab(button = null) {
+    if (running) return;
+
+    const form = getForm();
+    if (!form) return;
+
+    running = true;
+    if (button) button.disabled = true;
+
+    try {
+      const maxHp = numberValue(form.elements.hpMax?.value);
+      const restoredSlots = restoreAllSpellSlotDots(form);
+
+      if (maxHp > 0 && form.elements.hpCurrent) {
+        form.elements.hpCurrent.value = String(maxHp);
+      }
+
+      if (form.elements.hpTemp) form.elements.hpTemp.value = '0';
+      if (form.elements.deathSuccesses) form.elements.deathSuccesses.value = '';
+      if (form.elements.deathFailures) form.elements.deathFailures.value = '';
+
+      const hitDiceText = recoverHitDice(form);
+
+      if (typeof updateDndAutoNumbers === 'function') updateDndAutoNumbers();
+      if (typeof updateDndRestPreview === 'function') updateDndRestPreview();
+      if (typeof saveDndPlayerSheet === 'function') await saveDndPlayerSheet(false);
+
+      const hpText = maxHp > 0
+        ? `PV voltou para ${maxHp}`
+        : 'PV máximo não preenchido, então só PV temporário, Dados de Vida e espaços de magia foram atualizados';
+
+      setResult(
+        `Descanso longo aplicado. ${hpText}. PV temporário zerado. Dados de Vida: ${hitDiceText}. ${restoredSlots ? 'Todos os espaços de magia foram restaurados.' : 'Nenhum espaço de magia configurado para restaurar.'}`,
+        'success'
+      );
+    } catch (error) {
+      console.error('Erro ao aplicar descanso longo:', error);
+      setResult('Erro ao aplicar descanso longo. Veja o console para detalhes.', 'error');
+    } finally {
+      running = false;
+      if (button) button.disabled = false;
+    }
+  }
+
+  document.addEventListener('click', (event) => {
+    const button = event.target?.closest?.('#applyDndLongRest');
+    if (!button) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    event.stopImmediatePropagation();
+
+    applyLongRestFromTab(button);
+  }, true);
+
+  window.campaignLabApplyDndLongRestFromTab = applyLongRestFromTab;
+})();
+
+
+/* =========================================================
+   D&D - BOTÃO APLICAR NO LUGAR DO BAIXAR JSON
+   - Remove a função visual do Baixar JSON.
+   - O botão Aplicar acende quando a ficha muda.
+   - Ao clicar, salva as últimas alterações no Supabase e volta a ficar apagado.
+========================================================= */
+(function setupCampaignLabDndApplyButton() {
+  function getForm() {
+    return document.getElementById("dndPlayerSheetForm");
+  }
+
+  function getButton() {
+    return document.getElementById("dndV2ApplySheetBtn");
+  }
+
+  function setButtonState(state) {
+    const button = getButton();
+    if (!button) return;
+
+    button.classList.remove("is-clean", "is-dirty", "is-saving", "is-error");
+    button.dataset.applyState = state;
+
+    if (state === "dirty" || state === "error") {
+      button.classList.add("is-dirty");
+      button.disabled = false;
+      button.textContent = "Aplicar";
+      button.setAttribute("aria-label", "Aplicar e salvar alterações da ficha");
+      return;
+    }
+
+    if (state === "saving") {
+      button.classList.add("is-saving");
+      button.disabled = true;
+      button.textContent = "Aplicar";
+      button.setAttribute("aria-label", "Salvando alterações da ficha");
+      return;
+    }
+
+    button.classList.add("is-clean");
+    button.disabled = true;
+    button.textContent = "Aplicado";
+    button.setAttribute("aria-label", "Ficha sem alterações pendentes");
+  }
+
+  function markDirty() {
+    const button = getButton();
+    if (!button || button.dataset.applyState === "saving") return;
+    setButtonState("dirty");
+  }
+
+  async function applySheetChanges() {
+    const form = getForm();
+    const button = getButton();
+    if (!form || !button || button.dataset.applyState !== "dirty") return;
+
+    try {
+      setButtonState("saving");
+
+      if (typeof syncAllDndSpellSlotTrackers === "function") {
+        syncAllDndSpellSlotTrackers(form);
+      }
+
+      if (typeof syncCampaignLabDndClassFieldsInForm === "function") {
+        syncCampaignLabDndClassFieldsInForm(form);
+      }
+
+      if (typeof dndRecalculateAll === "function") {
+        dndRecalculateAll(form);
+      }
+
+      if (typeof saveDndPlayerSheet === "function") {
+        await saveDndPlayerSheet(false);
+      } else {
+        const user = typeof getLoggedUserFromSession === "function" ? getLoggedUserFromSession() : null;
+        const campaign = typeof getCurrentCampaign === "function" ? await getCurrentCampaign() : null;
+        if (!user || !campaign || typeof updateDndSheet !== "function" || typeof dndGetCompleteFormData !== "function") {
+          throw new Error("Função de salvamento da ficha não encontrada.");
+        }
+        await updateDndSheet(campaign.id, user.id, dndGetCompleteFormData(form));
+      }
+
+      setButtonState("clean");
+    } catch (error) {
+      console.error("Erro ao aplicar ficha de D&D:", error);
+      setButtonState("dirty");
+    }
+  }
+
+  function setup() {
+    const form = getForm();
+    const button = getButton();
+    if (!form || !button || button.dataset.dndApplyReady === "true") return;
+
+    button.dataset.dndApplyReady = "true";
+    setButtonState("clean");
+
+    form.addEventListener("input", markDirty, true);
+    form.addEventListener("change", markDirty, true);
+
+    form.addEventListener("click", (event) => {
+      if (
+        event.target.closest("[data-dnd-spell-action]") ||
+        event.target.closest("[data-dnd-use-spell-slot]") ||
+        event.target.closest(".dnd-spell-slot-dot") ||
+        event.target.closest("#applyDndLongRest") ||
+        event.target.closest("#applyDndShortRest")
+      ) {
+        window.setTimeout(markDirty, 80);
+      }
+    }, true);
+
+    button.addEventListener("click", applySheetChanges);
+
+    window.setTimeout(() => setButtonState("clean"), 600);
+    window.setTimeout(() => setButtonState("clean"), 1400);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", setup);
+  } else {
+    setup();
+  }
+})();
+/* =========================================================
+   D&D - CORREÇÃO DEFINITIVA DO BOTÃO APLICAR/APLICADO
+   Cole este patch NO FINAL do script.js.
+   Estados permitidos:
+   - Aplicar: existem mudanças pendentes ou salvamento falhou
+   - Aplicado: ficha salva, sem mudanças pendentes
+========================================================= */
+(function fixCampaignLabDndApplyAppliedButton() {
+  const BUTTON_ID = "dndV2ApplySheetBtn";
+  const FORM_ID = "dndPlayerSheetForm";
+
+  let dirtyVersion = 0;
+  let savedVersion = 0;
+  let isApplying = false;
+  let suppressDirtyUntil = 0;
+  let ready = false;
+
+  function getForm() {
+    return document.getElementById(FORM_ID);
+  }
+
+  function getButton() {
+    return document.getElementById(BUTTON_ID);
+  }
+
+  function setButtonApplied() {
+    const button = getButton();
+    if (!button) return;
+
+    button.classList.remove("is-dirty", "is-saving", "is-error");
+    button.classList.add("is-clean");
+    button.dataset.applyState = "clean";
+    button.textContent = "Aplicado";
+    button.disabled = true;
+    button.setAttribute("aria-label", "Ficha aplicada e salva");
+  }
+
+  function setButtonApply() {
+    const button = getButton();
+    if (!button) return;
+
+    button.classList.remove("is-clean", "is-saving", "is-error");
+    button.classList.add("is-dirty");
+    button.dataset.applyState = "dirty";
+    button.textContent = "Aplicar";
+    button.disabled = false;
+    button.setAttribute("aria-label", "Aplicar e salvar alterações da ficha");
+  }
+
+  function markDirty() {
+    if (!ready || isApplying) return;
+    if (Date.now() < suppressDirtyUntil) return;
+
+    dirtyVersion += 1;
+    setButtonApply();
+  }
+
+  async function saveCurrentDndSheet() {
+    const form = getForm();
+    if (!form) throw new Error("Formulário D&D não encontrado.");
+
+    if (typeof syncAllDndSpellSlotTrackers === "function") {
+      syncAllDndSpellSlotTrackers(form);
+    }
+
+    if (typeof syncCampaignLabDndClassFieldsInForm === "function") {
+      syncCampaignLabDndClassFieldsInForm(form);
+    }
+
+    if (typeof dndEnsureFinalBonusAutomationFields === "function") {
+      dndEnsureFinalBonusAutomationFields(form);
+    }
+
+    if (typeof dndApplyAltheriumBackgroundSelection === "function") {
+      dndApplyAltheriumBackgroundSelection(form, { silent: true });
+    }
+
+    if (typeof dndRecalculateAll === "function") {
+      dndRecalculateAll(form);
+    }
+
+    if (typeof saveDndPlayerSheet === "function") {
+      await saveDndPlayerSheet(false);
+      return;
+    }
+
+    const user = typeof getLoggedUserFromSession === "function" ? getLoggedUserFromSession() : null;
+    const campaign = typeof getCurrentCampaign === "function" ? await getCurrentCampaign() : null;
+
+    if (!user || !campaign || typeof updateDndSheet !== "function" || typeof dndGetCompleteFormData !== "function") {
+      throw new Error("Funções de salvamento da ficha D&D não encontradas.");
+    }
+
+    await updateDndSheet(campaign.id, user.id, dndGetCompleteFormData(form));
+  }
+
+  async function applyNow(event) {
+    const button = getButton();
+    if (!button) return;
+
+    event?.preventDefault?.();
+    event?.stopPropagation?.();
+    event?.stopImmediatePropagation?.();
+
+    if (isApplying) return;
+
+    const versionAtStart = dirtyVersion;
+    isApplying = true;
+    button.disabled = true;
+    button.dataset.applyState = "saving";
+    button.classList.remove("is-clean", "is-dirty", "is-error");
+    button.classList.add("is-saving");
+    button.textContent = "Aplicar";
+
+    try {
+      await saveCurrentDndSheet();
+
+      savedVersion = versionAtStart;
+      suppressDirtyUntil = Date.now() + 1500;
+
+      if (dirtyVersion === versionAtStart) {
+        setButtonApplied();
+
+        // Proteção contra eventos atrasados do próprio recálculo/salvamento.
+        window.setTimeout(() => {
+          if (dirtyVersion === savedVersion) setButtonApplied();
+        }, 120);
+
+        window.setTimeout(() => {
+          if (dirtyVersion === savedVersion) setButtonApplied();
+        }, 600);
+
+        window.setTimeout(() => {
+          if (dirtyVersion === savedVersion) setButtonApplied();
+        }, 1400);
+      } else {
+        setButtonApply();
+      }
+    } catch (error) {
+      console.error("Erro ao aplicar ficha de D&D:", error);
+      setButtonApply();
+    } finally {
+      isApplying = false;
+    }
+  }
+
+  function setup() {
+    const form = getForm();
+    const button = getButton();
+    if (!form || !button || button.dataset.applyAppliedFixReady === "true") return;
+
+    button.dataset.applyAppliedFixReady = "true";
+
+    // Remove disabled herdado do HTML quando houver mudança depois.
+    setButtonApplied();
+    ready = true;
+
+    form.addEventListener("input", markDirty, true);
+    form.addEventListener("change", markDirty, true);
+
+    form.addEventListener("click", (event) => {
+      if (
+        event.target.closest("[data-dnd-spell-action]") ||
+        event.target.closest("[data-dnd-use-spell-slot]") ||
+        event.target.closest(".dnd-spell-slot-dot") ||
+        event.target.closest("#applyDndLongRest") ||
+        event.target.closest("#applyDndShortRest")
+      ) {
+        window.setTimeout(markDirty, 120);
+      }
+    }, true);
+
+    // Captura antes do listener antigo para impedir que ele coloque estado errado.
+    button.addEventListener("click", applyNow, true);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => setTimeout(setup, 300));
+  } else {
+    setTimeout(setup, 300);
+  }
+})();
+/* =========================================================
+   D&D - INVENTÁRIO FUNCIONAL
+   Salva tudo no campo hidden dndInventoryItems em JSON.
+========================================================= */
+(function () {
+  const FORM_ID = "dndPlayerSheetForm";
+  const STORE_NAME = "dndInventoryItems";
+
+  const CATEGORY_LABELS = {
+    weapon: "Arma",
+    armor: "Armadura",
+    shield: "Escudo",
+    magic: "Item mágico",
+    consumable: "Consumível",
+    tool: "Ferramenta",
+    adventuring: "Equipamento",
+    treasure: "Tesouro",
+    custom: "Criado",
+  };
+
+  const VALUE_MULTIPLIER_TO_GP = {
+    PC: 0.01,
+    PP: 0.1,
+    PE: 0.5,
+    PO: 1,
+    PL: 10,
+  };
+
+  const INVENTORY_PRESETS = [
+    { name: "Adaga", category: "weapon", weight: "1", value: "2", valueUnit: "PO", type: "Arma simples", notes: "Arma leve, arremesso e acuidade." },
+    { name: "Espada curta", category: "weapon", weight: "2", value: "10", valueUnit: "PO", type: "Arma marcial", notes: "Arma leve e de acuidade." },
+    { name: "Espada longa", category: "weapon", weight: "3", value: "15", valueUnit: "PO", type: "Arma marcial", notes: "Versátil." },
+    { name: "Machado de batalha", category: "weapon", weight: "4", value: "10", valueUnit: "PO", type: "Arma marcial", notes: "Versátil." },
+    { name: "Martelo de guerra", category: "weapon", weight: "2", value: "15", valueUnit: "PO", type: "Arma marcial", notes: "Versátil." },
+    { name: "Arco curto", category: "weapon", weight: "2", value: "25", valueUnit: "PO", type: "Arma simples", notes: "Arma à distância." },
+    { name: "Arco longo", category: "weapon", weight: "2", value: "50", valueUnit: "PO", type: "Arma marcial", notes: "Arma à distância pesada." },
+    { name: "Besta leve", category: "weapon", weight: "5", value: "25", valueUnit: "PO", type: "Arma simples", notes: "Arma à distância com recarga." },
+    { name: "Escudo", category: "shield", weight: "6", value: "10", valueUnit: "PO", type: "Defesa", notes: "+2 CA enquanto equipado." },
+    { name: "Couro", category: "armor", weight: "10", value: "10", valueUnit: "PO", type: "Armadura leve", notes: "CA 11 + DES." },
+    { name: "Couro batido", category: "armor", weight: "13", value: "45", valueUnit: "PO", type: "Armadura leve", notes: "CA 12 + DES." },
+    { name: "Camisão de malha", category: "armor", weight: "20", value: "50", valueUnit: "PO", type: "Armadura média", notes: "CA 13 + DES máx. +2." },
+    { name: "Peitoral", category: "armor", weight: "20", value: "400", valueUnit: "PO", type: "Armadura média", notes: "CA 14 + DES máx. +2." },
+    { name: "Cota de malha", category: "armor", weight: "55", value: "75", valueUnit: "PO", type: "Armadura pesada", notes: "CA 16." },
+    { name: "Armadura de placas", category: "armor", weight: "65", value: "1500", valueUnit: "PO", type: "Armadura pesada", notes: "CA 18." },
+    { name: "Poção de cura", category: "consumable", weight: "0.5", value: "50", valueUnit: "PO", type: "Poção", consumable: true, notes: "Consumível de cura." },
+    { name: "Pergaminho de magia", category: "consumable", weight: "0", value: "0", valueUnit: "PO", type: "Pergaminho", magical: true, consumable: true, notes: "Defina a magia e o círculo nas observações." },
+    { name: "Foco arcano", category: "adventuring", weight: "1", value: "10", valueUnit: "PO", type: "Foco", notes: "Usado por conjuradores arcanos." },
+    { name: "Símbolo sagrado", category: "adventuring", weight: "1", value: "5", valueUnit: "PO", type: "Foco", notes: "Usado por conjuradores divinos." },
+    { name: "Ferramentas de ladrão", category: "tool", weight: "1", value: "25", valueUnit: "PO", type: "Ferramenta", notes: "Abrir fechaduras e desarmar armadilhas." },
+    { name: "Corda de cânhamo", category: "adventuring", weight: "10", value: "1", valueUnit: "PO", type: "Equipamento", notes: "15 metros." },
+    { name: "Rações", category: "adventuring", weight: "2", value: "5", valueUnit: "PP", type: "Suprimento", consumable: true, notes: "1 dia de alimento." },
+    { name: "Tocha", category: "adventuring", weight: "1", value: "1", valueUnit: "PC", type: "Equipamento", consumable: true, notes: "Iluminação simples." },
+    { name: "Gema preciosa", category: "treasure", weight: "0", value: "50", valueUnit: "PO", type: "Tesouro", notes: "Ajuste o valor conforme o mestre." },
+  ];
+
+  function getForm() {
+    return document.getElementById(FORM_ID);
+  }
+
+  function getStore(form = getForm()) {
+    return form?.elements?.[STORE_NAME] || form?.querySelector?.(`[name="${STORE_NAME}"]`) || null;
+  }
+
+  function escapeHtml(value = "") {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function toNumber(value, fallback = 0) {
+    const normalized = String(value ?? "").replace(",", ".").replace(/[^0-9.-]/g, "");
+    const number = Number(normalized);
+    return Number.isFinite(number) ? number : fallback;
+  }
+
+  function toInt(value, fallback = 0) {
+    const number = Math.floor(toNumber(value, fallback));
+    return Number.isFinite(number) ? number : fallback;
+  }
+
+  function readItems(form = getForm()) {
+    const store = getStore(form);
+    if (!store) return [];
+
+    try {
+      const parsed = JSON.parse(store.value || "[]");
+      if (!Array.isArray(parsed)) return [];
+      return parsed.map(normalizeItem).filter((item) => item.name || item.notes);
+    } catch (error) {
+      console.warn("Inventário D&D inválido:", error);
+      return [];
+    }
+  }
+
+  function writeItems(items, options = {}) {
+    const form = getForm();
+    const store = getStore(form);
+    if (!form || !store) return;
+
+    store.value = JSON.stringify(items.map(normalizeItem));
+    renderInventory(form);
+
+    if (options.silent) return;
+
+    store.dispatchEvent(new Event("input", { bubbles: true }));
+    store.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function normalizeItem(item = {}) {
+    const quantity = Math.max(1, toInt(item.quantity, 1));
+    const chargesMax = Math.max(0, toInt(item.chargesMax, 0));
+    const chargesCurrent = Math.max(0, Math.min(chargesMax || 999, toInt(item.chargesCurrent, chargesMax)));
+
+    return {
+      id: String(item.id || `item-${Date.now()}-${Math.random().toString(16).slice(2)}`),
+      name: String(item.name || "").trim(),
+      category: CATEGORY_LABELS[item.category] ? item.category : "custom",
+      type: String(item.type || "").trim(),
+      rarity: String(item.rarity || "").trim(),
+      quantity: String(quantity),
+      weight: String(item.weight ?? "0"),
+      value: String(item.value ?? "0"),
+      valueUnit: ["PC", "PP", "PE", "PO", "PL"].includes(item.valueUnit) ? item.valueUnit : "PO",
+      equipped: Boolean(item.equipped),
+      magical: Boolean(item.magical || item.category === "magic"),
+      attuned: Boolean(item.attuned),
+      consumable: Boolean(item.consumable || item.category === "consumable"),
+      favorite: Boolean(item.favorite),
+      chargesCurrent: String(chargesCurrent),
+      chargesMax: String(chargesMax),
+      notes: String(item.notes || "").trim(),
+    };
+  }
+
+  function formatWeight(value) {
+    const number = toNumber(value, 0);
+    return `${Number.isInteger(number) ? number : number.toFixed(1)} lb`;
+  }
+
+  function formatValue(value) {
+    const number = toNumber(value, 0);
+    return Number.isInteger(number) ? String(number) : number.toFixed(2).replace(/\.00$/, "");
+  }
+
+  function itemValueInGp(item) {
+    return toNumber(item.value, 0) * Math.max(1, toInt(item.quantity, 1)) * (VALUE_MULTIPLIER_TO_GP[item.valueUnit] || 1);
+  }
+
+  function getWalletTotalGp(form) {
+    const cp = toNumber(form?.elements?.coinCopper?.value, 0) * 0.01;
+    const sp = toNumber(form?.elements?.coinSilver?.value, 0) * 0.1;
+    const ep = toNumber(form?.elements?.coinElectrum?.value, 0) * 0.5;
+    const gp = toNumber(form?.elements?.coinGold?.value, 0);
+    const pp = toNumber(form?.elements?.coinPlatinum?.value, 0) * 10;
+    return cp + sp + ep + gp + pp;
+  }
+
+  function getCarryingCapacity(form) {
+    const manual = toNumber(form?.elements?.carryingCapacity?.value, NaN);
+    if (Number.isFinite(manual) && manual > 0) return manual;
+
+    const strScore = Math.max(1, toNumber(form?.elements?.strScore?.value, 10));
+    return strScore * 15;
+  }
+
+  function getFilteredItems(form) {
+    const items = readItems(form);
+    const search = String(form.querySelector("[data-dnd-inventory-search]")?.value || "").trim().toLowerCase();
+    const filter = form.querySelector("[data-dnd-inventory-filter]")?.value || "all";
+
+    return items.filter((item) => {
+      const matchesCategory = filter === "all" || item.category === filter;
+      const haystack = [
+        item.name,
+        item.type,
+        item.rarity,
+        item.notes,
+        CATEGORY_LABELS[item.category],
+      ].join(" ").toLowerCase();
+      const matchesSearch = !search || haystack.includes(search);
+      return matchesCategory && matchesSearch;
+    });
+  }
+
+  function renderInventory(form = getForm()) {
+    if (!form) return;
+
+    const allItems = readItems(form);
+    const filteredItems = getFilteredItems(form);
+    const list = form.querySelector("[data-dnd-inventory-list]");
+    const empty = form.querySelector("[data-dnd-inventory-empty]");
+    if (!list || !empty) return;
+
+    const totalItems = allItems.reduce((sum, item) => sum + Math.max(1, toInt(item.quantity, 1)), 0);
+    const totalWeight = allItems.reduce((sum, item) => sum + toNumber(item.weight, 0) * Math.max(1, toInt(item.quantity, 1)), 0);
+    const totalValue = allItems.reduce((sum, item) => sum + itemValueInGp(item), 0);
+    const magicCount = allItems.filter((item) => item.magical || item.category === "magic").length;
+    const attunedCount = allItems.filter((item) => item.attuned).length;
+    const walletTotal = getWalletTotalGp(form);
+    const capacity = getCarryingCapacity(form);
+    const carryPercent = capacity > 0 ? Math.min(100, (totalWeight / capacity) * 100) : 0;
+    const overloaded = capacity > 0 && totalWeight > capacity;
+
+    setText(form, "[data-dnd-inventory-total-items]", totalItems);
+    setText(form, "[data-dnd-inventory-total-weight]", formatWeight(totalWeight));
+    setText(form, "[data-dnd-inventory-total-value]", `${formatValue(totalValue)} PO`);
+    setText(form, "[data-dnd-inventory-magic-count]", magicCount);
+    setText(form, "[data-dnd-inventory-attunement-count]", `${attunedCount}/3 sintonizados`);
+    setText(form, "[data-dnd-inventory-wallet-total]", `${formatValue(walletTotal)} PO`);
+    setText(form, "[data-dnd-inventory-carry-current]", formatWeight(totalWeight));
+    setText(form, "[data-dnd-inventory-carry-max]", formatWeight(capacity));
+    setText(form, "[data-dnd-inventory-carry-status]", overloaded ? "Acima do limite" : "Dentro do limite");
+
+    const fill = form.querySelector("[data-dnd-inventory-carry-fill]");
+    if (fill) fill.style.width = `${carryPercent}%`;
+
+    const side = form.querySelector(".dnd-inventory-side-card");
+    if (side) side.classList.toggle("is-overloaded", overloaded);
+
+    empty.classList.toggle("is-visible", filteredItems.length === 0);
+
+    list.innerHTML = filteredItems.map(renderItemCard).join("");
+  }
+
+  function setText(root, selector, value) {
+    const element = root.querySelector(selector);
+    if (element) element.textContent = value;
+  }
+
+  function renderItemCard(item) {
+    const tags = [];
+    if (item.equipped) tags.push("Equipado");
+    if (item.magical) tags.push("Mágico");
+    if (item.attuned) tags.push("Sintonizado");
+    if (item.consumable) tags.push("Consumível");
+    if (item.favorite) tags.push("Favorito de combate");
+    if (item.rarity) tags.push(item.rarity);
+    if (item.chargesMax && toInt(item.chargesMax, 0) > 0) tags.push(`${item.chargesCurrent}/${item.chargesMax} cargas`);
+
+    const quantity = Math.max(1, toInt(item.quantity, 1));
+    const totalWeight = toNumber(item.weight, 0) * quantity;
+    const valueLabel = `${formatValue(item.value)} ${item.valueUnit}`;
+
+    return `
+      <article class="dnd-inventory-item-card ${item.equipped ? "is-equipped" : ""} ${item.favorite ? "is-favorite" : ""}" data-dnd-inventory-item-id="${escapeHtml(item.id)}">
+        <div class="dnd-inventory-item-top">
+          <div class="dnd-inventory-item-title">
+            <h4>${escapeHtml(item.name || "Item sem nome")}</h4>
+            <span>${escapeHtml(CATEGORY_LABELS[item.category] || "Item")}</span>
+          </div>
+          <strong class="dnd-inventory-item-qty">x${quantity}</strong>
+        </div>
+
+        <div class="dnd-inventory-item-meta">
+          <div><span>Peso</span><strong>${escapeHtml(formatWeight(totalWeight))}</strong></div>
+          <div><span>Valor</span><strong>${escapeHtml(valueLabel)}</strong></div>
+          <div><span>Tipo</span><strong>${escapeHtml(item.type || "—")}</strong></div>
+        </div>
+
+        <p class="dnd-inventory-item-notes">${escapeHtml(item.notes || "Sem observações.")}</p>
+
+        <div class="dnd-inventory-item-tags">
+          ${tags.length ? tags.map((tag) => `<span>${escapeHtml(tag)}</span>`).join("") : "<span>Comum</span>"}
+        </div>
+
+        <div class="dnd-inventory-card-actions">
+          <button type="button" class="${item.favorite ? "is-favorite-action" : ""}" data-dnd-inventory-favorite>${item.favorite ? "★ Favorito" : "☆ Favoritar"}</button>
+          <button type="button" data-dnd-inventory-edit>Editar</button>
+          <button type="button" data-dnd-inventory-quantity>Qtd +</button>
+          <button type="button" data-dnd-inventory-delete>Remover</button>
+        </div>
+      </article>
+    `;
+  }
+
+  function ensureModal() {
+    let modal = document.getElementById("dndInventoryModal");
+    if (modal) return modal;
+
+    modal = document.createElement("div");
+    modal.id = "dndInventoryModal";
+    modal.className = "dnd-inventory-modal";
+    modal.innerHTML = `
+      <div class="dnd-inventory-modal__box" role="dialog" aria-modal="true" aria-labelledby="dndInventoryModalTitle">
+        <div class="dnd-inventory-modal__head">
+          <div>
+            <h3 id="dndInventoryModalTitle">Adicionar item</h3>
+            <p>Cadastre itens oficiais, homebrew, tesouros e equipamentos criados pela mesa.</p>
+          </div>
+          <button type="button" class="dnd-inventory-modal__close" data-dnd-inventory-close aria-label="Fechar">×</button>
+        </div>
+
+        <div class="dnd-inventory-modal__body">
+          <div class="dnd-inventory-modal-grid">
+            <label class="dnd-inventory-modal-span-2">
+              <span>Modelo rápido</span>
+              <select data-dnd-inventory-modal-field="preset">
+                <option value="">Item personalizado</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Nome</span>
+              <input data-dnd-inventory-modal-field="name" type="text" placeholder="Ex: Espada longa flamejante" />
+            </label>
+
+            <label>
+              <span>Categoria</span>
+              <select data-dnd-inventory-modal-field="category">
+                <option value="weapon">Arma</option>
+                <option value="armor">Armadura</option>
+                <option value="shield">Escudo</option>
+                <option value="magic">Item mágico</option>
+                <option value="consumable">Consumível</option>
+                <option value="tool">Ferramenta</option>
+                <option value="adventuring">Equipamento</option>
+                <option value="treasure">Tesouro</option>
+                <option value="custom">Criado</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Tipo / Subtipo</span>
+              <input data-dnd-inventory-modal-field="type" type="text" placeholder="Ex: Arma marcial, poção, foco" />
+            </label>
+
+            <label>
+              <span>Raridade</span>
+              <select data-dnd-inventory-modal-field="rarity">
+                <option value="">Sem raridade</option>
+                <option value="Comum">Comum</option>
+                <option value="Incomum">Incomum</option>
+                <option value="Raro">Raro</option>
+                <option value="Muito raro">Muito raro</option>
+                <option value="Lendário">Lendário</option>
+                <option value="Artefato">Artefato</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Quantidade</span>
+              <input data-dnd-inventory-modal-field="quantity" type="text" inputmode="numeric" placeholder="1" />
+            </label>
+
+            <label>
+              <span>Peso por unidade</span>
+              <input data-dnd-inventory-modal-field="weight" type="text" inputmode="decimal" placeholder="0" />
+            </label>
+
+            <label>
+              <span>Valor por unidade</span>
+              <input data-dnd-inventory-modal-field="value" type="text" inputmode="decimal" placeholder="0" />
+            </label>
+
+            <label>
+              <span>Moeda</span>
+              <select data-dnd-inventory-modal-field="valueUnit">
+                <option value="PC">PC</option>
+                <option value="PP">PP</option>
+                <option value="PE">PE</option>
+                <option value="PO" selected>PO</option>
+                <option value="PL">PL</option>
+              </select>
+            </label>
+
+            <label>
+              <span>Cargas atuais</span>
+              <input data-dnd-inventory-modal-field="chargesCurrent" type="text" inputmode="numeric" placeholder="0" />
+            </label>
+
+            <label>
+              <span>Cargas máximas</span>
+              <input data-dnd-inventory-modal-field="chargesMax" type="text" inputmode="numeric" placeholder="0" />
+            </label>
+
+            <div class="dnd-inventory-modal-checks">
+              <label><input data-dnd-inventory-modal-field="equipped" type="checkbox" /> <span>Equipado</span></label>
+              <label><input data-dnd-inventory-modal-field="magical" type="checkbox" /> <span>Mágico</span></label>
+              <label><input data-dnd-inventory-modal-field="attuned" type="checkbox" /> <span>Sintonizado</span></label>
+              <label><input data-dnd-inventory-modal-field="consumable" type="checkbox" /> <span>Consumível</span></label>
+              <label><input data-dnd-inventory-modal-field="favorite" type="checkbox" /> <span>Favorito de combate</span></label>
+            </div>
+
+            <label class="dnd-inventory-modal-span-2">
+              <span>Observações e regras do item</span>
+              <textarea data-dnd-inventory-modal-field="notes" placeholder="Dano, bônus, propriedades, requisitos, regra de uso, descrição narrativa ou qualquer detalhe criado pela mesa."></textarea>
+            </label>
+          </div>
+        </div>
+
+        <div class="dnd-inventory-modal__foot">
+          <button type="button" class="dnd-inventory-modal-cancel" data-dnd-inventory-close>Cancelar</button>
+          <button type="button" class="dnd-inventory-modal-save" data-dnd-inventory-save>Salvar item</button>
+        </div>
+      </div>
+    `;
+
+    document.body.appendChild(modal);
+    populatePresetSelect(modal);
+    bindModal(modal);
+    return modal;
+  }
+
+  function populatePresetSelect(modal) {
+    const select = modal.querySelector('[data-dnd-inventory-modal-field="preset"]');
+    if (!select || select.dataset.ready === "true") return;
+    select.dataset.ready = "true";
+
+    INVENTORY_PRESETS.forEach((preset, index) => {
+      const option = document.createElement("option");
+      option.value = String(index);
+      option.textContent = `${preset.name} · ${CATEGORY_LABELS[preset.category] || "Item"}`;
+      select.appendChild(option);
+    });
+  }
+
+  function bindModal(modal) {
+    if (!modal || modal.dataset.ready === "true") return;
+    modal.dataset.ready = "true";
+
+    modal.addEventListener("click", (event) => {
+      if (event.target === modal || event.target.closest("[data-dnd-inventory-close]")) {
+        closeModal();
+      }
+
+      if (event.target.closest("[data-dnd-inventory-save]")) {
+        saveModalItem();
+      }
+    });
+
+    modal.querySelector('[data-dnd-inventory-modal-field="preset"]')?.addEventListener("change", (event) => {
+      const index = event.target.value;
+      if (index === "") return;
+      const preset = INVENTORY_PRESETS[Number(index)];
+      if (preset) fillModal(preset, { keepId: true });
+      event.target.value = "";
+    });
+
+    document.addEventListener("keydown", (event) => {
+      if (event.key === "Escape" && modal.classList.contains("is-open")) closeModal();
+    });
+  }
+
+  function field(modal, name) {
+    return modal.querySelector(`[data-dnd-inventory-modal-field="${name}"]`);
+  }
+
+  function fillModal(item = {}, options = {}) {
+    const modal = ensureModal();
+    const normalized = normalizeItem(item);
+    if (options.keepId && modal.dataset.editingId) normalized.id = modal.dataset.editingId;
+
+    modal.dataset.editingId = normalized.id || "";
+    const title = modal.querySelector("#dndInventoryModalTitle");
+    if (title) title.textContent = options.isEdit ? "Editar item" : "Adicionar item";
+
+    ["name", "category", "type", "rarity", "quantity", "weight", "value", "valueUnit", "chargesCurrent", "chargesMax", "notes"].forEach((key) => {
+      const el = field(modal, key);
+      if (el) el.value = normalized[key] ?? "";
+    });
+
+    ["equipped", "magical", "attuned", "consumable", "favorite"].forEach((key) => {
+      const el = field(modal, key);
+      if (el) el.checked = Boolean(normalized[key]);
+    });
+  }
+
+  function openModal(item = null, options = {}) {
+    const modal = ensureModal();
+    fillModal(item || { category: options.category || "custom", quantity: "1", valueUnit: "PO" }, { isEdit: Boolean(item) });
+    modal.classList.add("is-open");
+    setTimeout(() => field(modal, "name")?.focus(), 40);
+  }
+
+  function closeModal() {
+    const modal = document.getElementById("dndInventoryModal");
+    if (!modal) return;
+    modal.classList.remove("is-open");
+    modal.dataset.editingId = "";
+  }
+
+  function readModalItem() {
+    const modal = ensureModal();
+    const item = { id: modal.dataset.editingId || "" };
+
+    ["name", "category", "type", "rarity", "quantity", "weight", "value", "valueUnit", "chargesCurrent", "chargesMax", "notes"].forEach((key) => {
+      item[key] = field(modal, key)?.value || "";
+    });
+
+    ["equipped", "magical", "attuned", "consumable", "favorite"].forEach((key) => {
+      item[key] = Boolean(field(modal, key)?.checked);
+    });
+
+    return normalizeItem(item);
+  }
+
+  function saveModalItem() {
+    const item = readModalItem();
+    if (!item.name) {
+      alert("Digite o nome do item.");
+      field(ensureModal(), "name")?.focus();
+      return;
+    }
+
+    const items = readItems();
+    const index = items.findIndex((current) => current.id === item.id);
+    if (index >= 0) items[index] = item;
+    else items.unshift(item);
+
+    writeItems(items);
+    closeModal();
+  }
+
+  function setupInventory(form = getForm()) {
+    if (!form || !getStore(form)) return;
+    ensureModal();
+
+    if (form.dataset.dndInventoryReady !== "true") {
+      form.dataset.dndInventoryReady = "true";
+
+      form.querySelector("[data-dnd-inventory-add]")?.addEventListener("click", () => openModal());
+
+      form.querySelectorAll("[data-dnd-inventory-quick]").forEach((button) => {
+        button.addEventListener("click", () => openModal(null, { category: button.dataset.dndInventoryQuick || "custom" }));
+      });
+
+      form.querySelector("[data-dnd-inventory-search]")?.addEventListener("input", () => renderInventory(form));
+      form.querySelector("[data-dnd-inventory-filter]")?.addEventListener("change", () => renderInventory(form));
+
+      ["coinCopper", "coinSilver", "coinElectrum", "coinGold", "coinPlatinum", "carryingCapacity", "strScore"].forEach((name) => {
+        const el = form.elements?.[name];
+        if (el) {
+          el.addEventListener("input", () => renderInventory(form));
+          el.addEventListener("change", () => renderInventory(form));
+        }
+      });
+
+      form.querySelector("[data-dnd-inventory-list]")?.addEventListener("click", (event) => {
+        const card = event.target.closest("[data-dnd-inventory-item-id]");
+        if (!card) return;
+
+        const id = card.dataset.dndInventoryItemId;
+        const items = readItems(form);
+        const item = items.find((current) => current.id === id);
+        if (!item) return;
+
+        if (event.target.closest("[data-dnd-inventory-favorite]")) {
+          item.favorite = !item.favorite;
+          writeItems(items);
+          if (typeof window.campaignLabRenderDndCombatAutomation === "function") {
+            window.campaignLabRenderDndCombatAutomation();
+          }
+          return;
+        }
+
+        if (event.target.closest("[data-dnd-inventory-edit]")) {
+          openModal(item);
+          return;
+        }
+
+        if (event.target.closest("[data-dnd-inventory-quantity]")) {
+          item.quantity = String(Math.max(1, toInt(item.quantity, 1) + 1));
+          writeItems(items);
+          return;
+        }
+
+        if (event.target.closest("[data-dnd-inventory-delete]")) {
+          if (!confirm(`Remover ${item.name}?`)) return;
+          writeItems(items.filter((current) => current.id !== id));
+        }
+      });
+    }
+
+    renderInventory(form);
+  }
+
+  function wrapLoad() {
+    if (typeof window.loadDndSheetIntoPlayerForm !== "function" || window.loadDndSheetIntoPlayerForm.__inventoryWrapped) return;
+    const original = window.loadDndSheetIntoPlayerForm;
+    window.loadDndSheetIntoPlayerForm = async function () {
+      const result = await original.apply(this, arguments);
+      setupInventory(getForm());
+      return result;
+    };
+    window.loadDndSheetIntoPlayerForm.__inventoryWrapped = true;
+  }
+
+  window.setupDndInventoryManager = setupInventory;
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      wrapLoad();
+      setTimeout(() => setupInventory(getForm()), 700);
+    });
+  } else {
+    wrapLoad();
+    setTimeout(() => setupInventory(getForm()), 700);
+  }
+})();
+
+
+/* =========================================================
+   D&D - REMOVER BOTÕES COPIAR/COLAR FICHA
+========================================================= */
+function campaignLabRemoveDndSheetTransferButtons() {
+  document
+    .querySelectorAll(
+      '[data-sheet-transfer-actions="D&D"], [data-sheet-transfer-owner="dndPlayerSheetForm"], [data-sheet-transfer-owner="dndForm"], #dndV2CopySheetBtn'
+    )
+    .forEach((item) => item.remove());
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", () => {
+    campaignLabRemoveDndSheetTransferButtons();
+    window.setTimeout(campaignLabRemoveDndSheetTransferButtons, 1100);
+  });
+} else {
+  campaignLabRemoveDndSheetTransferButtons();
+  window.setTimeout(campaignLabRemoveDndSheetTransferButtons, 1100);
+}
+
+/* =========================================================
+   D&D - TESTES CONTRA MORTE CLICÁVEIS
+   Sucessos e falhas ficam salvos nos campos deathSuccesses/deathFailures.
+========================================================= */
+(function campaignLabDndDeathSaves() {
+  function clampDeathSaveCount(value) {
+    const text = String(value ?? "").trim();
+    if (!text) return 0;
+
+    if (/^[01]{1,3}$/.test(text)) {
+      return Math.min(3, Array.from(text).filter((char) => char === "1").length);
+    }
+
+    const number = Number.parseInt(text.replace(/\D/g, ""), 10);
+    if (!Number.isFinite(number)) return 0;
+    return Math.max(0, Math.min(3, number));
+  }
+
+  function getDeathSaveInput(form, type) {
+    if (!form) return null;
+    const fieldName = type === "failure" ? "deathFailures" : "deathSuccesses";
+    return form.elements?.[fieldName] || form.querySelector(`[name="${fieldName}"]`);
+  }
+
+  function syncDeathSaveButtons(form) {
+    if (!form) return;
+
+    ["success", "failure"].forEach((type) => {
+      const input = getDeathSaveInput(form, type);
+      const count = clampDeathSaveCount(input?.value);
+
+      if (input) input.value = String(count);
+
+      form.querySelectorAll(`[data-dnd-death-save="${type}"]`).forEach((button) => {
+        const index = Number(button.dataset.dndDeathSaveIndex || 0);
+        const checked = index > 0 && index <= count;
+        button.classList.toggle("is-checked", checked);
+        button.setAttribute("aria-pressed", checked ? "true" : "false");
+      });
+    });
+  }
+
+  function setDeathSaveCount(form, type, nextCount) {
+    const input = getDeathSaveInput(form, type);
+    if (!input) return;
+
+    input.value = String(Math.max(0, Math.min(3, Number(nextCount) || 0)));
+    syncDeathSaveButtons(form);
+
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+    input.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function setupDeathSaves(scope = document) {
+    const root = scope && scope.querySelectorAll ? scope : document;
+    const forms = new Set();
+
+    root.querySelectorAll("[data-dnd-death-saves]").forEach((panel) => {
+      const form = panel.closest("form");
+      if (form) forms.add(form);
+    });
+
+    forms.forEach((form) => {
+      if (form.dataset.dndDeathSavesReady !== "true") {
+        form.dataset.dndDeathSavesReady = "true";
+
+        form.addEventListener("click", (event) => {
+          const button = event.target?.closest?.("[data-dnd-death-save]");
+          if (!button || !form.contains(button)) return;
+
+          event.preventDefault();
+
+          const type = button.dataset.dndDeathSave;
+          const index = Number(button.dataset.dndDeathSaveIndex || 0);
+          const input = getDeathSaveInput(form, type);
+          const current = clampDeathSaveCount(input?.value);
+          const next = index <= current ? index - 1 : index;
+
+          setDeathSaveCount(form, type, next);
+        });
+
+        form.addEventListener("input", (event) => {
+          if (event.target?.matches?.('[name="deathSuccesses"], [name="deathFailures"]')) {
+            syncDeathSaveButtons(form);
+          }
+        });
+      }
+
+      syncDeathSaveButtons(form);
+    });
+  }
+
+  const previousLoadDndSheetIntoPlayerForm = window.loadDndSheetIntoPlayerForm;
+  window.loadDndSheetIntoPlayerForm = async function () {
+    const result = typeof previousLoadDndSheetIntoPlayerForm === "function"
+      ? await previousLoadDndSheetIntoPlayerForm.apply(this, arguments)
+      : undefined;
+
+    setupDeathSaves(document);
+    return result;
+  };
+
+  document.addEventListener("click", (event) => {
+    if (!event.target?.closest?.("#applyDndLongRest")) return;
+
+    window.setTimeout(() => {
+      const form = document.getElementById("dndPlayerSheetForm");
+      if (!form) return;
+      if (form.elements?.deathSuccesses) form.elements.deathSuccesses.value = "0";
+      if (form.elements?.deathFailures) form.elements.deathFailures.value = "0";
+      syncDeathSaveButtons(form);
+    }, 80);
+  }, true);
+
+  window.campaignLabSetupDndDeathSaves = setupDeathSaves;
+  window.campaignLabSyncDndDeathSaves = syncDeathSaveButtons;
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => window.setTimeout(() => setupDeathSaves(document), 500));
+  } else {
+    window.setTimeout(() => setupDeathSaves(document), 500);
+  }
+})();
+
+
+/* =========================================================
+   D&D - ATAQUES, MAGIAS E ITENS AUTOMATIZADOS
+   Lê somente armas/itens favoritos do inventário e magias favoritas do grimório.
+   Salva ajustes extras no hidden dndCombatOverrides.
+========================================================= */
+(function campaignLabDndCombatAutomation() {
+  const FORM_ID = "dndPlayerSheetForm";
+  const OVERRIDES_FIELD = "dndCombatOverrides";
+
+  const CATEGORY_LABELS = {
+    weapon: "Arma",
+    armor: "Armadura",
+    shield: "Escudo",
+    magic: "Item mágico",
+    consumable: "Consumível",
+    tool: "Ferramenta",
+    adventuring: "Equipamento",
+    treasure: "Tesouro",
+    custom: "Criado",
+  };
+
+  const WEAPON_DEFAULTS = [
+    { keys: ["adaga", "punhal"], damage: "1d4", ability: "finesse", range: "1,5m / 6m", type: "Perfurante" },
+    { keys: ["clava"], damage: "1d4", ability: "str", range: "1,5m", type: "Contundente" },
+    { keys: ["bordao", "bordão"], damage: "1d6", ability: "str", range: "1,5m", type: "Contundente" },
+    { keys: ["maca", "maça"], damage: "1d6", ability: "str", range: "1,5m", type: "Contundente" },
+    { keys: ["machadinha"], damage: "1d6", ability: "str", range: "1,5m / 6m", type: "Cortante" },
+    { keys: ["azagaia", "javelin"], damage: "1d6", ability: "str", range: "1,5m / 9m", type: "Perfurante" },
+    { keys: ["lança", "lanca"], damage: "1d6", ability: "str", range: "1,5m / 6m", type: "Perfurante" },
+    { keys: ["martelo leve"], damage: "1d4", ability: "str", range: "1,5m / 6m", type: "Contundente" },
+    { keys: ["foice"], damage: "1d4", ability: "str", range: "1,5m", type: "Cortante" },
+    { keys: ["funda"], damage: "1d4", ability: "dex", range: "9m / 36m", type: "Contundente" },
+    { keys: ["dardo"], damage: "1d4", ability: "dex", range: "6m / 18m", type: "Perfurante" },
+    { keys: ["besta leve"], damage: "1d8", ability: "dex", range: "24m / 96m", type: "Perfurante" },
+    { keys: ["arco curto"], damage: "1d6", ability: "dex", range: "24m / 96m", type: "Perfurante" },
+    { keys: ["porrete grande"], damage: "1d8", ability: "str", range: "1,5m", type: "Contundente" },
+    { keys: ["espada curta"], damage: "1d6", ability: "finesse", range: "1,5m", type: "Perfurante" },
+    { keys: ["cimitarra"], damage: "1d6", ability: "finesse", range: "1,5m", type: "Cortante" },
+    { keys: ["rapieira", "rapiera"], damage: "1d8", ability: "dex", range: "1,5m", type: "Perfurante" },
+    { keys: ["espada longa"], damage: "1d8", ability: "str", range: "1,5m", type: "Cortante" },
+    { keys: ["machado de batalha"], damage: "1d8", ability: "str", range: "1,5m", type: "Cortante" },
+    { keys: ["martelo de guerra"], damage: "1d8", ability: "str", range: "1,5m", type: "Contundente" },
+    { keys: ["mangual"], damage: "1d8", ability: "str", range: "1,5m", type: "Contundente" },
+    { keys: ["picareta de guerra"], damage: "1d8", ability: "str", range: "1,5m", type: "Perfurante" },
+    { keys: ["tridente"], damage: "1d6", ability: "str", range: "1,5m / 6m", type: "Perfurante" },
+    { keys: ["glaive", "gládio", "gladio"], damage: "1d10", ability: "str", range: "3m", type: "Cortante" },
+    { keys: ["alabarda"], damage: "1d10", ability: "str", range: "3m", type: "Cortante" },
+    { keys: ["lança longa", "lanca longa", "pique"], damage: "1d10", ability: "str", range: "3m", type: "Perfurante" },
+    { keys: ["lança de montaria", "lanca de montaria"], damage: "1d12", ability: "str", range: "3m", type: "Perfurante" },
+    { keys: ["machado grande"], damage: "1d12", ability: "str", range: "1,5m", type: "Cortante" },
+    { keys: ["espada grande"], damage: "2d6", ability: "str", range: "1,5m", type: "Cortante" },
+    { keys: ["malho", "marreta"], damage: "2d6", ability: "str", range: "1,5m", type: "Contundente" },
+    { keys: ["arco longo"], damage: "1d8", ability: "dex", range: "45m / 180m", type: "Perfurante" },
+    { keys: ["besta pesada"], damage: "1d10", ability: "dex", range: "30m / 120m", type: "Perfurante" },
+    { keys: ["besta de mão", "besta de mao"], damage: "1d6", ability: "dex", range: "9m / 36m", type: "Perfurante" },
+    { keys: ["rede"], damage: "0", ability: "dex", range: "1,5m / 4,5m", type: "Especial" },
+  ];
+
+  function form() {
+    return document.getElementById(FORM_ID);
+  }
+
+  function html(value = "") {
+    return String(value ?? "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function normalize(value = "") {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  }
+
+  function toNumber(value, fallback = 0) {
+    const cleaned = String(value ?? "").replace(",", ".").replace(/[^0-9+-.]/g, "");
+    const number = Number(cleaned);
+    return Number.isFinite(number) ? number : fallback;
+  }
+
+  function asSigned(value) {
+    const number = Number(value) || 0;
+    return number >= 0 ? `+${number}` : String(number);
+  }
+
+  function abilityMod(form, ability) {
+    const field = `${ability}Score`;
+    const score = toNumber(form?.elements?.[field]?.value, 10);
+    return Math.floor((score - 10) / 2);
+  }
+
+  function proficiencyBonus(form) {
+    const raw = form?.elements?.proficiencyBonus?.value;
+    const parsed = toNumber(raw, NaN);
+    if (Number.isFinite(parsed) && parsed !== 0) return parsed;
+
+    const level = Math.max(1, Math.min(20, Math.floor(toNumber(form?.elements?.charLevel?.value, 1))));
+    if (level >= 17) return 6;
+    if (level >= 13) return 5;
+    if (level >= 9) return 4;
+    if (level >= 5) return 3;
+    return 2;
+  }
+
+  function readJsonField(form, name, fallback) {
+    const field = form?.elements?.[name] || form?.querySelector?.(`[name="${name}"]`);
+    if (!field) return fallback;
+
+    try {
+      const parsed = JSON.parse(field.value || JSON.stringify(fallback));
+      return parsed ?? fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
+  function ensureOverridesField(form) {
+    if (!form) return null;
+    let field = form.elements?.[OVERRIDES_FIELD] || form.querySelector(`[name="${OVERRIDES_FIELD}"]`);
+    if (!field) {
+      field = document.createElement("input");
+      field.type = "hidden";
+      field.name = OVERRIDES_FIELD;
+      field.value = "{}";
+      form.appendChild(field);
+    }
+    if (!String(field.value || "").trim()) field.value = "{}";
+    return field;
+  }
+
+  function readOverrides(form) {
+    const field = ensureOverridesField(form);
+    try {
+      const parsed = JSON.parse(field?.value || "{}");
+      return parsed && typeof parsed === "object" && !Array.isArray(parsed) ? parsed : {};
+    } catch {
+      if (field) field.value = "{}";
+      return {};
+    }
+  }
+
+  function writeOverrides(form, overrides) {
+    const field = ensureOverridesField(form);
+    if (!field) return;
+    field.value = JSON.stringify(overrides || {});
+    render(form);
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function readInventoryItems(form) {
+    const items = readJsonField(form, "dndInventoryItems", []);
+    return Array.isArray(items) ? items.filter(Boolean) : [];
+  }
+
+  function writeInventoryItems(form, items) {
+    const field = form?.elements?.dndInventoryItems || form?.querySelector?.('[name="dndInventoryItems"]');
+    if (!field) return;
+    field.value = JSON.stringify(items || []);
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+
+    if (typeof window.setupDndInventoryManager === "function") {
+      window.setupDndInventoryManager(form);
+    }
+
+    render(form);
+  }
+
+  function readSpells(form) {
+    const spells = readJsonField(form, "dndSpellbook", []);
+    return Array.isArray(spells) ? spells.filter(Boolean) : [];
+  }
+
+  function findWeaponDefault(item) {
+    const name = normalize(`${item.name || ""} ${item.type || ""} ${item.notes || ""}`);
+    return WEAPON_DEFAULTS.find((weapon) => weapon.keys.some((key) => name.includes(normalize(key)))) || null;
+  }
+
+  function parseMagicBonus(item) {
+    const text = `${item.name || ""} ${item.type || ""} ${item.notes || ""}`;
+    const match = text.match(/(?:^|\s|\()\+([1-3])(?:\s|\)|$)/);
+    return match ? Number(match[1]) : 0;
+  }
+
+  function extractDice(text = "") {
+    const match = String(text || "").match(/\b\d*d\d+(?:\s*[+-]\s*\d+)?\b/i);
+    return match ? match[0].replace(/\s+/g, "") : "";
+  }
+
+  function resolveAbility(form, item, weaponDefault, override = {}) {
+    if (["str", "dex", "con", "int", "wis", "cha", "spell"].includes(override.ability)) return override.ability;
+
+    const ability = weaponDefault?.ability || "str";
+    if (ability === "finesse") {
+      return abilityMod(form, "dex") >= abilityMod(form, "str") ? "dex" : "str";
+    }
+    return ability;
+  }
+
+  function abilityLabel(ability) {
+    return {
+      str: "FOR",
+      dex: "DES",
+      con: "CON",
+      int: "INT",
+      wis: "SAB",
+      cha: "CAR",
+      spell: "Magia",
+    }[ability] || "Atributo";
+  }
+
+  function damageWithBonus(baseDice, bonus) {
+    if (!baseDice || baseDice === "0") return baseDice || "0";
+    const safeBonus = Number(bonus) || 0;
+    if (!safeBonus) return baseDice;
+    return `${baseDice}${safeBonus >= 0 ? "+" : ""}${safeBonus}`;
+  }
+
+  function makeWeaponEntry(form, item, overrides) {
+    const key = `item:${item.id || item.name}`;
+    const override = overrides[key] || {};
+    const weaponDefault = findWeaponDefault(item);
+    const magicBonus = parseMagicBonus(item);
+    const ability = resolveAbility(form, item, weaponDefault, override);
+    const autoAbilityBonus = ability === "spell"
+      ? toNumber(form?.elements?.spellAttackBonus?.value, 0)
+      : abilityMod(form, ability);
+    const proficient = override.proficient === false || override.proficient === "false" ? false : true;
+    const prof = proficient ? proficiencyBonus(form) : 0;
+    const manualAttack = String(override.attackBonus ?? "").trim();
+    const attackBonus = manualAttack !== "" ? toNumber(manualAttack, 0) : autoAbilityBonus + prof + magicBonus;
+    const explicitDamage = String(override.damage || item.damage || "").trim();
+    const baseDamage = explicitDamage || weaponDefault?.damage || extractDice(item.notes || item.type || "") || "1d4";
+    const damageBonus = explicitDamage ? 0 : (ability === "spell" ? 0 : autoAbilityBonus + magicBonus);
+
+    return {
+      key,
+      kind: "weapon",
+      sourceId: item.id || item.name,
+      name: item.name || "Arma sem nome",
+      subtitle: item.type || weaponDefault?.type || "Arma do inventário",
+      badge: "Arma",
+      attackBonus,
+      attackLabel: asSigned(attackBonus),
+      attackFormula: `1d20${attackBonus >= 0 ? "+" : ""}${attackBonus}`,
+      damageFormula: damageWithBonus(baseDamage, damageBonus),
+      range: override.range || item.range || weaponDefault?.range || "1,5m",
+      notes: override.notes || item.notes || `${abilityLabel(ability)} ${proficient ? "+ proficiência" : "sem proficiência"}${magicBonus ? ` +${magicBonus} mágico` : ""}.`,
+      item,
+    };
+  }
+
+  function spellLevelLabel(level) {
+    const number = Number(level) || 0;
+    return number <= 0 ? "Truque" : `${number}º círculo`;
+  }
+
+  function makeSpellEntry(form, spell) {
+    const level = Math.max(0, Math.min(9, Number(spell.level || 0)));
+    const saveAttack = String(spell.saveAttack || "").trim();
+    const isAttack = /ataque/i.test(saveAttack);
+    const spellAttackBonus = toNumber(form?.elements?.spellAttackBonus?.value, 0);
+    const spellSaveDc = form?.elements?.spellSaveDc?.value || "--";
+    const dice = extractDice(spell.damage || "");
+
+    return {
+      key: `spell:${spell.id || spell.name}`,
+      kind: "spell",
+      sourceId: spell.id || spell.name,
+      name: spell.name || "Magia sem nome",
+      subtitle: `${spellLevelLabel(level)}${spell.school ? ` · ${spell.school}` : ""}${spell.type ? ` · ${spell.type}` : ""}`,
+      badge: level <= 0 ? "Truque" : "Magia",
+      attackBonus: isAttack ? spellAttackBonus : null,
+      attackLabel: isAttack ? asSigned(spellAttackBonus) : `CD ${spellSaveDc}`,
+      attackFormula: isAttack ? `1d20${spellAttackBonus >= 0 ? "+" : ""}${spellAttackBonus}` : "",
+      damageFormula: dice || "",
+      range: spell.range || "--",
+      notes: spell.description || spell.notes || spell.saveAttack || "Magia cadastrada no grimório.",
+      spell,
+      level,
+    };
+  }
+
+  function makeItemEntry(form, item, overrides) {
+    const key = `item:${item.id || item.name}`;
+    const override = overrides[key] || {};
+    const dice = String(override.damage || item.damage || extractDice(item.notes || item.type || "")).trim();
+    const attackBonusRaw = String(override.attackBonus ?? "").trim();
+    const hasAttack = attackBonusRaw !== "";
+    const attackBonus = hasAttack ? toNumber(attackBonusRaw, 0) : null;
+    const chargesMax = Math.max(0, Math.floor(toNumber(item.chargesMax, 0)));
+    const chargesCurrent = Math.max(0, Math.floor(toNumber(item.chargesCurrent, chargesMax)));
+    const quantity = Math.max(1, Math.floor(toNumber(item.quantity, 1)));
+
+    return {
+      key,
+      kind: "item",
+      sourceId: item.id || item.name,
+      name: item.name || "Item sem nome",
+      subtitle: `${CATEGORY_LABELS[item.category] || "Item"}${item.type ? ` · ${item.type}` : ""}${item.rarity ? ` · ${item.rarity}` : ""}`,
+      badge: CATEGORY_LABELS[item.category] || "Item",
+      attackBonus,
+      attackLabel: hasAttack ? asSigned(attackBonus) : "--",
+      attackFormula: hasAttack ? `1d20${attackBonus >= 0 ? "+" : ""}${attackBonus}` : "",
+      damageFormula: dice,
+      range: override.range || item.range || "--",
+      notes: override.notes || item.notes || (chargesMax ? `${chargesCurrent}/${chargesMax} cargas.` : `Quantidade: ${quantity}.`),
+      item,
+    };
+  }
+
+  function buildEntries(form) {
+    const overrides = readOverrides(form);
+    const inventory = readInventoryItems(form);
+    const spells = readSpells(form);
+    const entries = [];
+
+    inventory.filter((item) => Boolean(item.favorite)).forEach((item) => {
+      const category = item.category || "custom";
+      const weaponDefault = findWeaponDefault(item);
+      const override = overrides[`item:${item.id || item.name}`] || {};
+      const hasCombatOverride = Boolean(override.damage || override.attackBonus || override.range || override.notes);
+
+      if (category === "weapon" || weaponDefault) {
+        entries.push(makeWeaponEntry(form, item, overrides));
+        return;
+      }
+
+      if (
+        category === "magic" ||
+        category === "consumable" ||
+        category === "tool" ||
+        category === "adventuring" ||
+        category === "treasure" ||
+        category === "custom" ||
+        item.magical ||
+        item.consumable ||
+        hasCombatOverride
+      ) {
+        entries.push(makeItemEntry(form, item, overrides));
+      }
+    });
+
+    spells.filter((spell) => Boolean(spell.favorite)).forEach((spell) => entries.push(makeSpellEntry(form, spell)));
+
+    return entries;
+  }
+
+  function rollDice(form, formula) {
+    const clean = String(formula || "").replace(/\s+/g, "");
+    const parts = clean.match(/[+-]?[^+-]+/g) || [];
+    let total = 0;
+    const details = [];
+
+    parts.forEach((part) => {
+      const sign = part.startsWith("-") ? -1 : 1;
+      const raw = part.replace(/^[+-]/, "");
+      const dice = raw.match(/^(\d*)d(\d+)$/i);
+
+      if (dice) {
+        const amount = Math.max(1, Number(dice[1] || 1));
+        const faces = Math.max(2, Number(dice[2] || 20));
+        const rolls = Array.from({ length: amount }, () => Math.floor(Math.random() * faces) + 1);
+        const subtotal = rolls.reduce((sum, value) => sum + value, 0) * sign;
+        total += subtotal;
+        details.push(`${sign < 0 ? "-" : ""}${amount}d${faces} [${rolls.join(", ")}]`);
+        return;
+      }
+
+      const number = toNumber(raw, 0) * sign;
+      total += number;
+      details.push(`${number >= 0 ? "+" : ""}${number}`);
+    });
+
+    return { total, detail: details.join(" ") || "Sem dados" };
+  }
+
+  function showRollResult(label, formula, result) {
+    const box = document.getElementById("dndV2QuickRollResult");
+    if (!box) return;
+
+    const span = box.querySelector("span");
+    const strong = box.querySelector("strong");
+    const p = box.querySelector("p");
+
+    if (span) span.textContent = label;
+    if (strong) strong.textContent = String(result.total ?? "--");
+    if (p) p.textContent = `${formula} → ${result.detail}`;
+  }
+
+  function entryCard(entry) {
+    const typeClass = entry.kind === "spell" ? "dnd-combat-card--spell" : entry.kind === "item" ? "dnd-combat-card--item" : "dnd-combat-card--weapon";
+    const notes = String(entry.notes || "").slice(0, 260);
+    const hasAttack = Boolean(entry.attackFormula);
+    const hasDamage = Boolean(entry.damageFormula && entry.damageFormula !== "0");
+    const canCast = entry.kind === "spell" && Number(entry.level || 0) > 0;
+    const canUseItem = entry.kind === "item";
+    const canConfig = entry.kind !== "spell";
+
+    return `
+      <article class="dnd-combat-card ${typeClass}" data-dnd-combat-entry="${html(entry.key)}">
+        <div class="dnd-combat-card__top">
+          <div>
+            <h4>${html(entry.name)}</h4>
+            <p>${html(entry.subtitle || "")}</p>
+          </div>
+          <span class="dnd-combat-card__badge">${html(entry.badge)}</span>
+        </div>
+
+        <div class="dnd-combat-card__stats">
+          <article><span>Acerto/CD</span><strong>${html(entry.attackLabel || "--")}</strong></article>
+          <article><span>Dano/Efeito</span><strong>${html(entry.damageFormula || "--")}</strong></article>
+          <article><span>Alcance</span><strong>${html(entry.range || "--")}</strong></article>
+        </div>
+
+        <p class="dnd-combat-card__notes">${html(notes || "Sem observações.")}</p>
+
+        <div class="dnd-combat-card__actions">
+          ${hasAttack ? `<button type="button" data-dnd-combat-action="roll-attack">Rolar acerto</button>` : ""}
+          ${hasDamage ? `<button type="button" data-dnd-combat-action="roll-damage">Rolar dano</button>` : ""}
+          ${canCast ? `<button type="button" data-dnd-combat-action="cast-spell">Usar magia</button>` : ""}
+          ${canUseItem ? `<button type="button" data-dnd-combat-action="use-item">Usar item</button>` : ""}
+          ${canConfig ? `<button type="button" data-dnd-combat-action="configure">Configurar</button>` : ""}
+        </div>
+      </article>
+    `;
+  }
+
+  function getFilteredEntries(form, entries) {
+    const section = form.querySelector("[data-dnd-combat-automation]");
+    const search = normalize(section?.querySelector("[data-dnd-combat-search]")?.value || "");
+    const filter = section?.querySelector("[data-dnd-combat-filter]")?.value || "all";
+
+    return entries.filter((entry) => {
+      if (filter !== "all" && entry.kind !== filter) return false;
+      if (!search) return true;
+      return normalize([entry.name, entry.subtitle, entry.badge, entry.damageFormula, entry.notes].join(" ")).includes(search);
+    });
+  }
+
+  function updateCounters(form, entries) {
+    const section = form.querySelector("[data-dnd-combat-automation]");
+    if (!section) return;
+
+    const counts = {
+      weapons: entries.filter((entry) => entry.kind === "weapon").length,
+      spells: entries.filter((entry) => entry.kind === "spell").length,
+      items: entries.filter((entry) => entry.kind === "item").length,
+    };
+
+    Object.entries(counts).forEach(([key, value]) => {
+      const el = section.querySelector(`[data-dnd-combat-count="${key}"]`);
+      if (el) el.textContent = String(value);
+    });
+  }
+
+  function render(targetForm = form()) {
+    const currentForm = targetForm || form();
+    if (!currentForm) return;
+
+    const section = currentForm.querySelector("[data-dnd-combat-automation]");
+    if (!section) return;
+
+    ensureOverridesField(currentForm);
+
+    const entries = buildEntries(currentForm);
+    const filtered = getFilteredEntries(currentForm, entries);
+    const list = section.querySelector("[data-dnd-combat-list]");
+    const empty = section.querySelector("[data-dnd-combat-empty]");
+
+    updateCounters(currentForm, entries);
+
+    if (!list || !empty) return;
+
+    empty.hidden = entries.length > 0;
+    list.innerHTML = filtered.length
+      ? filtered.map(entryCard).join("")
+      : entries.length
+        ? `<div class="dnd-combat-automation__empty"><strong>Nada encontrado.</strong><span>Ajuste a busca ou o filtro.</span></div>`
+        : "";
+  }
+
+  function getEntryByKey(form, key) {
+    return buildEntries(form).find((entry) => entry.key === key) || null;
+  }
+
+  function useInventoryItem(form, entry) {
+    const item = entry.item;
+    if (!item) return;
+
+    const items = readInventoryItems(form);
+    const index = items.findIndex((current) => String(current.id || current.name) === String(item.id || item.name));
+    if (index < 0) return;
+
+    const current = { ...items[index] };
+    const chargesMax = Math.max(0, Math.floor(toNumber(current.chargesMax, 0)));
+    const chargesCurrent = Math.max(0, Math.floor(toNumber(current.chargesCurrent, chargesMax)));
+    const quantity = Math.max(1, Math.floor(toNumber(current.quantity, 1)));
+
+    if (chargesMax > 0) {
+      if (chargesCurrent <= 0) {
+        alert(`${current.name} está sem cargas.`);
+        return;
+      }
+      current.chargesCurrent = String(chargesCurrent - 1);
+      items[index] = current;
+      writeInventoryItems(form, items);
+      showRollResult(`Usou ${current.name}`, "Carga", { total: chargesCurrent - 1, detail: `${chargesCurrent - 1}/${chargesMax} cargas restantes` });
+      return;
+    }
+
+    if (current.consumable || current.category === "consumable") {
+      if (quantity > 1) {
+        current.quantity = String(quantity - 1);
+        items[index] = current;
+      } else {
+        items.splice(index, 1);
+      }
+      writeInventoryItems(form, items);
+      showRollResult(`Usou ${current.name}`, "Consumível", { total: Math.max(0, quantity - 1), detail: `${Math.max(0, quantity - 1)} restantes` });
+      return;
+    }
+
+    showRollResult(`Usou ${current.name}`, "Item", { total: "--", detail: "Item marcado como usado narrativamente." });
+  }
+
+  function ensureCastModal(form) {
+    let modal = document.getElementById("dndCombatCastModal");
+    if (modal) return modal;
+
+    modal = document.createElement("div");
+    modal.id = "dndCombatCastModal";
+    modal.className = "dnd-combat-cast-modal dnd-combat-modal-base";
+    modal.innerHTML = `
+      <div class="dnd-combat-cast-modal__box">
+        <div class="dnd-combat-cast-modal__head">
+          <div><span>Usar magia</span><strong data-dnd-combat-cast-name>Magia</strong></div>
+          <button type="button" class="dnd-combat-cast-modal__close" data-dnd-combat-cast-close>×</button>
+        </div>
+        <div class="dnd-combat-cast-modal__grid">
+          <label>
+            <span>Círculo gasto</span>
+            <select data-dnd-combat-cast-level></select>
+          </label>
+        </div>
+        <div class="dnd-combat-cast-modal__status" data-dnd-combat-cast-status></div>
+        <div class="dnd-combat-cast-modal__actions">
+          <button type="button" data-dnd-combat-cast-close>Cancelar</button>
+          <button type="button" data-dnd-combat-cast-confirm>Gastar espaço</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function openCastModal(form, entry) {
+    const spell = entry.spell;
+    const baseLevel = Math.max(1, Math.min(9, Number(entry.level || spell?.level || 1)));
+    const modal = ensureCastModal(form);
+    const name = modal.querySelector("[data-dnd-combat-cast-name]");
+    const select = modal.querySelector("[data-dnd-combat-cast-level]");
+    const status = modal.querySelector("[data-dnd-combat-cast-status]");
+    const confirm = modal.querySelector("[data-dnd-combat-cast-confirm]");
+
+    if (name) name.textContent = entry.name;
+
+    const options = [];
+    for (let level = baseLevel; level <= 9; level += 1) {
+      const counts = typeof window.campaignLabGetManualSpellSlotCounts === "function"
+        ? window.campaignLabGetManualSpellSlotCounts(form, level)
+        : { level, max: 0, available: 0 };
+      options.push(counts);
+    }
+
+    if (select) {
+      select.innerHTML = options.map((item) => `
+        <option value="${item.level}">${item.level}º círculo · ${item.available || 0}/${item.max || 0} disponíveis</option>
+      `).join("");
+      select.value = String(baseLevel);
+    }
+
+    const refreshStatus = () => {
+      const level = Number(select?.value || baseLevel);
+      const counts = typeof window.campaignLabGetManualSpellSlotCounts === "function"
+        ? window.campaignLabGetManualSpellSlotCounts(form, level)
+        : { level, max: 0, available: 0 };
+      if (!status) return;
+      status.textContent = counts.max <= 0
+        ? `Nenhum espaço de ${level}º círculo configurado.`
+        : `${counts.available || 0} de ${counts.max || 0} espaços de ${level}º círculo disponíveis.`;
+      status.classList.toggle("is-empty", !counts.available);
+    };
+
+    refreshStatus();
+    if (select) select.onchange = refreshStatus;
+
+    modal.querySelectorAll("[data-dnd-combat-cast-close]").forEach((button) => {
+      button.onclick = () => modal.classList.remove("is-open");
+    });
+
+    if (confirm) {
+      confirm.onclick = () => {
+        const level = Number(select?.value || baseLevel);
+        const used = typeof window.campaignLabUseManualSpellSlot === "function"
+          ? window.campaignLabUseManualSpellSlot(form, level)
+          : false;
+        if (!used) {
+          refreshStatus();
+          return;
+        }
+        modal.classList.remove("is-open");
+        showRollResult(`Usou ${entry.name}`, `${level}º círculo`, { total: "--", detail: "Espaço de magia gasto automaticamente." });
+      };
+    }
+
+    modal.classList.add("is-open");
+  }
+
+  function ensureConfigModal(form) {
+    let modal = document.getElementById("dndCombatConfigModal");
+    if (modal) return modal;
+
+    modal = document.createElement("div");
+    modal.id = "dndCombatConfigModal";
+    modal.className = "dnd-combat-config-modal dnd-combat-modal-base";
+    modal.innerHTML = `
+      <div class="dnd-combat-config-modal__box">
+        <div class="dnd-combat-config-modal__head">
+          <div><span>Configurar combate</span><strong data-dnd-combat-config-name>Item</strong></div>
+          <button type="button" class="dnd-combat-config-modal__close" data-dnd-combat-config-close>×</button>
+        </div>
+        <input type="hidden" data-dnd-combat-config-field="key" />
+        <div class="dnd-combat-config-modal__grid">
+          <label><span>Bônus de ataque manual</span><input type="text" data-dnd-combat-config-field="attackBonus" placeholder="Ex: +5" /></label>
+          <label><span>Dano / efeito</span><input type="text" data-dnd-combat-config-field="damage" placeholder="Ex: 1d8+3" /></label>
+          <label><span>Alcance</span><input type="text" data-dnd-combat-config-field="range" placeholder="Ex: 1,5m / 18m" /></label>
+          <label><span>Atributo automático</span><select data-dnd-combat-config-field="ability"><option value="">Auto</option><option value="str">Força</option><option value="dex">Destreza</option><option value="int">Inteligência</option><option value="wis">Sabedoria</option><option value="cha">Carisma</option><option value="spell">Ataque mágico</option></select></label>
+          <label><span>Proficiência</span><select data-dnd-combat-config-field="proficient"><option value="true">Somar proficiência</option><option value="false">Não somar proficiência</option></select></label>
+          <label class="dnd-combat-config-modal__wide"><span>Observações de combate</span><textarea rows="4" data-dnd-combat-config-field="notes" placeholder="Ex: usa munição, causa dano extra contra mortos-vivos, regra da mesa..."></textarea></label>
+        </div>
+        <div class="dnd-combat-config-modal__actions">
+          <button type="button" class="is-danger" data-dnd-combat-config-clear>Limpar ajuste</button>
+          <button type="button" data-dnd-combat-config-close>Cancelar</button>
+          <button type="button" data-dnd-combat-config-save>Salvar ajuste</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+    return modal;
+  }
+
+  function field(modal, name) {
+    return modal.querySelector(`[data-dnd-combat-config-field="${name}"]`);
+  }
+
+  function openConfigModal(form, entry) {
+    const modal = ensureConfigModal(form);
+    const overrides = readOverrides(form);
+    const override = overrides[entry.key] || {};
+
+    modal.querySelector("[data-dnd-combat-config-name]").textContent = entry.name;
+    field(modal, "key").value = entry.key;
+    field(modal, "attackBonus").value = override.attackBonus ?? "";
+    field(modal, "damage").value = override.damage ?? "";
+    field(modal, "range").value = override.range ?? "";
+    field(modal, "ability").value = override.ability ?? "";
+    field(modal, "proficient").value = String(override.proficient ?? "true");
+    field(modal, "notes").value = override.notes ?? "";
+
+    modal.querySelectorAll("[data-dnd-combat-config-close]").forEach((button) => {
+      button.onclick = () => modal.classList.remove("is-open");
+    });
+
+    modal.querySelector("[data-dnd-combat-config-save]").onclick = () => {
+      const key = field(modal, "key").value;
+      const next = {
+        attackBonus: field(modal, "attackBonus").value.trim(),
+        damage: field(modal, "damage").value.trim(),
+        range: field(modal, "range").value.trim(),
+        ability: field(modal, "ability").value,
+        proficient: field(modal, "proficient").value === "true",
+        notes: field(modal, "notes").value.trim(),
+      };
+      overrides[key] = next;
+      writeOverrides(form, overrides);
+      modal.classList.remove("is-open");
+    };
+
+    modal.querySelector("[data-dnd-combat-config-clear]").onclick = () => {
+      const key = field(modal, "key").value;
+      delete overrides[key];
+      writeOverrides(form, overrides);
+      modal.classList.remove("is-open");
+    };
+
+    modal.classList.add("is-open");
+  }
+
+  function setupEvents(form) {
+    if (!form || form.dataset.dndCombatAutomationReady === "true") return;
+    form.dataset.dndCombatAutomationReady = "true";
+
+    const section = form.querySelector("[data-dnd-combat-automation]");
+    if (!section) return;
+
+    section.querySelector("[data-dnd-combat-search]")?.addEventListener("input", () => render(form));
+    section.querySelector("[data-dnd-combat-filter]")?.addEventListener("change", () => render(form));
+    section.querySelector("[data-dnd-combat-refresh]")?.addEventListener("click", () => render(form));
+
+    section.addEventListener("click", (event) => {
+      const button = event.target.closest("[data-dnd-combat-action]");
+      if (!button) return;
+
+      const card = event.target.closest("[data-dnd-combat-entry]");
+      const entry = getEntryByKey(form, card?.dataset?.dndCombatEntry || "");
+      if (!entry) return;
+
+      event.preventDefault();
+      const action = button.dataset.dndCombatAction;
+
+      if (action === "roll-attack" && entry.attackFormula) {
+        const result = rollDice(form, entry.attackFormula);
+        showRollResult(`${entry.name} · acerto`, entry.attackFormula, result);
+        return;
+      }
+
+      if (action === "roll-damage" && entry.damageFormula) {
+        const result = rollDice(form, entry.damageFormula);
+        showRollResult(`${entry.name} · dano`, entry.damageFormula, result);
+        return;
+      }
+
+      if (action === "cast-spell") {
+        openCastModal(form, entry);
+        return;
+      }
+
+      if (action === "use-item") {
+        useInventoryItem(form, entry);
+        return;
+      }
+
+      if (action === "configure") {
+        openConfigModal(form, entry);
+      }
+    });
+
+    let timer = null;
+    form.addEventListener("input", (event) => {
+      const name = event.target?.name || "";
+      if (["dndInventoryItems", "dndSpellbook", OVERRIDES_FIELD, "strScore", "dexScore", "intScore", "wisScore", "chaScore", "proficiencyBonus", "spellAttackBonus", "spellSaveDc"].includes(name)) {
+        clearTimeout(timer);
+        timer = setTimeout(() => render(form), 120);
+      }
+    });
+
+    form.addEventListener("change", (event) => {
+      const name = event.target?.name || "";
+      if (["dndInventoryItems", "dndSpellbook", OVERRIDES_FIELD, "strScore", "dexScore", "intScore", "wisScore", "chaScore", "proficiencyBonus", "spellAttackBonus", "spellSaveDc"].includes(name)) {
+        clearTimeout(timer);
+        timer = setTimeout(() => render(form), 120);
+      }
+    });
+  }
+
+  function wrapLoad() {
+    if (typeof window.loadDndSheetIntoPlayerForm !== "function" || window.loadDndSheetIntoPlayerForm.__combatAutomationWrapped) return;
+    const original = window.loadDndSheetIntoPlayerForm;
+    window.loadDndSheetIntoPlayerForm = async function wrappedCombatAutomationLoad() {
+      const result = await original.apply(this, arguments);
+      const currentForm = form();
+      setupEvents(currentForm);
+      render(currentForm);
+      return result;
+    };
+    window.loadDndSheetIntoPlayerForm.__combatAutomationWrapped = true;
+  }
+
+  function boot() {
+    const currentForm = form();
+    if (!currentForm) return;
+    ensureOverridesField(currentForm);
+    setupEvents(currentForm);
+    render(currentForm);
+    wrapLoad();
+  }
+
+  window.campaignLabRenderDndCombatAutomation = function () {
+    render(form());
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => setTimeout(boot, 700));
+  } else {
+    setTimeout(boot, 700);
+  }
+
+  setTimeout(boot, 1400);
+  setTimeout(boot, 2400);
+})();
+/* =========================================================
+   D&D - RESULTADO DA ROLAGEM FIXO NO CANTO INFERIOR DIREITO
+   Cole no final do script.js
+========================================================= */
+(function () {
+  let hideTimer = null;
+  let observerReady = false;
+
+  function getRollBox() {
+    return document.getElementById("dndV2QuickRollResult");
+  }
+
+  function hasRealRollResult(box) {
+    const strong = box?.querySelector("strong");
+    const value = String(strong?.textContent || "").trim();
+    return Boolean(value && value !== "--" && value !== "—");
+  }
+
+  function showFloatingRollBox(box) {
+    if (!box || !hasRealRollResult(box)) return;
+
+    box.classList.add("dnd-floating-roll-result", "is-visible", "is-hot");
+
+    window.clearTimeout(hideTimer);
+    hideTimer = window.setTimeout(() => {
+      box.classList.remove("is-hot", "is-visible");
+    }, 14000);
+  }
+
+  function setupFloatingRollResult() {
+    const box = getRollBox();
+    if (!box || observerReady) return;
+
+    observerReady = true;
+    box.classList.add("dnd-floating-roll-result");
+
+    if (!hasRealRollResult(box)) {
+      box.classList.remove("is-visible", "is-hot");
+    }
+
+    const observer = new MutationObserver(() => {
+      showFloatingRollBox(box);
+    });
+
+    observer.observe(box, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    box.addEventListener("click", () => {
+      box.classList.remove("is-visible", "is-hot");
+      window.clearTimeout(hideTimer);
+    });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      setupFloatingRollResult();
+      window.setTimeout(setupFloatingRollResult, 800);
+    });
+  } else {
+    setupFloatingRollResult();
+    window.setTimeout(setupFloatingRollResult, 800);
+  }
+})();
+/* =========================================================
+   D&D - RESULTADO DO DADO EM PRIMEIRO PLANO POR 5 SEGUNDOS
+   Cole no final do script.js
+========================================================= */
+(function () {
+  let dndRollFrontTimer = null;
+  let dndRollFrontObserver = null;
+
+  function getDndRollFrontBox() {
+    return document.getElementById("dndV2QuickRollResult");
+  }
+
+  function hasDndRollFrontResult(box) {
+    const strong = box?.querySelector("strong");
+    const value = String(strong?.textContent || "").trim();
+    return Boolean(value && value !== "--" && value !== "—");
+  }
+
+  function moveDndRollBoxToBody(box) {
+    if (!box || box.parentElement === document.body) return;
+    document.body.appendChild(box);
+  }
+
+  function hideDndRollFrontBox(box) {
+    if (!box) return;
+    box.classList.remove("is-hot", "is-visible", "dnd-roll-toast-front");
+  }
+
+  function showDndRollFrontBox() {
+    const box = getDndRollFrontBox();
+    if (!box || !hasDndRollFrontResult(box)) return;
+
+    moveDndRollBoxToBody(box);
+
+    box.classList.add("dnd-floating-roll-result", "is-visible", "is-hot", "dnd-roll-toast-front");
+
+    window.clearTimeout(dndRollFrontTimer);
+    dndRollFrontTimer = window.setTimeout(() => {
+      hideDndRollFrontBox(box);
+    }, 5000);
+  }
+
+  function setupDndRollFrontBox() {
+    const box = getDndRollFrontBox();
+    if (!box) return;
+
+    moveDndRollBoxToBody(box);
+    box.classList.add("dnd-floating-roll-result");
+
+    if (dndRollFrontObserver) {
+      dndRollFrontObserver.disconnect();
+    }
+
+    dndRollFrontObserver = new MutationObserver(() => {
+      showDndRollFrontBox();
+    });
+
+    dndRollFrontObserver.observe(box, {
+      childList: true,
+      subtree: true,
+      characterData: true,
+    });
+
+    box.onclick = () => {
+      window.clearTimeout(dndRollFrontTimer);
+      hideDndRollFrontBox(box);
+    };
+
+    if (!hasDndRollFrontResult(box)) {
+      hideDndRollFrontBox(box);
+    }
+  }
+
+  function bootDndRollFrontBox() {
+    setupDndRollFrontBox();
+    window.setTimeout(setupDndRollFrontBox, 500);
+    window.setTimeout(setupDndRollFrontBox, 1500);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", bootDndRollFrontBox);
+  } else {
+    bootDndRollFrontBox();
+  }
+})();
+/* =========================================================
+   PATCH - SOM DE ROLAGEM DE DADO NA FICHA D&D
+   Usa o mesmo som/fallback da rolagem de Altherium.
+   Cole este bloco no FINAL do seu script.js.
+========================================================= */
+(function campaignLabDndDiceRollSoundPatch() {
+  const DND_DICE_SOUND_SELECTOR = [
+    "#dndPlayerSheetForm [data-dnd-v2-roll]",
+    "#dndPlayerSheetForm [data-dnd-v2-attack-row]",
+    "#dndPlayerSheetForm [data-dnd-roll-combat-initiative]",
+    "#dndPlayerSheetForm [data-dnd-combat-action='roll-attack']",
+    "#dndPlayerSheetForm [data-dnd-combat-action='roll-damage']",
+    "#dndPlayerSheetForm #applyDndShortRest",
+    "#dndPlayerSheetForm [data-dnd-rest-roll]"
+  ].join(", ");
+
+  let lastSoundAt = 0;
+
+  function playFallbackDiceSound(volume = 0.45) {
+    try {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      if (!AudioContextClass) return;
+
+      const audioContext = new AudioContextClass();
+      const masterGain = audioContext.createGain();
+      masterGain.gain.setValueAtTime(volume * 0.12, audioContext.currentTime);
+      masterGain.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 0.42);
+      masterGain.connect(audioContext.destination);
+
+      [0, 0.06, 0.12, 0.19, 0.27].forEach((delay, index) => {
+        const oscillator = audioContext.createOscillator();
+        const gain = audioContext.createGain();
+
+        oscillator.type = "triangle";
+        oscillator.frequency.setValueAtTime(260 + index * 42, audioContext.currentTime + delay);
+        oscillator.frequency.exponentialRampToValueAtTime(
+          120 + index * 20,
+          audioContext.currentTime + delay + 0.08
+        );
+
+        gain.gain.setValueAtTime(0.0001, audioContext.currentTime + delay);
+        gain.gain.exponentialRampToValueAtTime(0.65, audioContext.currentTime + delay + 0.01);
+        gain.gain.exponentialRampToValueAtTime(0.0001, audioContext.currentTime + delay + 0.09);
+
+        oscillator.connect(gain);
+        gain.connect(masterGain);
+
+        oscillator.start(audioContext.currentTime + delay);
+        oscillator.stop(audioContext.currentTime + delay + 0.1);
+      });
+
+      window.setTimeout(() => {
+        audioContext.close().catch(() => {});
+      }, 700);
+    } catch (error) {
+      console.warn("Som de rolagem indisponível.", error);
+    }
+  }
+
+  function playDndDiceSoundOnce() {
+    const now = Date.now();
+
+    // Evita som duplicado quando dois handlers escutam o mesmo clique.
+    if (now - lastSoundAt < 120) return;
+    lastSoundAt = now;
+
+    if (typeof window.playCampaignDiceRollSound === "function") {
+      window.playCampaignDiceRollSound();
+      return;
+    }
+
+    if (typeof playCampaignDiceRollSound === "function") {
+      playCampaignDiceRollSound();
+      return;
+    }
+
+    try {
+      const audio = new Audio("sounds/dice-roll.mp3");
+      audio.volume = 0.45;
+      audio.currentTime = 0;
+      audio.play().catch(() => playFallbackDiceSound(0.45));
+    } catch (error) {
+      playFallbackDiceSound(0.45);
+    }
+  }
+
+  function shouldPlayDndDiceSound(target) {
+    const button = target?.closest?.(DND_DICE_SOUND_SELECTOR);
+    if (!button) return false;
+    if (button.disabled || button.getAttribute("aria-disabled") === "true") return false;
+    if (!document.body.classList.contains("dnd-player-page") && !document.getElementById("dndPlayerSheetForm")) return false;
+    return true;
+  }
+
+  if (window.campaignLabDndDiceRollSoundReady) return;
+  window.campaignLabDndDiceRollSoundReady = true;
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      if (!shouldPlayDndDiceSound(event.target)) return;
+      playDndDiceSoundOnce();
+    },
+    true
+  );
+})();
+
+
+/* =========================================================
+   D&D - ABA PET / FICHA PEQUENA DO COMPANHEIRO
+========================================================= */
+(function campaignLabDndPetSheetPatch() {
+  const PET_ABILITIES = [
+    ["Str", "str"],
+    ["Dex", "dex"],
+    ["Con", "con"],
+    ["Int", "int"],
+    ["Wis", "wis"],
+    ["Cha", "cha"],
+  ];
+
+  function getPetForm() {
+    return document.getElementById("dndPlayerSheetForm");
+  }
+
+  function toNumber(value, fallback = 0) {
+    const number = Number(value);
+    return Number.isFinite(number) ? number : fallback;
+  }
+
+  function abilityMod(score) {
+    return Math.floor((toNumber(score, 10) - 10) / 2);
+  }
+
+  function formatBonus(value) {
+    const number = toNumber(value, 0);
+    return number >= 0 ? `+${number}` : String(number);
+  }
+
+  function setText(id, value) {
+    const element = document.getElementById(id);
+    if (element) element.textContent = value;
+  }
+
+  function setPetModField(form, shortName, value) {
+    const fieldName = `pet${shortName}Mod`;
+    let field = form.elements[fieldName];
+
+    if (!field) {
+      field = document.createElement("input");
+      field.type = "hidden";
+      field.name = fieldName;
+      form.appendChild(field);
+    }
+
+    field.value = String(value);
+  }
+
+  function updatePetSheet() {
+    const form = getPetForm();
+    if (!form) return;
+
+    const petName = String(form.elements.petName?.value || "").trim();
+    const petSpecies = String(form.elements.petSpecies?.value || "").trim();
+    const petBond = String(form.elements.petBond?.value || "").trim();
+
+    setText("dndPetNamePreview", petName || "Sem nome");
+    setText("dndPetTypePreview", petSpecies || petBond || "Companheiro da ficha");
+
+    const avatar = document.getElementById("dndPetAvatar");
+    const profileCard = avatar ? avatar.closest(".dnd-pet-profile-card") : null;
+    const petAvatarUrl = String(form.elements.petAvatarUrl?.value || "").trim();
+    const fallbackLetter = (petName || petSpecies || "Pet").trim().charAt(0).toUpperCase() || "P";
+
+    if (avatar) {
+      if (petAvatarUrl) {
+        avatar.classList.add("has-image");
+        avatar.innerHTML = `<img src="${escapeHtml(petAvatarUrl)}" alt="Imagem do pet ${escapeHtml(petName || petSpecies || "Pet")}" loading="lazy" />`;
+      } else {
+        avatar.classList.remove("has-image");
+        avatar.textContent = fallbackLetter;
+      }
+    }
+
+    if (profileCard) {
+      profileCard.classList.toggle("has-pet-image", Boolean(petAvatarUrl));
+    }
+
+    PET_ABILITIES.forEach(([shortName, key]) => {
+      const score = form.elements[`pet${shortName}Score`]?.value || "10";
+      const mod = abilityMod(score);
+      setPetModField(form, shortName, mod);
+      setText(`dndPet${shortName}ModView`, formatBonus(mod));
+    });
+
+    const hpCurrent = Math.max(0, toNumber(form.elements.petHpCurrent?.value, 0));
+    const hpMax = Math.max(0, toNumber(form.elements.petHpMax?.value, 0));
+    const fill = document.getElementById("dndPetHpBarFill");
+
+    if (fill) {
+      const percent = hpMax > 0 ? Math.max(0, Math.min(100, (hpCurrent / hpMax) * 100)) : 0;
+      fill.style.width = `${percent}%`;
+    }
+  }
+
+  function rollDiceFormula(formula) {
+    const clean = String(formula || "1d20").replace(/\s+/g, "");
+    const parts = clean.match(/[+-]?[^+-]+/g) || ["1d20"];
+    let total = 0;
+    const detail = [];
+
+    parts.forEach((part) => {
+      const sign = part.startsWith("-") ? -1 : 1;
+      const raw = part.replace(/^[+-]/, "");
+      const dice = raw.match(/^(\d*)d(\d+)$/i);
+
+      if (dice) {
+        const amount = Math.max(1, Number(dice[1] || 1));
+        const faces = Math.max(2, Number(dice[2] || 20));
+        const rolls = Array.from({ length: amount }, () => Math.floor(Math.random() * faces) + 1);
+        const subtotal = rolls.reduce((sum, value) => sum + value, 0) * sign;
+        total += subtotal;
+        detail.push(`${sign < 0 ? "-" : ""}${amount}d${faces} [${rolls.join(", ")}]`);
+        return;
+      }
+
+      const value = toNumber(raw, 0) * sign;
+      total += value;
+      detail.push(`${value >= 0 ? "+" : ""}${value}`);
+    });
+
+    return { total, detail: detail.join(" ") || "Sem dados" };
+  }
+
+  function showPetRollResult(label, formula, result) {
+    const box = document.getElementById("dndV2QuickRollResult");
+    if (!box) return;
+
+    const span = box.querySelector("span");
+    const strong = box.querySelector("strong");
+    const text = box.querySelector("p");
+
+    if (span) span.textContent = label;
+    if (strong) strong.textContent = String(result.total ?? "--");
+    if (text) text.textContent = `${formula} → ${result.detail}`;
+
+    if (typeof window.dispatchEvent === "function") {
+      window.dispatchEvent(new CustomEvent("dnd-roll-result-updated"));
+    }
+  }
+
+
+  async function uploadPetImage(input, file) {
+    const form = getPetForm();
+    if (!form || !input || !file) return;
+
+    if (!DB || !DB.storage) {
+      alert("Supabase Storage não carregou.");
+      return;
+    }
+
+    if (!file.type || !file.type.startsWith("image/")) {
+      alert("Escolha um arquivo de imagem.");
+      return;
+    }
+
+    if (typeof CHARACTER_PORTRAIT_MAX_SIZE !== "undefined" && file.size > CHARACTER_PORTRAIT_MAX_SIZE) {
+      alert("A imagem precisa ter no máximo 5MB.");
+      return;
+    }
+
+    const uploadButton = input.closest(".dnd-pet-image-upload-btn");
+    const oldText = uploadButton ? uploadButton.childNodes[0].textContent.trim() : "";
+
+    try {
+      if (uploadButton) {
+        uploadButton.childNodes[0].textContent = "Cortando...";
+        uploadButton.classList.add("is-loading");
+      }
+
+      const croppedFile = typeof openCampaignLabImageCropper === "function"
+        ? await openCampaignLabImageCropper(file, {
+            title: "Cortar imagem do pet",
+            helperText: "Arraste e ajuste a imagem para aparecer no card do pet.",
+            cropWidth: 420,
+            cropHeight: 420,
+            outputWidth: 600,
+            outputHeight: 600,
+            mask: "circle",
+            buttonText: "Usar imagem",
+            fileNameSuffix: "pet",
+          })
+        : file;
+
+      if (!croppedFile) return;
+      file = croppedFile;
+
+      if (uploadButton) uploadButton.childNodes[0].textContent = "Enviando...";
+
+      const user = getLoggedUserFromSession();
+      const campaign = await getCurrentCampaign(true);
+
+      if (!user || !campaign) {
+        alert("Campanha ou usuário não encontrado.");
+        return;
+      }
+
+      const bucket = typeof CHARACTER_PORTRAIT_BUCKET !== "undefined"
+        ? CHARACTER_PORTRAIT_BUCKET
+        : "character-portraits";
+      const extension = typeof getFileExtension === "function"
+        ? getFileExtension(file.name, file.type)
+        : (file.type.includes("png") ? "png" : "jpg");
+      const safeCampaignId = String(campaign.id).replace(/[^a-zA-Z0-9_-]/g, "-");
+      const safeUserId = String(user.id).replace(/[^a-zA-Z0-9_-]/g, "-");
+      const filePath = `${safeCampaignId}/D-D/${safeUserId}/pet-${Date.now()}.${extension}`;
+
+      const { error: uploadError } = await DB.storage
+        .from(bucket)
+        .upload(filePath, file, {
+          cacheControl: "3600",
+          upsert: true,
+          contentType: file.type,
+        });
+
+      if (uploadError) {
+        console.error("Erro ao enviar imagem do pet:", uploadError);
+        alert("Erro ao enviar imagem do pet. Verifique se o bucket character-portraits foi criado.");
+        return;
+      }
+
+      const { data: publicData } = DB.storage.from(bucket).getPublicUrl(filePath);
+      const imageUrl = `${publicData.publicUrl}?v=${Date.now()}`;
+
+      let field = form.elements.petAvatarUrl;
+      if (!field) {
+        field = document.createElement("input");
+        field.type = "hidden";
+        field.name = "petAvatarUrl";
+        field.setAttribute("data-dnd-pet-avatar-url", "");
+        form.appendChild(field);
+      }
+
+      field.value = imageUrl;
+      updatePetSheet();
+
+      if (typeof markDndApplyButtonDirty === "function") {
+        markDndApplyButtonDirty();
+      }
+
+      if (typeof saveDndPlayerSheet === "function") {
+        await saveDndPlayerSheet(false);
+      } else {
+        form.dispatchEvent(new Event("input", { bubbles: true }));
+      }
+    } finally {
+      if (uploadButton) {
+        uploadButton.childNodes[0].textContent = oldText || "Escolher imagem";
+        uploadButton.classList.remove("is-loading");
+      }
+
+      input.value = "";
+    }
+  }
+
+  async function removePetImage() {
+    const form = getPetForm();
+    if (!form) return;
+
+    let field = form.elements.petAvatarUrl;
+    if (!field) {
+      field = document.createElement("input");
+      field.type = "hidden";
+      field.name = "petAvatarUrl";
+      field.setAttribute("data-dnd-pet-avatar-url", "");
+      form.appendChild(field);
+    }
+
+    field.value = "";
+    updatePetSheet();
+
+    if (typeof markDndApplyButtonDirty === "function") {
+      markDndApplyButtonDirty();
+    }
+
+    if (typeof saveDndPlayerSheet === "function") {
+      await saveDndPlayerSheet(false);
+    } else {
+      form.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+  }
+
+  function setupPetEvents() {
+    const form = getPetForm();
+    if (!form || form.dataset.dndPetReady === "true") return;
+
+    form.dataset.dndPetReady = "true";
+
+    form.addEventListener("input", (event) => {
+      if (event.target && String(event.target.name || "").startsWith("pet")) {
+        updatePetSheet();
+      }
+    });
+
+    form.addEventListener("change", (event) => {
+      const imageInput = event.target.closest?.("[data-dnd-pet-image-input]");
+      if (imageInput) {
+        const file = imageInput.files && imageInput.files[0];
+        if (file) uploadPetImage(imageInput, file);
+        return;
+      }
+
+      if (event.target && String(event.target.name || "").startsWith("pet")) {
+        updatePetSheet();
+      }
+    });
+
+    form.addEventListener("click", (event) => {
+      const removeImageButton = event.target.closest("[data-dnd-pet-image-remove]");
+      if (removeImageButton) {
+        event.preventDefault();
+        removePetImage();
+        return;
+      }
+
+      const damageButton = event.target.closest("[data-dnd-pet-damage-roll]");
+      if (!damageButton) return;
+
+      event.preventDefault();
+      updatePetSheet();
+
+      const petName = String(form.elements.petName?.value || "Pet").trim() || "Pet";
+      const attackName = String(form.elements.petAttackName?.value || "Dano").trim() || "Dano";
+      const formula = String(form.elements.petAttackDamage?.value || "1d4").trim() || "1d4";
+      const result = rollDiceFormula(formula);
+
+      showPetRollResult(`${petName} · ${attackName}`, formula, result);
+    });
+
+    updatePetSheet();
+  }
+
+  const originalLoadDndSheetIntoPlayerForm = window.loadDndSheetIntoPlayerForm;
+  if (typeof originalLoadDndSheetIntoPlayerForm === "function" && !originalLoadDndSheetIntoPlayerForm.__dndPetPatched) {
+    const wrapped = async function () {
+      const result = await originalLoadDndSheetIntoPlayerForm.apply(this, arguments);
+      window.setTimeout(() => {
+        setupPetEvents();
+        updatePetSheet();
+      }, 80);
+      return result;
+    };
+    wrapped.__dndPetPatched = true;
+    window.loadDndSheetIntoPlayerForm = wrapped;
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      window.setTimeout(() => {
+        setupPetEvents();
+        updatePetSheet();
+      }, 900);
+    });
+  } else {
+    window.setTimeout(() => {
+      setupPetEvents();
+      updatePetSheet();
+    }, 900);
+  }
+})();
+
+
+/* =========================================================
+   D&D - NORMALIZADOR DE MEDIDAS EM METROS
+   Converte valores antigos salvos em ft. para metros na interface.
+========================================================= */
+(function () {
+  function normalizeVisibleDistanceFields() {
+    const form = document.getElementById("dndPlayerSheetForm");
+    if (!form || typeof campaignLabDndConvertFeetTextToMeters !== "function") return;
+
+    const selectors = [
+      'input[name="speed"]',
+      'input[name="petSpeed"]',
+      'input[name="darkvision"]',
+      'textarea[name="classInitialFeaturesText"]',
+      '[data-dnd-spell-field="range"]',
+      '[data-dnd-spell-field="description"]',
+      '[data-dnd-spell-field="notes"]'
+    ];
+
+    selectors.forEach((selector) => {
+      form.querySelectorAll(selector).forEach((field) => {
+        if (!field || typeof field.value !== "string" || !/\bft\.?\b/i.test(field.value)) return;
+        field.value = campaignLabDndConvertFeetTextToMeters(field.value);
+      });
+    });
+  }
+
+  const originalLoadDndSheetIntoPlayerForm = window.loadDndSheetIntoPlayerForm;
+  if (typeof originalLoadDndSheetIntoPlayerForm === "function" && !originalLoadDndSheetIntoPlayerForm.__metersNormalizerWrapped) {
+    const wrapped = async function () {
+      const result = await originalLoadDndSheetIntoPlayerForm.apply(this, arguments);
+      window.setTimeout(normalizeVisibleDistanceFields, 120);
+      return result;
+    };
+    wrapped.__metersNormalizerWrapped = true;
+    window.loadDndSheetIntoPlayerForm = wrapped;
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => window.setTimeout(normalizeVisibleDistanceFields, 1200));
+  } else {
+    window.setTimeout(normalizeVisibleDistanceFields, 1200);
+  }
+})();
+
+
+/* =========================================================
+   D&D - ESPELHO DO PET NO RESUMO VIVO DA FICHA
+   Mostra a foto do pet como bolinha menor ao lado da foto do personagem.
+========================================================= */
+(function () {
+  let lastPetAvatarState = "";
+
+  function getDndPetSideForm() {
+    return document.getElementById("dndPlayerSheetForm");
+  }
+
+  function getDndPetSideLetter(form) {
+    const petName = String(form?.elements?.petName?.value || "").trim();
+    const petSpecies = String(form?.elements?.petSpecies?.value || "").trim();
+    const raw = petName || petSpecies || "Pet";
+    return raw.charAt(0).toUpperCase() || "P";
+  }
+
+  function refreshDndPetAvatarMini(force = false) {
+    const form = getDndPetSideForm();
+    const mini = document.getElementById("dndPetAvatarMini");
+    if (!form || !mini) return;
+
+    const petName = String(form.elements.petName?.value || "").trim();
+    const petSpecies = String(form.elements.petSpecies?.value || "").trim();
+    const petAvatarUrl = String(form.elements.petAvatarUrl?.value || "").trim();
+    const letter = getDndPetSideLetter(form);
+    const state = `${petAvatarUrl}|${petName}|${petSpecies}|${letter}`;
+
+    if (!force && state === lastPetAvatarState) return;
+    lastPetAvatarState = state;
+
+    mini.title = petName || petSpecies ? `Pet: ${petName || petSpecies}` : "Imagem do pet";
+    mini.setAttribute("aria-label", mini.title);
+
+    if (petAvatarUrl) {
+      mini.classList.add("has-image");
+      mini.classList.remove("is-empty");
+      mini.innerHTML = `<img src="${escapeHtml(petAvatarUrl)}" alt="Imagem do pet ${escapeHtml(petName || petSpecies || "Pet")}" loading="lazy" />`;
+      return;
+    }
+
+    mini.classList.remove("has-image");
+    mini.classList.add("is-empty");
+    mini.textContent = letter;
+  }
+
+  function bindDndPetAvatarMiniEvents() {
+    if (window.__dndPetAvatarMiniReady) return;
+    window.__dndPetAvatarMiniReady = true;
+
+    document.addEventListener("input", (event) => {
+      if (String(event.target?.name || "").startsWith("pet")) {
+        window.setTimeout(() => refreshDndPetAvatarMini(true), 0);
+      }
+    });
+
+    document.addEventListener("change", (event) => {
+      if (String(event.target?.name || "").startsWith("pet") || event.target?.matches?.("[data-dnd-pet-image-input]")) {
+        window.setTimeout(() => refreshDndPetAvatarMini(true), 120);
+        window.setTimeout(() => refreshDndPetAvatarMini(true), 900);
+      }
+    });
+
+    document.addEventListener("click", (event) => {
+      if (event.target?.closest?.("[data-dnd-pet-image-remove]")) {
+        window.setTimeout(() => refreshDndPetAvatarMini(true), 120);
+      }
+    });
+  }
+
+  const originalLoadDndSheetIntoPlayerForm = window.loadDndSheetIntoPlayerForm;
+  if (typeof originalLoadDndSheetIntoPlayerForm === "function" && !originalLoadDndSheetIntoPlayerForm.__dndPetAvatarMiniPatched) {
+    const wrappedLoadDndSheetIntoPlayerForm = async function () {
+      const result = await originalLoadDndSheetIntoPlayerForm.apply(this, arguments);
+      window.setTimeout(() => refreshDndPetAvatarMini(true), 120);
+      window.setTimeout(() => refreshDndPetAvatarMini(true), 800);
+      return result;
+    };
+
+    wrappedLoadDndSheetIntoPlayerForm.__dndPetAvatarMiniPatched = true;
+    window.loadDndSheetIntoPlayerForm = wrappedLoadDndSheetIntoPlayerForm;
+  }
+
+  function initDndPetAvatarMini() {
+    bindDndPetAvatarMiniEvents();
+    refreshDndPetAvatarMini(true);
+
+    if (!window.__dndPetAvatarMiniInterval) {
+      window.__dndPetAvatarMiniInterval = window.setInterval(() => refreshDndPetAvatarMini(false), 800);
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => window.setTimeout(initDndPetAvatarMini, 500));
+  } else {
+    window.setTimeout(initDndPetAvatarMini, 500);
+  }
+})();
+/* =========================================================
+   D&D - PET MINI SOME QUANDO NÃO HÁ IMAGEM
+   Cole no final do script.js.
+========================================================= */
+(function () {
+  function syncDndPetMiniVisibility() {
+    const form = document.getElementById("dndPlayerSheetForm");
+    const mini = document.getElementById("dndPetAvatarMini");
+    if (!form || !mini) return;
+
+    const petAvatarUrl = String(form.elements.petAvatarUrl?.value || "").trim();
+
+    if (!petAvatarUrl) {
+      mini.hidden = true;
+      mini.classList.add("is-empty");
+      mini.classList.remove("has-image");
+      return;
+    }
+
+    mini.hidden = false;
+    mini.classList.remove("is-empty");
+    mini.classList.add("has-image");
+  }
+
+  document.addEventListener("input", (event) => {
+    if (event.target?.name === "petAvatarUrl" || event.target?.closest?.("#dndPlayerSheetForm")) {
+      window.setTimeout(syncDndPetMiniVisibility, 0);
+    }
+  }, true);
+
+  document.addEventListener("change", (event) => {
+    if (event.target?.name === "petAvatarUrl" || event.target?.closest?.("#dndPlayerSheetForm")) {
+      window.setTimeout(syncDndPetMiniVisibility, 0);
+    }
+  }, true);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      window.setTimeout(syncDndPetMiniVisibility, 600);
+      window.setTimeout(syncDndPetMiniVisibility, 1400);
+    });
+  } else {
+    window.setTimeout(syncDndPetMiniVisibility, 600);
+    window.setTimeout(syncDndPetMiniVisibility, 1400);
+  }
+
+  window.setInterval(syncDndPetMiniVisibility, 1200);
+})();
