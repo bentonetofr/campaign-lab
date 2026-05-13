@@ -33617,3 +33617,227 @@ body.campaign-dice-modal-open.dnd-master-page {
     max-width: calc(100vw - 14px) !important;
   }
 }
+
+
+/* =========================================================
+   D&D - BIBLIOTECA OFICIAL DE MAGIAS
+========================================================= */
+.dnd-official-spell-library {
+  margin: 18px 0 22px;
+  padding: clamp(18px, 2.5vw, 26px);
+  border: 1px solid rgba(248, 113, 113, 0.22);
+  border-radius: 26px;
+  background:
+    linear-gradient(145deg, rgba(22, 9, 17, 0.92), rgba(8, 13, 28, 0.96)),
+    radial-gradient(circle at top right, rgba(239, 68, 68, 0.16), transparent 44%);
+  box-shadow: 0 22px 70px rgba(0, 0, 0, 0.28);
+}
+
+.dnd-official-spell-library__head {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.dnd-official-spell-library__head .tag {
+  margin-bottom: 10px;
+}
+
+.dnd-official-spell-library__head h3 {
+  margin: 0 0 8px;
+  color: #fff7ed;
+  font-size: clamp(24px, 3vw, 36px);
+}
+
+.dnd-official-spell-library__head span {
+  display: block;
+  max-width: 840px;
+  color: rgba(254, 226, 226, 0.76);
+  line-height: 1.6;
+}
+
+.dnd-official-spell-library__head > strong {
+  flex: 0 0 auto;
+  padding: 10px 14px;
+  border: 1px solid rgba(248, 113, 113, 0.3);
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.1);
+  color: #fecaca;
+  font-size: 13px;
+  white-space: nowrap;
+}
+
+.dnd-official-spell-library__controls {
+  display: grid;
+  grid-template-columns: minmax(220px, 1.15fr) minmax(150px, 0.55fr) minmax(260px, 1.2fr);
+  gap: 14px;
+  align-items: end;
+}
+
+.dnd-official-spell-library label {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+}
+
+.dnd-official-spell-library label span {
+  color: #fecaca;
+  font-size: 12px;
+  font-weight: 900;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.dnd-official-spell-library input,
+.dnd-official-spell-library select {
+  width: 100%;
+  min-height: 48px;
+  margin: 0;
+  border-radius: 16px;
+  border: 1px solid rgba(248, 113, 113, 0.24);
+  background: rgba(2, 6, 23, 0.78);
+  color: #fff7ed;
+}
+
+.dnd-official-spell-library input:focus,
+.dnd-official-spell-library select:focus {
+  border-color: rgba(248, 113, 113, 0.72);
+  box-shadow: 0 0 0 4px rgba(248, 113, 113, 0.1);
+}
+
+.dnd-official-spell-preview {
+  margin-top: 16px;
+  padding: 16px;
+  border: 1px solid rgba(148, 163, 184, 0.16);
+  border-radius: 20px;
+  background: rgba(2, 6, 23, 0.5);
+}
+
+.dnd-official-spell-preview > strong {
+  display: block;
+  color: #fff7ed;
+  margin-bottom: 4px;
+}
+
+.dnd-official-spell-preview > span,
+.dnd-official-spell-preview p,
+.dnd-official-spell-preview small {
+  color: rgba(254, 226, 226, 0.76);
+  line-height: 1.55;
+}
+
+.dnd-official-spell-preview__top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 12px;
+}
+
+.dnd-official-spell-preview__top strong {
+  display: block;
+  color: #fff7ed;
+  font-size: 20px;
+}
+
+.dnd-official-spell-preview__top span {
+  display: block;
+  margin-top: 4px;
+  color: rgba(254, 202, 202, 0.74);
+  font-size: 13px;
+}
+
+.dnd-official-spell-preview__top b {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.14);
+  color: #fecaca;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.dnd-official-spell-preview__meta {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.dnd-official-spell-preview__meta span {
+  padding: 10px;
+  border-radius: 14px;
+  background: rgba(255, 255, 255, 0.035);
+  color: rgba(254, 226, 226, 0.78);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.dnd-official-spell-preview__meta b {
+  color: #fecaca;
+}
+
+.dnd-official-spell-library__actions {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.dnd-official-spell-library__actions button {
+  min-height: 44px;
+  padding: 0 16px;
+  border: 1px solid rgba(248, 113, 113, 0.28);
+  border-radius: 999px;
+  background: rgba(239, 68, 68, 0.08);
+  color: #fecaca;
+  font-weight: 900;
+  transition: 0.2s ease;
+}
+
+.dnd-official-spell-library__actions button:hover {
+  transform: translateY(-2px);
+  border-color: rgba(248, 113, 113, 0.58);
+  background: rgba(239, 68, 68, 0.16);
+}
+
+.dnd-official-spell-library__actions .dnd-official-spell-library__primary {
+  border-color: rgba(248, 113, 113, 0.72);
+  background: linear-gradient(135deg, #f87171, #dc2626);
+  color: #fff7ed;
+  box-shadow: 0 14px 34px rgba(220, 38, 38, 0.22);
+}
+
+.dnd-official-spell-library__actions .dnd-official-spell-library__primary:hover {
+  box-shadow: 0 18px 42px rgba(220, 38, 38, 0.32);
+}
+
+@media (max-width: 1050px) {
+  .dnd-official-spell-library__controls,
+  .dnd-official-spell-preview__meta {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 700px) {
+  .dnd-official-spell-library__head,
+  .dnd-official-spell-preview__top {
+    flex-direction: column;
+  }
+
+  .dnd-official-spell-library__controls,
+  .dnd-official-spell-preview__meta {
+    grid-template-columns: 1fr;
+  }
+
+  .dnd-official-spell-library__actions {
+    justify-content: stretch;
+  }
+
+  .dnd-official-spell-library__actions button {
+    width: 100%;
+  }
+}
