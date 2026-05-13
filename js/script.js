@@ -1,3 +1,151 @@
+
+/* =========================================================
+   HOTFIX REAL - ABRIR ROLADOR D&D ANTES DE QUALQUER OUTRO LISTENER
+   Motivo: havia um CSS antigo que escondia #campaignDiceWidget e alguns
+   listeners antigos podiam interceptar o clique. Este bloco é independente.
+========================================================= */
+(function campaignLabDndDiceOpenEmergencyFix() {
+  function isDndDicePage() {
+    return document.body && (document.body.classList.contains("dnd-player-page") || document.body.classList.contains("dnd-master-page"));
+  }
+
+  function getDiceWidget() {
+    let widget = document.getElementById("campaignDiceWidget");
+
+    if (!widget) {
+      widget = document.createElement("aside");
+      widget.id = "campaignDiceWidget";
+      widget.className = "campaign-dice-widget campaign-dice-widget--dnd-sheet campaign-dice-widget--dnd-bottom";
+      widget.setAttribute("aria-label", "Rolador de dados da campanha D&D");
+      widget.dataset.diceSystem = "D&D";
+      widget.innerHTML = `
+        <div class="campaign-dice-head">
+          <button type="button" class="campaign-dice-toggle" data-dice-toggle aria-expanded="false">
+            <span>Rolador de dados</span>
+            <strong>🎲</strong>
+          </button>
+        </div>
+        <div class="campaign-dice-body">
+          <div class="campaign-dice-last-result" id="campaignDiceLastResult">
+            <span>Resultado</span>
+            <strong>--</strong>
+            <p>Escolha uma rolagem ou digite uma fórmula.</p>
+          </div>
+          <div class="campaign-dice-quick-grid" aria-label="Dados rápidos">
+            <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d4" data-dice-label="D4">d4</button>
+            <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d6" data-dice-label="D6">d6</button>
+            <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d8" data-dice-label="D8">d8</button>
+            <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d10" data-dice-label="D10">d10</button>
+            <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d12" data-dice-label="D12">d12</button>
+            <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d20" data-dice-label="D20">d20</button>
+            <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d100" data-dice-label="D100">d100</button>
+          </div>
+          <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+            <span>Testes principais</span>
+            <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+              <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+initiative" data-dice-label="Iniciativa">Iniciativa</button>
+              <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+strMod" data-dice-label="Força">FOR</button>
+              <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+dexMod" data-dice-label="Destreza">DES</button>
+              <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+conMod" data-dice-label="Constituição">CON</button>
+              <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+intMod" data-dice-label="Inteligência">INT</button>
+              <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+wisMod" data-dice-label="Sabedoria">SAB</button>
+              <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+chaMod" data-dice-label="Carisma">CAR</button>
+            </div>
+          </section>
+          <form class="campaign-dice-custom-form" data-dice-custom-form>
+            <label><span>Nome da rolagem</span><input name="diceLabel" type="text" placeholder="Ataque, dano, teste..." autocomplete="off" /></label>
+            <label><span>Fórmula</span><input name="diceFormula" type="text" placeholder="Ex: 1d20+5, 2d6+3" autocomplete="off" /></label>
+            <button type="submit" class="campaign-dice-roll-btn">Rolar fórmula</button>
+          </form>
+          <div class="campaign-dice-history-head">
+            <h3>Histórico da mesa</h3>
+            <button type="button" data-dice-refresh>Atualizar</button>
+          </div>
+          <div class="campaign-dice-history" id="campaignDiceHistory" data-dice-history>
+            <div class="campaign-dice-empty">Nenhuma rolagem visível ainda.</div>
+          </div>
+        </div>
+      `;
+      document.body.appendChild(widget);
+    }
+
+    widget.dataset.diceSystem = "D&D";
+    widget.hidden = false;
+    widget.removeAttribute("hidden");
+    widget.classList.add("campaign-dice-widget--dnd-sheet", "campaign-dice-widget--dnd-bottom");
+    widget.classList.remove("campaign-dice-widget--modal", "campaign-dice-widget--near-portrait");
+
+    if (widget.parentElement !== document.body) {
+      document.body.appendChild(widget);
+    }
+
+    return widget;
+  }
+
+  function forceDiceWidgetVisible(widget, open) {
+    if (!widget) return;
+
+    widget.classList.toggle("campaign-dice-widget--open", Boolean(open));
+    document.body.classList.remove("campaign-dice-modal-open");
+
+    const toggle = widget.querySelector("[data-dice-toggle]");
+    if (toggle) toggle.setAttribute("aria-expanded", open ? "true" : "false");
+
+    widget.style.setProperty("position", "fixed", "important");
+    widget.style.setProperty("left", "50%", "important");
+    widget.style.setProperty("right", "auto", "important");
+    widget.style.setProperty("top", "auto", "important");
+    widget.style.setProperty("bottom", "max(14px, env(safe-area-inset-bottom))", "important");
+    widget.style.setProperty("transform", "translateX(-50%)", "important");
+    widget.style.setProperty("z-index", "1000500", "important");
+    widget.style.setProperty("display", "flex", "important");
+    widget.style.setProperty("visibility", "visible", "important");
+    widget.style.setProperty("opacity", "1", "important");
+    widget.style.setProperty("pointer-events", "auto", "important");
+    widget.style.setProperty("flex-direction", "column", "important");
+    widget.style.setProperty("overflow", "hidden", "important");
+    widget.style.setProperty("width", open ? "min(360px, calc(100vw - 18px))" : "min(280px, calc(100vw - 18px))", "important");
+    widget.style.setProperty("max-width", open ? "min(360px, calc(100vw - 18px))" : "min(280px, calc(100vw - 18px))", "important");
+    widget.style.setProperty("max-height", open ? "min(82vh, 720px)" : "calc(100vh - 28px)", "important");
+
+    const body = widget.querySelector(".campaign-dice-body");
+    if (body) {
+      body.style.setProperty("display", open ? "flex" : "none", "important");
+      body.style.setProperty("visibility", open ? "visible" : "hidden", "important");
+      body.style.setProperty("opacity", open ? "1" : "0", "important");
+      body.style.setProperty("pointer-events", open ? "auto" : "none", "important");
+      body.style.setProperty("flex-direction", "column", "important");
+    }
+  }
+
+  document.addEventListener("click", function (event) {
+    if (!isDndDicePage()) return;
+
+    const opener = event.target.closest("[data-open-dnd-dice-panel]");
+    const toggle = event.target.closest("#campaignDiceWidget [data-dice-toggle]");
+
+    if (!opener && !toggle) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+
+    const widget = getDiceWidget();
+    const shouldOpen = opener ? true : !widget.classList.contains("campaign-dice-widget--open");
+    forceDiceWidgetVisible(widget, shouldOpen);
+
+    try {
+      localStorage.setItem("campaignLabDiceOpen", shouldOpen ? "true" : "false");
+    } catch (error) {}
+  }, true);
+
+  document.addEventListener("DOMContentLoaded", function () {
+    if (!isDndDicePage()) return;
+    const widget = getDiceWidget();
+    forceDiceWidgetVisible(widget, localStorage.getItem("campaignLabDiceOpen") === "true");
+  });
+})();
+
 const SUPABASE_URL = "https://yybcfzwrjdjgybagjcgm.supabase.co";
 const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inl5YmNmendyamRqZ3liYWdqY2dtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzc3NTM3MzksImV4cCI6MjA5MzMyOTczOX0.yBYSGoBgbCOJR0hDKr2lsY7f12amhbjm1qd36pkK4cE";
 
@@ -183,96 +331,122 @@ const DND_ALTHERIUM_BACKGROUND_OPTIONS = [
     key: "",
     value: "",
     label: "Selecione o antecedente",
-    description: "Escolha um passado de Altherium para aplicar perícias e traços automáticos na ficha de D&D.",
+    description: "Escolha um antecedente oficial de D&D para aplicar perícias sugeridas e registrar o traço na ficha.",
     skills: [],
     feature: "",
   },
   {
-    key: "cacador",
-    value: "Caçador",
-    label: "Caçador",
-    skills: ["skillStealth", "skillPerception"],
-    feature: "Adiciona +1d4 no acerto em armas à distância.",
-  },
-  {
-    key: "curandeiro",
-    value: "Curandeiro",
-    label: "Curandeiro",
-    skills: ["skillMedicine", "skillNature"],
-    feature: "Adiciona +1d10 na cura.",
-  },
-  {
-    key: "determinado",
-    value: "Determinado",
-    label: "Determinado",
-    skills: ["skillAthletics", "skillInsight"],
-    feature: "Adiciona +1d10 em testes ligados a equilíbrio, firmeza mental ou resistência narrativa.",
-  },
-  {
-    key: "devoto",
-    value: "Devoto",
-    label: "Devoto",
-    skills: ["skillReligion", "skillPersuasion"],
-    feature: "Pode usar Religião no lugar de qualquer teste social quando a cena envolver fé, culto, juramento ou autoridade espiritual.",
-  },
-  {
-    key: "filho_de_mercante",
-    value: "Filho de mercante",
-    label: "Filho de mercante",
-    skills: ["skillPersuasion", "skillInsight"],
-    equipment: "¤800 Hacksilvers adicionais na criação do personagem.",
-    feature: "Começa com ¤800 Hacksilvers adicionais e tem facilidade em negociações, barganhas e leitura de acordos.",
-  },
-  {
-    key: "guerreiro",
-    value: "Guerreiro",
-    label: "Guerreiro",
-    skills: ["skillAthletics", "skillIntimidation"],
-    feature: "Adiciona +1d4 no acerto em armas corpo a corpo.",
-  },
-  {
-    key: "guia_espiritual",
-    value: "Guia espiritual",
-    label: "Guia espiritual",
+    key: "acolito_acolyte",
+    value: "Acólito (Acolyte)",
+    label: "Acólito (Acolyte)",
     skills: ["skillInsight", "skillReligion"],
-    feature: "Adiciona +1d10 na cura do equilíbrio e em cenas de orientação espiritual definidas pelo mestre.",
+    feature: "Antecedente ligado a templo, fé ou ordem religiosa. Marca Intuição e Religião como perícias sugeridas.",
   },
   {
-    key: "corredor",
-    value: "Corredor",
-    label: "Corredor",
-    skills: ["skillAcrobatics", "skillAthletics"],
-    speed: "+5m [Antecedente: Corredor]",
-    feature: "Tem +5m de movimento no deslocamento.",
+    key: "artesao_artisan",
+    value: "Artesão (Artisan)",
+    label: "Artesão (Artisan)",
+    skills: ["skillInvestigation", "skillPersuasion"],
+    feature: "Antecedente ligado a ofício, criação e negociação. Marca Investigação e Persuasão como perícias sugeridas.",
   },
   {
-    key: "peregrino",
-    value: "Peregrino",
-    label: "Peregrino",
-    skills: ["skillSurvival", "skillNature"],
-    feature: "Pode recuperar +1d10 em todos os pontos básicos em cenas de descanso, conforme aprovação do mestre.",
+    key: "artista_entertainer",
+    value: "Artista (Entertainer)",
+    label: "Artista (Entertainer)",
+    skills: ["skillAcrobatics", "skillPerformance"],
+    feature: "Antecedente ligado a apresentações, palco e expressão pública. Marca Acrobacia e Performance como perícias sugeridas.",
   },
   {
-    key: "rastreador",
-    value: "Rastreador",
-    label: "Rastreador",
-    skills: ["skillInvestigation", "skillPerception"],
-    feature: "Recebe +1d10 em testes de investigação.",
+    key: "charlatao_charlatan",
+    value: "Charlatão (Charlatan)",
+    label: "Charlatão (Charlatan)",
+    skills: ["skillDeception", "skillSleightOfHand"],
+    feature: "Antecedente ligado a golpes, blefes e truques sociais. Marca Enganação e Prestidigitação como perícias sugeridas.",
   },
   {
-    key: "robusto",
-    value: "Robusto",
-    label: "Robusto",
+    key: "criminoso_criminal",
+    value: "Criminoso (Criminal)",
+    label: "Criminoso (Criminal)",
+    skills: ["skillSleightOfHand", "skillStealth"],
+    feature: "Antecedente ligado ao submundo, furtos e contatos perigosos. Marca Prestidigitação e Furtividade como perícias sugeridas.",
+  },
+  {
+    key: "erudito_scribe",
+    value: "Erudito (Scribe)",
+    label: "Erudito (Scribe)",
+    skills: ["skillArcana", "skillHistory"],
+    feature: "Antecedente ligado a escrita, arquivos e conhecimento formal. Marca Arcanismo e História como perícias sugeridas.",
+  },
+  {
+    key: "fazendeiro_farmer",
+    value: "Fazendeiro (Farmer)",
+    label: "Fazendeiro (Farmer)",
+    skills: ["skillAnimalHandling", "skillNature"],
+    feature: "Antecedente ligado ao campo, trabalho pesado e criação de animais. Marca Lidar com Animais e Natureza como perícias sugeridas.",
+  },
+  {
+    key: "forasteiro_outlander",
+    value: "Forasteiro (Outlander)",
+    label: "Forasteiro (Outlander)",
     skills: ["skillAthletics", "skillSurvival"],
-    feature: "Consegue +1 de DB em todas as partes do corpo quando a mesa usar a regra de DB de Altherium.",
+    feature: "Antecedente ligado a terras selvagens, viagens longas e sobrevivência. Marca Atletismo e Sobrevivência como perícias sugeridas.",
   },
   {
-    key: "sem_passado",
-    value: "Sem passado",
-    label: "Sem passado",
-    skills: [],
-    feature: "O mestre define a habilidade do antecedente.",
+    key: "guarda_guard",
+    value: "Guarda (Guard)",
+    label: "Guarda (Guard)",
+    skills: ["skillAthletics", "skillPerception"],
+    feature: "Antecedente ligado a vigia, patrulha e proteção de locais. Marca Atletismo e Percepção como perícias sugeridas.",
   },
+  {
+    key: "guia_guide",
+    value: "Guia (Guide)",
+    label: "Guia (Guide)",
+    skills: ["skillStealth", "skillSurvival"],
+    feature: "Antecedente ligado a conduzir grupos por rotas perigosas. Marca Furtividade e Sobrevivência como perícias sugeridas.",
+  },
+  {
+    key: "eremita_hermit",
+    value: "Eremita (Hermit)",
+    label: "Eremita (Hermit)",
+    skills: ["skillMedicine", "skillReligion"],
+    feature: "Antecedente ligado a isolamento, contemplação e descobertas pessoais. Marca Medicina e Religião como perícias sugeridas.",
+  },
+  {
+    key: "mercador_merchant",
+    value: "Mercador (Merchant)",
+    label: "Mercador (Merchant)",
+    skills: ["skillAnimalHandling", "skillPersuasion"],
+    feature: "Antecedente ligado a comércio, caravanas e barganhas. Marca Lidar com Animais e Persuasão como perícias sugeridas.",
+  },
+  {
+    key: "nobre_noble",
+    value: "Nobre (Noble)",
+    label: "Nobre (Noble)",
+    skills: ["skillHistory", "skillPersuasion"],
+    feature: "Antecedente ligado a linhagem, etiqueta e influência social. Marca História e Persuasão como perícias sugeridas.",
+  },
+  {
+    key: "sabio_sage",
+    value: "Sábio (Sage)",
+    label: "Sábio (Sage)",
+    skills: ["skillArcana", "skillHistory"],
+    feature: "Antecedente ligado a estudo profundo, pesquisa e teorias antigas. Marca Arcanismo e História como perícias sugeridas.",
+  },
+  {
+    key: "marinheiro_sailor",
+    value: "Marinheiro (Sailor)",
+    label: "Marinheiro (Sailor)",
+    skills: ["skillAcrobatics", "skillPerception"],
+    feature: "Antecedente ligado ao mar, embarcações e viagens náuticas. Marca Acrobacia e Percepção como perícias sugeridas.",
+  },
+  {
+    key: "vagabundo_wayfarer",
+    value: "Vagabundo (Wayfarer)",
+    label: "Vagabundo (Wayfarer)",
+    skills: ["skillInsight", "skillStealth"],
+    feature: "Antecedente ligado a ruas, sobrevivência urbana e leitura de pessoas. Marca Intuição e Furtividade como perícias sugeridas.",
+  }
 ];
 
 
@@ -662,7 +836,7 @@ const DND_SKILLS = [
   ["skillInsight", "Intuição"],
   ["skillIntimidation", "Intimidação"],
   ["skillInvestigation", "Investigação"],
-  ["skillAnimalHandling", "Lidar Animais"],
+  ["skillAnimalHandling", "Lidar com Animais"],
   ["skillMedicine", "Medicina"],
   ["skillNature", "Natureza"],
   ["skillPerception", "Percepção"],
@@ -683,24 +857,24 @@ const DND_SAVE_CONFIG = [
 ];
 
 const DND_SKILL_META = {
-  skillAcrobatics: { ability: "dex", abilityLabel: "DES" },
-  skillAnimalHandling: { ability: "wis", abilityLabel: "SAB" },
-  skillArcana: { ability: "int", abilityLabel: "INT" },
-  skillAthletics: { ability: "str", abilityLabel: "FOR" },
-  skillDeception: { ability: "cha", abilityLabel: "CAR" },
-  skillHistory: { ability: "int", abilityLabel: "INT" },
-  skillInsight: { ability: "wis", abilityLabel: "SAB" },
-  skillIntimidation: { ability: "cha", abilityLabel: "CAR" },
-  skillInvestigation: { ability: "int", abilityLabel: "INT" },
-  skillMedicine: { ability: "wis", abilityLabel: "SAB" },
-  skillNature: { ability: "int", abilityLabel: "INT" },
-  skillPerception: { ability: "wis", abilityLabel: "SAB" },
-  skillPerformance: { ability: "cha", abilityLabel: "CAR" },
-  skillPersuasion: { ability: "cha", abilityLabel: "CAR" },
-  skillReligion: { ability: "int", abilityLabel: "INT" },
-  skillSleightOfHand: { ability: "dex", abilityLabel: "DES" },
-  skillStealth: { ability: "dex", abilityLabel: "DES" },
-  skillSurvival: { ability: "wis", abilityLabel: "SAB" },
+  skillAcrobatics: { ability: "dex", abilityLabel: "Des" },
+  skillAnimalHandling: { ability: "wis", abilityLabel: "Sab" },
+  skillArcana: { ability: "int", abilityLabel: "Int" },
+  skillAthletics: { ability: "str", abilityLabel: "For" },
+  skillDeception: { ability: "cha", abilityLabel: "Car" },
+  skillHistory: { ability: "int", abilityLabel: "Int" },
+  skillInsight: { ability: "wis", abilityLabel: "Sab" },
+  skillIntimidation: { ability: "cha", abilityLabel: "Car" },
+  skillInvestigation: { ability: "int", abilityLabel: "Int" },
+  skillMedicine: { ability: "wis", abilityLabel: "Sab" },
+  skillNature: { ability: "int", abilityLabel: "Int" },
+  skillPerception: { ability: "wis", abilityLabel: "Sab" },
+  skillPerformance: { ability: "cha", abilityLabel: "Car" },
+  skillPersuasion: { ability: "cha", abilityLabel: "Car" },
+  skillReligion: { ability: "int", abilityLabel: "Int" },
+  skillSleightOfHand: { ability: "dex", abilityLabel: "Des" },
+  skillStealth: { ability: "dex", abilityLabel: "Des" },
+  skillSurvival: { ability: "wis", abilityLabel: "Sab" },
 };
 
 const DND_OFFICIAL_CLASS_OPTIONS = [
@@ -911,6 +1085,10 @@ let campaignChatAudioContext = null;
 let campaignChatNotificationReady = false;
 let campaignPresenceState = {};
 let campaignPresenceReady = false;
+let myCampaignCardsPresenceChannels = new Map();
+let myCampaignCardsPresenceState = {};
+let myCampaignCardsPresenceReady = {};
+let myCampaignCardsCache = [];
 let saveTimer = null;
 
 const MAX_MASTER_CAMPAIGNS = 10;
@@ -931,6 +1109,11 @@ const DEFAULT_CAMPAIGN_COVER_SETTINGS = {
 ========================================================= */
 
 document.addEventListener("DOMContentLoaded", async () => {
+  // Ativa as abas logo no início.
+  // Antes isso ficava no fim do carregamento e qualquer erro em chat/realtime/Supabase
+  // impedia os botões Iniciativa e Mensagens de responderem ao clique.
+  setupTabs();
+
   setupRunaskinsExtinctionMode();
   setupCampaignLabNumberControls();
   setupHeaderBackButton();
@@ -1044,7 +1227,7 @@ document.addEventListener("DOMContentLoaded", async () => {
     await setupOnlinePlayersInfoPanel();
     await setupDndPlayerSheet();
     await setupInitiativeBoard(getDndPlayerInitiativeConfig());
-    // D&D jogador: rolador de dados lateral removido por pedido.
+    await setupCampaignDiceRoller("D&D");
     await setupPlayerCampaignChat("D&D");
     subscribeCampaignRealtime(refreshCurrentPlayerPanel);
   }
@@ -2160,6 +2343,8 @@ async function renderMyCampaignsPage() {
 
   renderCampaigns(document.getElementById("masterCampaigns"), campaignsAsMaster);
   renderCampaigns(document.getElementById("playerCampaigns"), campaignsAsPlayer);
+  await setupMyCampaignCardsPresence(userCampaigns);
+  updateMyCampaignCardsPlayerBadges(userCampaigns);
   renderMasterCampaignLimitNotice(campaignsAsMaster.length);
   updateCreateCampaignButtonsByLimit(campaignsAsMaster.length);
   setupCreateCampaignLimitNavigationGuard();
@@ -2198,17 +2383,32 @@ function renderCampaigns(container, campaigns) {
 
       const coverStyle = getCampaignCoverStyleAttribute(campaign);
       const coverClass = getCampaignCoverClass(campaign);
+      const totalPlayers = getCampaignTotalPlayerCount(campaign);
+      const onlinePlayers = getMyCampaignCardOnlineCount(campaign);
 
       return `
         <div class="premium-campaign-card campaign-card-wrapper${coverClass}"${coverStyle}>
           <button type="button" class="campaign-main-action" onclick="enterCampaignById('${campaign.id}', '${campaign.perfil}')">
             <div class="campaign-card-top">
-              <span>${campaign.sistema}</span>
-              <strong>${campaign.perfil}</strong>
+              <div class="campaign-card-top-info">
+                <span class="campaign-system-pill">${escapeHtml(campaign.sistema || campaign.system || "Sistema")}</span>
+                <span
+                  class="campaign-players-chip${onlinePlayers > 0 ? " has-online" : ""}"
+                  data-campaign-player-stats="${escapeHtml(campaign.id)}"
+                  title="Jogadores online agora dentro da campanha / total de jogadores na campanha"
+                >
+                  <b data-campaign-online-count>${onlinePlayers}</b>
+                  <small>online</small>
+                  <em>·</em>
+                  <b data-campaign-total-count>${totalPlayers}</b>
+                  <small>total</small>
+                </span>
+              </div>
+              <strong>${escapeHtml(campaign.perfil || "Perfil")}</strong>
             </div>
 
-            <h3>${campaign.nome}</h3>
-            <p>${campaign.descricao}</p>
+            <h3>${escapeHtml(campaign.nome || campaign.name || "Campanha")}</h3>
+            <p>${escapeHtml(campaign.descricao || campaign.description || "")}</p>
 
             <div class="campaign-card-footer">
               <span>Acessar campanha</span>
@@ -2223,6 +2423,122 @@ function renderCampaigns(container, campaigns) {
       `;
     })
     .join("");
+}
+
+function getCampaignTotalPlayerCount(campaign = {}) {
+  return getCampaignPlayerIds(campaign).length;
+}
+
+function getMyCampaignCardPresenceEntries(campaignId) {
+  return Object.values(myCampaignCardsPresenceState[String(campaignId)] || {}).flat();
+}
+
+function getMyCampaignCardOnlineIds(campaign = {}) {
+  const campaignId = String(campaign.id || "");
+  const playerIds = getCampaignPlayerIds(campaign).map(String);
+  const entries = getMyCampaignCardPresenceEntries(campaignId);
+  const onlineIds = new Set();
+
+  entries.forEach((entry) => {
+    const userId = String(entry?.user_id || "");
+    if (userId) onlineIds.add(userId);
+  });
+
+  return playerIds.filter((playerId) => onlineIds.has(playerId));
+}
+
+function getMyCampaignCardOnlineCount(campaign = {}) {
+  if (!campaign || !campaign.id) return 0;
+  if (!myCampaignCardsPresenceReady[String(campaign.id)]) return 0;
+
+  return getMyCampaignCardOnlineIds(campaign).length;
+}
+
+async function setupMyCampaignCardsPresence(campaigns = []) {
+  if (!DB || typeof DB.channel !== "function") return;
+  if (!document.body.classList.contains("my-campaigns-page")) return;
+
+  const uniqueCampaigns = [];
+  const seenCampaignIds = new Set();
+
+  campaigns.forEach((campaign) => {
+    const campaignId = String(campaign?.id || "");
+    if (!campaignId || seenCampaignIds.has(campaignId)) return;
+
+    seenCampaignIds.add(campaignId);
+    uniqueCampaigns.push(campaign);
+  });
+
+  myCampaignCardsCache = uniqueCampaigns;
+
+  Array.from(myCampaignCardsPresenceChannels.keys()).forEach((campaignId) => {
+    if (seenCampaignIds.has(campaignId)) return;
+
+    const channel = myCampaignCardsPresenceChannels.get(campaignId);
+
+    try {
+      DB.removeChannel(channel);
+    } catch (error) {
+      console.warn("Não foi possível remover presença do card da campanha.", error);
+    }
+
+    myCampaignCardsPresenceChannels.delete(campaignId);
+    delete myCampaignCardsPresenceState[campaignId];
+    delete myCampaignCardsPresenceReady[campaignId];
+  });
+
+  uniqueCampaigns.forEach((campaign) => {
+    const campaignId = String(campaign.id || "");
+    if (!campaignId || myCampaignCardsPresenceChannels.has(campaignId)) return;
+
+    myCampaignCardsPresenceReady[campaignId] = false;
+
+    const channel = DB.channel(`campaign-presence-${campaignId}`);
+
+    const refreshCardPresence = () => {
+      if (!channel || typeof channel.presenceState !== "function") return;
+
+      myCampaignCardsPresenceReady[campaignId] = true;
+      myCampaignCardsPresenceState[campaignId] = channel.presenceState() || {};
+      updateMyCampaignCardsPlayerBadges(myCampaignCardsCache);
+    };
+
+    channel
+      .on("presence", { event: "sync" }, refreshCardPresence)
+      .on("presence", { event: "join" }, refreshCardPresence)
+      .on("presence", { event: "leave" }, refreshCardPresence)
+      .subscribe((status) => {
+        if (status === "SUBSCRIBED") refreshCardPresence();
+      });
+
+    myCampaignCardsPresenceChannels.set(campaignId, channel);
+  });
+}
+
+function updateMyCampaignCardsPlayerBadges(campaigns = myCampaignCardsCache) {
+  if (!document.body.classList.contains("my-campaigns-page")) return;
+
+  campaigns.forEach((campaign) => {
+    const campaignId = String(campaign?.id || "");
+    if (!campaignId) return;
+
+    const totalPlayers = getCampaignTotalPlayerCount(campaign);
+    const onlinePlayers = getMyCampaignCardOnlineCount(campaign);
+
+    document.querySelectorAll("[data-campaign-player-stats]").forEach((badge) => {
+      if (String(badge.dataset.campaignPlayerStats || "") !== campaignId) return;
+
+      const onlineTarget = badge.querySelector("[data-campaign-online-count]");
+      const totalTarget = badge.querySelector("[data-campaign-total-count]");
+
+      if (onlineTarget) onlineTarget.textContent = String(onlinePlayers);
+      if (totalTarget) totalTarget.textContent = String(totalPlayers);
+
+      badge.classList.toggle("has-online", onlinePlayers > 0);
+      badge.classList.toggle("is-loading", !myCampaignCardsPresenceReady[campaignId]);
+      badge.title = `${onlinePlayers} jogador${onlinePlayers === 1 ? "" : "es"} online agora dentro da campanha · ${totalPlayers} jogador${totalPlayers === 1 ? "" : "es"} no total`;
+    });
+  });
 }
 
 async function enterCampaignById(id, perfil) {
@@ -2241,7 +2557,11 @@ function enterCampaign(id, nome, sistema, perfil, pagina) {
   sessionStorage.setItem("campaignId", id);
   sessionStorage.setItem("campaignName", nome);
   sessionStorage.setItem("system", sistema);
+  sessionStorage.setItem("sistema", sistema);
   sessionStorage.setItem("profile", perfil);
+  sessionStorage.setItem("perfil", perfil);
+  sessionStorage.setItem("campaignRole", perfil);
+  sessionStorage.setItem("campaignSystem", sistema);
 
   window.location.href = pagina;
 }
@@ -2451,21 +2771,101 @@ async function setupCreateCampaignPage() {
 
 async function protectPage(requiredSystem, requiredProfile) {
   const user = getLoggedUserFromSession();
-  const system = sessionStorage.getItem("system");
-  const profile = sessionStorage.getItem("profile");
   const campaignId = getCurrentCampaignId();
 
-  if (!user || system !== requiredSystem || profile !== requiredProfile || !campaignId) {
+  const normalize = (value = "") =>
+    String(value ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/&/g, " e ")
+      .replace(/[._-]+/g, " ")
+      .replace(/\s+/g, " ")
+      .trim();
+
+  const normalizeSystemLocal = (value = "") => {
+    const text = normalize(value);
+    if (text === "dnd" || text === "d d" || text === "d e d" || text.includes("dungeons") || text.includes("dragons")) return "D&D";
+    if (text.includes("altherium")) return "Altherium";
+    return String(value || "").trim();
+  };
+
+  const normalizeRoleLocal = (value = "") => {
+    const text = normalize(value);
+    if (["mestre", "master", "dm", "gm", "narrador"].includes(text)) return "Mestre";
+    if (["jogador", "jogadora", "player", "players", "membro", "member", "participante"].includes(text)) return "Jogador";
+    return String(value || "").trim();
+  };
+
+  const same = (a, b) => normalize(String(a ?? "")) === normalize(String(b ?? ""));
+  const wantedSystem = normalizeSystemLocal(requiredSystem);
+  const wantedRole = normalizeRoleLocal(requiredProfile);
+  const isDndPlayer = wantedSystem === "D&D" && wantedRole === "Jogador";
+
+  if (!user) {
+    alert("Acesso negado.");
+    window.location.href = "index.html";
+    return;
+  }
+
+  if (!campaignId) {
+    alert("Campanha não encontrada na sessão. Entre pela página Minhas Campanhas.");
+    window.location.href = "minhas-campanhas.html";
+    return;
+  }
+
+  // D&D jogador estava caindo em falso negativo. Aqui a validação é permissiva por design:
+  // se o usuário logado chegou na ficha com campaignId, só bloqueamos se a campanha existir e for de outro sistema.
+  if (isDndPlayer) {
+    let campaign = null;
+
+    try {
+      campaign = typeof getCurrentCampaign === "function" ? await getCurrentCampaign(true) : null;
+    } catch (error) {
+      console.warn("D&D jogador: não foi possível validar campanha pelo cache. Liberando com sessão.", error);
+    }
+
+    const campaignSystem = normalizeSystemLocal(campaign?.sistema || campaign?.system || sessionStorage.getItem("system") || sessionStorage.getItem("sistema") || "D&D");
+
+    if (campaignSystem && campaignSystem !== "D&D") {
+      alert("Esta campanha pertence a outro sistema.");
+      window.location.href = "minhas-campanhas.html";
+      return;
+    }
+
+    sessionStorage.setItem("system", "D&D");
+    sessionStorage.setItem("sistema", "D&D");
+    sessionStorage.setItem("profile", "Jogador");
+    sessionStorage.setItem("perfil", "Jogador");
+    sessionStorage.setItem("campaignRole", "Jogador");
+    sessionStorage.setItem("campaignSystem", "D&D");
+
+    if (campaign?.nome || campaign?.name) {
+      sessionStorage.setItem("campaignName", campaign.nome || campaign.name);
+    }
+
+    return;
+  }
+
+  const sessionSystem = normalizeSystemLocal(sessionStorage.getItem("system") || sessionStorage.getItem("sistema") || sessionStorage.getItem("campaignSystem"));
+  const sessionRole = normalizeRoleLocal(sessionStorage.getItem("profile") || sessionStorage.getItem("perfil") || sessionStorage.getItem("campaignRole"));
+
+  if (sessionSystem && sessionSystem !== wantedSystem) {
+    alert("Acesso negado.");
+    window.location.href = "index.html";
+    return;
+  }
+
+  if (sessionRole && sessionRole !== wantedRole) {
     alert("Acesso negado.");
     window.location.href = "index.html";
     return;
   }
 
   const userCampaigns = await getUserCampaigns(user.id);
-
-  const hasAccess = userCampaigns.some(
-    (campaign) => campaign.id === campaignId && campaign.perfil === requiredProfile
-  );
+  const hasAccess = userCampaigns.some((campaign) => {
+    return same(campaign.id, campaignId) && normalizeRoleLocal(campaign.perfil) === wantedRole;
+  });
 
   if (!hasAccess) {
     alert("Você não tem acesso a esta campanha.");
@@ -2581,19 +2981,56 @@ function isMasterCampaignChatPage() {
 }
 
 function ensurePlayerCampaignChatTab(system = "") {
-  if (document.getElementById("playerMessagesSection")) return;
-
   const tabs = ensurePlayerCampaignTabsContainer();
+  const existingSection = document.getElementById("playerMessagesSection");
+
+  if (!tabs && !existingSection) return;
+
+  let chatButton = tabs
+    ? tabs.querySelector('[data-tab="playerMessagesSection"]')
+    : null;
+
+  if (tabs && !chatButton) {
+    chatButton = document.createElement("button");
+    chatButton.className = "altherium-tab";
+    chatButton.type = "button";
+    chatButton.dataset.tab = "playerMessagesSection";
+    chatButton.textContent = "Mensagens";
+  }
+
+  if (tabs && chatButton) {
+    const initiativeButton = tabs.querySelector(
+      '[data-tab="dndPlayerInitiativeSection"], [data-tab="altheriumPlayerInitiativeSection"], [data-tab="playerInitiativeSection"]'
+    );
+
+    if (!chatButton.isConnected) {
+      if (initiativeButton && initiativeButton.parentElement === tabs) {
+        initiativeButton.insertAdjacentElement("afterend", chatButton);
+      } else {
+        tabs.appendChild(chatButton);
+      }
+    } else if (
+      initiativeButton &&
+      initiativeButton.parentElement === tabs &&
+      initiativeButton.nextElementSibling !== chatButton
+    ) {
+      initiativeButton.insertAdjacentElement("afterend", chatButton);
+    }
+  }
+
+  if (existingSection) {
+    existingSection.classList.add("altherium-section", "player-campaign-tab-panel", "player-messages-section");
+
+    if (!existingSection.querySelector("#playerCampaignChatForm")) {
+      existingSection.innerHTML = buildPlayerCampaignChatMarkup(system);
+    }
+
+    return;
+  }
+
   const target = findPlayerCampaignTabInsertionTarget();
 
-  if (!tabs || !target) return;
-
-  const chatButton = document.createElement("button");
-  chatButton.className = "altherium-tab";
-  chatButton.type = "button";
-  chatButton.dataset.tab = "playerMessagesSection";
-  chatButton.textContent = "Mensagens";
-  tabs.appendChild(chatButton);
+  if (!target) return;
 
   const chatSection = document.createElement("section");
   chatSection.id = "playerMessagesSection";
@@ -2665,6 +3102,16 @@ function buildPlayerCampaignChatMarkup(system = "") {
             <select id="playerCampaignChatRecipient">
               <option value="">Mesa inteira</option>
             </select>
+            <button
+              class="player-chat-master-shortcut"
+              type="button"
+              id="playerCampaignChatMasterShortcut"
+              data-player-chat-master-shortcut="true"
+              disabled
+              hidden
+            >
+              Falar só com mestre
+            </button>
           </div>
           <div class="player-chat-recipient-hint" id="playerCampaignChatRecipientHint">
             Toda a mesa verá essa conversa.
@@ -2679,7 +3126,7 @@ function buildPlayerCampaignChatMarkup(system = "") {
               rows="2"
               placeholder="Digite sua mensagem para a mesa..."
             ></textarea>
-            <button class="altherium-btn" type="submit" id="playerCampaignChatSendBtn">Enviar</button>
+            <button class="altherium-btn" type="button" id="playerCampaignChatSendBtn">Enviar</button>
           </div>
         </form>
       </div>
@@ -2716,13 +3163,29 @@ async function renderPlayerCampaignChatRecipientOptions() {
   const currentValue = select.value;
   const participants = await getPlayerCampaignChatParticipants();
   const otherParticipants = participants.filter((participant) => String(participant.id) !== String(user.id));
+  const masterParticipant = otherParticipants.find((participant) => participant.role === "Mestre") || null;
+  const playerRecipients = otherParticipants.filter((participant) => participant.role !== "Mestre");
+
+  const masterOption = masterParticipant
+    ? `
+        <option
+          value="${escapeHtml(masterParticipant.id)}"
+          data-user-name="${escapeHtml(masterParticipant.name)}"
+          data-user-role="Mestre"
+          data-private-master-option="true"
+        >
+          Somente o mestre (${escapeHtml(masterParticipant.name)})
+        </option>
+      `
+    : "";
 
   select.innerHTML = `
     <option value="">Mesa inteira</option>
-    ${otherParticipants
+    ${masterOption}
+    ${playerRecipients
       .map(
         (participant) => `
-          <option value="${escapeHtml(participant.id)}" data-user-name="${escapeHtml(participant.name)}">
+          <option value="${escapeHtml(participant.id)}" data-user-name="${escapeHtml(participant.name)}" data-user-role="${escapeHtml(participant.role || "Jogador")}">
             ${escapeHtml(participant.label)}
           </option>
         `
@@ -2733,6 +3196,36 @@ async function renderPlayerCampaignChatRecipientOptions() {
   if (currentValue && otherParticipants.some((participant) => String(participant.id) === String(currentValue))) {
     select.value = currentValue;
   }
+
+  updatePlayerCampaignChatMasterShortcutState(participants);
+  select.dispatchEvent(new Event("change", { bubbles: true }));
+}
+
+function updatePlayerCampaignChatMasterShortcutState(participants = []) {
+  const button = document.getElementById("playerCampaignChatMasterShortcut");
+  const select = document.getElementById("playerCampaignChatRecipient");
+  const user = getLoggedUserFromSession();
+
+  if (!button || !select || !user) return;
+
+  const masterParticipant =
+    participants.find((participant) => participant.role === "Mestre" && String(participant.id) !== String(user.id)) ||
+    null;
+
+  if (!masterParticipant) {
+    button.hidden = true;
+    button.disabled = true;
+    button.removeAttribute("data-master-recipient-id");
+    button.classList.remove("active");
+    return;
+  }
+
+  button.hidden = false;
+  button.disabled = false;
+  button.dataset.masterRecipientId = String(masterParticipant.id);
+  button.title = `Enviar mensagem privada para ${masterParticipant.name}`;
+  button.textContent = "Falar só com mestre";
+  button.classList.toggle("active", String(select.value) === String(masterParticipant.id));
 }
 
 async function getPlayerCampaignChatParticipants() {
@@ -2777,10 +3270,13 @@ function getPlayerCampaignChatSelectedRecipient() {
 
   const option = select.selectedOptions && select.selectedOptions[0];
   const name = option?.dataset?.userName || option?.textContent?.trim() || select.value;
+  const role = option?.dataset?.userRole || "Jogador";
 
   return {
     id: String(select.value),
     name,
+    role,
+    isMaster: role === "Mestre" || option?.dataset?.privateMasterOption === "true",
   };
 }
 
@@ -2820,6 +3316,7 @@ function setupPlayerCampaignChatForm(system = "") {
   setupPlayerCampaignChatTools(form, input, system);
 
   const recipientSelect = document.getElementById("playerCampaignChatRecipient");
+  const masterShortcutButton = document.getElementById("playerCampaignChatMasterShortcut");
 
   const recipientHint = document.getElementById("playerCampaignChatRecipientHint");
 
@@ -2828,20 +3325,41 @@ function setupPlayerCampaignChatForm(system = "") {
     const isPrivateTarget = Boolean(recipient);
 
     input.placeholder = isPrivateTarget
-      ? `Mensagem privada para ${recipient.name}...`
+      ? recipient.isMaster
+        ? "Mensagem privada para o mestre..."
+        : `Mensagem privada para ${recipient.name}...`
       : "Digite sua mensagem para a mesa...";
 
     form.classList.toggle("player-chat-form--private-target", isPrivateTarget);
+    form.classList.toggle("player-chat-form--master-target", Boolean(recipient?.isMaster));
+
+    if (masterShortcutButton) {
+      masterShortcutButton.classList.toggle("active", Boolean(recipient?.isMaster));
+    }
 
     if (recipientHint) {
       recipientHint.textContent = isPrivateTarget
-        ? `Somente você e ${recipient.name} verão essa conversa.`
+        ? recipient.isMaster
+          ? "Somente você e o mestre verão essa conversa."
+          : `Somente você e ${recipient.name} verão essa conversa.`
         : "Toda a mesa verá essa conversa.";
     }
   };
 
   if (recipientSelect) {
     recipientSelect.addEventListener("change", updateRecipientUi);
+  }
+
+  if (masterShortcutButton && recipientSelect) {
+    masterShortcutButton.addEventListener("click", () => {
+      const masterRecipientId = masterShortcutButton.dataset.masterRecipientId;
+
+      if (!masterRecipientId || masterShortcutButton.disabled) return;
+
+      recipientSelect.value = masterRecipientId;
+      recipientSelect.dispatchEvent(new Event("change", { bubbles: true }));
+      input.focus();
+    });
   }
 
   updateRecipientUi();
@@ -2943,7 +3461,7 @@ async function sendPlayerCampaignChatMessage(system = "") {
     message,
     message_scope: recipient ? "private" : "public",
     recipient_user_id: recipient ? recipient.id : null,
-    recipient_user_name: recipient ? recipient.name : null,
+    recipient_user_name: recipient ? (recipient.isMaster ? `${recipient.name} (Mestre)` : recipient.name) : null,
   };
 
   const { error } = await DB.from("campaign_messages").insert(row);
@@ -3164,7 +3682,11 @@ function getPlayerCampaignChatPrivateLabel(row = {}, isMine = false) {
   const recipientName = row.recipient_user_name || "jogador";
 
   if (isMine) {
-    return `<span class="player-chat-private-label">Privado para ${escapeHtml(recipientName)}</span>`;
+    const label = String(row.recipient_user_name || "").includes("Mestre")
+      ? "Privado para o mestre"
+      : `Privado para ${escapeHtml(recipientName)}`;
+
+    return `<span class="player-chat-private-label">${label}</span>`;
   }
 
   if (user && String(row.recipient_user_id) === String(user.id)) {
@@ -3751,6 +4273,9 @@ function shouldReplaceRunaskinsExtinctionPhoto(image) {
 ========================================================= */
 
 function setupTabs() {
+  if (window.campaignLabTabsReady) return;
+  window.campaignLabTabsReady = true;
+
   document.addEventListener("click", (event) => {
     const tab = event.target.closest(".altherium-tab");
     if (!tab) return;
@@ -3759,6 +4284,8 @@ function setupTabs() {
     const selectedSection = document.getElementById(targetId);
 
     if (!targetId || !selectedSection) return;
+
+    event.preventDefault();
 
     const tabsContainer = tab.closest(".altherium-tabs");
     const isPlayerTabs = tabsContainer && tabsContainer.classList.contains("player-campaign-tabs");
@@ -3782,11 +4309,13 @@ function setupTabs() {
       return;
     }
 
-    document
-      .querySelectorAll(".altherium-tab")
+    const scope = tabsContainer?.parentElement || document;
+
+    tabsContainer
+      ?.querySelectorAll(".altherium-tab")
       .forEach((button) => button.classList.remove("active"));
 
-    document
+    scope
       .querySelectorAll(".altherium-section")
       .forEach((section) => section.classList.remove("active"));
 
@@ -5025,6 +5554,31 @@ function getDefaultDndSheet(campaignId, playerId, system) {
     classWeaponProficienciesText: "",
     classToolProficienciesText: "",
     classInitialFeaturesText: "",
+    classFeatureNotes: "",
+    classFeature1Name: "",
+    classFeature1Level: "",
+    classFeature1Uses: "",
+    classFeature1Description: "",
+    classFeature2Name: "",
+    classFeature2Level: "",
+    classFeature2Uses: "",
+    classFeature2Description: "",
+    classFeature3Name: "",
+    classFeature3Level: "",
+    classFeature3Uses: "",
+    classFeature3Description: "",
+    classFeature4Name: "",
+    classFeature4Level: "",
+    classFeature4Uses: "",
+    classFeature4Description: "",
+    classFeature5Name: "",
+    classFeature5Level: "",
+    classFeature5Uses: "",
+    classFeature5Description: "",
+    classFeature6Name: "",
+    classFeature6Level: "",
+    classFeature6Uses: "",
+    classFeature6Description: "",
     deathSuccesses: "",
     deathFailures: "",
     attack1Name: "",
@@ -5242,7 +5796,7 @@ async function renderDndMasterSheets() {
     const sheet = await getOrCreateDndSheet(campaign.id, playerId, campaign.sistema);
 
     cards.push(`
-      <button class="sheet-card dnd-sheet-card" data-open-dnd-sheet="${playerId}">
+      <button type="button" class="sheet-card dnd-sheet-card" data-open-dnd-sheet="${playerId}">
         <div class="sheet-card-top sheet-card-top--character">
           <span class="sheet-card-player">
             ${getCharacterPortraitHtml(sheet, "tiny")}
@@ -5441,6 +5995,7 @@ function buildDndSheetEditor(sheet, isModal = false) {
           </div>
 
           ${dndTextareaBox("Características & Traços adicionais", "additionalFeatures", sheet.additionalFeatures, 10)}
+          ${buildDndSanityLimitedSection(sheet)}
           ${dndTextareaBox("Inventário", "inventory", sheet.inventory, 10)}
         </div>
       </section>
@@ -6201,9 +6756,59 @@ function getDndPlayerInitiativeConfig() {
   };
 }
 
+function isCurrentUserCampaignMaster(campaign) {
+  const user = getLoggedUserFromSession();
+
+  if (!user || !campaign) return false;
+
+  const masterId = campaign.mestreId || campaign.master_id || campaign.masterId || "";
+  return String(masterId) === String(user.id || "");
+}
+
+function canCurrentUserManageInitiative(campaign) {
+  return isCurrentUserCampaignMaster(campaign);
+}
+
+function syncInitiativeControlAccess(config, campaign) {
+  const canManage = canCurrentUserManageInitiative(campaign);
+  const clearButton = document.getElementById(config.clearButtonId);
+
+  if (clearButton) {
+    clearButton.disabled = !canManage;
+    clearButton.hidden = !canManage;
+    clearButton.setAttribute("aria-hidden", canManage ? "false" : "true");
+    clearButton.classList.toggle("initiative-control-hidden", !canManage);
+  }
+
+  const board = document.getElementById(config.boardId);
+  const panelHeader = clearButton?.closest(".altherium-panel-header") || board?.closest(".altherium-panel")?.querySelector(".altherium-panel-header");
+
+  if (!panelHeader) return;
+
+  let badge = panelHeader.querySelector(".initiative-player-readonly-badge");
+
+  if (!canManage) {
+    if (!badge) {
+      badge = document.createElement("span");
+      badge.className = "initiative-player-readonly-badge";
+      badge.textContent = "Somente o mestre limpa a iniciativa";
+      panelHeader.appendChild(badge);
+    }
+
+    badge.hidden = false;
+    badge.setAttribute("aria-hidden", "false");
+  } else if (badge) {
+    badge.hidden = true;
+    badge.setAttribute("aria-hidden", "true");
+  }
+}
+
 async function setupInitiativeBoard(config) {
   await ensureInitiativeNextButton(config);
   await renderInitiativeBoard(config);
+
+  const campaign = await getCurrentCampaign(true);
+  syncInitiativeControlAccess(config, campaign);
 
   const clearButton = document.getElementById(config.clearButtonId);
   if (clearButton && !clearButton.dataset.clearInitiativeReady) {
@@ -6324,6 +6929,8 @@ async function renderInitiativeBoard(config) {
     if (nextButton) nextButton.disabled = true;
     return;
   }
+
+  syncInitiativeControlAccess(config, campaign);
 
   const initiativeList = await getInitiativeOrderedCharacters(config, campaign);
 
@@ -6586,6 +7193,12 @@ async function clearInitiative(config) {
 
   if (!campaign) {
     alert("Campanha não encontrada.");
+    return;
+  }
+
+  if (!canCurrentUserManageInitiative(campaign)) {
+    alert("Apenas o mestre pode limpar a iniciativa da mesa.");
+    syncInitiativeControlAccess(config, campaign);
     return;
   }
 
@@ -9063,7 +9676,11 @@ function clearCurrentCampaign() {
   sessionStorage.removeItem("campaignId");
   sessionStorage.removeItem("campaignName");
   sessionStorage.removeItem("system");
+  sessionStorage.removeItem("sistema");
   sessionStorage.removeItem("profile");
+  sessionStorage.removeItem("perfil");
+  sessionStorage.removeItem("campaignRole");
+  sessionStorage.removeItem("campaignSystem");
 }
 
 function logout() {
@@ -9548,6 +10165,55 @@ function normalizeAltheriumGenesis(value) {
     .replace(/^_+|_+$/g, "");
 
   const aliases = {
+
+    acolito_acolyte: "acolito_acolyte",
+    acolito: "acolito_acolyte",
+    acolyte: "acolito_acolyte",
+    artesao_artisan: "artesao_artisan",
+    artesao: "artesao_artisan",
+    artisan: "artesao_artisan",
+    artista_entertainer: "artista_entertainer",
+    artista: "artista_entertainer",
+    entertainer: "artista_entertainer",
+    charlatao_charlatan: "charlatao_charlatan",
+    charlatao: "charlatao_charlatan",
+    charlatan: "charlatao_charlatan",
+    criminoso_criminal: "criminoso_criminal",
+    criminoso: "criminoso_criminal",
+    criminal: "criminoso_criminal",
+    erudito_scribe: "erudito_scribe",
+    erudito: "erudito_scribe",
+    scribe: "erudito_scribe",
+    fazendeiro_farmer: "fazendeiro_farmer",
+    fazendeiro: "fazendeiro_farmer",
+    farmer: "fazendeiro_farmer",
+    forasteiro_outlander: "forasteiro_outlander",
+    forasteiro: "forasteiro_outlander",
+    outlander: "forasteiro_outlander",
+    guarda_guard: "guarda_guard",
+    guarda: "guarda_guard",
+    guard: "guarda_guard",
+    guia_guide: "guia_guide",
+    guia: "guia_guide",
+    guide: "guia_guide",
+    eremita_hermit: "eremita_hermit",
+    eremita: "eremita_hermit",
+    hermit: "eremita_hermit",
+    mercador_merchant: "mercador_merchant",
+    mercador: "mercador_merchant",
+    merchant: "mercador_merchant",
+    nobre_noble: "nobre_noble",
+    nobre: "nobre_noble",
+    noble: "nobre_noble",
+    sabio_sage: "sabio_sage",
+    sabio: "sabio_sage",
+    sage: "sabio_sage",
+    marinheiro_sailor: "marinheiro_sailor",
+    marinheiro: "marinheiro_sailor",
+    sailor: "marinheiro_sailor",
+    vagabundo_wayfarer: "vagabundo_wayfarer",
+    vagabundo: "vagabundo_wayfarer",
+    wayfarer: "vagabundo_wayfarer",
     cacador: "cacador",
     caçador: "cacador",
     curandeiro: "curandeiro",
@@ -10786,7 +11452,7 @@ function dndAltheriumBackgroundSelect(value = "") {
         ${dndAltheriumBackgroundOptionsHtml(value)}
       </select>
       <small class="dnd-altherium-background-help">
-        Aplica perícias e traços automáticos inspirados nos Genesis de Altherium.
+        Aplica as perícias sugeridas do antecedente escolhido e registra o traço na ficha.
       </small>
     </label>
   `;
@@ -10999,18 +11665,235 @@ function dndTextareaBox(label, name, value, rows) {
 }
 
 
+
+function buildDndExperienceProficienciesSection(sheet = {}) {
+  const checked = (field) => dndCheckedAttr(sheet[field]);
+
+  return `
+    <section class="dnd-v2-card dnd-experience-proficiencies-card">
+      <div class="dnd-experience-card-head">
+        <div>
+          <p class="tag">Treinamento</p>
+          <h3>Proficiências</h3>
+          <span>Armaduras, armas e ferramentas que o personagem sabe usar.</span>
+        </div>
+      </div>
+
+      <div class="dnd-experience-proficiency-grid">
+        <div class="dnd-experience-proficiency-box">
+          <h4>Armaduras</h4>
+          <div class="dnd-experience-check-grid">
+            <label><input type="checkbox" name="profArmorLight" ${checked("profArmorLight")} /><span>Leves</span></label>
+            <label><input type="checkbox" name="profArmorMedium" ${checked("profArmorMedium")} /><span>Médias</span></label>
+            <label><input type="checkbox" name="profArmorHeavy" ${checked("profArmorHeavy")} /><span>Pesadas</span></label>
+            <label><input type="checkbox" name="profShields" ${checked("profShields")} /><span>Escudos</span></label>
+          </div>
+        </div>
+
+        <div class="dnd-experience-proficiency-box">
+          <h4>Armas</h4>
+          <div class="dnd-experience-check-grid">
+            <label><input type="checkbox" name="profWeaponSimple" ${checked("profWeaponSimple")} /><span>Simples</span></label>
+            <label><input type="checkbox" name="profWeaponMartial" ${checked("profWeaponMartial")} /><span>Marciais</span></label>
+            <label><input type="checkbox" name="profWeaponOther" ${checked("profWeaponOther")} /><span>Outras</span></label>
+          </div>
+          <textarea name="weaponProficienciesText" rows="3" placeholder="Ex: Besta de mão, Espada longa, Rapieiras, Espada curta.">${escapeHtml(sheet.weaponProficienciesText || "")}</textarea>
+        </div>
+
+        <div class="dnd-experience-proficiency-box dnd-experience-proficiency-box--full">
+          <h4>Ferramentas</h4>
+          <textarea name="toolProficiencies" rows="3" placeholder="Ex: Banjo, flauta, Harpa, kit de ladrão, ferramentas de artesão.">${escapeHtml(sheet.toolProficiencies || "")}</textarea>
+        </div>
+      </div>
+    </section>
+  `;
+}
+
+function buildDndExperienceLanguagesSection(sheet = {}) {
+  return `
+    <section class="dnd-v2-card dnd-experience-languages-card">
+      <div class="dnd-experience-card-head">
+        <div>
+          <p class="tag">Comunicação</p>
+          <h3>Línguas</h3>
+          <span>Idiomas conhecidos pelo personagem.</span>
+        </div>
+      </div>
+
+      <textarea name="languages" rows="4" placeholder="Ex: Comum, Élfico, Anão.">${escapeHtml(sheet.languages || "")}</textarea>
+    </section>
+  `;
+}
+
+function buildDndExperienceTalentsSection(sheet = {}) {
+  const rows = [1, 2, 3].map((number) => `
+    <article class="dnd-experience-talent-row">
+      <div class="dnd-experience-talent-top">
+        <input name="talent${number}Name" type="text" value="${escapeHtml(sheet[`talent${number}Name`] || "")}" placeholder="Nome do talento" />
+        <input name="talent${number}Prerequisite" type="text" value="${escapeHtml(sheet[`talent${number}Prerequisite`] || "")}" placeholder="Pré-requisito" />
+      </div>
+      <textarea name="talent${number}Description" rows="4" placeholder="Descreva o efeito do talento.">${escapeHtml(sheet[`talent${number}Description`] || "")}</textarea>
+    </article>
+  `).join("");
+
+  return `
+    <section class="dnd-v2-card dnd-experience-talents-card">
+      <div class="dnd-experience-card-head">
+        <div>
+          <p class="tag">Evolução</p>
+          <h3>Talentos</h3>
+          <span>Talentos, pré-requisitos e efeitos especiais do personagem.</span>
+        </div>
+      </div>
+
+      <div class="dnd-experience-talents-list">
+        ${rows}
+      </div>
+    </section>
+  `;
+}
+
+
+
+function buildDndExperienceClassFeaturesSection(sheet = {}) {
+  const rows = Array.from({ length: 6 }, (_, index) => {
+    const number = index + 1;
+
+    return `
+      <article class="dnd-class-feature-row">
+        <div class="dnd-class-feature-top">
+          <input name="classFeature${number}Name" type="text" value="${escapeHtml(sheet[`classFeature${number}Name`] || "")}" placeholder="Nome da característica" />
+          <input name="classFeature${number}Level" type="text" value="${escapeHtml(sheet[`classFeature${number}Level`] || "")}" placeholder="Nível / origem" />
+          <input name="classFeature${number}Uses" type="text" value="${escapeHtml(sheet[`classFeature${number}Uses`] || "")}" placeholder="Usos / recarga" />
+        </div>
+        <textarea name="classFeature${number}Description" rows="5" placeholder="Descreva a característica de classe, limite, dado, alcance, duração e condição de uso.">${escapeHtml(sheet[`classFeature${number}Description`] || "")}</textarea>
+      </article>
+    `;
+  }).join("");
+
+  return `
+    <section class="dnd-v2-card dnd-experience-class-features-card">
+      <div class="dnd-experience-card-head">
+        <div>
+          <p class="tag">Classe</p>
+          <h3>Características de Classe</h3>
+          <span>Espaço grande para registrar aptidões, inspirações, estilos de luta, pactos, arquétipos e habilidades ganhas por nível.</span>
+        </div>
+      </div>
+
+      <label class="dnd-class-feature-summary">
+        <span>Resumo geral das características</span>
+        <textarea name="classFeatureNotes" rows="12" placeholder="Ex: Aptidão\nNo 3º nível, escolha duas perícias em que você é proficiente...\n\nInspiração de Bardo\nVocê pode inspirar os outros através de palavras animadoras ou música...">${escapeHtml(sheet.classFeatureNotes || sheet.classInitialFeaturesText || sheet.additionalFeatures || "")}</textarea>
+      </label>
+
+      <div class="dnd-class-features-list">
+        ${rows}
+      </div>
+    </section>
+  `;
+}
+
+
+function buildDndSanityLimitedSection(sheet = {}) {
+  const sanityDieOptions = ["", "d4", "d6", "d8", "d10", "d12", "d20"];
+  const selectedSanityDie = String(sheet.sanityDie || "");
+  const rows = Array.from({ length: 6 }, (_, index) => {
+    const number = index + 1;
+
+    return `
+      <div class="dnd-limited-feature-row">
+        <input name="limitedFeature${number}Name" type="text" value="${escapeHtml(sheet[`limitedFeature${number}Name`] || "")}" placeholder="${number === 1 ? "Ex: Inspiração Bárdica" : ""}" />
+        <div class="dnd-recharge-options" aria-label="Recarga da característica ${number}">
+          <label title="Descanso curto"><input type="checkbox" name="limitedFeature${number}RechargeShort" ${dndCheckedAttr(sheet[`limitedFeature${number}RechargeShort`])} /><span>dc</span></label>
+          <label title="Descanso longo"><input type="checkbox" name="limitedFeature${number}RechargeLong" ${dndCheckedAttr(sheet[`limitedFeature${number}RechargeLong`])} /><span>dl</span></label>
+          <label title="Amanhecer"><input type="checkbox" name="limitedFeature${number}RechargeDawn" ${dndCheckedAttr(sheet[`limitedFeature${number}RechargeDawn`])} /><span>am</span></label>
+        </div>
+        <input name="limitedFeature${number}Total" type="number" min="0" inputmode="numeric" value="${escapeHtml(sheet[`limitedFeature${number}Total`] || "")}" />
+        <input name="limitedFeature${number}Remaining" type="number" min="0" inputmode="numeric" value="${escapeHtml(sheet[`limitedFeature${number}Remaining`] || "")}" />
+      </div>
+    `;
+  }).join("");
+
+  return `
+    <section class="dnd-sanity-limited-master-block">
+      <div class="dnd-v2-grid-2 dnd-sanity-limited-grid dnd-sanity-limited-grid--master">
+        <section class="dnd-v2-card dnd-sanity-card">
+          <div class="dnd-sanity-card__head">
+            <div>
+              <p class="tag">Sanidade</p>
+              <h3>Nível de Sanidade</h3>
+              <span>Use quando a mesa trabalhar medo, loucura, corrupção mental ou trauma.</span>
+            </div>
+          </div>
+
+          <div class="dnd-sanity-fields">
+            <label class="dnd-v2-field">
+              <span>Nível atual</span>
+              <input name="sanityLevel" type="number" min="0" value="${escapeHtml(sheet.sanityLevel || "0")}" inputmode="numeric" />
+            </label>
+
+            <label class="dnd-v2-field">
+              <span>Dado de Sanidade</span>
+              <select name="sanityDie">
+                ${sanityDieOptions.map((option) => `<option value="${escapeHtml(option)}"${option === selectedSanityDie ? " selected" : ""}>${option ? option : "Selecione"}</option>`).join("")}
+              </select>
+            </label>
+          </div>
+
+          <label class="dnd-v2-field dnd-v2-textarea dnd-sanity-notes">
+            <span>Notas de sanidade</span>
+            <textarea name="sanityNotes" rows="4" placeholder="Medos, gatilhos, efeitos temporários ou marcas mentais.">${escapeHtml(sheet.sanityNotes || "")}</textarea>
+          </label>
+        </section>
+
+        ${buildDndExperienceProficienciesSection(sheet)}
+        ${buildDndExperienceLanguagesSection(sheet)}
+        ${buildDndExperienceTalentsSection(sheet)}
+        <section class="dnd-v2-card dnd-limited-features-card">
+          <div class="dnd-limited-features-head">
+            <div>
+              <p class="tag">Recursos</p>
+              <h3>Características Limitadas</h3>
+              <span>Controle habilidades que recarregam em descanso curto, descanso longo ou ao amanhecer.</span>
+            </div>
+          </div>
+
+          <div class="dnd-limited-features-table" aria-label="Características limitadas">
+            <div class="dnd-limited-feature-row dnd-limited-feature-row--head">
+              <span>Nome</span>
+              <span>Recarga</span>
+              <span>Total</span>
+              <span>Rest.</span>
+            </div>
+            ${rows}
+          </div>
+
+          <p class="dnd-limited-features-note">dc: descanso curto / dl: descanso longo / am: amanhecer.</p>
+        </section>
+
+        ${buildDndExperienceClassFeaturesSection(sheet)}
+      </div>
+    </section>
+  `;
+}
+
+
 function dndClassIntegratedFields(sheet = {}) {
   return '';
 }
 
 /* =========================================================
-   D&D - ANTECEDENTES DE ALTHERIUM
+   D&D - ANTECEDENTES OFICIAIS
 ========================================================= */
 
-const DND_ALTHERIUM_BACKGROUND_FEATURE_START = "===== ANTECEDENTE DE ALTHERIUM =====";
-const DND_ALTHERIUM_BACKGROUND_FEATURE_END = "===== FIM DO ANTECEDENTE DE ALTHERIUM =====";
-const DND_ALTHERIUM_BACKGROUND_EQUIPMENT_START = "===== EQUIPAMENTO DO ANTECEDENTE =====";
-const DND_ALTHERIUM_BACKGROUND_EQUIPMENT_END = "===== FIM DO EQUIPAMENTO DO ANTECEDENTE =====";
+const DND_ALTHERIUM_BACKGROUND_FEATURE_START = "===== ANTECEDENTE D&D =====";
+const DND_ALTHERIUM_BACKGROUND_OLD_FEATURE_START = "===== ANTECEDENTE DE ALTHERIUM =====";
+const DND_ALTHERIUM_BACKGROUND_FEATURE_END = "===== FIM DO ANTECEDENTE D&D =====";
+const DND_ALTHERIUM_BACKGROUND_OLD_FEATURE_END = "===== FIM DO ANTECEDENTE DE ALTHERIUM =====";
+const DND_ALTHERIUM_BACKGROUND_EQUIPMENT_START = "===== EQUIPAMENTO DO ANTECEDENTE D&D =====";
+const DND_ALTHERIUM_BACKGROUND_OLD_EQUIPMENT_START = "===== EQUIPAMENTO DO ANTECEDENTE =====";
+const DND_ALTHERIUM_BACKGROUND_EQUIPMENT_END = "===== FIM DO EQUIPAMENTO DO ANTECEDENTE D&D =====";
+const DND_ALTHERIUM_BACKGROUND_OLD_EQUIPMENT_END = "===== FIM DO EQUIPAMENTO DO ANTECEDENTE =====";
 
 function getDndAltheriumBackgroundByValue(value = "") {
   const normalized = normalizeAltheriumGenesis(value);
@@ -11192,7 +12075,11 @@ function dndWriteAltheriumBackgroundFeatureBlock(form, background) {
   const field = form.elements.features || form.elements.additionalFeatures;
   if (!field) return;
 
-  const clean = dndRemoveBlock(field.value, DND_ALTHERIUM_BACKGROUND_FEATURE_START, DND_ALTHERIUM_BACKGROUND_FEATURE_END);
+  const clean = dndRemoveBlock(
+    dndRemoveBlock(field.value, DND_ALTHERIUM_BACKGROUND_FEATURE_START, DND_ALTHERIUM_BACKGROUND_FEATURE_END),
+    DND_ALTHERIUM_BACKGROUND_OLD_FEATURE_START,
+    DND_ALTHERIUM_BACKGROUND_OLD_FEATURE_END
+  );
 
   if (!background || !background.key) {
     field.value = clean;
@@ -11224,7 +12111,11 @@ function dndWriteAltheriumBackgroundEquipmentBlock(form, background) {
   const field = form.elements.equipment;
   if (!field) return;
 
-  const clean = dndRemoveBlock(field.value, DND_ALTHERIUM_BACKGROUND_EQUIPMENT_START, DND_ALTHERIUM_BACKGROUND_EQUIPMENT_END);
+  const clean = dndRemoveBlock(
+    dndRemoveBlock(field.value, DND_ALTHERIUM_BACKGROUND_EQUIPMENT_START, DND_ALTHERIUM_BACKGROUND_EQUIPMENT_END),
+    DND_ALTHERIUM_BACKGROUND_OLD_EQUIPMENT_START,
+    DND_ALTHERIUM_BACKGROUND_OLD_EQUIPMENT_END
+  );
 
   if (!background || !background.equipment) {
     field.value = clean;
@@ -14725,7 +15616,7 @@ const DND5E = {
   },
 
   SKILL_NAMES: {
-    skillAcrobatics:'Acrobacia', skillAnimalHandling:'Lidar Animais', skillArcana:'Arcanismo',
+    skillAcrobatics:'Acrobacia', skillAnimalHandling:'Lidar com Animais', skillArcana:'Arcanismo',
     skillAthletics:'Atletismo', skillDeception:'Enganação', skillHistory:'História',
     skillInsight:'Intuição', skillIntimidation:'Intimidação', skillInvestigation:'Investigação',
     skillMedicine:'Medicina', skillNature:'Natureza', skillPerception:'Percepção',
@@ -16363,6 +17254,7 @@ function dndApplyClassAutomationFields(form, className = '', options = {}) {
   dndSetEditableAutoField(form, 'hitDiceTotal', defaults.hitDiceTotal, { force, autoPattern: hitDicePattern });
   dndSetEditableAutoField(form, 'hitDiceRemaining', defaults.hitDiceRemaining, { force, autoPattern: hitDicePattern });
   dndSetEditableAutoField(form, 'additionalFeatures', defaults.classInitialFeaturesText, { force });
+  dndSetEditableAutoField(form, 'classFeatureNotes', defaults.classInitialFeaturesText, { force });
   dndSetEditableAutoField(form, 'spellcastingClass', defaults.spellcastingClass, { force });
 
   const legacyFeatureField = form?.elements?.classInitialFeaturesText;
@@ -18245,10 +19137,13 @@ function updateDndV2AvatarPreview(form, fallbackName = "Personagem") {
       attributes: "Atributos",
       combat: "Combate",
       skills: "Perícias",
+      experiences: "Experiências",
       spells: "Magias",
       inventory: "Inventário",
       story: "História",
       rest: "Descansar",
+      pet: "Pet",
+      book: "Livro",
     };
 
     form.querySelectorAll("[data-dnd-v2-tab]").forEach((button) => {
@@ -22852,6 +23747,7 @@ if (document.readyState === "loading") {
       'input[name="petSpeed"]',
       'input[name="darkvision"]',
       'textarea[name="classInitialFeaturesText"]',
+      'textarea[name="classFeatureNotes"]',
       '[data-dnd-spell-field="range"]',
       '[data-dnd-spell-field="description"]',
       '[data-dnd-spell-field="notes"]'
@@ -23030,4 +23926,6260 @@ if (document.readyState === "loading") {
   }
 
   window.setInterval(syncDndPetMiniVisibility, 1200);
+})();
+/* =========================================================
+   HOTFIX - CHAT SEM RELOAD AO ENVIAR MENSAGEM
+========================================================= */
+(function fixCampaignChatSubmitReload() {
+  if (window.__campaignChatSubmitReloadFixed) return;
+  window.__campaignChatSubmitReloadFixed = true;
+
+  function getCurrentChatSystem() {
+    if (document.body.classList.contains("dnd-player-page") || document.body.classList.contains("dnd-master-page")) {
+      return "D&D";
+    }
+
+    if (document.body.classList.contains("altherium-player-page") || document.body.classList.contains("altherium-page")) {
+      return "Altherium";
+    }
+
+    return sessionStorage.getItem("system") || "D&D";
+  }
+
+  async function safeSendCampaignChatMessage() {
+    if (typeof sendPlayerCampaignChatMessage !== "function") return;
+
+    const sendButton = document.getElementById("playerCampaignChatSendBtn");
+
+    if (sendButton && sendButton.dataset.sending === "true") return;
+
+    try {
+      if (sendButton) sendButton.dataset.sending = "true";
+      await sendPlayerCampaignChatMessage(getCurrentChatSystem());
+    } finally {
+      if (sendButton) {
+        window.setTimeout(() => {
+          sendButton.dataset.sending = "false";
+        }, 120);
+      }
+    }
+  }
+
+  document.addEventListener(
+    "submit",
+    async function (event) {
+      const form = event.target && event.target.closest
+        ? event.target.closest("#playerCampaignChatForm")
+        : null;
+
+      if (!form) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      await safeSendCampaignChatMessage();
+    },
+    true
+  );
+
+  document.addEventListener(
+    "click",
+    async function (event) {
+      const button = event.target && event.target.closest
+        ? event.target.closest("#playerCampaignChatSendBtn")
+        : null;
+
+      if (!button) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      await safeSendCampaignChatMessage();
+    },
+    true
+  );
+
+  function forceChatButtonType() {
+    const button = document.getElementById("playerCampaignChatSendBtn");
+    if (button) button.type = "button";
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", forceChatButtonType);
+  } else {
+    forceChatButtonType();
+  }
+
+  window.setInterval(forceChatButtonType, 1000);
+})();
+
+
+/* =========================================================
+   HOTFIX - JOGADOR NÃO LIMPA INICIATIVA
+   Vale para Altherium e D&D, mesmo em HTML antigo.
+========================================================= */
+(function blockPlayerInitiativeClearButtons() {
+  function isPlayerInitiativeClearButton(target) {
+    if (!target || !target.closest) return null;
+
+    return target.closest(
+      ".altherium-player-page #clearPlayerInitiativeBtn, .dnd-player-page #clearDndPlayerInitiativeBtn"
+    );
+  }
+
+  document.addEventListener(
+    "click",
+    function (event) {
+      const button = isPlayerInitiativeClearButton(event.target);
+      if (!button) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      event.stopImmediatePropagation();
+
+      button.hidden = true;
+      button.disabled = true;
+      alert("Apenas o mestre pode limpar a iniciativa da mesa.");
+    },
+    true
+  );
+
+  document.addEventListener("DOMContentLoaded", function () {
+    document
+      .querySelectorAll(".altherium-player-page #clearPlayerInitiativeBtn, .dnd-player-page #clearDndPlayerInitiativeBtn")
+      .forEach((button) => {
+        button.hidden = true;
+        button.disabled = true;
+        button.setAttribute("aria-hidden", "true");
+      });
+  });
+})();
+
+
+/* =========================================================
+   HOTFIX - D&D JOGADOR INICIATIVA CARREGANDO
+========================================================= */
+(function campaignLabFixDndPlayerInitiativeLoading() {
+  const isDndPlayerPage = () => document.body && document.body.classList.contains("dnd-player-page");
+
+  function dndInitiativeSafeText(value) {
+    if (typeof escapeHtml === "function") return escapeHtml(value || "");
+
+    return String(value || "")
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
+  function setDndPlayerInitiativeStatus(title, description) {
+    const board = document.getElementById("dndPlayerInitiativeBoard");
+    if (!board) return;
+
+    board.innerHTML = `
+      <div class="altherium-empty">
+        <h3>${dndInitiativeSafeText(title)}</h3>
+        <p>${dndInitiativeSafeText(description)}</p>
+      </div>
+    `;
+  }
+
+  function hideDndPlayerInitiativeControls() {
+    if (!isDndPlayerPage()) return;
+
+    const controlIds = [
+      "clearDndPlayerInitiativeBtn",
+      "dndPlayerInitiativeBoardNextTurnBtn"
+    ];
+
+    controlIds.forEach((id) => {
+      const control = document.getElementById(id);
+      if (!control) return;
+
+      control.disabled = true;
+      control.hidden = true;
+      control.setAttribute("aria-hidden", "true");
+      control.classList.add("initiative-control-hidden");
+    });
+  }
+
+  async function renderDndPlayerInitiativeFallback() {
+    const board = document.getElementById("dndPlayerInitiativeBoard");
+    if (!board || !isDndPlayerPage()) return;
+
+    try {
+      const campaign = typeof getCurrentCampaign === "function" ? await getCurrentCampaign(true) : null;
+
+      if (!campaign) {
+        setDndPlayerInitiativeStatus(
+          "Campanha não encontrada",
+          "Volte para Minhas Campanhas e entre novamente na campanha."
+        );
+        return;
+      }
+
+      const playerIds = typeof getCampaignPlayerIds === "function"
+        ? getCampaignPlayerIds(campaign)
+        : Array.isArray(campaign.jogadores)
+          ? campaign.jogadores
+          : [];
+
+      if (!playerIds.length) {
+        setDndPlayerInitiativeStatus(
+          "Nenhum personagem na iniciativa",
+          "A campanha ainda não possui jogadores cadastrados."
+        );
+        return;
+      }
+
+      const initiativeRows = [];
+
+      for (const playerId of playerIds) {
+        let sheet = {};
+
+        try {
+          if (typeof getOrCreateDndSheet === "function") {
+            sheet = await getOrCreateDndSheet(campaign.id, playerId, "D&D");
+          }
+        } catch (error) {
+          console.warn("Não foi possível carregar a ficha D&D para a iniciativa:", error);
+        }
+
+        const rawInitiative = sheet.combatInitiative ?? sheet.initiative ?? "";
+        const initiativeNumber = rawInitiative === "" || rawInitiative === null || rawInitiative === undefined
+          ? null
+          : Number(rawInitiative);
+
+        initiativeRows.push({
+          playerId: String(playerId || ""),
+          characterName: sheet.characterName || sheet.personagem || sheet.ownerName || "Personagem sem nome",
+          avatarUrl: sheet.characterPortraitUrl || sheet.characterAvatarUrl || "",
+          initiativeNumber: Number.isFinite(initiativeNumber) ? initiativeNumber : null,
+        });
+      }
+
+      initiativeRows.sort((a, b) => {
+        if (a.initiativeNumber === null && b.initiativeNumber === null) return 0;
+        if (a.initiativeNumber === null) return 1;
+        if (b.initiativeNumber === null) return -1;
+        return b.initiativeNumber - a.initiativeNumber;
+      });
+
+      if (!initiativeRows.length) {
+        setDndPlayerInitiativeStatus(
+          "Nenhum personagem na iniciativa",
+          "Preencha a iniciativa de combate na ficha para entrar na ordem."
+        );
+        return;
+      }
+
+      let activeIndex = 0;
+
+      try {
+        if (typeof getCurrentInitiativeTurnIndex === "function" && typeof getDndPlayerInitiativeConfig === "function") {
+          activeIndex = await getCurrentInitiativeTurnIndex(
+            getDndPlayerInitiativeConfig(),
+            campaign,
+            initiativeRows.length,
+            initiativeRows
+          );
+        }
+      } catch (error) {
+        activeIndex = 0;
+      }
+
+      board.innerHTML = initiativeRows
+        .map((item, index) => {
+          const value = item.initiativeNumber === null ? "--" : item.initiativeNumber;
+          const isActive = index === activeIndex;
+          const avatar = item.avatarUrl
+            ? `<div class="initiative-position initiative-position--avatar"><img src="${dndInitiativeSafeText(item.avatarUrl)}" alt="${dndInitiativeSafeText(item.characterName)}" loading="lazy" /></div>`
+            : `<div class="initiative-position initiative-position--fallback"><span>${index + 1}</span></div>`;
+
+          return `
+            <div class="initiative-row ${isActive ? "active" : ""}" data-player-id="${dndInitiativeSafeText(item.playerId)}">
+              ${avatar}
+              <div class="initiative-character">
+                <strong>${dndInitiativeSafeText(item.characterName)}</strong>
+                <span>${isActive ? "Turno atual" : "Aguardando turno"}</span>
+              </div>
+              <div class="initiative-value">${dndInitiativeSafeText(value)}</div>
+            </div>
+          `;
+        })
+        .join("");
+    } catch (error) {
+      console.warn("Falha no fallback da iniciativa D&D do jogador:", error);
+      setDndPlayerInitiativeStatus(
+        "Não foi possível carregar a iniciativa",
+        "Verifique o console. A ficha continua funcionando, mas a ordem da mesa não sincronizou agora."
+      );
+    } finally {
+      hideDndPlayerInitiativeControls();
+    }
+  }
+
+  async function renderDndPlayerInitiativeNow() {
+    if (!isDndPlayerPage()) return;
+
+    const board = document.getElementById("dndPlayerInitiativeBoard");
+    if (!board) return;
+
+    try {
+      if (typeof setupInitiativeBoard === "function" && typeof getDndPlayerInitiativeConfig === "function") {
+        await setupInitiativeBoard(getDndPlayerInitiativeConfig());
+        hideDndPlayerInitiativeControls();
+
+        const stillLoading = /Carregando iniciativa/i.test(board.textContent || "");
+        if (!stillLoading) return;
+      }
+    } catch (error) {
+      console.warn("Render principal da iniciativa D&D do jogador falhou. Usando fallback:", error);
+    }
+
+    await renderDndPlayerInitiativeFallback();
+  }
+
+  function scheduleDndPlayerInitiativeRender(delay = 0) {
+    window.clearTimeout(window.__campaignLabDndPlayerInitiativeFixTimer);
+    window.__campaignLabDndPlayerInitiativeFixTimer = window.setTimeout(renderDndPlayerInitiativeNow, delay);
+  }
+
+  document.addEventListener("click", (event) => {
+    const tab = event.target.closest
+      ? event.target.closest('[data-tab="dndPlayerInitiativeSection"], [data-dnd-v2-tab="initiative"], #dndPlayerInitiativeTab')
+      : null;
+
+    if (!tab) return;
+
+    scheduleDndPlayerInitiativeRender(60);
+    scheduleDndPlayerInitiativeRender(500);
+  }, true);
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "visible") scheduleDndPlayerInitiativeRender(180);
+  });
+
+  window.addEventListener("focus", () => scheduleDndPlayerInitiativeRender(180));
+
+  const start = () => {
+    if (!isDndPlayerPage()) return;
+
+    scheduleDndPlayerInitiativeRender(80);
+    window.setTimeout(renderDndPlayerInitiativeNow, 700);
+    window.setTimeout(renderDndPlayerInitiativeNow, 1600);
+  };
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", start);
+  } else {
+    start();
+  }
+})();
+
+
+/* =========================================================
+   HOTFIX - OPÇÃO DE MENSAGEM PRIVADA PARA O MESTRE
+   Vale para D&D e Altherium.
+========================================================= */
+(function ensurePrivateMessageToMasterOption() {
+  if (window.__privateMessageToMasterOptionReady) return;
+  window.__privateMessageToMasterOptionReady = true;
+
+  function ensureMasterShortcutButton() {
+    const row = document.querySelector("#playerCampaignChatForm .player-chat-recipient-row");
+    const select = document.getElementById("playerCampaignChatRecipient");
+
+    if (!row || !select || document.getElementById("playerCampaignChatMasterShortcut")) return;
+
+    const button = document.createElement("button");
+    button.className = "player-chat-master-shortcut";
+    button.type = "button";
+    button.id = "playerCampaignChatMasterShortcut";
+    button.dataset.playerChatMasterShortcut = "true";
+    button.textContent = "Falar só com mestre";
+    button.disabled = true;
+    button.hidden = true;
+
+    select.insertAdjacentElement("afterend", button);
+  }
+
+  async function refreshMasterPrivateOption() {
+    ensureMasterShortcutButton();
+
+    if (typeof renderPlayerCampaignChatRecipientOptions === "function") {
+      await renderPlayerCampaignChatRecipientOptions();
+    }
+  }
+
+  document.addEventListener("click", (event) => {
+    const button = event.target?.closest?.("#playerCampaignChatMasterShortcut");
+    const select = document.getElementById("playerCampaignChatRecipient");
+    const input = document.getElementById("playerCampaignChatInput");
+
+    if (!button || !select) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+
+    const masterRecipientId = button.dataset.masterRecipientId;
+
+    if (!masterRecipientId || button.disabled) return;
+
+    select.value = masterRecipientId;
+    select.dispatchEvent(new Event("change", { bubbles: true }));
+    input?.focus?.();
+  }, true);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => window.setTimeout(refreshMasterPrivateOption, 900));
+  } else {
+    window.setTimeout(refreshMasterPrivateOption, 900);
+  }
+})();
+
+/* =========================================================
+   INIMIGOS DO BESTIÁRIO NA INICIATIVA - CORREÇÃO
+   O mestre preenche a iniciativa dentro do bestiário.
+   Ao preencher, o inimigo entra automaticamente na aba Iniciativa.
+   Ao apagar o campo, o inimigo sai da iniciativa.
+========================================================= */
+
+(function setupCampaignLabBestiaryInitiativeAutoSync() {
+  if (window.campaignLabBestiaryInitiativeAutoSyncReady) return;
+  window.campaignLabBestiaryInitiativeAutoSyncReady = true;
+
+  let initiativeEnemyRealtimeChannel = null;
+  let bestiaryRealtimeChannel = null;
+
+  const ENEMY_TABLE = "campaign_initiative_enemies";
+  const SOURCE_ALTHERIUM_BESTIARY = "altherium_bestiary";
+  const SOURCE_DND_BESTIARY = "dnd_bestiary";
+
+  const originalSetupInitiativeBoard = typeof setupInitiativeBoard === "function" ? setupInitiativeBoard : null;
+  const originalGetInitiativeOrderedCharacters = typeof getInitiativeOrderedCharacters === "function" ? getInitiativeOrderedCharacters : null;
+  const originalClearAllCampaignSheetInitiatives = typeof clearAllCampaignSheetInitiatives === "function" ? clearAllCampaignSheetInitiatives : null;
+  const originalRenderAltheriumGeneratedEnemiesList = typeof renderAltheriumGeneratedEnemiesList === "function" ? renderAltheriumGeneratedEnemiesList : null;
+  const originalRenderAltheriumBossResult = typeof renderAltheriumBossResult === "function" ? renderAltheriumBossResult : null;
+  const originalDeleteAltheriumGeneratedEnemy = typeof deleteAltheriumGeneratedEnemy === "function" ? deleteAltheriumGeneratedEnemy : null;
+  const originalClearAltheriumGeneratedEnemies = typeof clearAltheriumGeneratedEnemies === "function" ? clearAltheriumGeneratedEnemies : null;
+
+  if (originalSetupInitiativeBoard) {
+    setupInitiativeBoard = async function setupInitiativeBoardWithBestiaryEnemies(config) {
+      await originalSetupInitiativeBoard(config);
+      await removeOldManualInitiativeEnemyControls();
+      await enhanceBestiaryInitiativeInputs(config);
+      setupBestiaryInitiativeRealtime(config);
+    };
+  }
+
+  if (originalGetInitiativeOrderedCharacters) {
+    getInitiativeOrderedCharacters = async function getInitiativeOrderedCharactersWithBestiaryEnemies(config, campaign) {
+      const characters = await originalGetInitiativeOrderedCharacters(config, campaign);
+      const enemies = await getBestiaryInitiativeEnemyItems(config, campaign);
+      const list = mergeInitiativeCharactersAndEnemies(characters, enemies);
+      sortInitiativeListWithEnemies(list);
+      return list;
+    };
+  }
+
+  if (originalClearAllCampaignSheetInitiatives) {
+    clearAllCampaignSheetInitiatives = async function clearAllCampaignSheetInitiativesWithBestiaryEnemies(config, campaign) {
+      await originalClearAllCampaignSheetInitiatives(config, campaign);
+      await clearBestiaryEnemiesFromInitiative(config, campaign);
+    };
+  }
+
+  if (originalRenderAltheriumGeneratedEnemiesList) {
+    renderAltheriumGeneratedEnemiesList = async function renderAltheriumGeneratedEnemiesListWithAutoInitiative() {
+      await originalRenderAltheriumGeneratedEnemiesList();
+      const config = getCurrentInitiativeConfigFromBody();
+      if (config) await enhanceBestiaryInitiativeInputs(config);
+    };
+  }
+
+  if (originalRenderAltheriumBossResult) {
+    renderAltheriumBossResult = function renderAltheriumBossResultWithAutoInitiative(boss, savedEnemyId = "") {
+      originalRenderAltheriumBossResult(boss, savedEnemyId);
+      window.setTimeout(async () => {
+        const config = getCurrentInitiativeConfigFromBody();
+        if (config) await enhanceBestiaryInitiativeInputs(config);
+      }, 0);
+    };
+  }
+
+  if (originalDeleteAltheriumGeneratedEnemy) {
+    deleteAltheriumGeneratedEnemy = async function deleteAltheriumGeneratedEnemyAndInitiative(enemyId) {
+      const campaign = await getCurrentCampaign(true);
+
+      if (campaign && enemyId) {
+        await removeInitiativeEnemyBySource({
+          campaign,
+          system: "Altherium",
+          source: SOURCE_ALTHERIUM_BESTIARY,
+          sourceEnemyId: enemyId,
+          silent: true,
+        });
+      }
+
+      await originalDeleteAltheriumGeneratedEnemy(enemyId);
+      await refreshVisibleInitiativeBoard();
+    };
+  }
+
+  if (originalClearAltheriumGeneratedEnemies) {
+    clearAltheriumGeneratedEnemies = async function clearAltheriumGeneratedEnemiesAndInitiative() {
+      const campaign = await getCurrentCampaign(true);
+
+      if (campaign) {
+        await removeInitiativeEnemiesBySource({
+          campaign,
+          system: "Altherium",
+          source: SOURCE_ALTHERIUM_BESTIARY,
+          silent: true,
+        });
+      }
+
+      await originalClearAltheriumGeneratedEnemies();
+      await refreshVisibleInitiativeBoard();
+    };
+  }
+
+  function getCurrentInitiativeConfigFromBody() {
+    if (document.body.classList.contains("altherium-page")) {
+      return {
+        system: "Altherium",
+        boardId: "initiativeBoard",
+        clearButtonId: "clearInitiativeBtn",
+        getSheet: getOrCreateCampaignSheet,
+        updateSheet: updateCampaignSheet,
+      };
+    }
+
+    if (document.body.classList.contains("altherium-player-page")) {
+      return typeof getAltheriumPlayerInitiativeConfig === "function" ? getAltheriumPlayerInitiativeConfig() : null;
+    }
+
+    if (document.body.classList.contains("dnd-master-page")) {
+      return {
+        system: "D&D",
+        boardId: "dndInitiativeBoard",
+        clearButtonId: "clearDndInitiativeBtn",
+        getSheet: getOrCreateDndSheet,
+        updateSheet: updateDndSheet,
+      };
+    }
+
+    if (document.body.classList.contains("dnd-player-page")) {
+      return typeof getDndPlayerInitiativeConfig === "function" ? getDndPlayerInitiativeConfig() : null;
+    }
+
+    return null;
+  }
+
+  async function removeOldManualInitiativeEnemyControls() {
+    document
+      .querySelectorAll("[data-initiative-enemy-controls], .initiative-enemy-controls")
+      .forEach((element) => element.remove());
+  }
+
+  function normalizeInitiativeValue(value) {
+    if (value === "" || value === undefined || value === null) return null;
+
+    const number = Number(value);
+    return Number.isFinite(number) ? number : null;
+  }
+
+  function hasInitiativeValue(value) {
+    return normalizeInitiativeValue(value) !== null;
+  }
+
+  function safeText(value, fallback = "") {
+    const text = String(value ?? "").trim();
+    return text || fallback;
+  }
+
+  function makeStableEnemyId(value = "inimigo") {
+    return String(value || "inimigo")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, "-")
+      .replace(/^-+|-+$/g, "")
+      .slice(0, 80) || `inimigo-${Date.now()}`;
+  }
+
+  function getInitiativeEnemyPlayerId({ system, source, sourceEnemyId, id }) {
+    const safeSystem = system || "Sistema";
+    const safeSource = source || "bestiary";
+    const safeId = sourceEnemyId || id || "inimigo";
+    return `enemy:${safeSystem}:${safeSource}:${safeId}`;
+  }
+
+  function mergeInitiativeCharactersAndEnemies(characters = [], enemies = []) {
+    const list = [];
+    const seen = new Set();
+
+    [...characters, ...enemies].forEach((item) => {
+      const key = item && item.playerId ? String(item.playerId) : JSON.stringify(item);
+      if (!key || seen.has(key)) return;
+      seen.add(key);
+      list.push(item);
+    });
+
+    return list;
+  }
+
+  function sortInitiativeListWithEnemies(list) {
+    list.sort((a, b) => {
+      if (a.initiativeNumber === null && b.initiativeNumber === null) return 0;
+      if (a.initiativeNumber === null) return 1;
+      if (b.initiativeNumber === null) return -1;
+      if (b.initiativeNumber !== a.initiativeNumber) return b.initiativeNumber - a.initiativeNumber;
+      if (a.isEnemy && !b.isEnemy) return 1;
+      if (!a.isEnemy && b.isEnemy) return -1;
+      return String(a.characterName || "").localeCompare(String(b.characterName || ""), "pt-BR");
+    });
+  }
+
+  async function getBestiaryInitiativeEnemyItems(config, campaign) {
+    if (!config || !campaign || !campaign.id) return [];
+
+    const rowsFromEnemyTable = await getInitiativeEnemyTableRows(config, campaign);
+    const tableItems = rowsFromEnemyTable.map(mapInitiativeEnemyTableRowToItem);
+
+    const directBestiaryItems =
+      config.system === "Altherium"
+        ? await getAltheriumBestiaryEnemiesWithInitiative(campaign)
+        : [];
+
+    return mergeInitiativeCharactersAndEnemies(tableItems, directBestiaryItems);
+  }
+
+  async function getInitiativeEnemyTableRows(config, campaign) {
+    if (!DB || !config || !campaign || !campaign.id) return [];
+
+    try {
+      const { data, error } = await DB
+        .from(ENEMY_TABLE)
+        .select("*")
+        .eq("campaign_id", String(campaign.id))
+        .eq("system", config.system)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.warn("Tabela de inimigos da iniciativa indisponível:", error);
+        return [];
+      }
+
+      return data || [];
+    } catch (error) {
+      console.warn("Não foi possível carregar inimigos da iniciativa:", error);
+      return [];
+    }
+  }
+
+  function mapInitiativeEnemyTableRowToItem(row, index = 0) {
+    const data = row.data || {};
+    const initiative = normalizeInitiativeValue(row.initiative);
+    const source = row.source || data.source || "bestiary";
+    const sourceEnemyId = row.source_enemy_id || data.sourceEnemyId || row.id || index;
+    const system = row.system || data.system || "Sistema";
+
+    return {
+      playerId: getInitiativeEnemyPlayerId({ system, source, sourceEnemyId, id: row.id }),
+      characterName: row.name || data.name || "Inimigo sem nome",
+      ownerName: "Inimigo",
+      characterAvatarUrl: row.avatar_url || data.avatarUrl || "",
+      characterPortraitUrl: row.avatar_url || data.avatarUrl || "",
+      initiativeNumber: initiative,
+      isEnemy: true,
+      enemyId: row.id || "",
+      source,
+      sourceEnemyId,
+      hp: row.hp ?? data.hp ?? data.bossHp ?? "",
+      armorClass: row.armor_class ?? data.armorClass ?? data.ca ?? "",
+    };
+  }
+
+  async function getAltheriumBestiaryEnemiesWithInitiative(campaign) {
+    if (!DB || !campaign || !campaign.id) return [];
+
+    try {
+      const { data, error } = await DB
+        .from("altherium_bestiary")
+        .select("*")
+        .eq("campaign_id", campaign.id)
+        .order("created_at", { ascending: true });
+
+      if (error) {
+        console.warn("Não foi possível ler iniciativas do bestiário Altherium:", error);
+        return [];
+      }
+
+      return (data || [])
+        .map((row) => {
+          const extra = row.data || {};
+          const initiative = normalizeInitiativeValue(
+            extra.initiative ?? extra.combatInitiative ?? extra.bestiaryInitiative
+          );
+
+          if (initiative === null) return null;
+
+          const sourceEnemyId = row.id || extra.id || makeStableEnemyId(row.name || extra.name);
+
+          return {
+            playerId: getInitiativeEnemyPlayerId({
+              system: "Altherium",
+              source: SOURCE_ALTHERIUM_BESTIARY,
+              sourceEnemyId,
+              id: row.id,
+            }),
+            characterName: row.name || extra.name || "Inimigo de Altherium",
+            ownerName: "Inimigo",
+            characterAvatarUrl: extra.avatarUrl || "",
+            characterPortraitUrl: extra.avatarUrl || "",
+            initiativeNumber: initiative,
+            isEnemy: true,
+            enemyId: row.id || "",
+            source: SOURCE_ALTHERIUM_BESTIARY,
+            sourceEnemyId,
+            hp: row.boss_hp ?? extra.bossHp ?? "",
+            armorClass: extra.armorClass ?? extra.ca ?? "",
+          };
+        })
+        .filter(Boolean);
+    } catch (error) {
+      console.warn("Não foi possível carregar inimigos do bestiário Altherium:", error);
+      return [];
+    }
+  }
+
+  async function upsertInitiativeEnemy({
+    campaign,
+    system,
+    source,
+    sourceEnemyId,
+    name,
+    initiative,
+    hp = null,
+    armorClass = null,
+    avatarUrl = "",
+    data = {},
+  }) {
+    if (!DB || !campaign || !campaign.id) return null;
+
+    const finalSource = source || (system === "D&D" ? SOURCE_DND_BESTIARY : SOURCE_ALTHERIUM_BESTIARY);
+    const finalSourceEnemyId = sourceEnemyId || makeStableEnemyId(name);
+    const finalInitiative = normalizeInitiativeValue(initiative);
+
+    if (finalInitiative === null) {
+      await removeInitiativeEnemyBySource({
+        campaign,
+        system,
+        source: finalSource,
+        sourceEnemyId: finalSourceEnemyId,
+        silent: true,
+      });
+      return null;
+    }
+
+    const row = {
+      campaign_id: String(campaign.id),
+      system: system || campaign.sistema || campaign.system || "Sistema",
+      source: finalSource,
+      source_enemy_id: String(finalSourceEnemyId),
+      name: safeText(name, "Inimigo sem nome"),
+      initiative: finalInitiative,
+      hp: hp === "" || hp === undefined || hp === null ? null : Number(hp) || null,
+      armor_class: armorClass === "" || armorClass === undefined || armorClass === null ? null : Number(armorClass) || null,
+      avatar_url: avatarUrl || null,
+      data: {
+        ...(data || {}),
+        source: finalSource,
+        sourceEnemyId: String(finalSourceEnemyId),
+        initiative: finalInitiative,
+        updatedAt: new Date().toISOString(),
+      },
+      updated_at: new Date().toISOString(),
+    };
+
+    try {
+      const { data: saved, error } = await DB
+        .from(ENEMY_TABLE)
+        .upsert(row, { onConflict: "campaign_id,system,source,source_enemy_id" })
+        .select("*")
+        .single();
+
+      if (error) {
+        showInitiativeEnemySqlWarning("Erro ao sincronizar inimigo do bestiário na iniciativa.", error);
+        return null;
+      }
+
+      return saved;
+    } catch (error) {
+      showInitiativeEnemySqlWarning("Erro ao sincronizar inimigo do bestiário na iniciativa.", error);
+      return null;
+    }
+  }
+
+  async function removeInitiativeEnemyBySource({ campaign, system, source, sourceEnemyId, silent = false }) {
+    if (!DB || !campaign || !campaign.id || !source || !sourceEnemyId) return;
+
+    try {
+      const { error } = await DB
+        .from(ENEMY_TABLE)
+        .delete()
+        .eq("campaign_id", String(campaign.id))
+        .eq("system", system || campaign.sistema || campaign.system || "Sistema")
+        .eq("source", source)
+        .eq("source_enemy_id", String(sourceEnemyId));
+
+      if (error && !silent) {
+        showInitiativeEnemySqlWarning("Erro ao remover inimigo da iniciativa.", error);
+      }
+    } catch (error) {
+      if (!silent) showInitiativeEnemySqlWarning("Erro ao remover inimigo da iniciativa.", error);
+    }
+  }
+
+  async function removeInitiativeEnemiesBySource({ campaign, system, source, silent = false }) {
+    if (!DB || !campaign || !campaign.id || !source) return;
+
+    try {
+      const { error } = await DB
+        .from(ENEMY_TABLE)
+        .delete()
+        .eq("campaign_id", String(campaign.id))
+        .eq("system", system || campaign.sistema || campaign.system || "Sistema")
+        .eq("source", source);
+
+      if (error && !silent) {
+        showInitiativeEnemySqlWarning("Erro ao remover inimigos da iniciativa.", error);
+      }
+    } catch (error) {
+      if (!silent) showInitiativeEnemySqlWarning("Erro ao remover inimigos da iniciativa.", error);
+    }
+  }
+
+  async function clearBestiaryEnemiesFromInitiative(config, campaign) {
+    if (!campaign || !campaign.id || !config || !config.system) return;
+
+    if (DB) {
+      try {
+        await DB
+          .from(ENEMY_TABLE)
+          .delete()
+          .eq("campaign_id", String(campaign.id))
+          .eq("system", config.system);
+      } catch (error) {
+        console.warn("Não foi possível limpar inimigos da iniciativa:", error);
+      }
+    }
+
+    if (config.system === "Altherium") {
+      await clearAltheriumBestiaryInitiativeData(campaign);
+    }
+  }
+
+  async function clearAltheriumBestiaryInitiativeData(campaign) {
+    if (!DB || !campaign || !campaign.id) return;
+
+    try {
+      const { data, error } = await DB
+        .from("altherium_bestiary")
+        .select("id, data")
+        .eq("campaign_id", campaign.id);
+
+      if (error) {
+        console.warn("Não foi possível carregar bestiário para limpar iniciativa:", error);
+        return;
+      }
+
+      for (const row of data || []) {
+        const nextData = {
+          ...(row.data || {}),
+          initiative: "",
+          combatInitiative: "",
+          bestiaryInitiative: "",
+          initiativeUpdatedAt: new Date().toISOString(),
+        };
+
+        await DB
+          .from("altherium_bestiary")
+          .update({ data: nextData })
+          .eq("id", row.id)
+          .eq("campaign_id", campaign.id);
+      }
+    } catch (error) {
+      console.warn("Não foi possível limpar iniciativa do bestiário:", error);
+    }
+  }
+
+  async function updateAltheriumBestiaryInitiativeData(campaign, enemyId, initiativeValue) {
+    if (!DB || !campaign || !campaign.id || !enemyId) return;
+
+    try {
+      const { data, error } = await DB
+        .from("altherium_bestiary")
+        .select("data")
+        .eq("id", enemyId)
+        .eq("campaign_id", campaign.id)
+        .maybeSingle();
+
+      if (error) {
+        console.warn("Não foi possível buscar o inimigo para salvar iniciativa:", error);
+        return;
+      }
+
+      const initiative = hasInitiativeValue(initiativeValue) ? normalizeInitiativeValue(initiativeValue) : "";
+      const nextData = {
+        ...(data?.data || {}),
+        initiative,
+        combatInitiative: initiative,
+        bestiaryInitiative: initiative,
+        initiativeUpdatedAt: new Date().toISOString(),
+      };
+
+      const { error: updateError } = await DB
+        .from("altherium_bestiary")
+        .update({ data: nextData })
+        .eq("id", enemyId)
+        .eq("campaign_id", campaign.id);
+
+      if (updateError) {
+        console.warn("Não foi possível salvar iniciativa no bestiário:", updateError);
+      }
+    } catch (error) {
+      console.warn("Não foi possível salvar iniciativa no bestiário:", error);
+    }
+  }
+
+  function showInitiativeEnemySqlWarning(action, error) {
+    const details = typeof getSupabaseErrorText === "function"
+      ? getSupabaseErrorText(error)
+      : error?.message || String(error || "Erro desconhecido");
+
+    console.error(action, error);
+
+    alert(
+      `${action}\n\n${details}\n\n` +
+        "Rode o SQL supabase-inimigos-bestiario-iniciativa.sql no Supabase. Se já rodou, atualize a página com Ctrl + F5."
+    );
+  }
+
+  async function enhanceBestiaryInitiativeInputs(config) {
+    if (!config || !config.system) return;
+
+    await removeOldManualInitiativeEnemyControls();
+
+    const campaign = await getCurrentCampaign(true);
+    if (!campaign || !canCurrentUserManageInitiative(campaign)) return;
+
+    if (config.system === "Altherium") {
+      await enhanceAltheriumBestiaryCards(campaign);
+    }
+
+    if (config.system === "D&D") {
+      await enhanceGenericDndBestiaryCards(campaign);
+    }
+  }
+
+  async function enhanceAltheriumBestiaryCards(campaign) {
+    const activeRows = await getInitiativeEnemyTableRows({ system: "Altherium" }, campaign);
+    const activeBySourceEnemyId = new Map(
+      activeRows
+        .filter((row) => row.source === SOURCE_ALTHERIUM_BESTIARY && row.source_enemy_id)
+        .map((row) => [String(row.source_enemy_id), row])
+    );
+
+    const directEnemies = typeof getAltheriumBestiaryEnemies === "function"
+      ? await getAltheriumBestiaryEnemies(campaign)
+      : [];
+    const directById = new Map(directEnemies.map((enemy) => [String(enemy.id), enemy]));
+
+    document.querySelectorAll("[data-delete-enemy-id]").forEach((deleteButton) => {
+      const enemyId = deleteButton.dataset.deleteEnemyId;
+      if (!enemyId) return;
+
+      const card = deleteButton.closest(".boss-result-card, .generated-enemy-card, article, section");
+      if (!card || card.querySelector(`[data-bestiary-enemy-initiative-box=\"${CSS.escape(enemyId)}\"]`)) return;
+
+      const enemy = directById.get(String(enemyId)) || {};
+      const activeRow = activeBySourceEnemyId.get(String(enemyId));
+      const currentInitiative = activeRow?.initiative ?? enemy.initiative ?? enemy.combatInitiative ?? enemy.bestiaryInitiative ?? "";
+      const enemyName = safeText(enemy.name || card.querySelector("h2, h3, strong")?.textContent, "Inimigo de Altherium");
+      const enemyHp = enemy.bossHp ?? extractNumberFromText(card.querySelector(".boss-result-card__hp")?.textContent);
+      const headerActions = deleteButton.closest(".boss-result-card__header-actions") || deleteButton.parentElement;
+
+      if (!headerActions) return;
+
+      const box = document.createElement("div");
+      box.className = "bestiary-enemy-initiative-box bestiary-enemy-initiative-box--auto";
+      box.dataset.bestiaryEnemyInitiativeBox = enemyId;
+      box.innerHTML = `
+        <label>
+          <span>Iniciativa</span>
+          <input
+            type="number"
+            value="${currentInitiative === null || currentInitiative === undefined ? "" : escapeHtml(currentInitiative)}"
+            placeholder="0"
+            data-bestiary-enemy-initiative-input="true"
+            data-bestiary-system="Altherium"
+            data-bestiary-source="${SOURCE_ALTHERIUM_BESTIARY}"
+            data-bestiary-enemy-id="${escapeHtml(enemyId)}"
+            data-bestiary-enemy-name="${escapeHtml(enemyName)}"
+            data-bestiary-enemy-hp="${escapeHtml(enemyHp ?? "")}"
+            data-no-number-control="true"
+          />
+        </label>
+        <small data-bestiary-enemy-initiative-status>
+          ${hasInitiativeValue(currentInitiative) ? "Na iniciativa" : "Preencha para entrar na iniciativa"}
+        </small>
+      `;
+
+      headerActions.insertBefore(box, deleteButton);
+    });
+  }
+
+  async function enhanceGenericDndBestiaryCards(campaign) {
+    const activeRows = await getInitiativeEnemyTableRows({ system: "D&D" }, campaign);
+    const activeBySourceEnemyId = new Map(
+      activeRows
+        .filter((row) => row.source === SOURCE_DND_BESTIARY && row.source_enemy_id)
+        .map((row) => [String(row.source_enemy_id), row])
+    );
+
+    const cards = Array.from(
+      document.querySelectorAll(
+        [
+          "[data-dnd-bestiary-enemy-id]",
+          "[data-bestiary-enemy-id]",
+          "[data-monster-id]",
+          "[data-enemy-id]",
+          ".dnd-bestiary-card",
+          ".monster-card",
+          ".bestiary-monster-card",
+          ".enemy-card",
+        ].join(",")
+      )
+    ).filter((card) => !card.closest("#dndInitiativeBoard, #dndPlayerInitiativeBoard, .initiative-board"));
+
+    cards.forEach((card) => {
+      const rawId =
+        card.dataset.dndBestiaryEnemyId ||
+        card.dataset.bestiaryEnemyId ||
+        card.dataset.monsterId ||
+        card.dataset.enemyId ||
+        card.querySelector("[data-dnd-bestiary-enemy-id], [data-bestiary-enemy-id], [data-monster-id], [data-enemy-id]")?.dataset?.dndBestiaryEnemyId ||
+        "";
+
+      const enemyName = safeText(
+        card.dataset.enemyName ||
+          card.querySelector("h2, h3, .monster-name, .enemy-name, strong")?.textContent,
+        "Inimigo de D&D"
+      );
+      const enemyId = rawId || makeStableEnemyId(enemyName);
+
+      if (!enemyId || card.querySelector(`[data-bestiary-enemy-initiative-box=\"${CSS.escape(enemyId)}\"]`)) return;
+
+      const activeRow = activeBySourceEnemyId.get(String(enemyId));
+      const currentInitiative = activeRow?.initiative ?? "";
+      const target =
+        card.querySelector(".boss-result-card__header-actions, .card-actions, .monster-actions, .enemy-actions") ||
+        card;
+
+      const box = document.createElement("div");
+      box.className = "bestiary-enemy-initiative-box bestiary-enemy-initiative-box--auto bestiary-enemy-initiative-box--dnd";
+      box.dataset.bestiaryEnemyInitiativeBox = enemyId;
+      box.innerHTML = `
+        <label>
+          <span>Iniciativa</span>
+          <input
+            type="number"
+            value="${currentInitiative === null || currentInitiative === undefined ? "" : escapeHtml(currentInitiative)}"
+            placeholder="0"
+            data-bestiary-enemy-initiative-input="true"
+            data-bestiary-system="D&D"
+            data-bestiary-source="${SOURCE_DND_BESTIARY}"
+            data-bestiary-enemy-id="${escapeHtml(enemyId)}"
+            data-bestiary-enemy-name="${escapeHtml(enemyName)}"
+            data-no-number-control="true"
+          />
+        </label>
+        <small data-bestiary-enemy-initiative-status>
+          ${hasInitiativeValue(currentInitiative) ? "Na iniciativa" : "Preencha para entrar na iniciativa"}
+        </small>
+      `;
+
+      target.appendChild(box);
+    });
+  }
+
+  function extractNumberFromText(value = "") {
+    const match = String(value || "").match(/-?\d+(?:[.,]\d+)?/);
+    if (!match) return "";
+    return Number(match[0].replace(",", ".")) || "";
+  }
+
+  async function saveBestiaryInitiativeInput(input) {
+    if (!input || input.dataset.bestiarySaving === "true") return;
+
+    const campaign = await getCurrentCampaign(true);
+
+    if (!campaign) {
+      alert("Campanha não encontrada.");
+      return;
+    }
+
+    if (!canCurrentUserManageInitiative(campaign)) {
+      alert("Apenas o mestre pode alterar a iniciativa dos inimigos.");
+      return;
+    }
+
+    const system = input.dataset.bestiarySystem || campaign.sistema || campaign.system || "Sistema";
+    const source = input.dataset.bestiarySource || (system === "D&D" ? SOURCE_DND_BESTIARY : SOURCE_ALTHERIUM_BESTIARY);
+    const sourceEnemyId = input.dataset.bestiaryEnemyId || makeStableEnemyId(input.dataset.bestiaryEnemyName || "inimigo");
+    const name = input.dataset.bestiaryEnemyName || "Inimigo sem nome";
+    const hp = input.dataset.bestiaryEnemyHp || null;
+    const initiative = input.value;
+    const status = input.closest(".bestiary-enemy-initiative-box")?.querySelector("[data-bestiary-enemy-initiative-status]");
+
+    input.dataset.bestiarySaving = "true";
+    if (status) status.textContent = "Sincronizando...";
+
+    if (system === "Altherium" && source === SOURCE_ALTHERIUM_BESTIARY) {
+      await updateAltheriumBestiaryInitiativeData(campaign, sourceEnemyId, initiative);
+    }
+
+    if (hasInitiativeValue(initiative)) {
+      await upsertInitiativeEnemy({
+        campaign,
+        system,
+        source,
+        sourceEnemyId,
+        name,
+        initiative,
+        hp,
+        data: {
+          name,
+          bestiaryEnemy: true,
+          initiativeSource: "bestiary-input",
+        },
+      });
+
+      if (status) status.textContent = "Na iniciativa";
+    } else {
+      await removeInitiativeEnemyBySource({
+        campaign,
+        system,
+        source,
+        sourceEnemyId,
+        silent: true,
+      });
+
+      if (status) status.textContent = "Preencha para entrar na iniciativa";
+    }
+
+    input.dataset.bestiarySaving = "false";
+    await refreshVisibleInitiativeBoard();
+  }
+
+  function scheduleBestiaryInitiativeSave(input) {
+    if (!input) return;
+
+    window.clearTimeout(input._campaignLabBestiaryInitiativeTimer);
+    input._campaignLabBestiaryInitiativeTimer = window.setTimeout(() => {
+      saveBestiaryInitiativeInput(input);
+    }, 550);
+  }
+
+  document.addEventListener("input", (event) => {
+    const input = event.target.closest?.("[data-bestiary-enemy-initiative-input]");
+    if (!input) return;
+    scheduleBestiaryInitiativeSave(input);
+  }, true);
+
+  document.addEventListener("change", (event) => {
+    const input = event.target.closest?.("[data-bestiary-enemy-initiative-input]");
+    if (!input) return;
+    window.clearTimeout(input._campaignLabBestiaryInitiativeTimer);
+    saveBestiaryInitiativeInput(input);
+  }, true);
+
+  document.addEventListener("keydown", (event) => {
+    const input = event.target.closest?.("[data-bestiary-enemy-initiative-input]");
+    if (!input || event.key !== "Enter") return;
+    event.preventDefault();
+    event.stopPropagation();
+    window.clearTimeout(input._campaignLabBestiaryInitiativeTimer);
+    saveBestiaryInitiativeInput(input);
+  }, true);
+
+  async function refreshVisibleInitiativeBoard() {
+    const config = getCurrentInitiativeConfigFromBody();
+    if (!config || typeof renderInitiativeBoard !== "function") return;
+
+    await renderInitiativeBoard(config);
+    await removeOldManualInitiativeEnemyControls();
+    await enhanceBestiaryInitiativeInputs(config);
+  }
+
+  function setupBestiaryInitiativeRealtime(config) {
+    if (!DB || !config || !config.system) return;
+
+    const campaignId = getCurrentCampaignId();
+    if (!campaignId) return;
+
+    if (initiativeEnemyRealtimeChannel) {
+      DB.removeChannel(initiativeEnemyRealtimeChannel);
+      initiativeEnemyRealtimeChannel = null;
+    }
+
+    initiativeEnemyRealtimeChannel = DB
+      .channel(`campaign-bestiary-initiative-enemies-${campaignId}-${config.system}`)
+      .on(
+        "postgres_changes",
+        {
+          event: "*",
+          schema: "public",
+          table: ENEMY_TABLE,
+          filter: `campaign_id=eq.${campaignId}`,
+        },
+        async (payload) => {
+          const rowSystem = payload?.new?.system || payload?.old?.system || "";
+          if (rowSystem && rowSystem !== config.system) return;
+          await refreshVisibleInitiativeBoard();
+        }
+      )
+      .subscribe();
+
+    if (config.system === "Altherium") {
+      if (bestiaryRealtimeChannel) {
+        DB.removeChannel(bestiaryRealtimeChannel);
+        bestiaryRealtimeChannel = null;
+      }
+
+      bestiaryRealtimeChannel = DB
+        .channel(`campaign-altherium-bestiary-initiative-${campaignId}`)
+        .on(
+          "postgres_changes",
+          {
+            event: "*",
+            schema: "public",
+            table: "altherium_bestiary",
+            filter: `campaign_id=eq.${campaignId}`,
+          },
+          async () => {
+            await refreshVisibleInitiativeBoard();
+          }
+        )
+        .subscribe();
+    }
+  }
+
+  window.addEventListener("load", async () => {
+    const config = getCurrentInitiativeConfigFromBody();
+    if (!config) return;
+
+    await removeOldManualInitiativeEnemyControls();
+    await enhanceBestiaryInitiativeInputs(config);
+    setupBestiaryInitiativeRealtime(config);
+
+    if (typeof renderInitiativeBoard === "function") {
+      await renderInitiativeBoard(config);
+    }
+  });
+})();
+
+
+/* =========================================================
+   HOTFIX D&D - ORDEM OFICIAL DAS PERÍCIAS
+   Mantém o design atual e reorganiza a aba Perícias.
+========================================================= */
+const CAMPAIGN_LAB_DND_SKILL_ORDER = [
+  { key: "skillAcrobatics", label: "Acrobacia", ability: "Des" },
+  { key: "skillArcana", label: "Arcanismo", ability: "Int" },
+  { key: "skillAthletics", label: "Atletismo", ability: "For" },
+  { key: "skillDeception", label: "Enganação", ability: "Car" },
+  { key: "skillStealth", label: "Furtividade", ability: "Des" },
+  { key: "skillHistory", label: "História", ability: "Int" },
+  { key: "skillInsight", label: "Intuição", ability: "Sab" },
+  { key: "skillIntimidation", label: "Intimidação", ability: "Car" },
+  { key: "skillInvestigation", label: "Investigação", ability: "Int" },
+  { key: "skillAnimalHandling", label: "Lidar com Animais", ability: "Sab" },
+  { key: "skillMedicine", label: "Medicina", ability: "Sab" },
+  { key: "skillNature", label: "Natureza", ability: "Int" },
+  { key: "skillPerception", label: "Percepção", ability: "Sab" },
+  { key: "skillPerformance", label: "Performance", ability: "Car" },
+  { key: "skillPersuasion", label: "Persuasão", ability: "Car" },
+  { key: "skillSleightOfHand", label: "Prestidigitação", ability: "Des" },
+  { key: "skillReligion", label: "Religião", ability: "Int" },
+  { key: "skillSurvival", label: "Sobrevivência", ability: "Sab" },
+];
+
+function campaignLabDndEnforceSkillOrder() {
+  const skillList = document.querySelector('[data-dnd-v2-panel="skills"] .dnd-skill-list');
+  if (!skillList) return;
+
+  const existingRows = Array.from(skillList.querySelectorAll('.dnd-skill-row[data-dnd-v2-skill]'));
+  if (!existingRows.length) return;
+
+  const rowsByKey = new Map(existingRows.map((row) => [row.dataset.dndV2Skill, row]));
+
+  CAMPAIGN_LAB_DND_SKILL_ORDER.forEach((skill) => {
+    const row = rowsByKey.get(skill.key);
+    if (!row) return;
+
+    const label = row.querySelector('strong');
+    const ability = row.querySelector('small');
+    const rollButton = row.querySelector('[data-dnd-v2-roll-label]');
+
+    if (label) label.textContent = skill.label;
+    if (ability) ability.textContent = skill.ability;
+    if (rollButton) rollButton.dataset.dndV2RollLabel = skill.label;
+
+    skillList.appendChild(row);
+  });
+}
+
+if (!window.campaignLabDndSkillOrderReady) {
+  window.campaignLabDndSkillOrderReady = true;
+  document.addEventListener('DOMContentLoaded', campaignLabDndEnforceSkillOrder);
+  window.addEventListener('load', campaignLabDndEnforceSkillOrder);
+  document.addEventListener('click', (event) => {
+    const tabButton = event.target.closest('[data-dnd-v2-tab="skills"], [data-tab="dndPlayerSheetSection"]');
+    if (!tabButton) return;
+    setTimeout(campaignLabDndEnforceSkillOrder, 60);
+  });
+}
+
+
+/* =========================================================
+   D&D - CAMPOS DE SANIDADE E CARACTERÍSTICAS LIMITADAS
+   Os campos são salvos pelo fluxo padrão da ficha, pois estão dentro do formulário.
+   Checkboxes já são normalizados como true/false pelo salvamento da ficha D&D.
+========================================================= */
+
+
+/* =========================================================
+   D&D - CARDS SUPERIORES EDITÁVEIS
+   CA, PV, Iniciativa e Proficiência editáveis direto no topo.
+   Mantém os campos reais sincronizados para salvar no Supabase.
+========================================================= */
+(function setupCampaignLabDndEditableHeroStats() {
+  const FORM_IDS = ["dndPlayerSheetForm", "dndForm"];
+  const HERO_SELECTOR = "[data-dnd-hero-edit]";
+  const PROOF_MANUAL_FIELD = "dndHeroProficiencyManual";
+  const PROOF_VALUE_FIELD = "dndHeroProficiencyValue";
+
+  function getForms() {
+    return FORM_IDS.map((id) => document.getElementById(id)).filter(Boolean);
+  }
+
+  function getPlayerForm() {
+    return document.getElementById("dndPlayerSheetForm") || document.getElementById("dndForm");
+  }
+
+  function normalizeNumber(value, fallback = 0) {
+    const clean = String(value ?? "")
+      .trim()
+      .replace(",", ".")
+      .replace(/[^0-9.+-]/g, "");
+
+    const number = Number(clean);
+    return Number.isFinite(number) ? number : fallback;
+  }
+
+  function normalizeIntegerText(value, fallback = "0") {
+    const number = Math.trunc(normalizeNumber(value, Number(fallback) || 0));
+    return String(number);
+  }
+
+  function formatBonus(value) {
+    const number = Math.trunc(normalizeNumber(value, 0));
+    return number >= 0 ? `+${number}` : String(number);
+  }
+
+  function ensureHidden(form, name, value = "") {
+    if (!form) return null;
+
+    let input = form.elements[name];
+    if (input) return input;
+
+    input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = String(value ?? "");
+    form.appendChild(input);
+    return input;
+  }
+
+  function setFieldValue(field, value) {
+    if (!field) return;
+    const finalValue = String(value ?? "");
+    if (String(field.value ?? "") !== finalValue) field.value = finalValue;
+  }
+
+  function setHeroValue(selectorOrId, value) {
+    const element = selectorOrId.startsWith("#")
+      ? document.querySelector(selectorOrId)
+      : document.getElementById(selectorOrId);
+
+    if (!element) return;
+
+    if ("value" in element) {
+      const finalValue = String(value ?? "");
+      if (String(element.value ?? "") !== finalValue) element.value = finalValue;
+    } else {
+      element.textContent = String(value ?? "");
+    }
+  }
+
+  function markEditableManual(form, fieldName, manual = true) {
+    if (!form || !fieldName) return;
+
+    try {
+      if (typeof dndSetEditableResultManual === "function") {
+        dndSetEditableResultManual(form, fieldName, manual);
+        return;
+      }
+    } catch (error) {
+      console.warn("Manual D&D editável:", error);
+    }
+
+    const hidden = ensureHidden(form, `${fieldName}Manual`, "false");
+    if (hidden) hidden.value = manual ? "true" : "false";
+    if (form.elements[fieldName]) form.elements[fieldName].dataset.dndManual = manual ? "true" : "false";
+  }
+
+  function markCombatInitiativeManual(form) {
+    const field = form?.elements?.combatInitiative;
+    if (!field) return;
+
+    field.dataset.dndInitiativeSource = "manual";
+    form.dataset.dndCombatInitiativeSource = "manual";
+  }
+
+  function isProficiencyManual(form) {
+    return ensureHidden(form, PROOF_MANUAL_FIELD, "false")?.value === "true";
+  }
+
+  function setProficiencyManual(form, value, manual = true) {
+    const clean = formatBonus(value);
+    const manualField = ensureHidden(form, PROOF_MANUAL_FIELD, "false");
+    const valueField = ensureHidden(form, PROOF_VALUE_FIELD, "+2");
+
+    if (manualField) manualField.value = manual ? "true" : "false";
+    if (valueField) valueField.value = clean;
+    setFieldValue(form?.elements?.proficiencyBonus, clean);
+  }
+
+  function readProficiency(form) {
+    if (!form) return "+2";
+
+    const valueField = ensureHidden(form, PROOF_VALUE_FIELD, form.elements?.proficiencyBonus?.value || "+2");
+
+    if (isProficiencyManual(form) && valueField?.value) {
+      return formatBonus(valueField.value);
+    }
+
+    return formatBonus(form.elements?.proficiencyBonus?.value || "+2");
+  }
+
+  function applyManualOverrides(form) {
+    if (!form || !form.elements) return;
+
+    if (isProficiencyManual(form)) {
+      const value = readProficiency(form);
+      setFieldValue(form.elements.proficiencyBonus, value);
+    }
+  }
+
+  function syncHeroInputs(form = getPlayerForm()) {
+    if (!form || !form.elements) return;
+
+    applyManualOverrides(form);
+
+    const armorClass = normalizeIntegerText(form.elements.armorClass?.value || "10", "10");
+    const hpCurrent = normalizeIntegerText(form.elements.hpCurrent?.value || "0", "0");
+    const hpMax = normalizeIntegerText(form.elements.hpMax?.value || "0", "0");
+    const initiativeValue = String(form.elements.combatInitiative?.value || form.elements.initiative?.value || "0").trim();
+    const proficiencyValue = readProficiency(form);
+
+    setHeroValue("dndV2ArmorClassView", armorClass);
+    setHeroValue("dndV2HpCurrentHeroInput", hpCurrent);
+    setHeroValue("dndV2HpMaxHeroInput", hpMax);
+    setHeroValue("dndV2InitiativeView", formatBonus(initiativeValue));
+    setHeroValue("dndV2ProficiencyView", proficiencyValue);
+
+    const hiddenHp = document.getElementById("dndV2HpView");
+    if (hiddenHp) hiddenHp.textContent = `${hpCurrent} / ${hpMax}`;
+  }
+
+  function refreshAfterHeroEdit(form) {
+    if (!form) return;
+
+    applyManualOverrides(form);
+    syncHeroInputs(form);
+
+    try {
+      if (typeof updateDndPlayerPreview === "function") updateDndPlayerPreview();
+    } catch {}
+
+    try {
+      if (typeof dndDispatchSheetInput === "function") {
+        dndDispatchSheetInput(form);
+      } else {
+        window.setTimeout(() => form.dispatchEvent(new Event("input", { bubbles: true })), 0);
+      }
+    } catch {}
+  }
+
+  function handleHeroInput(event) {
+    const input = event.target.closest?.(HERO_SELECTOR);
+    if (!input) return;
+
+    const form = input.closest("form") || getPlayerForm();
+    if (!form || !form.elements) return;
+
+    const target = input.dataset.dndHeroEdit;
+    const rawValue = input.value;
+
+    if (target === "armorClass") {
+      const value = normalizeIntegerText(rawValue, "10");
+      markEditableManual(form, "armorClass", true);
+      setFieldValue(form.elements.armorClass, value);
+    }
+
+    if (target === "hpCurrent") {
+      const value = normalizeIntegerText(rawValue, "0");
+      setFieldValue(form.elements.hpCurrent, value);
+    }
+
+    if (target === "hpMax") {
+      const value = normalizeIntegerText(rawValue, "0");
+      markEditableManual(form, "hpMax", true);
+      setFieldValue(form.elements.hpMax, value);
+    }
+
+    if (target === "initiative") {
+      const value = normalizeIntegerText(rawValue, "0");
+      setFieldValue(form.elements.initiative, value);
+      setFieldValue(form.elements.combatInitiative, value);
+      markCombatInitiativeManual(form);
+    }
+
+    if (target === "proficiencyBonus") {
+      setProficiencyManual(form, rawValue, true);
+    }
+
+    refreshAfterHeroEdit(form);
+  }
+
+  function handleHeroBlur(event) {
+    const input = event.target.closest?.(HERO_SELECTOR);
+    if (!input) return;
+
+    const form = input.closest("form") || getPlayerForm();
+    syncHeroInputs(form);
+  }
+
+  function setupForm(form) {
+    if (!form || form.dataset.dndEditableHeroStatsReady === "true") return;
+
+    form.dataset.dndEditableHeroStatsReady = "true";
+    ensureHidden(form, PROOF_MANUAL_FIELD, "false");
+    ensureHidden(form, PROOF_VALUE_FIELD, form.elements?.proficiencyBonus?.value || "+2");
+
+    form.querySelectorAll(HERO_SELECTOR).forEach((input) => {
+      input.setAttribute("autocomplete", "off");
+      input.setAttribute("spellcheck", "false");
+    });
+
+    form.addEventListener("input", (event) => {
+      if (event.target.closest?.(HERO_SELECTOR)) return;
+      window.setTimeout(() => syncHeroInputs(form), 130);
+    });
+
+    form.addEventListener("change", (event) => {
+      if (event.target.closest?.(HERO_SELECTOR)) return;
+      window.setTimeout(() => syncHeroInputs(form), 130);
+    });
+
+    syncHeroInputs(form);
+  }
+
+  function scanForms() {
+    getForms().forEach(setupForm);
+    syncHeroInputs(getPlayerForm());
+  }
+
+  if (!window.__dndEditableHeroStatsEventsReady) {
+    window.__dndEditableHeroStatsEventsReady = true;
+    document.addEventListener("input", handleHeroInput, true);
+    document.addEventListener("change", handleHeroInput, true);
+    document.addEventListener("blur", handleHeroBlur, true);
+  }
+
+  if (typeof window.dndRecalculateAll === "function" && !window.dndRecalculateAll.__editableHeroStatsWrapped) {
+    const original = window.dndRecalculateAll;
+    window.dndRecalculateAll = function wrappedDndRecalculateAll(form) {
+      const result = original.apply(this, arguments);
+      applyManualOverrides(form);
+      window.setTimeout(() => syncHeroInputs(form), 0);
+      return result;
+    };
+    window.dndRecalculateAll.__editableHeroStatsWrapped = true;
+  }
+
+  if (typeof window.updateDndAutoNumbers === "function" && !window.updateDndAutoNumbers.__editableHeroStatsWrapped) {
+    const original = window.updateDndAutoNumbers;
+    window.updateDndAutoNumbers = function wrappedUpdateDndAutoNumbers() {
+      const result = original.apply(this, arguments);
+      getForms().forEach((form) => {
+        applyManualOverrides(form);
+        syncHeroInputs(form);
+      });
+      return result;
+    };
+    window.updateDndAutoNumbers.__editableHeroStatsWrapped = true;
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", scanForms);
+  } else {
+    scanForms();
+  }
+
+  window.setTimeout(scanForms, 250);
+  window.setTimeout(scanForms, 900);
+  window.setTimeout(scanForms, 1800);
+  window.setTimeout(scanForms, 3200);
+})();
+
+
+/* =========================================================
+   D&D - VISÃO GERAL EDITÁVEL
+   Permite editar CA, PV, Percepção Passiva e CD de Magia
+   diretamente nos cards grandes da aba Visão Geral.
+========================================================= */
+(function setupDndEditableOverviewStats() {
+  const SELECTOR = "[data-dnd-overview-edit]";
+
+  function getForms() {
+    const forms = Array.from(
+      document.querySelectorAll("#dndPlayerSheetForm, #dndForm, form.dnd-character-sheet")
+    );
+
+    return forms.filter((form, index, list) => form && list.indexOf(form) === index);
+  }
+
+  function getPlayerForm() {
+    return document.getElementById("dndPlayerSheetForm") || getForms()[0] || null;
+  }
+
+  function ensureHidden(form, name, value = "") {
+    if (!form) return null;
+    if (form.elements && form.elements[name]) return form.elements[name];
+
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.name = name;
+    input.value = String(value ?? "");
+    form.appendChild(input);
+    return input;
+  }
+
+  function bool(value) {
+    return value === true || value === 1 || value === "1" || value === "true" || value === "on" || value === "yes";
+  }
+
+  function normalizeIntegerText(value, fallback = "0") {
+    const text = String(value ?? "").replace("+", "").trim();
+    if (text === "") return fallback;
+
+    const number = Number(text);
+    if (!Number.isFinite(number)) return fallback;
+
+    return String(Math.floor(number));
+  }
+
+  function setFieldValue(field, value) {
+    if (!field) return;
+    field.value = String(value ?? "");
+  }
+
+  function setViewValue(id, value) {
+    const element = document.getElementById(id);
+    if (!element) return;
+
+    if (element.matches && element.matches("input, textarea, select")) {
+      element.value = String(value ?? "");
+      return;
+    }
+
+    element.textContent = String(value ?? "");
+  }
+
+  function asNumber(value, fallback = 0) {
+    const number = Number(String(value ?? "").replace("+", ""));
+    return Number.isFinite(number) ? number : fallback;
+  }
+
+  function markEditableManual(form, fieldName, manual = true) {
+    if (!form || !fieldName) return;
+
+    const manualField = ensureHidden(form, `${fieldName}Manual`, manual ? "true" : "false");
+    if (manualField) manualField.value = manual ? "true" : "false";
+
+    const field = form.elements?.[fieldName];
+    if (field) field.dataset.dndManual = manual ? "true" : "false";
+  }
+
+  function isManual(form, fieldName) {
+    return bool(form?.elements?.[`${fieldName}Manual`]?.value);
+  }
+
+  function getPassivePerceptionValue(form) {
+    const passiveField = ensureHidden(form, "passivePerception", "10");
+
+    if (isManual(form, "passivePerception")) {
+      return normalizeIntegerText(passiveField?.value || "10", "10");
+    }
+
+    const perception = asNumber(form?.elements?.skillPerception?.value, 0);
+    const calculated = String(10 + perception);
+    if (passiveField) passiveField.value = calculated;
+    return calculated;
+  }
+
+  function getSpellSaveDcValue(form) {
+    const field = form?.elements?.spellSaveDc;
+    const value = String(field?.value || "").trim();
+    return value || "--";
+  }
+
+  function syncOverviewInputs(form = getPlayerForm()) {
+    if (!form || !form.elements) return;
+
+    ensureHidden(form, "passivePerception", "10");
+    ensureHidden(form, "passivePerceptionManual", "false");
+    ensureHidden(form, "spellSaveDcManual", "false");
+
+    const armorClass = normalizeIntegerText(form.elements.armorClass?.value || "10", "10");
+    const hpCurrent = normalizeIntegerText(form.elements.hpCurrent?.value || "0", "0");
+    const hpMax = normalizeIntegerText(form.elements.hpMax?.value || "0", "0");
+    const hpTemp = normalizeIntegerText(form.elements.hpTemp?.value || "0", "0");
+    const passive = getPassivePerceptionValue(form);
+    const spellDc = getSpellSaveDcValue(form);
+
+    setViewValue("dndV2ArmorClassBig", armorClass);
+    setViewValue("dndV2HpCurrentOverviewInput", hpCurrent);
+    setViewValue("dndV2HpMaxOverviewInput", hpMax);
+    setViewValue("dndV2HpBig", hpTemp !== "0" ? `${hpCurrent} / ${hpMax} +${hpTemp}` : `${hpCurrent} / ${hpMax}`);
+    setViewValue("dndV2PassivePerception", passive);
+    setViewValue("dndV2SpellDcBig", spellDc);
+  }
+
+  function refreshAfterOverviewEdit(form) {
+    if (!form) return;
+
+    syncOverviewInputs(form);
+
+    try {
+      if (typeof updateDndPlayerPreview === "function") updateDndPlayerPreview();
+    } catch {}
+
+    try {
+      if (typeof dndDispatchSheetInput === "function") {
+        dndDispatchSheetInput(form);
+      } else {
+        window.setTimeout(() => form.dispatchEvent(new Event("input", { bubbles: true })), 0);
+      }
+    } catch {}
+  }
+
+  function handleOverviewInput(event) {
+    const input = event.target.closest?.(SELECTOR);
+    if (!input) return;
+
+    const form = input.closest("form") || getPlayerForm();
+    if (!form || !form.elements) return;
+
+    const target = input.dataset.dndOverviewEdit;
+    const rawValue = input.value;
+
+    if (target === "armorClass") {
+      const value = normalizeIntegerText(rawValue, "10");
+      markEditableManual(form, "armorClass", true);
+      setFieldValue(form.elements.armorClass, value);
+    }
+
+    if (target === "hpCurrent") {
+      const value = normalizeIntegerText(rawValue, "0");
+      setFieldValue(form.elements.hpCurrent, value);
+    }
+
+    if (target === "hpMax") {
+      const value = normalizeIntegerText(rawValue, "0");
+      markEditableManual(form, "hpMax", true);
+      setFieldValue(form.elements.hpMax, value);
+    }
+
+    if (target === "passivePerception") {
+      const value = normalizeIntegerText(rawValue, "10");
+      const passiveField = ensureHidden(form, "passivePerception", value);
+      markEditableManual(form, "passivePerception", true);
+      setFieldValue(passiveField, value);
+    }
+
+    if (target === "spellSaveDc") {
+      const value = String(rawValue || "").trim();
+      markEditableManual(form, "spellSaveDc", true);
+      setFieldValue(form.elements.spellSaveDc, value);
+    }
+
+    refreshAfterOverviewEdit(form);
+  }
+
+  function handleOverviewBlur(event) {
+    const input = event.target.closest?.(SELECTOR);
+    if (!input) return;
+
+    const form = input.closest("form") || getPlayerForm();
+    syncOverviewInputs(form);
+  }
+
+  function setupForm(form) {
+    if (!form || form.dataset.dndEditableOverviewReady === "true") return;
+
+    form.dataset.dndEditableOverviewReady = "true";
+    ensureHidden(form, "passivePerception", "10");
+    ensureHidden(form, "passivePerceptionManual", "false");
+    ensureHidden(form, "spellSaveDcManual", "false");
+
+    form.querySelectorAll(SELECTOR).forEach((input) => {
+      input.setAttribute("autocomplete", "off");
+      input.setAttribute("spellcheck", "false");
+    });
+
+    form.addEventListener("input", (event) => {
+      if (event.target.closest?.(SELECTOR)) return;
+      window.setTimeout(() => syncOverviewInputs(form), 140);
+    });
+
+    form.addEventListener("change", (event) => {
+      if (event.target.closest?.(SELECTOR)) return;
+      window.setTimeout(() => syncOverviewInputs(form), 140);
+    });
+
+    syncOverviewInputs(form);
+  }
+
+  function scanForms() {
+    getForms().forEach(setupForm);
+    syncOverviewInputs(getPlayerForm());
+  }
+
+  function wrapRecalculateAll() {
+    if (typeof window.dndRecalculateAll !== "function") return;
+    if (window.dndRecalculateAll.__editableOverviewStatsWrapped) return;
+
+    const original = window.dndRecalculateAll;
+
+    window.dndRecalculateAll = function wrappedDndRecalculateAll(form) {
+      const targetForm = form || getPlayerForm();
+      const passiveManual = isManual(targetForm, "passivePerception");
+      const passiveValue = targetForm?.elements?.passivePerception?.value;
+      const spellManual = isManual(targetForm, "spellSaveDc");
+      const spellValue = targetForm?.elements?.spellSaveDc?.value;
+
+      const result = original.apply(this, arguments);
+
+      if (targetForm && targetForm.elements) {
+        if (passiveManual) {
+          setFieldValue(ensureHidden(targetForm, "passivePerception", passiveValue || "10"), passiveValue || "10");
+          markEditableManual(targetForm, "passivePerception", true);
+        }
+
+        if (spellManual) {
+          markEditableManual(targetForm, "spellSaveDc", true);
+          setFieldValue(targetForm.elements.spellSaveDc, spellValue || "");
+        }
+      }
+
+      window.setTimeout(() => syncOverviewInputs(targetForm), 0);
+      return result;
+    };
+
+    window.dndRecalculateAll.__editableOverviewStatsWrapped = true;
+  }
+
+  if (!window.__dndEditableOverviewStatsEventsReady) {
+    window.__dndEditableOverviewStatsEventsReady = true;
+    document.addEventListener("input", handleOverviewInput, true);
+    document.addEventListener("change", handleOverviewInput, true);
+    document.addEventListener("blur", handleOverviewBlur, true);
+  }
+
+  wrapRecalculateAll();
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      wrapRecalculateAll();
+      scanForms();
+    });
+  } else {
+    scanForms();
+  }
+
+  window.setTimeout(() => { wrapRecalculateAll(); scanForms(); }, 250);
+  window.setTimeout(() => { wrapRecalculateAll(); scanForms(); }, 900);
+  window.setTimeout(() => { wrapRecalculateAll(); scanForms(); }, 1800);
+  window.setTimeout(() => { wrapRecalculateAll(); scanForms(); }, 3200);
+})();
+
+
+/* =========================================================
+   D&D - ROLADOR ÚNICO EM PAINEL
+   Centraliza rolagens e remove botões de dados espalhados.
+========================================================= */
+(function campaignLabDndUnifiedDicePanelPatch() {
+  const DND_DICE_WIDGET_HTML = `
+    <aside class="campaign-dice-widget campaign-dice-widget--dnd-sheet" id="campaignDiceWidget" aria-label="Rolador de dados da campanha D&D">
+      <div class="campaign-dice-head">
+        <button type="button" class="campaign-dice-toggle" data-dice-toggle aria-expanded="false">
+          <span>Rolador de dados</span>
+          <strong>🎲</strong>
+        </button>
+      </div>
+
+      <div class="campaign-dice-body">
+        <div class="campaign-dice-last-result" id="campaignDiceLastResult">
+          <span>Resultado</span>
+          <strong>--</strong>
+          <p>Escolha uma rolagem ou digite uma fórmula.</p>
+        </div>
+
+        <div class="campaign-dice-quick-grid" aria-label="Dados rápidos">
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d4" data-dice-label="D4">d4</button>
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d6" data-dice-label="D6">d6</button>
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d8" data-dice-label="D8">d8</button>
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d10" data-dice-label="D10">d10</button>
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d12" data-dice-label="D12">d12</button>
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d20" data-dice-label="D20">d20</button>
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d100" data-dice-label="D100">d100</button>
+        </div>
+
+        <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+          <span>Testes principais</span>
+          <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+initiative" data-dice-label="Iniciativa">Iniciativa</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+strMod" data-dice-label="Força">FOR</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+dexMod" data-dice-label="Destreza">DES</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+conMod" data-dice-label="Constituição">CON</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+intMod" data-dice-label="Inteligência">INT</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+wisMod" data-dice-label="Sabedoria">SAB</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+chaMod" data-dice-label="Carisma">CAR</button>
+          </div>
+        </section>
+
+        <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+          <span>Resistências</span>
+          <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveStr" data-dice-label="Resistência de Força">FOR</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveDex" data-dice-label="Resistência de Destreza">DES</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveCon" data-dice-label="Resistência de Constituição">CON</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveInt" data-dice-label="Resistência de Inteligência">INT</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveWis" data-dice-label="Resistência de Sabedoria">SAB</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveCha" data-dice-label="Resistência de Carisma">CAR</button>
+          </div>
+        </section>
+
+        <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+          <span>Perícias</span>
+          <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide campaign-dice-auto-grid--skills">
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillAcrobatics" data-dice-label="Acrobacia">Acrobacia</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillArcana" data-dice-label="Arcanismo">Arcanismo</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillAthletics" data-dice-label="Atletismo">Atletismo</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillDeception" data-dice-label="Enganação">Enganação</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillStealth" data-dice-label="Furtividade">Furtividade</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillHistory" data-dice-label="História">História</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillInsight" data-dice-label="Intuição">Intuição</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillIntimidation" data-dice-label="Intimidação">Intimidação</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillInvestigation" data-dice-label="Investigação">Investigação</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillAnimalHandling" data-dice-label="Lidar com Animais">Animais</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillMedicine" data-dice-label="Medicina">Medicina</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillNature" data-dice-label="Natureza">Natureza</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillPerception" data-dice-label="Percepção">Percepção</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillPerformance" data-dice-label="Performance">Performance</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillPersuasion" data-dice-label="Persuasão">Persuasão</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillSleightOfHand" data-dice-label="Prestidigitação">Prestidigitação</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillReligion" data-dice-label="Religião">Religião</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillSurvival" data-dice-label="Sobrevivência">Sobrevivência</button>
+          </div>
+        </section>
+
+        <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+          <span>Pet e Dados de Vida</span>
+          <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+petDexMod" data-dice-label="Pet · Iniciativa">Pet Iniciativa</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+petWisMod" data-dice-label="Pet · Percepção">Pet Percepção</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+petStrMod" data-dice-label="Pet · Força">Pet Força</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+petAttackBonus" data-dice-label="Pet · Ataque">Pet Ataque</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d6" data-dice-label="Dado de Vida d6">DV d6</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d8" data-dice-label="Dado de Vida d8">DV d8</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d10" data-dice-label="Dado de Vida d10">DV d10</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d12" data-dice-label="Dado de Vida d12">DV d12</button>
+          </div>
+        </section>
+
+        <form class="campaign-dice-custom-form" data-dice-custom-form>
+          <label>
+            <span>Nome da rolagem</span>
+            <input name="diceLabel" type="text" placeholder="Ataque, dano, teste..." autocomplete="off" />
+          </label>
+          <label>
+            <span>Fórmula</span>
+            <input name="diceFormula" type="text" placeholder="Ex: 1d20+5, 2d6+3" autocomplete="off" />
+          </label>
+          <button type="submit" class="campaign-dice-roll-btn">Rolar fórmula</button>
+        </form>
+
+        <div class="campaign-dice-history-head">
+          <h3>Histórico da mesa</h3>
+          <button type="button" data-dice-refresh>Atualizar</button>
+        </div>
+        <div class="campaign-dice-history" id="campaignDiceHistory" data-dice-history>
+          <div class="campaign-dice-empty">Nenhuma rolagem visível ainda.</div>
+        </div>
+      </div>
+    </aside>
+  `;
+
+  function ensureDndDiceWidgetExists() {
+    if (!document.body.classList.contains("dnd-player-page")) return null;
+
+    let widget = document.getElementById("campaignDiceWidget");
+    if (widget) {
+      widget.classList.add("campaign-dice-widget--dnd-sheet");
+      widget.dataset.diceSystem = "D&D";
+      return widget;
+    }
+
+    const form = document.getElementById("dndPlayerSheetForm");
+    const holder = document.createElement("div");
+    holder.innerHTML = DND_DICE_WIDGET_HTML.trim();
+    widget = holder.firstElementChild;
+
+    if (form && form.parentNode) {
+      form.insertAdjacentElement("afterend", widget);
+    } else {
+      document.body.appendChild(widget);
+    }
+
+    return widget;
+  }
+
+  function removeDndInlineRollButtons() {
+    if (!document.body.classList.contains("dnd-player-page")) return;
+
+    document.querySelectorAll(
+      "#dndPlayerSheetForm [data-dnd-v2-roll], #dndPlayerSheetForm [data-dnd-v2-attack-row], #dndPlayerSheetForm [data-dnd-pet-damage-roll]"
+    ).forEach((button) => {
+      const parent = button.parentElement;
+      button.remove();
+
+      if (parent && parent.classList.contains("dnd-pet-quick-actions") && !parent.textContent.trim()) {
+        parent.classList.add("dnd-pet-quick-actions--clean");
+        parent.innerHTML = "<p>Use o painel de rolador para fazer este teste.</p>";
+      }
+    });
+  }
+
+  function setupDndOpenDiceButtons() {
+    if (window.campaignLabDndOpenDiceButtonsReady) return;
+    window.campaignLabDndOpenDiceButtonsReady = true;
+
+    document.addEventListener("click", (event) => {
+      const opener = event.target.closest("[data-open-dnd-dice-panel]");
+      if (!opener) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      const widget = ensureDndDiceWidgetExists();
+      if (!widget) return;
+
+      if (typeof setCampaignDiceWidgetOpen === "function") {
+        setCampaignDiceWidgetOpen(widget, true);
+      } else {
+        widget.classList.add("campaign-dice-widget--open", "campaign-dice-widget--modal");
+        document.body.classList.add("campaign-dice-modal-open");
+      }
+
+      if (typeof positionCampaignDiceWidgetNearPortrait === "function") {
+        positionCampaignDiceWidgetNearPortrait();
+      }
+    }, true);
+  }
+
+  function getDndNumberFromForm(form, fieldName) {
+    if (!form || !form.elements || !form.elements[fieldName]) return 0;
+    const raw = String(form.elements[fieldName].value || "").replace(",", ".").trim();
+    const number = Number(raw);
+    return Number.isFinite(number) ? number : 0;
+  }
+
+  function getDndAbilityModFromScore(score) {
+    return Math.floor(((Number(score) || 10) - 10) / 2);
+  }
+
+  if (typeof addDndDiceVariables === "function" && !addDndDiceVariables.__dndUnifiedDicePatched) {
+    const originalAddDndDiceVariables = addDndDiceVariables;
+    const patchedAddDndDiceVariables = function patchedAddDndDiceVariables(form, addVariable) {
+      originalAddDndDiceVariables(form, addVariable);
+
+      if (!form || typeof addVariable !== "function") return;
+
+      const petAbilities = [
+        ["petStrScore", "petStrMod", "Pet Força"],
+        ["petDexScore", "petDexMod", "Pet Destreza"],
+        ["petConScore", "petConMod", "Pet Constituição"],
+        ["petIntScore", "petIntMod", "Pet Inteligência"],
+        ["petWisScore", "petWisMod", "Pet Sabedoria"],
+        ["petChaScore", "petChaMod", "Pet Carisma"],
+      ];
+
+      petAbilities.forEach(([scoreField, modToken, label]) => {
+        const score = getDndNumberFromForm(form, scoreField) || 10;
+        const mod = getDndAbilityModFromScore(score);
+        addVariable(modToken, mod);
+        addVariable(label, mod);
+      });
+
+      addVariable("petAttackBonus", getDndNumberFromForm(form, "petAttackBonus"));
+      addVariable("petAtaque", getDndNumberFromForm(form, "petAttackBonus"));
+    };
+
+    patchedAddDndDiceVariables.__dndUnifiedDicePatched = true;
+    addDndDiceVariables = patchedAddDndDiceVariables;
+  }
+
+  async function bootDndUnifiedDicePanel() {
+    if (!document.body.classList.contains("dnd-player-page")) return;
+
+    ensureDndDiceWidgetExists();
+    removeDndInlineRollButtons();
+    setupDndOpenDiceButtons();
+
+    if (typeof setupCampaignDiceRoller === "function") {
+      try {
+        await setupCampaignDiceRoller("D&D");
+      } catch (error) {
+        console.warn("Não foi possível iniciar o rolador D&D agora. Tentarei novamente.", error);
+        window.setTimeout(() => setupCampaignDiceRoller("D&D").catch(() => {}), 1200);
+      }
+    }
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      bootDndUnifiedDicePanel();
+      window.setTimeout(bootDndUnifiedDicePanel, 800);
+      window.setTimeout(bootDndUnifiedDicePanel, 1800);
+    });
+  } else {
+    bootDndUnifiedDicePanel();
+    window.setTimeout(bootDndUnifiedDicePanel, 800);
+    window.setTimeout(bootDndUnifiedDicePanel, 1800);
+  }
+})();
+
+
+/* =========================================================
+   HOTFIX FINAL - ROLADOR D&D FUNCIONAL E FIXADO NO CENTRO INFERIOR
+   - Corrige o botão "Abrir rolador".
+   - Mantém o painel no centro inferior da tela.
+   - Usa valores automatizados da ficha D&D nos botões.
+========================================================= */
+(function campaignLabDndBottomDiceRollerFinalPatch() {
+  const DND_DICE_WIDGET_FALLBACK_HTML = `
+    <aside class="campaign-dice-widget campaign-dice-widget--dnd-sheet campaign-dice-widget--dnd-bottom" id="campaignDiceWidget" aria-label="Rolador de dados da campanha D&D" data-dice-system="D&D">
+      <div class="campaign-dice-head">
+        <button type="button" class="campaign-dice-toggle" data-dice-toggle aria-expanded="false">
+          <span>Rolador de dados</span>
+          <strong>🎲</strong>
+        </button>
+      </div>
+
+      <div class="campaign-dice-body">
+        <div class="campaign-dice-last-result" id="campaignDiceLastResult">
+          <span>Resultado</span>
+          <strong>--</strong>
+          <p>Escolha uma rolagem ou digite uma fórmula.</p>
+        </div>
+
+        <div class="campaign-dice-quick-grid" aria-label="Dados rápidos">
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d4" data-dice-label="D4">d4</button>
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d6" data-dice-label="D6">d6</button>
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d8" data-dice-label="D8">d8</button>
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d10" data-dice-label="D10">d10</button>
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d12" data-dice-label="D12">d12</button>
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d20" data-dice-label="D20">d20</button>
+          <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d100" data-dice-label="D100">d100</button>
+        </div>
+
+        <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+          <span>Testes principais</span>
+          <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+initiative" data-dice-label="Iniciativa">Iniciativa</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+strMod" data-dice-label="Força">FOR</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+dexMod" data-dice-label="Destreza">DES</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+conMod" data-dice-label="Constituição">CON</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+intMod" data-dice-label="Inteligência">INT</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+wisMod" data-dice-label="Sabedoria">SAB</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+chaMod" data-dice-label="Carisma">CAR</button>
+          </div>
+        </section>
+
+        <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+          <span>Resistências</span>
+          <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveStr" data-dice-label="Resistência de Força">FOR</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveDex" data-dice-label="Resistência de Destreza">DES</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveCon" data-dice-label="Resistência de Constituição">CON</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveInt" data-dice-label="Resistência de Inteligência">INT</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveWis" data-dice-label="Resistência de Sabedoria">SAB</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveCha" data-dice-label="Resistência de Carisma">CAR</button>
+          </div>
+        </section>
+
+        <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+          <span>Perícias</span>
+          <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide campaign-dice-auto-grid--skills">
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillAcrobatics" data-dice-label="Acrobacia">Acrobacia</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillArcana" data-dice-label="Arcanismo">Arcanismo</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillAthletics" data-dice-label="Atletismo">Atletismo</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillDeception" data-dice-label="Enganação">Enganação</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillStealth" data-dice-label="Furtividade">Furtividade</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillHistory" data-dice-label="História">História</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillInsight" data-dice-label="Intuição">Intuição</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillIntimidation" data-dice-label="Intimidação">Intimidação</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillInvestigation" data-dice-label="Investigação">Investigação</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillAnimalHandling" data-dice-label="Lidar com Animais">Animais</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillMedicine" data-dice-label="Medicina">Medicina</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillNature" data-dice-label="Natureza">Natureza</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillPerception" data-dice-label="Percepção">Percepção</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillPerformance" data-dice-label="Performance">Performance</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillPersuasion" data-dice-label="Persuasão">Persuasão</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillSleightOfHand" data-dice-label="Prestidigitação">Prestidigitação</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillReligion" data-dice-label="Religião">Religião</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillSurvival" data-dice-label="Sobrevivência">Sobrevivência</button>
+          </div>
+        </section>
+
+        <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+          <span>Pet e Dados de Vida</span>
+          <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+petDexMod" data-dice-label="Pet · Iniciativa">Pet Iniciativa</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+petWisMod" data-dice-label="Pet · Percepção">Pet Percepção</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+petStrMod" data-dice-label="Pet · Força">Pet Força</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+petAttackBonus" data-dice-label="Pet · Ataque">Pet Ataque</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d6" data-dice-label="Dado de Vida d6">DV d6</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d8" data-dice-label="Dado de Vida d8">DV d8</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d10" data-dice-label="Dado de Vida d10">DV d10</button>
+            <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d12" data-dice-label="Dado de Vida d12">DV d12</button>
+          </div>
+        </section>
+
+        <form class="campaign-dice-custom-form" data-dice-custom-form>
+          <label>
+            <span>Nome da rolagem</span>
+            <input name="diceLabel" type="text" placeholder="Ataque, dano, teste..." autocomplete="off" />
+          </label>
+          <label>
+            <span>Fórmula</span>
+            <input name="diceFormula" type="text" placeholder="Ex: 1d20+5, 2d6+3" autocomplete="off" />
+          </label>
+          <button type="submit" class="campaign-dice-roll-btn">Rolar fórmula</button>
+        </form>
+
+        <div class="campaign-dice-history-head">
+          <h3>Histórico da mesa</h3>
+          <button type="button" data-dice-refresh>Atualizar</button>
+        </div>
+        <div class="campaign-dice-history" id="campaignDiceHistory" data-dice-history>
+          <div class="campaign-dice-empty">Nenhuma rolagem visível ainda.</div>
+        </div>
+      </div>
+    </aside>
+  `;
+
+  const isDndPage = () => document.body.classList.contains("dnd-player-page") || document.body.classList.contains("dnd-master-page");
+
+  function ensureDndBottomDiceWidget() {
+    if (!isDndPage()) return null;
+
+    let widget = document.getElementById("campaignDiceWidget");
+
+    if (!widget) {
+      const holder = document.createElement("div");
+      holder.innerHTML = DND_DICE_WIDGET_FALLBACK_HTML.trim();
+      widget = holder.firstElementChild;
+      document.body.appendChild(widget);
+    }
+
+    widget.id = "campaignDiceWidget";
+    widget.dataset.diceSystem = "D&D";
+    widget.classList.add("campaign-dice-widget--dnd-sheet", "campaign-dice-widget--dnd-bottom");
+    widget.hidden = false;
+    widget.removeAttribute("hidden");
+    widget.style.setProperty("visibility", "visible", "important");
+    widget.style.setProperty("opacity", "1", "important");
+    widget.style.setProperty("pointer-events", "auto", "important");
+
+    if (widget.parentElement !== document.body) {
+      document.body.appendChild(widget);
+    }
+
+    widget.querySelectorAll("[data-dice-system-only]").forEach((block) => {
+      const allowedSystem = block.dataset.diceSystemOnly;
+      block.hidden = Boolean(allowedSystem && allowedSystem !== "D&D");
+    });
+
+    if (typeof ensureCampaignDicePrivacyToggle === "function") {
+      ensureCampaignDicePrivacyToggle(widget);
+    }
+
+    if (typeof ensureCampaignDiceGenitalSizeControls === "function") {
+      ensureCampaignDiceGenitalSizeControls(widget);
+    }
+
+    applyDndBottomDicePosition(widget);
+    refreshDndDiceAutoButtonLabels();
+
+    return widget;
+  }
+
+  function applyDndBottomDicePosition(widget = document.getElementById("campaignDiceWidget")) {
+    if (!widget || !isDndPage()) return;
+
+    const isOpen = widget.classList.contains("campaign-dice-widget--open");
+
+    document.body.classList.remove("campaign-dice-modal-open");
+    widget.classList.remove("campaign-dice-widget--modal", "campaign-dice-widget--near-portrait");
+    widget.classList.add("campaign-dice-widget--dnd-bottom");
+
+    if (widget.parentElement !== document.body) {
+      document.body.appendChild(widget);
+    }
+
+    widget.style.setProperty("position", "fixed", "important");
+    widget.style.setProperty("left", "50%", "important");
+    widget.style.setProperty("right", "auto", "important");
+    widget.style.setProperty("top", "auto", "important");
+    widget.style.setProperty("bottom", "max(14px, env(safe-area-inset-bottom))", "important");
+    widget.style.setProperty("transform", "translateX(-50%)", "important");
+    widget.style.setProperty("z-index", "1000500", "important");
+    widget.style.setProperty("display", "flex", "important");
+    widget.style.setProperty("visibility", "visible", "important");
+    widget.style.setProperty("opacity", "1", "important");
+    widget.style.setProperty("pointer-events", "auto", "important");
+    widget.style.setProperty("flex-direction", "column", "important");
+    widget.style.setProperty("margin", "0", "important");
+    widget.style.setProperty("overflow", "hidden", "important");
+
+    if (isOpen) {
+      widget.style.setProperty("width", "min(360px, calc(100vw - 18px))", "important");
+      widget.style.setProperty("max-width", "min(360px, calc(100vw - 18px))", "important");
+      widget.style.setProperty("max-height", "min(78vh, 690px)", "important");
+    } else {
+      widget.style.setProperty("width", "min(280px, calc(100vw - 18px))", "important");
+      widget.style.setProperty("max-width", "min(280px, calc(100vw - 18px))", "important");
+      widget.style.setProperty("max-height", "calc(100vh - 28px)", "important");
+    }
+  }
+
+  function setDndBottomDiceOpen(open) {
+    const widget = ensureDndBottomDiceWidget();
+    if (!widget) return;
+
+    widget.classList.toggle("campaign-dice-widget--open", Boolean(open));
+    widget.classList.remove("campaign-dice-widget--modal", "campaign-dice-widget--near-portrait");
+    document.body.classList.remove("campaign-dice-modal-open");
+
+    const toggle = widget.querySelector("[data-dice-toggle]");
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", open ? "true" : "false");
+    }
+
+    localStorage.setItem("campaignLabDiceOpen", open ? "true" : "false");
+    applyDndBottomDicePosition(widget);
+
+    if (open) {
+      refreshDndDiceAutoButtonLabels();
+      if (typeof renderCampaignDiceHistory === "function") {
+        renderCampaignDiceHistory().catch(() => {});
+      }
+    }
+  }
+
+  function formatBonusLabel(value) {
+    const number = Number(value) || 0;
+    return number >= 0 ? `+${number}` : String(number);
+  }
+
+  function getDndRollTokenFromFormula(formula = "") {
+    const text = String(formula || "").trim();
+    const match = text.match(/^1d20\s*\+\s*([A-Za-zÀ-ÿ0-9_\- ]+)$/i);
+    return match ? match[1].trim() : "";
+  }
+
+  function getDndDiceVariableValue(token) {
+    if (!token || typeof getCampaignDiceContext !== "function") return null;
+
+    try {
+      const context = getCampaignDiceContext("D&D");
+      const normalized = typeof normalizeCampaignDiceToken === "function"
+        ? normalizeCampaignDiceToken(token)
+        : String(token).toLowerCase().replace(/\s+/g, "");
+
+      const value = context?.variables?.[normalized];
+      return Number.isFinite(Number(value)) ? Number(value) : null;
+    } catch (error) {
+      return null;
+    }
+  }
+
+  function refreshDndDiceAutoButtonLabels() {
+    const widget = document.getElementById("campaignDiceWidget");
+    if (!widget || !isDndPage()) return;
+
+    widget.querySelectorAll(".campaign-dice-auto-btn[data-dice-formula]").forEach((button) => {
+      if (!button.dataset.diceBaseText) {
+        button.dataset.diceBaseText = Array.from(button.childNodes)
+          .filter((node) => node.nodeType === Node.TEXT_NODE)
+          .map((node) => node.textContent)
+          .join(" ")
+          .trim() || button.textContent.trim();
+      }
+
+      const token = getDndRollTokenFromFormula(button.dataset.diceFormula || "");
+      const value = getDndDiceVariableValue(token);
+      const baseText = button.dataset.diceBaseText || button.textContent.trim();
+
+      button.innerHTML = "";
+      button.appendChild(document.createTextNode(baseText));
+
+      if (value !== null) {
+        const small = document.createElement("small");
+        small.className = "campaign-dice-auto-bonus";
+        small.textContent = formatBonusLabel(value);
+        button.appendChild(small);
+      }
+    });
+  }
+
+  const previousSetCampaignDiceWidgetOpen = typeof setCampaignDiceWidgetOpen === "function" ? setCampaignDiceWidgetOpen : null;
+  if (previousSetCampaignDiceWidgetOpen && !previousSetCampaignDiceWidgetOpen.__dndBottomFinalPatched) {
+    const patchedSetCampaignDiceWidgetOpen = function patchedSetCampaignDiceWidgetOpen(widget, open) {
+      const targetWidget = widget || document.getElementById("campaignDiceWidget");
+      const isDndWidget = isDndPage() || targetWidget?.dataset?.diceSystem === "D&D";
+
+      if (isDndWidget) {
+        setDndBottomDiceOpen(open);
+        return;
+      }
+
+      previousSetCampaignDiceWidgetOpen(widget, open);
+    };
+
+    patchedSetCampaignDiceWidgetOpen.__dndBottomFinalPatched = true;
+    setCampaignDiceWidgetOpen = patchedSetCampaignDiceWidgetOpen;
+  }
+
+  const previousPositionCampaignDiceWidgetNearPortrait = typeof positionCampaignDiceWidgetNearPortrait === "function" ? positionCampaignDiceWidgetNearPortrait : null;
+  if (previousPositionCampaignDiceWidgetNearPortrait && !previousPositionCampaignDiceWidgetNearPortrait.__dndBottomFinalPatched) {
+    const patchedPositionCampaignDiceWidgetNearPortrait = function patchedPositionCampaignDiceWidgetNearPortrait() {
+      if (isDndPage()) {
+        applyDndBottomDicePosition();
+        return;
+      }
+
+      previousPositionCampaignDiceWidgetNearPortrait();
+    };
+
+    patchedPositionCampaignDiceWidgetNearPortrait.__dndBottomFinalPatched = true;
+    positionCampaignDiceWidgetNearPortrait = patchedPositionCampaignDiceWidgetNearPortrait;
+  }
+
+  document.addEventListener("click", async (event) => {
+    if (!isDndPage()) return;
+
+    const opener = event.target.closest("[data-open-dnd-dice-panel]");
+    if (opener) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+      setDndBottomDiceOpen(true);
+      return;
+    }
+
+    const toggle = event.target.closest("#campaignDiceWidget [data-dice-toggle]");
+    if (toggle) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+
+      const widget = ensureDndBottomDiceWidget();
+      setDndBottomDiceOpen(!widget.classList.contains("campaign-dice-widget--open"));
+      return;
+    }
+
+    const refresh = event.target.closest("#campaignDiceWidget [data-dice-refresh]");
+    if (refresh) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+
+      if (typeof renderCampaignDiceHistory === "function") {
+        await renderCampaignDiceHistory();
+      }
+      return;
+    }
+
+    const rollButton = event.target.closest("#campaignDiceWidget [data-dice-formula]");
+    if (rollButton) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+
+      if (typeof handleCampaignDiceRoll === "function") {
+        await handleCampaignDiceRoll({
+          system: "D&D",
+          formula: rollButton.dataset.diceFormula,
+          label: rollButton.dataset.diceLabel || rollButton.textContent.trim(),
+        });
+      }
+    }
+  }, true);
+
+  document.addEventListener("submit", async (event) => {
+    if (!isDndPage()) return;
+
+    const form = event.target.closest("#campaignDiceWidget [data-dice-custom-form]");
+    if (!form) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+
+    if (typeof handleCampaignDiceRoll === "function") {
+      await handleCampaignDiceRoll({
+        system: "D&D",
+        formula: form.elements.diceFormula?.value || "",
+        label: form.elements.diceLabel?.value || "Rolagem personalizada",
+      });
+    }
+  }, true);
+
+  document.addEventListener("input", (event) => {
+    if (!isDndPage()) return;
+    if (!event.target.closest("#dndPlayerSheetForm, #dndForm")) return;
+    window.clearTimeout(window.__campaignLabDndDiceRefreshTimer);
+    window.__campaignLabDndDiceRefreshTimer = window.setTimeout(refreshDndDiceAutoButtonLabels, 120);
+  });
+
+  window.addEventListener("resize", () => {
+    if (!isDndPage()) return;
+    applyDndBottomDicePosition();
+  });
+
+  document.addEventListener("keydown", (event) => {
+    if (!isDndPage()) return;
+    if (event.key !== "Escape") return;
+    setDndBottomDiceOpen(false);
+  });
+
+  function boot() {
+    if (!isDndPage()) return;
+
+    const widget = ensureDndBottomDiceWidget();
+    if (!widget) return;
+
+    const shouldStartOpen = localStorage.getItem("campaignLabDiceOpen") === "true";
+    setDndBottomDiceOpen(shouldStartOpen);
+
+    if (typeof setupCampaignDiceRoller === "function") {
+      setupCampaignDiceRoller("D&D")
+        .then(() => {
+          ensureDndBottomDiceWidget();
+          setDndBottomDiceOpen(shouldStartOpen);
+          refreshDndDiceAutoButtonLabels();
+        })
+        .catch(() => {
+          refreshDndDiceAutoButtonLabels();
+        });
+    }
+
+    window.setTimeout(() => {
+      ensureDndBottomDiceWidget();
+      setDndBottomDiceOpen(localStorage.getItem("campaignLabDiceOpen") === "true");
+      refreshDndDiceAutoButtonLabels();
+    }, 700);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+})();
+
+
+/* =========================================================
+   D&D MESTRE - PREVIEW DA FICHA NO DESIGN ATUAL
+========================================================= */
+(function campaignLabDndMasterPreviewRework() {
+  function h(value) {
+    if (typeof escapeHtml === "function") return escapeHtml(value ?? "");
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function raw(sheet, key, fallback = "") {
+    const value = sheet && sheet[key] !== undefined && sheet[key] !== null ? sheet[key] : fallback;
+    return value;
+  }
+
+  function value(sheet, key, fallback = "") {
+    return h(raw(sheet, key, fallback));
+  }
+
+  function checked(sheet, key) {
+    const v = raw(sheet, key, "false");
+    if (typeof dnd_bool === "function") return dnd_bool(v) ? " checked" : "";
+    return String(v) === "true" || v === true ? " checked" : "";
+  }
+
+  function field(sheet, label, name, type = "text", options = {}) {
+    const min = options.min !== undefined ? ` min="${h(options.min)}"` : "";
+    const max = options.max !== undefined ? ` max="${h(options.max)}"` : "";
+    const placeholder = options.placeholder ? ` placeholder="${h(options.placeholder)}"` : "";
+    const extra = options.extra || "";
+    const data = options.data || "";
+    return `
+      <label class="dnd-master-v2-field ${options.className || ""}">
+        <span>${h(label)}</span>
+        <input name="${h(name)}" type="${h(type)}" value="${value(sheet, name, options.fallback || "")}"${min}${max}${placeholder} ${data} ${extra}/>
+      </label>
+    `;
+  }
+
+  function textarea(sheet, label, name, rows = 5, placeholder = "", className = "") {
+    return `
+      <label class="dnd-master-v2-textarea ${className}">
+        <span>${h(label)}</span>
+        <textarea name="${h(name)}" rows="${h(rows)}" placeholder="${h(placeholder)}">${value(sheet, name)}</textarea>
+      </label>
+    `;
+  }
+
+  function classField(sheet) {
+    const classValue = typeof getCampaignLabDndSheetClassName === "function" ? getCampaignLabDndSheetClassName(sheet) : raw(sheet, "className", "");
+    const classes = typeof getCampaignLabDndClassOptions === "function" ? getCampaignLabDndClassOptions() : ["Bárbaro", "Bardo", "Clérigo", "Guerreiro", "Ladino", "Mago"];
+    return `
+      <label>
+        <span>Classe</span>
+        <input name="className" id="dndClassSelect" type="text" list="dndClassOptionsList" value="${h(classValue)}" placeholder="Escolha ou escreva" autocomplete="off" />
+        <datalist id="dndClassOptionsList">
+          ${classes.map((item) => `<option value="${h(item)}"></option>`).join("")}
+        </datalist>
+      </label>
+    `;
+  }
+
+  function levelField(sheet) {
+    const levelValue = typeof getCampaignLabDndSheetLevel === "function" ? getCampaignLabDndSheetLevel(sheet) : raw(sheet, "charLevel", "1");
+    return `
+      <label>
+        <span>Nível</span>
+        <input name="charLevel" id="dndCharLevelInput" type="number" min="1" max="20" value="${h(levelValue || "1")}" />
+      </label>
+    `;
+  }
+
+  function raceField(sheet) {
+    if (typeof dndRaceSelect === "function") {
+      return `<div class="dnd-master-v2-native-field">${dndRaceSelect(raw(sheet, "race"), sheet)}</div>`;
+    }
+    return field(sheet, "Raça", "race");
+  }
+
+  function backgroundField(sheet) {
+    if (typeof dndAltheriumBackgroundSelect === "function") {
+      return `<div class="dnd-master-v2-native-field">${dndAltheriumBackgroundSelect(raw(sheet, "background"))}</div>`;
+    }
+    return field(sheet, "Antecedente", "background");
+  }
+
+  function hidden(name, val = "") {
+    return `<input type="hidden" name="${h(name)}" value="${h(val)}" />`;
+  }
+
+  function ability(sheet, key, label, abbr) {
+    const fieldName = `${key}Score`;
+    const modId = `${key}ModView`;
+    const modValue = typeof formatDndMod === "function" ? formatDndMod(raw(sheet, fieldName, "10")) : "+0";
+    return `
+      <article class="dnd-v2-ability-card" data-dnd-v2-ability="${h(key)}">
+        <div class="dnd-v2-ability-head"><span>${h(label)}</span><strong>${h(abbr)}</strong></div>
+        <input name="${h(fieldName)}" type="number" value="${value(sheet, fieldName, "10")}" min="1" />
+        <div class="dnd-v2-ability-mod" id="${h(modId)}">${h(modValue)}</div>
+      </article>
+    `;
+  }
+
+  function saveRows(sheet) {
+    if (typeof dndSaveRow === "function" && Array.isArray(DND_SAVE_CONFIG)) {
+      return DND_SAVE_CONFIG.map((save) => dndSaveRow(save, sheet)).join("");
+    }
+    return "";
+  }
+
+  function skillRows(sheet) {
+    if (typeof dndSkillRow === "function" && Array.isArray(DND_SKILLS)) {
+      return DND_SKILLS.map(([key, label]) => dndSkillRow(key, label, sheet)).join("");
+    }
+    return "";
+  }
+
+  function armorControls(sheet) {
+    if (typeof dndArmorDefenseControls === "function") return dndArmorDefenseControls(sheet);
+    return field(sheet, "Armadura", "armorType");
+  }
+
+  function attackRows(sheet) {
+    return [1, 2, 3, 4, 5].map((index) => `
+      <article class="dnd-master-v2-attack-row">
+        <input name="attack${index}Name" type="text" value="${value(sheet, `attack${index}Name`)}" placeholder="Nome" />
+        <input name="attack${index}Bonus" type="text" value="${value(sheet, `attack${index}Bonus`)}" placeholder="Bônus" />
+        <input name="attack${index}Damage" type="text" value="${value(sheet, `attack${index}Damage`)}" placeholder="Dano / tipo" />
+      </article>
+    `).join("");
+  }
+
+  function proficiencyBlock(sheet) {
+    return `
+      <section class="dnd-v2-card dnd-master-v2-span-2">
+        <div class="dnd-experience-card-head">
+          <div><p class="tag">Treinamento</p><h3>Proficiências</h3><span>Armaduras, armas e ferramentas do personagem.</span></div>
+        </div>
+        <div class="dnd-master-v2-experience-grid">
+          <div class="dnd-experience-proficiency-box">
+            <h4>Armaduras</h4>
+            <div class="dnd-experience-check-grid">
+              <label><input type="checkbox" name="profArmorLight"${checked(sheet, "profArmorLight")} /><span>Leves</span></label>
+              <label><input type="checkbox" name="profArmorMedium"${checked(sheet, "profArmorMedium")} /><span>Médias</span></label>
+              <label><input type="checkbox" name="profArmorHeavy"${checked(sheet, "profArmorHeavy")} /><span>Pesadas</span></label>
+              <label><input type="checkbox" name="profShields"${checked(sheet, "profShields")} /><span>Escudos</span></label>
+            </div>
+          </div>
+          <div class="dnd-experience-proficiency-box">
+            <h4>Armas</h4>
+            <div class="dnd-experience-check-grid">
+              <label><input type="checkbox" name="profWeaponSimple"${checked(sheet, "profWeaponSimple")} /><span>Simples</span></label>
+              <label><input type="checkbox" name="profWeaponMartial"${checked(sheet, "profWeaponMartial")} /><span>Marciais</span></label>
+              <label><input type="checkbox" name="profWeaponOther"${checked(sheet, "profWeaponOther")} /><span>Outras</span></label>
+            </div>
+            <textarea name="weaponProficienciesText" rows="3" placeholder="Ex: Besta de mão, espada longa, rapieiras...">${value(sheet, "weaponProficienciesText")}</textarea>
+          </div>
+          <div class="dnd-experience-proficiency-box dnd-master-v2-span-2">
+            <h4>Ferramentas</h4>
+            <textarea name="toolProficiencies" rows="3" placeholder="Ex: Banjo, flauta, kit de ladrão...">${value(sheet, "toolProficiencies")}</textarea>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function limitedFeatureRows(sheet) {
+    return [1, 2, 3, 4, 5, 6].map((index) => `
+      <div class="dnd-limited-feature-row">
+        <input name="limitedFeature${index}Name" type="text" value="${value(sheet, `limitedFeature${index}Name`)}" placeholder="Nome da característica" />
+        <div class="dnd-recharge-options" aria-label="Recarga da característica ${index}">
+          <label title="Descanso curto"><input type="checkbox" name="limitedFeature${index}RechargeShort"${checked(sheet, `limitedFeature${index}RechargeShort`)} /><span>dc</span></label>
+          <label title="Descanso longo"><input type="checkbox" name="limitedFeature${index}RechargeLong"${checked(sheet, `limitedFeature${index}RechargeLong`)} /><span>dl</span></label>
+          <label title="Amanhecer"><input type="checkbox" name="limitedFeature${index}RechargeDawn"${checked(sheet, `limitedFeature${index}RechargeDawn`)} /><span>am</span></label>
+        </div>
+        <input name="limitedFeature${index}Total" type="number" min="0" value="${value(sheet, `limitedFeature${index}Total`)}" placeholder="0" />
+        <input name="limitedFeature${index}Remaining" type="number" min="0" value="${value(sheet, `limitedFeature${index}Remaining`)}" placeholder="0" />
+      </div>
+    `).join("");
+  }
+
+  function limitedFeaturesBlock(sheet) {
+    return `
+      <section class="dnd-v2-card dnd-limited-features-card dnd-master-v2-span-2">
+        <div class="dnd-limited-features-head"><div><p class="tag">Recursos</p><h3>Características Limitadas</h3><span>Recargas por descanso curto, descanso longo ou amanhecer.</span></div></div>
+        <div class="dnd-limited-features-table">
+          <div class="dnd-limited-feature-row dnd-limited-feature-row--head"><span>Nome</span><span>Recarga</span><span>Total</span><span>Rest.</span></div>
+          ${limitedFeatureRows(sheet)}
+        </div>
+        <p class="dnd-master-v2-muted-note">dc: descanso curto / dl: descanso longo / am: amanhecer.</p>
+      </section>
+    `;
+  }
+
+  function talentRows(sheet) {
+    return [1, 2, 3].map((index) => `
+      <article class="dnd-experience-talent-row">
+        <div class="dnd-experience-talent-top">
+          <input name="talent${index}Name" type="text" value="${value(sheet, `talent${index}Name`)}" placeholder="Nome do talento" />
+          <input name="talent${index}Prerequisite" type="text" value="${value(sheet, `talent${index}Prerequisite`)}" placeholder="Pré-requisito" />
+          <input type="text" value="Talento ${index}" readonly />
+        </div>
+        <textarea name="talent${index}Description" rows="4" placeholder="Descreva o efeito do talento.">${value(sheet, `talent${index}Description`)}</textarea>
+      </article>
+    `).join("");
+  }
+
+  function classFeatureRows(sheet) {
+    return [1, 2, 3, 4, 5, 6].map((index) => `
+      <article class="dnd-class-feature-row">
+        <div class="dnd-class-feature-top">
+          <input name="classFeature${index}Name" type="text" value="${value(sheet, `classFeature${index}Name`)}" placeholder="Nome da característica" />
+          <input name="classFeature${index}Level" type="text" value="${value(sheet, `classFeature${index}Level`)}" placeholder="Nível / origem" />
+          <input name="classFeature${index}Uses" type="text" value="${value(sheet, `classFeature${index}Uses`)}" placeholder="Usos / recarga" />
+        </div>
+        <textarea name="classFeature${index}Description" rows="5" placeholder="Descrição completa da característica.">${value(sheet, `classFeature${index}Description`)}</textarea>
+      </article>
+    `).join("");
+  }
+
+  function deathSavesBlock(sheet) {
+    const clamp = (value) => Math.max(0, Math.min(3, Number(value) || 0));
+    const success = clamp(raw(sheet, "deathSuccesses", 0));
+    const failure = clamp(raw(sheet, "deathFailures", 0));
+    const dots = (type, count) => [1, 2, 3].map((index) => `
+      <button
+        type="button"
+        data-dnd-death-save="${type}"
+        data-dnd-death-save-index="${index}"
+        aria-pressed="${index <= count ? "true" : "false"}"
+        class="${index <= count ? "is-checked" : ""}"
+      ></button>
+    `).join("");
+
+    return `
+      <div class="dnd-death-saves-panel" data-dnd-death-saves>
+        <input type="hidden" name="deathSuccesses" value="${h(success)}" data-dnd-death-save-input="success" />
+        <input type="hidden" name="deathFailures" value="${h(failure)}" data-dnd-death-save-input="failure" />
+
+        <div class="dnd-death-saves-head">
+          <span>Testes contra morte</span>
+          <small>Marque até 3 sucessos ou falhas.</small>
+        </div>
+
+        <div class="dnd-death-saves-row dnd-death-saves-row--success">
+          <strong>Sucessos</strong>
+          <div class="dnd-death-save-dots" aria-label="Sucessos contra morte">
+            ${dots("success", success)}
+          </div>
+        </div>
+
+        <div class="dnd-death-saves-row dnd-death-saves-row--failure">
+          <strong>Falhas</strong>
+          <div class="dnd-death-save-dots" aria-label="Falhas contra morte">
+            ${dots("failure", failure)}
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function spellSlots(sheet) {
+    const defaultMax = (level) => (level === 1 ? 4 : level < 6 ? 3 : level < 8 ? 2 : 1);
+    return [1, 2, 3, 4, 5, 6, 7, 8, 9].map((level) => {
+      const maxRaw = Number(raw(sheet, `spellSlotsMax${level}`, defaultMax(level)));
+      const max = Number.isFinite(maxRaw) ? Math.max(0, Math.min(12, maxRaw)) : defaultMax(level);
+      const fallback = "0".repeat(max);
+      let current = String(raw(sheet, `spellSlots${level}`, fallback) || fallback).replace(/[^01]/g, "");
+      if (!current) current = fallback;
+      current = current.padEnd(max, "0").slice(0, max);
+      const dots = Array.from({ length: max }, (_, index) => `
+        <button
+          type="button"
+          class="dnd-spell-slot-dot"
+          data-spell-slot-dot="${index}"
+          aria-pressed="${current[index] === "1" ? "true" : "false"}"
+          title="${level}º nível - espaço ${index + 1}"
+        ></button>
+      `).join("");
+
+      return `
+        <div class="dnd-spell-slot-level dnd-v2-spell-slot-level" data-spell-slot-level="${level}">
+          <input type="hidden" name="spellSlots${level}" value="${h(current)}" data-spell-slot-hidden="${level}" />
+          <div class="dnd-spell-slot-top">
+            <strong>${level}º</strong>
+            <input
+              class="dnd-spell-slot-max-input"
+              name="spellSlotsMax${level}"
+              type="number"
+              min="0"
+              max="12"
+              step="1"
+              value="${h(max)}"
+              data-spell-slot-max-input="${level}"
+              aria-label="Quantidade máxima de espaços de magia de ${level}º nível"
+            />
+          </div>
+          <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de ${level}º nível">${dots}</div>
+        </div>
+      `;
+    }).join("");
+  }
+
+  function inventorySection(sheet) {
+    const inventoryRaw = raw(sheet, "dndInventoryItems", "[]");
+    const inventoryJson = typeof inventoryRaw === "string" ? inventoryRaw : JSON.stringify(inventoryRaw || []);
+    return `
+      <div class="dnd-v2-section-head dnd-inventory-section-head">
+        <p class="tag">Recursos</p>
+        <h2>Inventário D&D</h2>
+        <span>Organize moedas, carga, armas, armaduras, itens mágicos, consumíveis e qualquer item criado pela mesa.</span>
+      </div>
+
+      <input type="hidden" name="dndInventoryItems" value="${h(inventoryJson)}" data-dnd-inventory-store="true" />
+      <input type="hidden" name="equipment" value="${value(sheet, "equipment")}" />
+      <input type="hidden" name="inventory" value="${value(sheet, "inventory")}" />
+
+      <div class="dnd-inventory-summary-grid">
+        <article class="dnd-inventory-summary-card">
+          <span>Itens</span>
+          <strong data-dnd-inventory-total-items>0</strong>
+          <small>Total carregado</small>
+        </article>
+        <article class="dnd-inventory-summary-card">
+          <span>Peso</span>
+          <strong data-dnd-inventory-total-weight>0 lb</strong>
+          <small data-dnd-inventory-carry-status>Dentro do limite</small>
+        </article>
+        <article class="dnd-inventory-summary-card">
+          <span>Valor estimado</span>
+          <strong data-dnd-inventory-total-value>0 PO</strong>
+          <small>Somado pelos itens</small>
+        </article>
+        <article class="dnd-inventory-summary-card">
+          <span>Itens mágicos</span>
+          <strong data-dnd-inventory-magic-count>0</strong>
+          <small data-dnd-inventory-attunement-count>0 sintonizados</small>
+        </article>
+      </div>
+
+      <div class="dnd-inventory-wallet-card">
+        <div class="dnd-inventory-card-head">
+          <div>
+            <h3>Moedas</h3>
+            <p>Controle rápido de dinheiro do personagem.</p>
+          </div>
+          <strong data-dnd-inventory-wallet-total>0 PO</strong>
+        </div>
+
+        <div class="dnd-inventory-money-grid">
+          <label><span>PC</span><input name="coinCopper" type="text" inputmode="numeric" placeholder="0" value="${value(sheet, "coinCopper", "0")}" /></label>
+          <label><span>PP</span><input name="coinSilver" type="text" inputmode="numeric" placeholder="0" value="${value(sheet, "coinSilver", "0")}" /></label>
+          <label><span>PE</span><input name="coinElectrum" type="text" inputmode="numeric" placeholder="0" value="${value(sheet, "coinElectrum", "0")}" /></label>
+          <label><span>PO</span><input name="coinGold" type="text" inputmode="numeric" placeholder="0" value="${value(sheet, "coinGold", "0")}" /></label>
+          <label><span>PL</span><input name="coinPlatinum" type="text" inputmode="numeric" placeholder="0" value="${value(sheet, "coinPlatinum", "0")}" /></label>
+        </div>
+      </div>
+
+      <div class="dnd-inventory-toolbar">
+        <label class="dnd-inventory-search">
+          <span>Buscar item</span>
+          <input type="search" data-dnd-inventory-search placeholder="Nome, categoria, raridade ou observação..." />
+        </label>
+
+        <label class="dnd-inventory-filter">
+          <span>Categoria</span>
+          <select data-dnd-inventory-filter>
+            <option value="all">Todos</option>
+            <option value="weapon">Armas</option>
+            <option value="armor">Armaduras</option>
+            <option value="shield">Escudos</option>
+            <option value="magic">Itens mágicos</option>
+            <option value="consumable">Consumíveis</option>
+            <option value="tool">Ferramentas</option>
+            <option value="adventuring">Equipamento</option>
+            <option value="treasure">Tesouros</option>
+            <option value="custom">Criados</option>
+          </select>
+        </label>
+
+        <button type="button" class="dnd-inventory-add-btn" data-dnd-inventory-add>+ Adicionar item</button>
+      </div>
+
+      <div class="dnd-inventory-main-grid">
+        <aside class="dnd-inventory-side-card">
+          <div class="dnd-inventory-card-head">
+            <div>
+              <h3>Carga</h3>
+              <p>Base sugerida: Força × 15 lb.</p>
+            </div>
+          </div>
+
+          <div class="dnd-inventory-carry-meter">
+            <div><span data-dnd-inventory-carry-current>0 lb</span><strong data-dnd-inventory-carry-max>150 lb</strong></div>
+            <div class="dnd-inventory-carry-bar"><span data-dnd-inventory-carry-fill></span></div>
+          </div>
+
+          <label class="dnd-inventory-manual-capacity">
+            <span>Limite manual</span>
+            <input name="carryingCapacity" type="text" inputmode="decimal" placeholder="Força × 15" value="${value(sheet, "carryingCapacity")}" />
+          </label>
+
+          <div class="dnd-inventory-quick-actions">
+            <button type="button" data-dnd-inventory-quick="weapon">+ Arma</button>
+            <button type="button" data-dnd-inventory-quick="armor">+ Armadura</button>
+            <button type="button" data-dnd-inventory-quick="consumable">+ Consumível</button>
+            <button type="button" data-dnd-inventory-quick="magic">+ Mágico</button>
+          </div>
+        </aside>
+
+        <div class="dnd-inventory-list-panel">
+          <div class="dnd-inventory-list-head">
+            <div>
+              <h3>Itens do personagem</h3>
+              <p>Cards editáveis para itens oficiais, homebrew e itens criados pela mesa.</p>
+            </div>
+          </div>
+
+          <div class="dnd-inventory-empty" data-dnd-inventory-empty>
+            <strong>Nenhum item cadastrado.</strong>
+            <span>Clique em “Adicionar item” para montar o inventário.</span>
+          </div>
+
+          <div class="dnd-inventory-list" data-dnd-inventory-list></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function petSection(sheet) {
+    const avatarUrl = raw(sheet, "petAvatarUrl", "") || "";
+    const petName = raw(sheet, "petName", "") || "";
+    const petSpecies = raw(sheet, "petSpecies", "") || "";
+    const petHpCurrent = raw(sheet, "petHpCurrent", "0") || "0";
+    const petHpMax = raw(sheet, "petHpMax", "0") || "0";
+    return `
+      <div class="dnd-v2-section-head">
+        <p class="tag">Companheiro</p>
+        <h2>Ficha do Pet</h2>
+        <span>Uma ficha pequena para familiar, montaria, mascote ou companheiro animal.</span>
+      </div>
+
+      <div class="dnd-pet-sheet dnd-master-pet-sheet">
+        <input type="hidden" name="petStrMod" value="${value(sheet, "petStrMod", "0")}" />
+        <input type="hidden" name="petDexMod" value="${value(sheet, "petDexMod", "0")}" />
+        <input type="hidden" name="petConMod" value="${value(sheet, "petConMod", "0")}" />
+        <input type="hidden" name="petIntMod" value="${value(sheet, "petIntMod", "0")}" />
+        <input type="hidden" name="petWisMod" value="${value(sheet, "petWisMod", "0")}" />
+        <input type="hidden" name="petChaMod" value="${value(sheet, "petChaMod", "0")}" />
+
+        <aside class="dnd-pet-profile-card">
+          <input type="hidden" name="petAvatarUrl" value="${h(avatarUrl)}" data-dnd-pet-avatar-url />
+          <div class="dnd-pet-avatar" id="dndPetAvatar" data-dnd-pet-avatar-preview>${h((petName || petSpecies || 'P').slice(0,1).toUpperCase())}</div>
+          <label class="dnd-pet-image-upload-btn">Escolher imagem<input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" data-dnd-pet-image-input hidden /></label>
+          <button type="button" class="dnd-pet-image-remove-btn" data-dnd-pet-image-remove>Remover imagem</button>
+          <span>Pet ativo</span>
+          <strong id="dndPetNamePreview">${h(petName || 'Sem nome')}</strong>
+          <small id="dndPetTypePreview">${h(petSpecies || 'Companheiro da ficha')}</small>
+        </aside>
+
+        <div class="dnd-pet-main">
+          <div class="dnd-pet-card dnd-pet-card--identity">
+            <h3>Identidade</h3>
+            <div class="dnd-pet-form-grid">
+              <label><span>Nome do pet</span><input name="petName" type="text" value="${h(petName)}" placeholder="Ex: Nyx" autocomplete="off" /></label>
+              <label><span>Espécie / Tipo</span><input name="petSpecies" type="text" value="${h(petSpecies)}" placeholder="Lobo, coruja, familiar..." autocomplete="off" /></label>
+              <label><span>Tamanho</span><select name="petSize"><option value="">Selecione</option><option${raw(sheet, "petSize") === 'Miúdo' ? ' selected' : ''}>Miúdo</option><option${raw(sheet, "petSize") === 'Pequeno' ? ' selected' : ''}>Pequeno</option><option${raw(sheet, "petSize") === 'Médio' ? ' selected' : ''}>Médio</option><option${raw(sheet, "petSize") === 'Grande' ? ' selected' : ''}>Grande</option><option${raw(sheet, "petSize") === 'Enorme' ? ' selected' : ''}>Enorme</option><option${raw(sheet, "petSize") === 'Imenso' ? ' selected' : ''}>Imenso</option></select></label>
+              <label><span>Vínculo</span><input name="petBond" type="text" value="${value(sheet, "petBond")}" placeholder="Familiar, montaria, mascote..." autocomplete="off" /></label>
+            </div>
+          </div>
+
+          <div class="dnd-pet-card">
+            <h3>Combate rápido</h3>
+            <div class="dnd-pet-stat-grid">
+              <label><span>CA</span><input name="petArmorClass" type="number" min="0" value="${value(sheet, "petArmorClass", "10")}" /></label>
+              <label><span>PV atual</span><input name="petHpCurrent" type="number" min="0" value="${h(petHpCurrent)}" /></label>
+              <label><span>PV máx.</span><input name="petHpMax" type="number" min="0" value="${h(petHpMax)}" /></label>
+              <label><span>Deslocamento</span><input name="petSpeed" type="text" value="${value(sheet, "petSpeed")}" placeholder="9 m" /></label>
+            </div>
+            <div class="dnd-pet-hp-bar"><div id="dndPetHpBarFill"></div></div>
+            <div class="dnd-pet-quick-actions dnd-pet-quick-actions--clean"><p>Use o painel de rolador para iniciativa, percepção e testes do pet.</p></div>
+          </div>
+
+          <div class="dnd-pet-card dnd-pet-card--full">
+            <h3>Atributos do pet</h3>
+            <div class="dnd-pet-abilities">
+              <label><span>FOR</span><input name="petStrScore" type="number" value="${value(sheet, "petStrScore", "10")}" min="1" /><strong id="dndPetStrModView">+0</strong></label>
+              <label><span>DES</span><input name="petDexScore" type="number" value="${value(sheet, "petDexScore", "10")}" min="1" /><strong id="dndPetDexModView">+0</strong></label>
+              <label><span>CON</span><input name="petConScore" type="number" value="${value(sheet, "petConScore", "10")}" min="1" /><strong id="dndPetConModView">+0</strong></label>
+              <label><span>INT</span><input name="petIntScore" type="number" value="${value(sheet, "petIntScore", "10")}" min="1" /><strong id="dndPetIntModView">+0</strong></label>
+              <label><span>SAB</span><input name="petWisScore" type="number" value="${value(sheet, "petWisScore", "10")}" min="1" /><strong id="dndPetWisModView">+0</strong></label>
+              <label><span>CAR</span><input name="petChaScore" type="number" value="${value(sheet, "petChaScore", "10")}" min="1" /><strong id="dndPetChaModView">+0</strong></label>
+            </div>
+          </div>
+
+          <div class="dnd-pet-card dnd-pet-card--attack">
+            <h3>Ataque principal</h3>
+            <div class="dnd-pet-attack-grid">
+              <label><span>Nome</span><input name="petAttackName" type="text" value="${value(sheet, "petAttackName")}" placeholder="Mordida, garra..." /></label>
+              <label><span>Bônus</span><input name="petAttackBonus" type="number" value="${value(sheet, "petAttackBonus", "0")}" /></label>
+              <label><span>Dano</span><input name="petAttackDamage" type="text" value="${value(sheet, "petAttackDamage")}" placeholder="1d6+2" /></label>
+            </div>
+            <div class="dnd-pet-quick-actions dnd-pet-quick-actions--clean"><p>Use o painel de rolador para acerto e dano do pet.</p></div>
+          </div>
+
+          <div class="dnd-pet-card dnd-pet-card--notes">
+            <h3>Traços e habilidades</h3>
+            <textarea name="petTraits" placeholder="Sentidos, habilidades especiais, treinamento, vantagens, truques...">${value(sheet, "petTraits")}</textarea>
+          </div>
+
+          <div class="dnd-pet-card dnd-pet-card--notes">
+            <h3>Anotações do pet</h3>
+            <textarea name="petNotes" placeholder="Personalidade, aparência, vínculo com o personagem, comandos, história...">${value(sheet, "petNotes")}</textarea>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function heroStats(sheet) {
+    const ac = raw(sheet, "armorClass", "10") || "10";
+    const hpCurrent = raw(sheet, "hpCurrent", "0") || "0";
+    const hpMax = raw(sheet, "hpMax", "0") || "0";
+    const initiative = raw(sheet, "initiative", raw(sheet, "combatInitiative", "0")) || "0";
+    const prof = raw(sheet, "proficiencyBonus", "+2") || "+2";
+    return `
+      <div class="dnd-v2-hero-stats dnd-v2-hero-stats--editable">
+        <article><span>CA</span><input id="masterDndV2ArmorClassView" class="dnd-v2-hero-stat-input" name="armorClass" type="number" min="0" value="${h(ac)}" data-dnd-editable-result="armorClass" />${hidden("armorClassManual", raw(sheet, "armorClassManual", "false"))}</article>
+        <article><span>PV</span><div class="dnd-v2-hero-hp-edit"><input id="masterDndV2HpCurrentHeroInput" name="hpCurrent" type="number" min="0" value="${h(hpCurrent)}" /><b>/</b><input id="masterDndV2HpMaxHeroInput" name="hpMax" type="number" min="0" value="${h(hpMax)}" data-dnd-editable-result="hpMax" /></div>${hidden("hpMaxManual", raw(sheet, "hpMaxManual", "false"))}</article>
+        <article><span>Iniciativa</span><input id="masterDndV2InitiativeView" class="dnd-v2-hero-stat-input" name="initiative" type="text" value="${h(initiative)}" /></article>
+        <article><span>Prof.</span><input id="masterDndV2ProficiencyView" class="dnd-v2-hero-stat-input" name="proficiencyBonus" type="text" value="${h(prof)}" /></article>
+      </div>
+    `;
+  }
+
+  function buildEditor(sheet = {}, isModal = false) {
+    const classLabel = typeof getCampaignLabDndClassLevelLabel === "function" ? getCampaignLabDndClassLevelLabel(sheet) : raw(sheet, "classLevel", "Classe 1");
+    const characterName = raw(sheet, "characterName", "Personagem") || "Personagem";
+    const ownerName = raw(sheet, "ownerName", "Jogador") || "Jogador";
+    return `
+      <div class="dnd-character-sheet dnd-master-v2-editor dnd-v2-character-sheet dnd-impecavel-sheet ${isModal ? "dnd-master-v2-editor--modal" : ""}">
+        ${hidden("classLevel", classLabel)}
+        ${hidden("classAutoDefaultsAppliedFor", raw(sheet, "classAutoDefaultsAppliedFor", ""))}
+        ${hidden("dndAltheriumBackgroundAppliedState", raw(sheet, "dndAltheriumBackgroundAppliedState", ""))}
+        ${hidden("passivePerception", raw(sheet, "passivePerception", "10"))}
+        ${hidden("passivePerceptionManual", raw(sheet, "passivePerceptionManual", "false"))}
+        ${hidden("spellSaveDcManual", raw(sheet, "spellSaveDcManual", "false"))}
+        ${hidden("characterAvatarUrl", raw(sheet, "characterAvatarUrl", raw(sheet, "characterPortraitUrl", "")))}
+        ${hidden("characterPortraitUrl", raw(sheet, "characterPortraitUrl", raw(sheet, "characterAvatarUrl", "")))}
+
+        <section class="dnd-v2-hero-card">
+          <div class="dnd-v2-hero-main">
+            <div class="dnd-v2-system-mark">D20</div>
+            <div>
+              <p class="tag">Preview do Mestre · D&D 5e</p>
+              <label class="dnd-v2-name-field"><span>Nome do personagem</span><input name="characterName" type="text" value="${h(characterName)}" placeholder="Nome do personagem" autocomplete="off" /></label>
+              <div class="dnd-v2-identity-line">
+                ${classField(sheet)}
+                ${levelField(sheet)}
+                ${raceField(sheet)}
+                ${backgroundField(sheet)}
+              </div>
+            </div>
+          </div>
+          ${heroStats(sheet)}
+        </section>
+
+        <section class="dnd-v2-command-bar">
+          <div class="dnd-v2-sheet-tabs" role="tablist" aria-label="Abas da ficha D&D no preview do mestre">
+            <button type="button" class="active" data-dnd-v2-tab="overview">Visão Geral</button>
+            <button type="button" data-dnd-v2-tab="attributes">Atributos</button>
+            <button type="button" data-dnd-v2-tab="combat">Combate</button>
+            <button type="button" data-dnd-v2-tab="skills">Perícias</button>
+            <button type="button" data-dnd-v2-tab="experiences">Experiências</button>
+            <button type="button" data-dnd-v2-tab="spells">Magias</button>
+            <button type="button" data-dnd-v2-tab="inventory">Inventário</button>
+            <button type="button" data-dnd-v2-tab="story">História</button>
+            <button type="button" data-dnd-v2-tab="pet">Pet</button>
+          </div>
+        </section>
+
+        <section class="dnd-v2-layout">
+          <aside class="dnd-v2-side-panel">
+            <div class="dnd-v2-profile-card">
+              <div class="dnd-v2-avatar-preview" id="dndV2AvatarPreview">✦</div>
+              <p>Dono da ficha</p>
+              <strong id="masterDndV2CharacterNameSide">${h(characterName)}</strong>
+              <span id="masterDndV2ClassSide">${h(classLabel)}</span>
+              <small>${h(ownerName)}</small>
+            </div>
+            <div class="dnd-v2-race-box">
+              <h3>Automação ativa</h3>
+              <p id="masterDndV2RaceSummary">${h(raw(sheet, "race", "Raça"))} • ${h(raw(sheet, "background", "Antecedente"))}</p>
+            </div>
+            <div class="dnd-v2-roll-result">
+              <span>Preview do mestre</span>
+              <strong>Editar</strong>
+              <p>Altere qualquer campo e clique em Salvar ficha.</p>
+            </div>
+          </aside>
+
+          <div class="dnd-v2-content">
+            <section class="dnd-v2-panel active" data-dnd-v2-panel="overview">
+              <div class="dnd-v2-section-head"><p class="tag">Centro de comando</p><h2>Visão Geral</h2><span>Resumo rápido do personagem aberto pelo mestre.</span></div>
+              <div class="dnd-v2-overview-grid dnd-v2-overview-grid--editable">
+                <article class="dnd-v2-big-stat"><span>Classe de Armadura</span><input id="masterDndV2ArmorClassBig" type="number" min="0" value="${value(sheet, "armorClass", "10")}" data-master-dnd-sync="armorClass" /><small>Armadura, DES e escudo.</small></article>
+                <article class="dnd-v2-big-stat"><span>Pontos de Vida</span><div class="dnd-v2-overview-hp-edit"><input id="masterDndV2HpCurrentOverviewInput" type="number" min="0" value="${value(sheet, "hpCurrent", "0")}" data-master-dnd-sync="hpCurrent" /><b>/</b><input id="masterDndV2HpMaxOverviewInput" type="number" min="0" value="${value(sheet, "hpMax", "0")}" data-master-dnd-sync="hpMax" /></div><small>Atual, máximo e temporário.</small></article>
+                <article class="dnd-v2-big-stat"><span>Percepção Passiva</span><input id="masterDndV2PassivePerception" name="passivePerceptionVisible" type="number" min="0" value="${value(sheet, "passivePerception", "10")}" /><small>10 + Percepção ou manual.</small></article>
+                <article class="dnd-v2-big-stat"><span>CD de Magia</span><input id="masterDndV2SpellDcBig" name="spellSaveDc" type="text" value="${value(sheet, "spellSaveDc", "--")}" /><small>8 + proficiência + atributo.</small></article>
+              </div>
+              <div class="dnd-v2-grid-2">
+                <div class="dnd-v2-card dnd-master-v2-span-2"><h3>Identidade</h3><div class="dnd-v2-form-grid dnd-master-v2-form-grid--3">
+                  ${field(sheet, "Jogador", "ownerName", "text", { fallback: ownerName })}
+                  ${field(sheet, "Alinhamento", "alignment")}
+                  ${field(sheet, "Experiência", "experience", "number", { min: 0 })}
+                  ${field(sheet, "Idade", "age")}
+                  ${field(sheet, "Altura", "height")}
+                  ${field(sheet, "Peso", "weight")}
+                  ${field(sheet, "Facção", "faction")}
+                  ${field(sheet, "Aparência", "appearance")}
+                </div></div>
+              </div>
+            </section>
+
+            <section class="dnd-v2-panel" data-dnd-v2-panel="attributes">
+              <div class="dnd-v2-section-head"><p class="tag">Núcleo mecânico</p><h2>Atributos</h2><span>Atributos, modificadores e testes de resistência.</span></div>
+              <div class="dnd-v2-abilities-grid">
+                ${ability(sheet, "str", "Força", "FOR")}
+                ${ability(sheet, "dex", "Destreza", "DES")}
+                ${ability(sheet, "con", "Constituição", "CON")}
+                ${ability(sheet, "int", "Inteligência", "INT")}
+                ${ability(sheet, "wis", "Sabedoria", "SAB")}
+                ${ability(sheet, "cha", "Carisma", "CAR")}
+              </div>
+              <div class="dnd-v2-card"><h3>Testes de resistência</h3><div class="dnd-v2-bonus-list dnd-save-list">${saveRows(sheet)}</div></div>
+            </section>
+
+            <section class="dnd-v2-panel" data-dnd-v2-panel="combat">
+              <div class="dnd-v2-section-head"><p class="tag">Combate</p><h2>Defesa, vida e ataques</h2><span>Tudo que o mestre precisa consultar em combate.</span></div>
+              <div class="dnd-master-v2-combat-grid">
+                <div class="dnd-v2-card"><h3>Defesa</h3><div class="dnd-v2-mini-stats">
+                  ${field(sheet, "CA final", "armorClass", "number", { min: 0, data: 'data-dnd-editable-result="armorClass"' })}
+                  ${field(sheet, "Iniciativa", "initiative", "number")}
+                  ${field(sheet, "Iniciativa de combate", "combatInitiative", "number")}
+                  ${field(sheet, "Deslocamento", "speed", "text", { placeholder: "9 m" })}
+                  ${field(sheet, "Bônus prof.", "proficiencyBonus")}
+                </div>${armorControls(sheet)}</div>
+                <div class="dnd-v2-card"><h3>Pontos de vida</h3><div class="dnd-v2-form-grid dnd-master-v2-form-grid--3">
+                  ${field(sheet, "Atual", "hpCurrent", "number", { min: 0 })}
+                  ${field(sheet, "Máximo", "hpMax", "number", { min: 0, data: 'data-dnd-editable-result="hpMax"' })}
+                  ${field(sheet, "Temporários", "hpTemp", "number", { min: 0 })}
+                  ${field(sheet, "Dados totais", "hitDiceTotal")}
+                  ${field(sheet, "Dados restantes", "hitDiceRemaining")}
+                  ${field(sheet, "Dado de vida", "hitDie")}
+                </div></div>
+                <div class="dnd-v2-card dnd-master-v2-span-2"><h3>Ataques & Magia Favoritos</h3>${attackRows(sheet)}</div>
+                <div class="dnd-v2-card dnd-master-v2-span-2">${deathSavesBlock(sheet)}</div>
+              </div>
+            </section>
+
+            <section class="dnd-v2-panel" data-dnd-v2-panel="skills">
+              <div class="dnd-v2-section-head"><p class="tag">Perícias</p><h2>Perícias</h2><span>Proficiência e especialização na ordem da ficha.</span></div>
+              <div class="dnd-v2-card"><div class="dnd-v2-bonus-list dnd-skill-list">${skillRows(sheet)}</div></div>
+            </section>
+
+            <section class="dnd-v2-panel dnd-v2-experiences-panel" data-dnd-v2-panel="experiences">
+              <div class="dnd-v2-section-head"><p class="tag">Recursos</p><h2>Experiências</h2><span>Proficiências, línguas, talentos, características limitadas e características de classe.</span></div>
+              <div class="dnd-master-v2-experience-grid">
+                ${proficiencyBlock(sheet)}
+                <section class="dnd-v2-card"><div class="dnd-experience-card-head"><div><p class="tag">Comunicação</p><h3>Línguas</h3><span>Idiomas conhecidos.</span></div></div>${textarea(sheet, "Línguas", "languages", 4, "Ex: Comum, Élfico, Anão.")}</section>
+                <section class="dnd-v2-card dnd-master-v2-span-2"><div class="dnd-experience-card-head"><div><p class="tag">Evolução</p><h3>Talentos</h3><span>Talentos, pré-requisitos e efeitos.</span></div></div>${talentRows(sheet)}</section>
+                ${limitedFeaturesBlock(sheet)}
+                <section class="dnd-v2-card dnd-master-v2-span-2"><div class="dnd-experience-card-head"><div><p class="tag">Classe</p><h3>Características de Classe</h3><span>Aptidões, inspirações, estilos de luta, pactos, arquétipos e habilidades por nível.</span></div></div>${textarea(sheet, "Resumo geral", "classFeatureNotes", 10, "Cole aqui o texto grande das características de classe.")}${classFeatureRows(sheet)}</section>
+              </div>
+            </section>
+
+            <section class="dnd-v2-panel" data-dnd-v2-panel="spells">
+              <div class="dnd-v2-section-head"><p class="tag">Conjuração</p><h2>Magias</h2><span>CD, ataque mágico, espaços e grimório.</span></div>
+              <div class="dnd-v2-card"><div class="dnd-v2-form-grid">
+                ${field(sheet, "Classe mágica", "spellcastingClass")}
+                ${field(sheet, "Habilidade", "spellAbility")}
+                ${field(sheet, "CD de resistência", "spellSaveDc")}
+                ${field(sheet, "Bônus de ataque", "spellAttackBonus")}
+              </div></div>
+              <div class="dnd-v2-card dnd-spell-slots"><h3>Espaços de magia</h3><div class="dnd-v2-spell-slots-grid">${spellSlots(sheet)}</div></div>
+              <div class="dnd-v2-card">${textarea(sheet, "Anotações de magias", "spellNotes", 12, "Truques, magias preparadas, componentes, CD, foco mágico...")}</div>
+            </section>
+
+            <section class="dnd-v2-panel" data-dnd-v2-panel="inventory">
+              ${inventorySection(sheet)}
+            </section>
+
+            <section class="dnd-v2-panel" data-dnd-v2-panel="story">
+              <div class="dnd-v2-section-head"><p class="tag">Narrativa</p><h2>História</h2><span>Personalidade, vínculos, defeitos e anotações.</span></div>
+              <div class="dnd-master-v2-story-grid">
+                ${textarea(sheet, "Traços de personalidade", "personalityTraits", 6)}
+                ${textarea(sheet, "Ideais", "ideals", 6)}
+                ${textarea(sheet, "Vínculos", "bonds", 6)}
+                ${textarea(sheet, "Defeitos", "flaws", 6)}
+                ${textarea(sheet, "Características & Traços adicionais", "additionalFeatures", 10, "Traços raciais, antecedentes e habilidades especiais.", "dnd-master-v2-span-2")}
+                ${textarea(sheet, "História e notas", "notes", 12, "História do personagem, objetivos, aliados e segredos.", "dnd-master-v2-span-2")}
+              </div>
+            </section>
+
+            <section class="dnd-v2-panel dnd-v2-pet-panel" data-dnd-v2-panel="pet">
+              ${petSection(sheet)}
+            </section>
+          </div>
+        </section>
+      </div>
+    `;
+  }
+
+  function updateSummary(form) {
+    if (!form || form.dataset.mode !== "edit-dnd-sheet") return;
+    const get = (name, fallback = "") => form.elements[name]?.value || fallback;
+    const ac = get("armorClass", "10");
+    const hpCurrent = get("hpCurrent", "0");
+    const hpMax = get("hpMax", "0");
+    const initiative = get("initiative", get("combatInitiative", "0"));
+    const prof = get("proficiencyBonus", "+2");
+    const name = get("characterName", "Personagem");
+    const className = get("className", "Classe");
+    const level = get("charLevel", "1");
+    const race = get("race", "Raça");
+    const background = get("background", "Antecedente");
+
+    const pairs = {
+      masterDndV2ArmorClassView: ac,
+      masterDndV2ArmorClassBig: ac,
+      masterDndV2HpCurrentHeroInput: hpCurrent,
+      masterDndV2HpMaxHeroInput: hpMax,
+      masterDndV2HpCurrentOverviewInput: hpCurrent,
+      masterDndV2HpMaxOverviewInput: hpMax,
+      masterDndV2InitiativeView: initiative,
+      masterDndV2ProficiencyView: prof,
+      masterDndV2CharacterNameSide: name,
+      masterDndV2ClassSide: `${className} ${level}`,
+      masterDndV2RaceSummary: `${race} • ${background}`,
+    };
+
+    Object.entries(pairs).forEach(([id, val]) => {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.matches("input, textarea, select")) {
+        if (document.activeElement !== el) el.value = val;
+      } else {
+        el.textContent = val;
+      }
+    });
+
+    const passive = document.getElementById("masterDndV2PassivePerception");
+    const passiveHidden = form.elements.passivePerception;
+    if (passive && passiveHidden && document.activeElement === passive) passiveHidden.value = passive.value;
+    if (passive && passiveHidden && document.activeElement !== passive) passive.value = passiveHidden.value || passive.value || "10";
+
+    if (typeof updateDndV2AvatarPreview === "function") {
+      updateDndV2AvatarPreview(form, name);
+    }
+  }
+
+  function updateMasterPetPreview(form) {
+    if (!form) return;
+    const get = (selector) => form.querySelector(selector);
+    const avatarField = form.elements.petAvatarUrl || get('[name="petAvatarUrl"]');
+    const avatar = get('[data-dnd-pet-avatar-preview]');
+    const nameView = document.getElementById('dndPetNamePreview');
+    const typeView = document.getElementById('dndPetTypePreview');
+    const hpFill = document.getElementById('dndPetHpBarFill');
+    const name = String(form.elements.petName?.value || '').trim();
+    const species = String(form.elements.petSpecies?.value || '').trim();
+    const hpCurrent = Math.max(0, Number(form.elements.petHpCurrent?.value || 0));
+    const hpMax = Math.max(0, Number(form.elements.petHpMax?.value || 0));
+    const percent = hpMax > 0 ? Math.max(0, Math.min(100, (hpCurrent / hpMax) * 100)) : 0;
+
+    const abilities = [['Str','petStrScore'],['Dex','petDexScore'],['Con','petConScore'],['Int','petIntScore'],['Wis','petWisScore'],['Cha','petChaScore']];
+    abilities.forEach(([shortName, fieldName]) => {
+      const score = Number(form.elements[fieldName]?.value || 10);
+      const mod = Math.floor((score - 10) / 2);
+      const hiddenField = form.elements[`pet${shortName}Mod`];
+      if (hiddenField) hiddenField.value = String(mod);
+      const view = document.getElementById(`dndPet${shortName}ModView`);
+      if (view) view.textContent = mod >= 0 ? `+${mod}` : String(mod);
+    });
+
+    if (nameView) nameView.textContent = name || 'Sem nome';
+    if (typeView) typeView.textContent = species || 'Companheiro da ficha';
+    if (hpFill) hpFill.style.width = `${percent}%`;
+
+    if (avatar) {
+      const url = String(avatarField?.value || '').trim();
+      if (url) {
+        avatar.style.backgroundImage = `url(${url})`;
+        avatar.style.backgroundSize = 'cover';
+        avatar.style.backgroundPosition = 'center';
+        avatar.textContent = '';
+      } else {
+        avatar.style.backgroundImage = 'none';
+        avatar.textContent = (name || species || 'P').slice(0, 1).toUpperCase();
+      }
+    }
+  }
+
+  function setupMasterPetPreview(form) {
+    if (!form || form.dataset.dndMasterPetReady === 'true') return;
+    form.dataset.dndMasterPetReady = 'true';
+
+    form.addEventListener('change', (event) => {
+      const imageInput = event.target.closest?.('[data-dnd-pet-image-input]');
+      if (!imageInput) return;
+      const file = imageInput.files && imageInput.files[0];
+      if (!file) return;
+      const reader = new FileReader();
+      reader.onload = () => {
+        let field = form.elements.petAvatarUrl || form.querySelector('[name="petAvatarUrl"]');
+        if (!field) {
+          field = document.createElement('input');
+          field.type = 'hidden';
+          field.name = 'petAvatarUrl';
+          field.setAttribute('data-dnd-pet-avatar-url', '');
+          form.appendChild(field);
+        }
+        field.value = String(reader.result || '');
+        updateMasterPetPreview(form);
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+      };
+      reader.readAsDataURL(file);
+      imageInput.value = '';
+    });
+
+    form.addEventListener('click', (event) => {
+      const removeButton = event.target.closest?.('[data-dnd-pet-image-remove]');
+      if (!removeButton) return;
+      event.preventDefault();
+      const field = form.elements.petAvatarUrl || form.querySelector('[name="petAvatarUrl"]');
+      if (field) {
+        field.value = '';
+        field.dispatchEvent(new Event('input', { bubbles: true }));
+        field.dispatchEvent(new Event('change', { bubbles: true }));
+      }
+      updateMasterPetPreview(form);
+    });
+
+    updateMasterPetPreview(form);
+  }
+
+  function initMasterPreview(form) {
+    if (!form || form.dataset.mode !== "edit-dnd-sheet") return;
+    if (typeof setupCampaignLabDndClassAutomationPanel === "function") setupCampaignLabDndClassAutomationPanel(form);
+    if (typeof setupDndAltheriumBackgroundAutomation === "function") setupDndAltheriumBackgroundAutomation(form);
+    if (typeof dndEnsureFinalBonusAutomationFields === "function") dndEnsureFinalBonusAutomationFields(form);
+    if (typeof setupDndSpellSlotTrackers === "function") setupDndSpellSlotTrackers(form);
+    if (typeof window.setupDndInventoryManager === "function") window.setupDndInventoryManager(form);
+    if (typeof window.campaignLabSetupDndDeathSaves === "function") window.campaignLabSetupDndDeathSaves(form);
+    setupMasterPetPreview(form);
+    updateMasterPetPreview(form);
+    updateSummary(form);
+  }
+
+  window.buildDndSheetEditor = buildEditor;
+  try { buildDndSheetEditor = buildEditor; } catch (error) {}
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest(".dnd-master-v2-editor [data-dnd-v2-tab]");
+    if (!button) return;
+    event.preventDefault();
+    const editor = button.closest(".dnd-master-v2-editor");
+    const target = button.dataset.dndV2Tab;
+    editor.querySelectorAll("[data-dnd-v2-tab]").forEach((btn) => btn.classList.toggle("active", btn === button));
+    editor.querySelectorAll("[data-dnd-v2-panel]").forEach((panel) => panel.classList.toggle("active", panel.dataset.dndV2Panel === target));
+  }, true);
+
+  document.addEventListener("input", (event) => {
+    const form = event.target.closest("#dndForm");
+    if (!form || form.dataset.mode !== "edit-dnd-sheet") return;
+    window.setTimeout(() => { updateSummary(form); updateMasterPetPreview(form); }, 20);
+  }, true);
+
+  document.addEventListener("change", (event) => {
+    const form = event.target.closest("#dndForm");
+    if (!form || form.dataset.mode !== "edit-dnd-sheet") return;
+    window.setTimeout(() => { updateSummary(form); updateMasterPetPreview(form); }, 20);
+  }, true);
+
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest("[data-open-dnd-sheet]")) return;
+    window.setTimeout(() => initMasterPreview(document.getElementById("dndForm")), 80);
+    window.setTimeout(() => initMasterPreview(document.getElementById("dndForm")), 450);
+  }, true);
+
+  const originalOpen = window.openDndMasterSheetModal || (typeof openDndMasterSheetModal === "function" ? openDndMasterSheetModal : null);
+  if (originalOpen && !originalOpen.__masterV2PreviewWrapped) {
+    const wrapped = async function (...args) {
+      const result = await originalOpen.apply(this, args);
+      const form = document.getElementById("dndForm");
+      initMasterPreview(form);
+      window.setTimeout(() => initMasterPreview(form), 120);
+      return result;
+    };
+    wrapped.__masterV2PreviewWrapped = true;
+    window.openDndMasterSheetModal = wrapped;
+    try { openDndMasterSheetModal = wrapped; } catch (error) {}
+  }
+})();
+
+
+/* =========================================================
+   HOTFIX - D&D MESTRE: CLIQUE NA FICHA DO PLAYER
+   Corrige casos em que o card da ficha aparece, mas o clique não abre o modal.
+   - Usa listener em captura para evitar bloqueio por handlers antigos.
+   - Força o botão a ser type="button".
+   - Abre o modal em estado de carregamento antes de montar a ficha.
+   - Usa fallback caso o wrapper antigo do preview falhe.
+========================================================= */
+(function campaignLabFixDndMasterSheetCardClick() {
+  if (window.__campaignLabDndMasterSheetCardClickFixReady) return;
+  window.__campaignLabDndMasterSheetCardClickFixReady = true;
+
+  let openingPlayerId = null;
+
+  function getDndMasterSheetButton(target) {
+    if (!target || !target.closest) return null;
+    return target.closest("[data-open-dnd-sheet]");
+  }
+
+  function prepareDndMasterSheetCards() {
+    document.querySelectorAll("[data-open-dnd-sheet]").forEach((button) => {
+      if (button.tagName === "BUTTON" && button.type !== "button") {
+        button.type = "button";
+      }
+
+      button.style.cursor = "pointer";
+      button.style.pointerEvents = "auto";
+    });
+  }
+
+  function forceShowDndMasterModal(message = "Carregando ficha...") {
+    const modal = document.getElementById("dndModal");
+    const title = document.getElementById("dndModalTitle");
+    const fields = document.getElementById("dndFormFields");
+
+    if (title) title.textContent = message;
+
+    if (fields && !fields.innerHTML.trim()) {
+      fields.innerHTML = `
+        <div class="altherium-empty dnd-master-sheet-loading-fallback">
+          <h3>Carregando ficha</h3>
+          <p>Aguarde enquanto a ficha do jogador é montada.</p>
+        </div>
+      `;
+    }
+
+    if (modal) {
+      modal.classList.add("active");
+      modal.style.display = "flex";
+      modal.style.visibility = "visible";
+      modal.style.opacity = "1";
+      modal.style.pointerEvents = "auto";
+      modal.style.zIndex = "99999";
+    }
+  }
+
+  async function openDndMasterSheetSafely(playerId) {
+    if (!playerId) return;
+    if (openingPlayerId === playerId) return;
+
+    openingPlayerId = playerId;
+    forceShowDndMasterModal("Carregando ficha...");
+
+    try {
+      const opener =
+        window.openDndMasterSheetModal ||
+        (typeof openDndMasterSheetModal === "function" ? openDndMasterSheetModal : null);
+
+      if (typeof opener !== "function") {
+        throw new Error("Função openDndMasterSheetModal não encontrada.");
+      }
+
+      await opener(playerId);
+      forceShowDndMasterModal(document.getElementById("dndModalTitle")?.textContent || "Ficha D&D");
+    } catch (error) {
+      console.error("Erro ao abrir ficha D&D do mestre:", error);
+
+      try {
+        const modal = document.getElementById("dndModal");
+        const title = document.getElementById("dndModalTitle");
+        const form = document.getElementById("dndForm");
+        const fields = document.getElementById("dndFormFields");
+        const campaign = typeof getCurrentCampaign === "function" ? await getCurrentCampaign(true) : null;
+
+        if (!modal || !title || !form || !fields || !campaign) {
+          throw new Error("Modal, formulário ou campanha indisponível.");
+        }
+
+        const sheet = await getOrCreateDndSheet(campaign.id, playerId, campaign.sistema || campaign.system || "D&D");
+        title.textContent = `Ficha de ${sheet.ownerName || sheet.characterName || "Jogador"}`;
+        fields.innerHTML =
+          typeof buildDndSheetEditor === "function"
+            ? buildDndSheetEditor(sheet, true)
+            : `
+              <div class="altherium-empty">
+                <h3>Ficha encontrada</h3>
+                <p>Não foi possível montar o editor visual. Verifique o console para detalhes.</p>
+              </div>
+            `;
+
+        form.dataset.mode = "edit-dnd-sheet";
+        form.dataset.playerId = playerId;
+        modal.classList.add("active");
+      } catch (fallbackError) {
+        console.error("Fallback da ficha D&D também falhou:", fallbackError);
+        const fields = document.getElementById("dndFormFields");
+        if (fields) {
+          fields.innerHTML = `
+            <div class="altherium-empty">
+              <h3>Não foi possível abrir a ficha</h3>
+              <p>O clique foi reconhecido, mas algum erro impediu o carregamento da ficha. Abra o console para ver o erro.</p>
+            </div>
+          `;
+        }
+      }
+    } finally {
+      window.setTimeout(() => {
+        openingPlayerId = null;
+        const form = document.getElementById("dndForm");
+        if (form && form.dataset.mode === "edit-dnd-sheet") {
+          if (typeof syncCampaignLabDndClassFieldsInForm === "function") syncCampaignLabDndClassFieldsInForm(form);
+          if (typeof dndEnsureFinalBonusAutomationFields === "function") dndEnsureFinalBonusAutomationFields(form);
+          if (typeof dndRecalculateAll === "function") dndRecalculateAll(form);
+        }
+      }, 120);
+    }
+  }
+
+  document.addEventListener(
+    "click",
+    function (event) {
+      const button = getDndMasterSheetButton(event.target);
+      if (!button) return;
+
+      const playerId = button.dataset.openDndSheet;
+      if (!playerId) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      openDndMasterSheetSafely(playerId);
+    },
+    true
+  );
+
+  const observer = new MutationObserver(prepareDndMasterSheetCards);
+
+  if (document.body) {
+    observer.observe(document.body, { childList: true, subtree: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", prepareDndMasterSheetCards);
+  } else {
+    prepareDndMasterSheetCards();
+  }
+
+  window.setTimeout(prepareDndMasterSheetCards, 400);
+  window.setTimeout(prepareDndMasterSheetCards, 1200);
+})();
+
+
+/* =========================================================
+   POLIMENTO FINAL - D&D MESTRE / PREVIEW
+   Garante classes corretas e neutraliza estilos antigos depois de abrir a ficha.
+========================================================= */
+(function campaignLabDndMasterPreviewPolishFinal() {
+  if (window.__campaignLabDndMasterPreviewPolishFinalReady) return;
+  window.__campaignLabDndMasterPreviewPolishFinalReady = true;
+
+  function polish() {
+    if (!document.body || !document.body.classList.contains("dnd-master-page")) return;
+
+    document.body.classList.add(
+      "dnd-design-impecavel",
+      "dnd-master-preview-rework-page",
+      "dnd-master-preview-polished-page"
+    );
+
+    const modal = document.getElementById("dndModal");
+    const modalBox = modal ? modal.querySelector(".altherium-modal-box") : null;
+    const form = document.getElementById("dndForm");
+    const editor = document.querySelector(".dnd-master-v2-editor");
+
+    if (modalBox) {
+      modalBox.classList.add("dnd-sheet-modal-box", "dnd-master-sheet-preview-modal");
+    }
+
+    if (form && form.dataset.mode === "edit-dnd-sheet") {
+      form.classList.add("dnd-master-v2-form");
+    }
+
+    if (editor) {
+      editor.querySelectorAll("input, select, textarea, button").forEach((el) => {
+        el.style.fontFamily = "";
+      });
+
+      editor.querySelectorAll(".dnd-v2-panel").forEach((panel) => {
+        if (!panel.dataset.dndV2Panel) return;
+        const hasActiveButton = editor.querySelector(`[data-dnd-v2-tab="${panel.dataset.dndV2Panel}"].active`);
+        if (hasActiveButton) panel.classList.add("active");
+      });
+
+      const activePanel = editor.querySelector(".dnd-v2-panel.active");
+      if (!activePanel) {
+        const firstButton = editor.querySelector("[data-dnd-v2-tab]");
+        const firstPanel = editor.querySelector("[data-dnd-v2-panel]");
+        if (firstButton) firstButton.classList.add("active");
+        if (firstPanel) firstPanel.classList.add("active");
+      }
+    }
+  }
+
+  document.addEventListener("click", (event) => {
+    if (event.target.closest("[data-open-dnd-sheet], .dnd-master-v2-editor [data-dnd-v2-tab], #dndModal")) {
+      window.setTimeout(polish, 40);
+      window.setTimeout(polish, 180);
+      window.setTimeout(polish, 650);
+    }
+  }, true);
+
+  document.addEventListener("input", (event) => {
+    if (event.target.closest("#dndForm")) window.setTimeout(polish, 30);
+  }, true);
+
+  document.addEventListener("change", (event) => {
+    if (event.target.closest("#dndForm")) window.setTimeout(polish, 30);
+  }, true);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", polish);
+  } else {
+    polish();
+  }
+
+  window.setTimeout(polish, 500);
+  window.setTimeout(polish, 1400);
+})();
+
+
+/* =========================================================
+   HOTFIX - FECHAR MODAL DA FICHA D&D DO MESTRE
+   Corrige o X que não fechava quando o modal recebia estilos inline
+   como display:flex, visibility:visible e pointer-events:auto.
+========================================================= */
+(function campaignLabFixDndMasterModalCloseButton() {
+  if (window.__campaignLabFixDndMasterModalCloseButtonReady) return;
+  window.__campaignLabFixDndMasterModalCloseButtonReady = true;
+
+  function clearDndModalInlineOpenStyles(modal) {
+    if (!modal) return;
+
+    modal.classList.remove("active");
+    modal.removeAttribute("aria-modal");
+    modal.setAttribute("aria-hidden", "true");
+
+    modal.style.removeProperty("display");
+    modal.style.removeProperty("visibility");
+    modal.style.removeProperty("opacity");
+    modal.style.removeProperty("pointer-events");
+    modal.style.removeProperty("z-index");
+  }
+
+  function resetDndMasterModalForm() {
+    const form = document.getElementById("dndForm");
+    const fields = document.getElementById("dndFormFields");
+    const title = document.getElementById("dndModalTitle");
+    const submitButton = form ? form.querySelector("button[type='submit']") : null;
+
+    if (form) {
+      try { form.reset(); } catch (error) {}
+      form.dataset.mode = "";
+      form.dataset.playerId = "";
+      form.classList.remove("dnd-master-v2-form");
+    }
+
+    if (fields) fields.innerHTML = "";
+    if (title) title.textContent = "Modal";
+
+    if (submitButton) {
+      submitButton.disabled = false;
+      submitButton.textContent = "Aplicar";
+    }
+  }
+
+  function closeDndMasterModal(event) {
+    if (event) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+    }
+
+    const modal = document.getElementById("dndModal");
+    if (!modal) return;
+
+    clearDndModalInlineOpenStyles(modal);
+    resetDndMasterModalForm();
+    document.body.classList.remove("dnd-master-modal-open");
+  }
+
+  window.campaignLabCloseDndMasterModal = closeDndMasterModal;
+
+  document.addEventListener(
+    "click",
+    function (event) {
+      const modal = document.getElementById("dndModal");
+      if (!modal) return;
+
+      const closeButton = event.target.closest
+        ? event.target.closest("#dndModal [data-close-dnd-modal], #dndModal .altherium-close")
+        : null;
+
+      if (closeButton) {
+        closeDndMasterModal(event);
+        return;
+      }
+
+      if (event.target === modal) {
+        closeDndMasterModal(event);
+      }
+    },
+    true
+  );
+
+  document.addEventListener(
+    "keydown",
+    function (event) {
+      if (event.key !== "Escape") return;
+
+      const modal = document.getElementById("dndModal");
+      if (!modal || !modal.classList.contains("active")) return;
+
+      closeDndMasterModal(event);
+    },
+    true
+  );
+
+  const previousCloseSharedModal = window.closeSharedModal || (typeof closeSharedModal === "function" ? closeSharedModal : null);
+
+  if (typeof previousCloseSharedModal === "function" && !previousCloseSharedModal.__dndInlineStyleFixWrapped) {
+    const wrappedCloseSharedModal = function (modal, form, submitButton) {
+      const result = previousCloseSharedModal.call(this, modal, form, submitButton);
+
+      if (modal && modal.id === "dndModal") {
+        clearDndModalInlineOpenStyles(modal);
+      }
+
+      return result;
+    };
+
+    wrappedCloseSharedModal.__dndInlineStyleFixWrapped = true;
+    window.closeSharedModal = wrappedCloseSharedModal;
+    try { closeSharedModal = wrappedCloseSharedModal; } catch (error) {}
+  }
+})();
+
+
+/* =========================================================
+   D&D MESTRE - POLIMENTO DO PREVIEW IGUAL À FICHA DO PLAYER
+   Remove notas rápidas e troca blocos antigos por componentes visuais atuais.
+========================================================= */
+(function campaignLabDndMasterPlayerVisualParity() {
+  function isMasterPage() {
+    return document.body && document.body.classList.contains("dnd-master-page");
+  }
+
+  function esc(value) {
+    if (typeof escapeHtml === "function") return escapeHtml(value ?? "");
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function formValue(form, name, fallback = "") {
+    if (!form) return fallback;
+    const field = form.elements?.[name] || form.querySelector(`[name="${CSS.escape(name)}"]`);
+    if (!field) return fallback;
+    if (field instanceof RadioNodeList) return field.value || fallback;
+    if (field.type === "checkbox") return field.checked ? "true" : "false";
+    return field.value !== undefined && field.value !== "" ? field.value : fallback;
+  }
+
+  function isChecked(form, name) {
+    const field = form?.elements?.[name] || form?.querySelector?.(`[name="${CSS.escape(name)}"]`);
+    if (!field) return false;
+    if (field instanceof RadioNodeList) return Array.from(field).some((item) => item.checked);
+    return Boolean(field.checked) || String(field.value) === "true";
+  }
+
+  function clampNumber(value, min = 0, max = 999) {
+    const number = Number.parseInt(String(value ?? "").replace(/\D/g, ""), 10);
+    if (!Number.isFinite(number)) return min;
+    return Math.max(min, Math.min(max, number));
+  }
+
+  function normalizeSlotMarks(value, max) {
+    const safeMax = Math.max(0, Math.min(12, Number(max) || 0));
+    const raw = String(value ?? "");
+    const chars = raw.replace(/[^01]/g, "").split("");
+    while (chars.length < safeMax) chars.push("0");
+    return chars.slice(0, safeMax).join("");
+  }
+
+  function removeMasterQuickNotes(editor) {
+    const overview = editor.querySelector('[data-dnd-v2-panel="overview"]');
+    if (!overview) return;
+
+    overview.querySelectorAll(".dnd-v2-card").forEach((card) => {
+      const title = card.querySelector("h3")?.textContent?.trim().toLowerCase() || "";
+      if (title.includes("notas rápidas do mestre") || title.includes("notas rapidas do mestre")) {
+        card.remove();
+      }
+    });
+
+    const grid = overview.querySelector(".dnd-v2-grid-2");
+    if (grid) grid.classList.add("dnd-master-v2-overview-clean");
+  }
+
+  function buildDeathSaves(form) {
+    const successes = clampNumber(formValue(form, "deathSuccesses", "0"), 0, 3);
+    const failures = clampNumber(formValue(form, "deathFailures", "0"), 0, 3);
+
+    const dots = (type, count) => [1, 2, 3].map((index) => `
+      <button
+        type="button"
+        data-dnd-death-save="${type}"
+        data-dnd-death-save-index="${index}"
+        class="${index <= count ? "is-checked" : ""}"
+        aria-pressed="${index <= count ? "true" : "false"}"
+      ></button>
+    `).join("");
+
+    return `
+      <div class="dnd-death-saves-panel" data-dnd-death-saves>
+        <input type="hidden" name="deathSuccesses" value="${successes}" data-dnd-death-save-input="success" />
+        <input type="hidden" name="deathFailures" value="${failures}" data-dnd-death-save-input="failure" />
+
+        <div class="dnd-death-saves-head">
+          <span>Testes contra morte</span>
+          <small>Marque até 3 sucessos ou falhas.</small>
+        </div>
+
+        <div class="dnd-death-saves-row dnd-death-saves-row--success">
+          <strong>Sucessos</strong>
+          <div class="dnd-death-save-dots" aria-label="Sucessos contra morte">${dots("success", successes)}</div>
+        </div>
+
+        <div class="dnd-death-saves-row dnd-death-saves-row--failure">
+          <strong>Falhas</strong>
+          <div class="dnd-death-save-dots" aria-label="Falhas contra morte">${dots("failure", failures)}</div>
+        </div>
+      </div>
+    `;
+  }
+
+  function replaceDeathSaves(editor, form) {
+    const combat = editor.querySelector('[data-dnd-v2-panel="combat"]');
+    if (!combat) return;
+
+    const oldCard = Array.from(combat.querySelectorAll(".dnd-v2-card")).find((card) => {
+      const title = card.querySelector("h3")?.textContent?.trim().toLowerCase() || "";
+      return title.includes("testes contra morte");
+    });
+
+    if (!oldCard) return;
+    oldCard.classList.add("dnd-master-v2-span-2");
+    oldCard.innerHTML = buildDeathSaves(form);
+  }
+
+  function skillMeta(key) {
+    const meta = typeof DND_SKILL_META !== "undefined" ? DND_SKILL_META[key] : null;
+    const ability = meta?.abilityLabel || "";
+    return ability;
+  }
+
+  function replaceSkills(editor, form) {
+    const list = editor.querySelector('[data-dnd-v2-panel="skills"] .dnd-skill-list');
+    if (!list) return;
+
+    const source = Array.isArray(window.DND_SKILLS) ? window.DND_SKILLS : (typeof DND_SKILLS !== "undefined" ? DND_SKILLS : []);
+    const skills = source.length ? source : [
+      ["skillAcrobatics", "Acrobacia"], ["skillArcana", "Arcanismo"], ["skillAthletics", "Atletismo"],
+      ["skillDeception", "Enganação"], ["skillStealth", "Furtividade"], ["skillHistory", "História"],
+      ["skillInsight", "Intuição"], ["skillIntimidation", "Intimidação"], ["skillInvestigation", "Investigação"],
+      ["skillAnimalHandling", "Lidar com Animais"], ["skillMedicine", "Medicina"], ["skillNature", "Natureza"],
+      ["skillPerception", "Percepção"], ["skillPerformance", "Performance"], ["skillPersuasion", "Persuasão"],
+      ["skillSleightOfHand", "Prestidigitação"], ["skillReligion", "Religião"], ["skillSurvival", "Sobrevivência"],
+    ];
+
+    list.innerHTML = skills.map(([key, label]) => {
+      const bonus = formValue(form, key, "0");
+      const ability = skillMeta(key);
+      const prof = isChecked(form, `${key}Prof`);
+      const expert = isChecked(form, `${key}Expert`);
+      const manual = formValue(form, `${key}Manual`, "false");
+
+      return `
+        <div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="${esc(key)}">
+          <div><strong>${esc(label)}</strong>${ability ? `<small>${esc(ability)}</small>` : ""}</div>
+          <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="${esc(key)}Prof" data-dnd-prof-checkbox="true" data-dnd-target-bonus="${esc(key)}" ${prof ? "checked" : ""}/><span>P</span></label>
+          <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="${esc(key)}Expert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="${esc(key)}" ${expert ? "checked" : ""}/><span>E</span></label>
+          <input class="dnd-bonus-input" name="${esc(key)}" type="number" value="${esc(bonus)}" data-dnd-final-bonus="${esc(key)}" />
+          <input name="${esc(key)}Manual" type="hidden" value="${esc(manual)}" />
+        </div>
+      `;
+    }).join("");
+  }
+
+  function replaceSpellSlots(editor, form) {
+    const spells = editor.querySelector('[data-dnd-v2-panel="spells"]');
+    if (!spells) return;
+
+    const oldSlotsCard = Array.from(spells.querySelectorAll(".dnd-v2-card")).find((card) => {
+      const title = card.querySelector("h3")?.textContent?.trim().toLowerCase() || "";
+      return title.includes("espaços de magia") || title.includes("espacos de magia");
+    });
+
+    if (!oldSlotsCard) return;
+
+    const defaults = { 1: 4, 2: 3, 3: 3, 4: 3, 5: 3, 6: 2, 7: 2, 8: 1, 9: 1 };
+    const slots = Array.from({ length: 9 }, (_, index) => index + 1).map((level) => {
+      const max = clampNumber(formValue(form, `spellSlotsMax${level}`, String(defaults[level] || 0)), 0, 12);
+      const marks = normalizeSlotMarks(formValue(form, `spellSlots${level}`, ""), max);
+      const dots = Array.from({ length: max }, (_, dotIndex) => {
+        const checked = marks[dotIndex] === "1";
+        return `<button type="button" class="dnd-spell-slot-dot ${checked ? "is-checked" : ""}" data-spell-slot-dot="${dotIndex}" aria-pressed="${checked ? "true" : "false"}" title="${level}º nível - espaço ${dotIndex + 1}"></button>`;
+      }).join("");
+
+      return `
+        <div class="dnd-spell-slot-level dnd-v2-spell-slot-level" data-spell-slot-level="${level}">
+          <input type="hidden" name="spellSlots${level}" value="${esc(marks)}" data-spell-slot-hidden="${level}" />
+          <div class="dnd-spell-slot-top">
+            <strong>${level}º</strong>
+            <input class="dnd-spell-slot-max-input" name="spellSlotsMax${level}" type="number" min="0" max="12" step="1" value="${max}" data-spell-slot-max-input="${level}" aria-label="Quantidade máxima de espaços de magia de ${level}º nível" />
+          </div>
+          <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de ${level}º nível">${dots}</div>
+        </div>
+      `;
+    }).join("");
+
+    oldSlotsCard.classList.add("dnd-spell-slots");
+    oldSlotsCard.innerHTML = `<h3>Espaços de magia</h3><div class="dnd-v2-spell-slots-grid">${slots}</div>`;
+  }
+
+  function replaceInventory(editor, form) {
+    const panel = editor.querySelector('[data-dnd-v2-panel="inventory"]');
+    if (!panel) return;
+
+    panel.innerHTML = `
+      <div class="dnd-v2-section-head dnd-inventory-section-head">
+        <p class="tag">Recursos</p>
+        <h2>Inventário D&D</h2>
+        <span>Organize moedas, carga, armas, armaduras, itens mágicos, consumíveis e tesouros.</span>
+      </div>
+
+      <div class="dnd-master-player-inventory">
+        <div class="dnd-inventory-summary-grid">
+          <article class="dnd-inventory-summary-card"><span>Itens</span><strong>—</strong><small>Total carregado</small></article>
+          <article class="dnd-inventory-summary-card"><span>Peso</span><strong>—</strong><small>Controle manual pelo mestre</small></article>
+          <article class="dnd-inventory-summary-card"><span>Valor</span><strong>—</strong><small>Somado pela mesa</small></article>
+          <article class="dnd-inventory-summary-card"><span>Mágicos</span><strong>—</strong><small>Itens especiais</small></article>
+        </div>
+
+        <div class="dnd-v2-grid-2">
+          <div class="dnd-v2-card">
+            <h3>Moedas</h3>
+            <div class="dnd-v2-form-grid dnd-master-v2-form-grid--3">
+              <label class="dnd-master-v2-field"><span>PC</span><input name="coinCopper" type="number" min="0" value="${esc(formValue(form, "coinCopper", ""))}" /></label>
+              <label class="dnd-master-v2-field"><span>PP</span><input name="coinSilver" type="number" min="0" value="${esc(formValue(form, "coinSilver", ""))}" /></label>
+              <label class="dnd-master-v2-field"><span>PE</span><input name="coinElectrum" type="number" min="0" value="${esc(formValue(form, "coinElectrum", ""))}" /></label>
+              <label class="dnd-master-v2-field"><span>PO</span><input name="coinGold" type="number" min="0" value="${esc(formValue(form, "coinGold", ""))}" /></label>
+              <label class="dnd-master-v2-field"><span>PL</span><input name="coinPlatinum" type="number" min="0" value="${esc(formValue(form, "coinPlatinum", ""))}" /></label>
+            </div>
+          </div>
+
+          <div class="dnd-v2-card">
+            <label class="dnd-master-v2-textarea">
+              <span>Equipamento</span>
+              <textarea name="equipment" rows="10" placeholder="Armas, armaduras, ferramentas e equipamentos.">${esc(formValue(form, "equipment", ""))}</textarea>
+            </label>
+          </div>
+
+          <div class="dnd-v2-card dnd-master-v2-span-2">
+            <label class="dnd-master-v2-textarea">
+              <span>Inventário completo</span>
+              <textarea name="inventory" rows="14" placeholder="Itens, tesouros, consumíveis e anotações.">${esc(formValue(form, "inventory", ""))}</textarea>
+            </label>
+          </div>
+        </div>
+      </div>
+    `;
+  }
+
+  function replacePet(editor, form) {
+    const panel = editor.querySelector('[data-dnd-v2-panel="pet"]');
+    if (!panel) return;
+
+    panel.classList.add("dnd-v2-pet-panel", "dnd-master-player-pet");
+    panel.innerHTML = `
+      <div class="dnd-v2-section-head">
+        <p class="tag">Companheiro</p>
+        <h2>Ficha do Pet</h2>
+        <span>Ficha pequena para familiar, montaria, mascote ou companheiro animal.</span>
+      </div>
+
+      <div class="dnd-pet-sheet">
+        <input type="hidden" name="petAvatarUrl" value="${esc(formValue(form, "petAvatarUrl", ""))}" data-dnd-pet-avatar-url />
+        <input type="hidden" name="petStrMod" value="${esc(formValue(form, "petStrMod", "0"))}" />
+        <input type="hidden" name="petDexMod" value="${esc(formValue(form, "petDexMod", "0"))}" />
+        <input type="hidden" name="petConMod" value="${esc(formValue(form, "petConMod", "0"))}" />
+        <input type="hidden" name="petIntMod" value="${esc(formValue(form, "petIntMod", "0"))}" />
+        <input type="hidden" name="petWisMod" value="${esc(formValue(form, "petWisMod", "0"))}" />
+        <input type="hidden" name="petChaMod" value="${esc(formValue(form, "petChaMod", "0"))}" />
+
+        <aside class="dnd-pet-profile-card">
+          <div class="dnd-pet-avatar" id="masterDndPetAvatar" data-dnd-pet-avatar-preview>P</div>
+          <span>Pet ativo</span>
+          <strong id="masterDndPetNamePreview">${esc(formValue(form, "petName", "Sem nome"))}</strong>
+          <small id="masterDndPetTypePreview">${esc(formValue(form, "petSpecies", "Companheiro da ficha"))}</small>
+        </aside>
+
+        <div class="dnd-pet-main">
+          <div class="dnd-pet-card dnd-pet-card--identity">
+            <h3>Identidade</h3>
+            <div class="dnd-pet-form-grid">
+              <label><span>Nome do pet</span><input name="petName" type="text" value="${esc(formValue(form, "petName", ""))}" placeholder="Ex: Nyx" autocomplete="off" /></label>
+              <label><span>Espécie / Tipo</span><input name="petSpecies" type="text" value="${esc(formValue(form, "petSpecies", ""))}" placeholder="Lobo, coruja, familiar..." autocomplete="off" /></label>
+              <label><span>Tamanho</span><input name="petSize" type="text" value="${esc(formValue(form, "petSize", ""))}" placeholder="Pequeno, Médio..." /></label>
+              <label><span>Vínculo</span><input name="petBond" type="text" value="${esc(formValue(form, "petBond", ""))}" placeholder="Familiar, montaria, mascote..." autocomplete="off" /></label>
+            </div>
+          </div>
+
+          <div class="dnd-pet-card">
+            <h3>Combate rápido</h3>
+            <div class="dnd-pet-stat-grid">
+              <label><span>CA</span><input name="petArmorClass" type="number" min="0" value="${esc(formValue(form, "petArmorClass", "10"))}" /></label>
+              <label><span>PV atual</span><input name="petHpCurrent" type="number" min="0" value="${esc(formValue(form, "petHpCurrent", "0"))}" /></label>
+              <label><span>PV máx.</span><input name="petHpMax" type="number" min="0" value="${esc(formValue(form, "petHpMax", "0"))}" /></label>
+              <label><span>Deslocamento</span><input name="petSpeed" type="text" value="${esc(formValue(form, "petSpeed", ""))}" placeholder="9 m" /></label>
+            </div>
+            <div class="dnd-pet-hp-bar"><div id="masterDndPetHpBarFill"></div></div>
+          </div>
+
+          <div class="dnd-pet-card dnd-pet-card--full">
+            <h3>Atributos do pet</h3>
+            <div class="dnd-pet-abilities">
+              ${["Str", "Dex", "Con", "Int", "Wis", "Cha"].map((abbr) => {
+                const pt = { Str: "FOR", Dex: "DES", Con: "CON", Int: "INT", Wis: "SAB", Cha: "CAR" }[abbr];
+                const lower = abbr.toLowerCase();
+                return `<label><span>${pt}</span><input name="pet${abbr}Score" type="number" value="${esc(formValue(form, `pet${abbr}Score`, "10"))}" min="1" /><strong id="masterDndPet${abbr}ModView">+0</strong></label>`;
+              }).join("")}
+            </div>
+          </div>
+
+          <div class="dnd-pet-card dnd-pet-card--attack">
+            <h3>Ataque principal</h3>
+            <div class="dnd-pet-attack-grid">
+              <label><span>Nome</span><input name="petAttackName" type="text" value="${esc(formValue(form, "petAttackName", ""))}" placeholder="Mordida, garra..." /></label>
+              <label><span>Bônus</span><input name="petAttackBonus" type="number" value="${esc(formValue(form, "petAttackBonus", "0"))}" /></label>
+              <label><span>Dano</span><input name="petAttackDamage" type="text" value="${esc(formValue(form, "petAttackDamage", ""))}" placeholder="1d6+2" /></label>
+            </div>
+          </div>
+
+          <div class="dnd-pet-card dnd-pet-card--notes"><h3>Traços e habilidades</h3><textarea name="petTraits" placeholder="Sentidos, habilidades especiais, treinamento, vantagens, truques...">${esc(formValue(form, "petTraits", ""))}</textarea></div>
+          <div class="dnd-pet-card dnd-pet-card--notes"><h3>Anotações do pet</h3><textarea name="petNotes" placeholder="Personalidade, aparência, vínculo com o personagem, comandos, história...">${esc(formValue(form, "petNotes", ""))}</textarea></div>
+        </div>
+      </div>
+    `;
+  }
+
+  function syncPetPreview(form) {
+    const name = formValue(form, "petName", "Sem nome");
+    const species = formValue(form, "petSpecies", "Companheiro da ficha");
+    const nameView = form.querySelector("#masterDndPetNamePreview");
+    const speciesView = form.querySelector("#masterDndPetTypePreview");
+    if (nameView) nameView.textContent = name || "Sem nome";
+    if (speciesView) speciesView.textContent = species || "Companheiro da ficha";
+  }
+
+  function polish() {
+    if (!isMasterPage()) return;
+
+    const editor = document.querySelector(".dnd-master-v2-editor");
+    const form = document.getElementById("dndForm");
+    if (!editor || !form || editor.dataset.playerParityReady === "true") return;
+
+    editor.dataset.playerParityReady = "true";
+
+    removeMasterQuickNotes(editor);
+    replaceDeathSaves(editor, form);
+    replaceSkills(editor, form);
+    replaceSpellSlots(editor, form);
+    replaceInventory(editor, form);
+    replacePet(editor, form);
+
+    if (typeof window.campaignLabSetupDndDeathSaves === "function") {
+      window.campaignLabSetupDndDeathSaves(form);
+    }
+
+    if (typeof window.campaignLabRestoreAllManualSpellSlots === "function") {
+      window.campaignLabRestoreAllManualSpellSlots(form);
+    }
+
+    syncPetPreview(form);
+
+    form.addEventListener("input", (event) => {
+      if (event.target?.matches?.('[name="petName"], [name="petSpecies"]')) syncPetPreview(form);
+    });
+  }
+
+  function schedulePolish() {
+    window.setTimeout(polish, 0);
+    window.setTimeout(polish, 80);
+    window.setTimeout(polish, 260);
+  }
+
+  document.addEventListener("click", (event) => {
+    if (!isMasterPage()) return;
+    if (event.target?.closest?.("[data-open-dnd-sheet], .sheet-card, #dndCharactersGrid button, #dndCharactersGrid .altherium-card")) {
+      schedulePolish();
+    }
+  }, true);
+
+  const observer = new MutationObserver(() => schedulePolish());
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      observer.observe(document.body, { childList: true, subtree: true });
+      schedulePolish();
+    });
+  } else {
+    observer.observe(document.body, { childList: true, subtree: true });
+    schedulePolish();
+  }
+})();
+
+
+/* =========================================================
+   HOTFIX FINAL - LOGIN / BOTÃO ENTRAR NA CONTA
+   Corrige casos em que o body não tem a classe login-page,
+   o formulário recarrega a página, ou listeners antigos bloqueiam o clique.
+========================================================= */
+(function campaignLabLoginButtonFinalFix() {
+  if (window.__campaignLabLoginButtonFinalFixReady) return;
+  window.__campaignLabLoginButtonFinalFixReady = true;
+
+  function getLoginButton(target) {
+    if (!target || !target.closest) return null;
+
+    return (
+      target.closest("#loginBtn") ||
+      target.closest("[data-login-btn]") ||
+      target.closest("[data-login-button]") ||
+      target.closest(".login-btn") ||
+      target.closest(".submit-btn") ||
+      target.closest(".access-login-btn") ||
+      target.closest("button")
+    );
+  }
+
+  function isProbablyLoginPage() {
+    return Boolean(
+      document.getElementById("userNameInput") ||
+      document.getElementById("password") ||
+      document.querySelector('input[type="password"]')
+    );
+  }
+
+  function isProbablyLoginButton(button) {
+    if (!button || !isProbablyLoginPage()) return false;
+
+    if (
+      button.matches?.("#loginBtn, [data-login-btn], [data-login-button], .login-btn, .access-login-btn")
+    ) {
+      return true;
+    }
+
+    const text = String(button.textContent || button.value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase();
+
+    return (
+      text.includes("entrar") ||
+      text.includes("login") ||
+      text.includes("acessar") ||
+      button.type === "submit"
+    );
+  }
+
+  function getLoginNameInput() {
+    return (
+      document.getElementById("userNameInput") ||
+      document.getElementById("username") ||
+      document.getElementById("userName") ||
+      document.querySelector('input[name="userName"]') ||
+      document.querySelector('input[name="username"]') ||
+      document.querySelector('input[name="login"]') ||
+      document.querySelector('input[name="id"]') ||
+      document.querySelector('input[type="text"]')
+    );
+  }
+
+  function getLoginPasswordInput() {
+    return (
+      document.getElementById("password") ||
+      document.querySelector('input[name="password"]') ||
+      document.querySelector('input[type="password"]')
+    );
+  }
+
+  function getClient() {
+    return (
+      window.supabaseClient ||
+      (typeof DB !== "undefined" ? DB : null) ||
+      null
+    );
+  }
+
+  function setLoginButtonLoading(button, loading) {
+    if (!button) return;
+
+    if (loading) {
+      if (!button.dataset.originalText) button.dataset.originalText = button.textContent || "Entrar";
+      button.disabled = true;
+      button.classList.add("is-loading");
+      button.textContent = "Entrando...";
+      return;
+    }
+
+    button.disabled = false;
+    button.classList.remove("is-loading");
+    if (button.dataset.originalText) button.textContent = button.dataset.originalText;
+  }
+
+  async function findProfile(client, typedName) {
+    const idValue = String(typedName || "").trim().toLowerCase();
+
+    let response = await client
+      .from("profiles")
+      .select("id, name, password")
+      .eq("id", idValue)
+      .maybeSingle();
+
+    if (response.error) throw response.error;
+    if (response.data) return response.data;
+
+    response = await client
+      .from("profiles")
+      .select("id, name, password")
+      .ilike("name", typedName)
+      .maybeSingle();
+
+    if (response.error) throw response.error;
+    return response.data || null;
+  }
+
+  async function doLogin(button = null) {
+    const nameInput = getLoginNameInput();
+    const passwordInput = getLoginPasswordInput();
+    const client = getClient();
+
+    if (!client) {
+      alert("Supabase não carregou. Verifique se @supabase/supabase-js, supabase-config.js e script.js estão nessa ordem no HTML.");
+      return;
+    }
+
+    if (!nameInput || !passwordInput) {
+      alert("Campos de login não encontrados. Verifique se o HTML tem userNameInput e password.");
+      return;
+    }
+
+    const typedName = String(nameInput.value || "").trim();
+    const password = String(passwordInput.value || "").trim();
+
+    if (!typedName) {
+      alert("Digite seu nome.");
+      nameInput.focus?.();
+      return;
+    }
+
+    if (!password) {
+      alert("Digite sua senha.");
+      passwordInput.focus?.();
+      return;
+    }
+
+    setLoginButtonLoading(button, true);
+
+    try {
+      const user = await findProfile(client, typedName);
+
+      if (!user) {
+        alert("Usuário não encontrado.");
+        return;
+      }
+
+      if (String(user.password || "") !== password) {
+        alert("Senha incorreta.");
+        return;
+      }
+
+      sessionStorage.setItem("loggedUserId", String(user.id || ""));
+      sessionStorage.setItem("loggedUserName", String(user.name || user.id || ""));
+      sessionStorage.removeItem("campaignId");
+      sessionStorage.removeItem("campaignName");
+      sessionStorage.removeItem("system");
+      sessionStorage.removeItem("sistema");
+      sessionStorage.removeItem("profile");
+      sessionStorage.removeItem("perfil");
+
+      window.location.href = "minhas-campanhas.html";
+    } catch (error) {
+      console.error("Erro no login:", error);
+      alert("Erro ao entrar na conta. Abra o console para ver detalhes.");
+    } finally {
+      setLoginButtonLoading(button, false);
+    }
+  }
+
+  function prepareLoginButton() {
+    const button =
+      document.getElementById("loginBtn") ||
+      document.querySelector("[data-login-btn]") ||
+      document.querySelector("[data-login-button]");
+
+    if (button && button.tagName === "BUTTON") {
+      button.type = "button";
+      button.style.pointerEvents = "auto";
+      button.style.cursor = "pointer";
+    }
+  }
+
+  document.addEventListener(
+    "click",
+    function (event) {
+      const button = getLoginButton(event.target);
+      if (!isProbablyLoginButton(button)) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      doLogin(button);
+    },
+    true
+  );
+
+  document.addEventListener(
+    "submit",
+    function (event) {
+      if (!isProbablyLoginPage()) return;
+
+      const form = event.target;
+      if (!form || !form.querySelector?.('input[type="password"]')) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      const button = form.querySelector("#loginBtn, [data-login-btn], [data-login-button], button[type='submit'], button");
+      doLogin(button);
+    },
+    true
+  );
+
+  document.addEventListener(
+    "keydown",
+    function (event) {
+      if (event.key !== "Enter" || !isProbablyLoginPage()) return;
+      const target = event.target;
+      if (!target || !target.matches?.("input")) return;
+      if (!target.closest?.("form") && !document.getElementById("loginBtn")) return;
+
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      const button = document.getElementById("loginBtn") || document.querySelector("button");
+      doLogin(button);
+    },
+    true
+  );
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", prepareLoginButton);
+  } else {
+    prepareLoginButton();
+  }
+
+  window.setTimeout(prepareLoginButton, 300);
+  window.setTimeout(prepareLoginButton, 1000);
+})();
+
+
+/* =========================================================
+   HOTFIX FINAL - ACESSO DE JOGADOR EM CAMPANHAS
+   Corrige falso "Acesso negado" quando o jogador existe em
+   campaign_members, mas a sessão veio com perfil/sistema antigo.
+========================================================= */
+(function campaignLabPlayerAccessFinalFix() {
+  if (window.__campaignLabPlayerAccessFinalFixReady) return;
+  window.__campaignLabPlayerAccessFinalFixReady = true;
+
+  function norm(value = "") {
+    return String(value || "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  }
+
+  function normalizeRole(value = "") {
+    const text = norm(value);
+    if (["mestre", "master", "dm", "gm", "dungeon master"].includes(text)) return "Mestre";
+    if (["jogador", "player", "jogadora"].includes(text)) return "Jogador";
+    return String(value || "").trim();
+  }
+
+  function normalizeSystem(value = "") {
+    const text = norm(value).replace(/&/g, "e").replace(/\s+/g, " ");
+    if (text === "dnd" || text === "d&d" || text === "d e d" || text.includes("dungeons") || text.includes("dragons")) {
+      return "D&D";
+    }
+    if (text.includes("altherium")) return "Altherium";
+    return String(value || "").trim();
+  }
+
+  function idsMatch(a, b) {
+    return String(a || "").trim() === String(b || "").trim();
+  }
+
+  function getCampaignMembers(campaign = {}) {
+    const members = [];
+
+    if (Array.isArray(campaign.campaign_members)) {
+      campaign.campaign_members.forEach((member) => {
+        members.push({
+          user_id: member.user_id ?? member.userId ?? member.id,
+          role: normalizeRole(member.role ?? member.perfil ?? member.profile),
+        });
+      });
+    }
+
+    if (Array.isArray(campaign.membros)) {
+      campaign.membros.forEach((member) => {
+        members.push({
+          user_id: member.user_id ?? member.userId ?? member.id,
+          role: normalizeRole(member.role ?? member.perfil ?? member.profile),
+        });
+      });
+    }
+
+    if (Array.isArray(campaign.jogadores)) {
+      campaign.jogadores.forEach((playerId) => {
+        members.push({ user_id: playerId, role: "Jogador" });
+      });
+    }
+
+    const masterId = campaign.master_id ?? campaign.mestreId;
+    if (masterId) members.push({ user_id: masterId, role: "Mestre" });
+
+    return members.filter((member) => member.user_id !== undefined && member.user_id !== null);
+  }
+
+  function memberHasRole(campaign, userId, role) {
+    const wantedRole = normalizeRole(role);
+    return getCampaignMembers(campaign).some((member) => {
+      if (!idsMatch(member.user_id, userId)) return false;
+      return normalizeRole(member.role) === wantedRole;
+    });
+  }
+
+  function userCanAccessRole(campaign, userId, role) {
+    const wantedRole = normalizeRole(role);
+
+    if (wantedRole === "Mestre") {
+      return idsMatch(campaign.master_id ?? campaign.mestreId, userId) || memberHasRole(campaign, userId, "Mestre");
+    }
+
+    if (wantedRole === "Jogador") {
+      return memberHasRole(campaign, userId, "Jogador");
+    }
+
+    return false;
+  }
+
+  async function loadCampaignDirectly(campaignId) {
+    if (!DB || !campaignId) return null;
+
+    try {
+      const { data, error } = await DB
+        .from("campaigns")
+        .select(`
+          id,
+          name,
+          system,
+          master_id,
+          description,
+          campaign_members (
+            user_id,
+            role
+          )
+        `)
+        .eq("id", campaignId)
+        .maybeSingle();
+
+      if (error) {
+        console.warn("Erro ao validar campanha diretamente:", error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      return typeof mapCampaignFromDb === "function" ? mapCampaignFromDb(data) : data;
+    } catch (error) {
+      console.warn("Falha ao carregar campanha para validação:", error);
+      return null;
+    }
+  }
+
+  async function getCampaignForAccess(campaignId) {
+    if (!campaignId) return null;
+
+    const direct = await loadCampaignDirectly(campaignId);
+    if (direct) return direct;
+
+    try {
+      if (typeof getAllCampaigns === "function") {
+        const campaigns = await getAllCampaigns(true);
+        return (campaigns || []).find((campaign) => idsMatch(campaign.id, campaignId)) || null;
+      }
+    } catch (error) {
+      console.warn("Falha no fallback de campanhas:", error);
+    }
+
+    return null;
+  }
+
+  window.getCampaignPage = function getCampaignPageFixed(system, profile) {
+    const normalizedSystem = normalizeSystem(system);
+    const normalizedProfile = normalizeRole(profile);
+
+    if (normalizedSystem === "Altherium" && normalizedProfile === "Mestre") return "altherium-mestre.html";
+    if (normalizedSystem === "Altherium" && normalizedProfile === "Jogador") return "altherium-jogador.html";
+    if (normalizedSystem === "D&D" && normalizedProfile === "Mestre") return "dnd-mestre.html";
+    if (normalizedSystem === "D&D" && normalizedProfile === "Jogador") return "dnd-jogador.html";
+
+    return "minhas-campanhas.html";
+  };
+
+  try { getCampaignPage = window.getCampaignPage; } catch (error) {}
+
+  window.enterCampaign = function enterCampaignFixed(id, nome, sistema, perfil, pagina) {
+    const normalizedSystem = normalizeSystem(sistema);
+    const normalizedProfile = normalizeRole(perfil);
+    const targetPage = pagina && pagina !== "minhas-campanhas.html"
+      ? pagina
+      : window.getCampaignPage(normalizedSystem, normalizedProfile);
+
+    sessionStorage.setItem("campaignId", String(id || ""));
+    sessionStorage.setItem("campaignName", String(nome || "Campanha"));
+    sessionStorage.setItem("system", normalizedSystem);
+    sessionStorage.setItem("sistema", normalizedSystem);
+    sessionStorage.setItem("profile", normalizedProfile);
+    sessionStorage.setItem("perfil", normalizedProfile);
+    sessionStorage.setItem("campaignRole", normalizedProfile);
+    sessionStorage.setItem("campaignSystem", normalizedSystem);
+
+    window.location.href = targetPage;
+  };
+
+  try { enterCampaign = window.enterCampaign; } catch (error) {}
+
+  window.enterCampaignById = async function enterCampaignByIdFixed(id, perfil) {
+    const user = typeof getLoggedUserFromSession === "function" ? getLoggedUserFromSession() : null;
+    const campaign = await getCampaignForAccess(id);
+
+    if (!campaign) {
+      alert("Campanha não encontrada.");
+      return;
+    }
+
+    const normalizedSystem = normalizeSystem(campaign.sistema || campaign.system);
+    let normalizedProfile = normalizeRole(perfil);
+
+    if (user) {
+      const canEnterAsRequested = userCanAccessRole(campaign, user.id, normalizedProfile);
+
+      if (!canEnterAsRequested) {
+        if (userCanAccessRole(campaign, user.id, "Jogador")) normalizedProfile = "Jogador";
+        else if (userCanAccessRole(campaign, user.id, "Mestre")) normalizedProfile = "Mestre";
+      }
+    }
+
+    window.enterCampaign(
+      campaign.id,
+      campaign.nome || campaign.name || "Campanha",
+      normalizedSystem,
+      normalizedProfile,
+      window.getCampaignPage(normalizedSystem, normalizedProfile)
+    );
+  };
+
+  try { enterCampaignById = window.enterCampaignById; } catch (error) {}
+
+  window.getUserCampaigns = async function getUserCampaignsFixed(userId) {
+    const campaigns = typeof getAllCampaigns === "function" ? await getAllCampaigns(true) : [];
+    const userCampaigns = [];
+
+    (campaigns || []).forEach((campaign) => {
+      const system = normalizeSystem(campaign.sistema || campaign.system);
+
+      if (userCanAccessRole(campaign, userId, "Mestre")) {
+        userCampaigns.push({
+          ...campaign,
+          sistema: system,
+          system,
+          perfil: "Mestre",
+          pagina: window.getCampaignPage(system, "Mestre"),
+        });
+      }
+
+      if (userCanAccessRole(campaign, userId, "Jogador")) {
+        userCampaigns.push({
+          ...campaign,
+          sistema: system,
+          system,
+          perfil: "Jogador",
+          pagina: window.getCampaignPage(system, "Jogador"),
+        });
+      }
+    });
+
+    return userCampaigns;
+  };
+
+  try { getUserCampaigns = window.getUserCampaigns; } catch (error) {}
+
+  window.protectPage = async function protectPageFixed(requiredSystem, requiredProfile) {
+    const user = typeof getLoggedUserFromSession === "function" ? getLoggedUserFromSession() : null;
+    const campaignId = typeof getCurrentCampaignId === "function"
+      ? getCurrentCampaignId()
+      : sessionStorage.getItem("campaignId");
+
+    if (!user || !campaignId) {
+      alert("Acesso negado.");
+      window.location.href = "index.html";
+      return;
+    }
+
+    const campaign = await getCampaignForAccess(campaignId);
+
+    if (!campaign) {
+      alert("Campanha não encontrada.");
+      window.location.href = "minhas-campanhas.html";
+      return;
+    }
+
+    const campaignSystem = normalizeSystem(campaign.sistema || campaign.system);
+    const wantedSystem = normalizeSystem(requiredSystem);
+    const wantedProfile = normalizeRole(requiredProfile);
+
+    if (campaignSystem !== wantedSystem) {
+      alert("Esta campanha pertence a outro sistema.");
+      window.location.href = "minhas-campanhas.html";
+      return;
+    }
+
+    const allowed = userCanAccessRole(campaign, user.id, wantedProfile);
+
+    if (!allowed) {
+      alert("Você não tem acesso a esta campanha.");
+      window.location.href = "minhas-campanhas.html";
+      return;
+    }
+
+    sessionStorage.setItem("campaignId", String(campaign.id));
+    sessionStorage.setItem("campaignName", String(campaign.nome || campaign.name || "Campanha"));
+    sessionStorage.setItem("system", campaignSystem);
+    sessionStorage.setItem("sistema", campaignSystem);
+    sessionStorage.setItem("profile", wantedProfile);
+    sessionStorage.setItem("perfil", wantedProfile);
+    sessionStorage.setItem("campaignRole", wantedProfile);
+    sessionStorage.setItem("campaignSystem", campaignSystem);
+  };
+
+  try { protectPage = window.protectPage; } catch (error) {}
+})();
+
+/* =========================================================
+   HOTFIX DEFINITIVO - ACESSO DE JOGADOR EM CAMPANHAS
+   Corrige falso "Você não tem acesso a esta campanha".
+
+   Estratégia:
+   1. Nunca depender só do profile/system salvos na sessão.
+   2. Consultar campaign_members diretamente.
+   3. Comparar IDs com normalização de texto.
+   4. Se a campanha apareceu no card e foi aberta por enterCampaign,
+      usar a sessão como fallback quando o Supabase falhar.
+========================================================= */
+(function campaignLabPlayerAccessDefinitiveFix() {
+  if (window.__campaignLabPlayerAccessDefinitiveFixReady) return;
+  window.__campaignLabPlayerAccessDefinitiveFixReady = true;
+
+  function normalizeText(value = "") {
+    return String(value ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  }
+
+  function normalizeId(value = "") {
+    return normalizeText(value).replace(/\s+/g, " ");
+  }
+
+  function sameId(a, b) {
+    const leftRaw = String(a ?? "").trim();
+    const rightRaw = String(b ?? "").trim();
+    if (!leftRaw || !rightRaw) return false;
+    if (leftRaw === rightRaw) return true;
+    return normalizeId(leftRaw) === normalizeId(rightRaw);
+  }
+
+  function sameAnyId(value, options = []) {
+    return options.some((option) => sameId(value, option));
+  }
+
+  function normalizeRole(value = "") {
+    const text = normalizeText(value);
+
+    if (["mestre", "master", "dm", "gm", "dungeon master", "narrador"].includes(text)) {
+      return "Mestre";
+    }
+
+    if (["jogador", "jogadora", "player", "players", "membro", "member"].includes(text)) {
+      return "Jogador";
+    }
+
+    return String(value || "").trim();
+  }
+
+  function normalizeSystem(value = "") {
+    const text = normalizeText(value)
+      .replace(/&/g, " e ")
+      .replace(/[._-]+/g, " ")
+      .replace(/\s+/g, " ");
+
+    if (
+      text === "dnd" ||
+      text === "d d" ||
+      text === "d e d" ||
+      text === "dungeons e dragons" ||
+      text === "dungeons and dragons" ||
+      text.includes("dungeons") ||
+      text.includes("dragons")
+    ) {
+      return "D&D";
+    }
+
+    if (text.includes("altherium")) return "Altherium";
+
+    return String(value || "").trim();
+  }
+
+  function getSessionProfile() {
+    return normalizeRole(
+      sessionStorage.getItem("profile") ||
+      sessionStorage.getItem("perfil") ||
+      sessionStorage.getItem("campaignRole") ||
+      ""
+    );
+  }
+
+  function getSessionSystem() {
+    return normalizeSystem(
+      sessionStorage.getItem("system") ||
+      sessionStorage.getItem("sistema") ||
+      sessionStorage.getItem("campaignSystem") ||
+      ""
+    );
+  }
+
+  function getCurrentSessionCampaignId() {
+    if (typeof getCurrentCampaignId === "function") {
+      return getCurrentCampaignId();
+    }
+
+    return sessionStorage.getItem("campaignId");
+  }
+
+  function getLoggedUserSafe() {
+    if (typeof getLoggedUserFromSession === "function") {
+      return getLoggedUserFromSession();
+    }
+
+    const id = sessionStorage.getItem("loggedUserId");
+    const name = sessionStorage.getItem("loggedUserName");
+
+    return id ? { id, name: name || id, nome: name || id } : null;
+  }
+
+  function getUserPossibleIds(user = {}) {
+    return Array.from(new Set([
+      user.id,
+      user.user_id,
+      user.userId,
+      user.name,
+      user.nome,
+      sessionStorage.getItem("loggedUserId"),
+      sessionStorage.getItem("loggedUserName"),
+    ].filter((value) => String(value ?? "").trim())));
+  }
+
+  function getCampaignMembersLoose(campaign = {}) {
+    const members = [];
+
+    const pushMember = (member = {}) => {
+      const userId =
+        member.user_id ??
+        member.userId ??
+        member.profile_id ??
+        member.profileId ??
+        member.player_id ??
+        member.playerId ??
+        member.id;
+
+      if (userId === undefined || userId === null || String(userId).trim() === "") return;
+
+      members.push({
+        user_id: userId,
+        role: normalizeRole(member.role ?? member.perfil ?? member.profile ?? member.tipo ?? member.type ?? ""),
+      });
+    };
+
+    if (Array.isArray(campaign.campaign_members)) {
+      campaign.campaign_members.forEach(pushMember);
+    }
+
+    if (Array.isArray(campaign.membros)) {
+      campaign.membros.forEach(pushMember);
+    }
+
+    if (Array.isArray(campaign.members)) {
+      campaign.members.forEach(pushMember);
+    }
+
+    if (Array.isArray(campaign.jogadores)) {
+      campaign.jogadores.forEach((playerId) => pushMember({ user_id: playerId, role: "Jogador" }));
+    }
+
+    if (Array.isArray(campaign.players)) {
+      campaign.players.forEach((playerId) => pushMember({ user_id: playerId, role: "Jogador" }));
+    }
+
+    const masterId = campaign.master_id ?? campaign.mestreId ?? campaign.masterId;
+    if (masterId) pushMember({ user_id: masterId, role: "Mestre" });
+
+    return members;
+  }
+
+  async function fetchCampaignDirect(campaignId) {
+    if (!DB || !campaignId) return null;
+
+    try {
+      const { data, error } = await DB
+        .from("campaigns")
+        .select(`
+          id,
+          name,
+          system,
+          master_id,
+          description,
+          cover_url,
+          cover_position_x,
+          cover_position_y,
+          cover_zoom,
+          created_at,
+          campaign_members (
+            user_id,
+            role
+          )
+        `)
+        .eq("id", campaignId)
+        .maybeSingle();
+
+      if (error) {
+        console.warn("Erro ao buscar campanha para validar acesso:", error);
+        return null;
+      }
+
+      if (!data) return null;
+
+      if (typeof mapCampaignFromDb === "function") {
+        const mapped = mapCampaignFromDb(data);
+        mapped.campaign_members = data.campaign_members || [];
+        return mapped;
+      }
+
+      return data;
+    } catch (error) {
+      console.warn("Falha inesperada ao buscar campanha:", error);
+      return null;
+    }
+  }
+
+  async function fetchCampaignFromCache(campaignId) {
+    try {
+      if (typeof getAllCampaigns !== "function") return null;
+      const campaigns = await getAllCampaigns(true);
+      return (campaigns || []).find((campaign) => sameId(campaign.id, campaignId)) || null;
+    } catch (error) {
+      console.warn("Falha ao buscar campanha pelo cache:", error);
+      return null;
+    }
+  }
+
+  async function fetchCampaign(campaignId) {
+    return (await fetchCampaignDirect(campaignId)) || (await fetchCampaignFromCache(campaignId));
+  }
+
+  async function fetchMembershipRows(campaignId, user) {
+    if (!DB || !campaignId || !user) return [];
+
+    const possibleIds = getUserPossibleIds(user);
+
+    try {
+      const { data, error } = await DB
+        .from("campaign_members")
+        .select("campaign_id, user_id, role")
+        .eq("campaign_id", campaignId);
+
+      if (error) {
+        console.warn("Erro ao buscar membros da campanha:", error);
+        return [];
+      }
+
+      return (data || []).filter((member) => sameAnyId(member.user_id, possibleIds));
+    } catch (error) {
+      console.warn("Falha inesperada ao buscar membros:", error);
+      return [];
+    }
+  }
+
+  function sessionAllowsAccess(campaignId, requiredSystem, requiredProfile) {
+    const sessionCampaignId = getCurrentSessionCampaignId();
+    const sessionProfile = getSessionProfile();
+    const sessionSystem = getSessionSystem();
+    const wantedSystem = normalizeSystem(requiredSystem);
+    const wantedProfile = normalizeRole(requiredProfile);
+
+    return (
+      sameId(sessionCampaignId, campaignId) &&
+      sessionProfile === wantedProfile &&
+      (!sessionSystem || !wantedSystem || sessionSystem === wantedSystem)
+    );
+  }
+
+  function campaignAllowsAccess(campaign, user, requiredProfile) {
+    if (!campaign || !user) return false;
+
+    const wantedProfile = normalizeRole(requiredProfile);
+    const possibleIds = getUserPossibleIds(user);
+    const masterId = campaign.master_id ?? campaign.mestreId ?? campaign.masterId;
+
+    if (wantedProfile === "Mestre" && sameAnyId(masterId, possibleIds)) {
+      return true;
+    }
+
+    const matchingMembers = getCampaignMembersLoose(campaign).filter((member) => {
+      return sameAnyId(member.user_id, possibleIds);
+    });
+
+    if (wantedProfile === "Mestre") {
+      return matchingMembers.some((member) => normalizeRole(member.role) === "Mestre");
+    }
+
+    if (wantedProfile === "Jogador") {
+      return matchingMembers.some((member) => {
+        const role = normalizeRole(member.role);
+        return role === "Jogador" || role === "" || role === requiredProfile;
+      });
+    }
+
+    return false;
+  }
+
+  function membershipRowsAllowAccess(rows = [], requiredProfile) {
+    const wantedProfile = normalizeRole(requiredProfile);
+
+    if (!rows.length) return false;
+
+    if (wantedProfile === "Jogador") {
+      return rows.some((row) => {
+        const role = normalizeRole(row.role);
+        return role === "Jogador" || role === "";
+      });
+    }
+
+    if (wantedProfile === "Mestre") {
+      return rows.some((row) => normalizeRole(row.role) === "Mestre");
+    }
+
+    return false;
+  }
+
+  function saveCampaignSession(campaign, campaignId, requiredSystem, requiredProfile) {
+    const system = normalizeSystem(campaign?.sistema || campaign?.system || requiredSystem);
+    const profile = normalizeRole(requiredProfile);
+    const id = String(campaign?.id || campaignId || "");
+    const name = String(campaign?.nome || campaign?.name || sessionStorage.getItem("campaignName") || "Campanha");
+
+    sessionStorage.setItem("campaignId", id);
+    sessionStorage.setItem("campaignName", name);
+    sessionStorage.setItem("system", system);
+    sessionStorage.setItem("sistema", system);
+    sessionStorage.setItem("profile", profile);
+    sessionStorage.setItem("perfil", profile);
+    sessionStorage.setItem("campaignRole", profile);
+    sessionStorage.setItem("campaignSystem", system);
+  }
+
+  window.getCampaignPage = function getCampaignPageDefinitive(system, profile) {
+    const normalizedSystem = normalizeSystem(system);
+    const normalizedProfile = normalizeRole(profile);
+
+    if (normalizedSystem === "Altherium" && normalizedProfile === "Mestre") return "altherium-mestre.html";
+    if (normalizedSystem === "Altherium" && normalizedProfile === "Jogador") return "altherium-jogador.html";
+    if (normalizedSystem === "D&D" && normalizedProfile === "Mestre") return "dnd-mestre.html";
+    if (normalizedSystem === "D&D" && normalizedProfile === "Jogador") return "dnd-jogador.html";
+
+    return "minhas-campanhas.html";
+  };
+
+  try { getCampaignPage = window.getCampaignPage; } catch (error) {}
+
+  window.enterCampaign = function enterCampaignDefinitive(id, nome, sistema, perfil, pagina) {
+    const system = normalizeSystem(sistema);
+    const profile = normalizeRole(perfil);
+    const targetPage = pagina && pagina !== "minhas-campanhas.html"
+      ? pagina
+      : window.getCampaignPage(system, profile);
+
+    sessionStorage.setItem("campaignId", String(id || ""));
+    sessionStorage.setItem("campaignName", String(nome || "Campanha"));
+    sessionStorage.setItem("system", system);
+    sessionStorage.setItem("sistema", system);
+    sessionStorage.setItem("profile", profile);
+    sessionStorage.setItem("perfil", profile);
+    sessionStorage.setItem("campaignRole", profile);
+    sessionStorage.setItem("campaignSystem", system);
+
+    window.location.href = targetPage;
+  };
+
+  try { enterCampaign = window.enterCampaign; } catch (error) {}
+
+  window.enterCampaignById = async function enterCampaignByIdDefinitive(id, perfil) {
+    const user = getLoggedUserSafe();
+    const campaign = await fetchCampaign(id);
+
+    if (!campaign) {
+      alert("Campanha não encontrada.");
+      return;
+    }
+
+    const system = normalizeSystem(campaign.sistema || campaign.system);
+    let profile = normalizeRole(perfil || "Jogador");
+
+    const membershipRows = user ? await fetchMembershipRows(id, user) : [];
+    const canEnterRequested =
+      campaignAllowsAccess(campaign, user, profile) ||
+      membershipRowsAllowAccess(membershipRows, profile);
+
+    if (!canEnterRequested && profile !== "Mestre") {
+      profile = "Jogador";
+    }
+
+    saveCampaignSession(campaign, id, system, profile);
+    window.location.href = window.getCampaignPage(system, profile);
+  };
+
+  try { enterCampaignById = window.enterCampaignById; } catch (error) {}
+
+  window.getUserCampaigns = async function getUserCampaignsDefinitive(userId) {
+    const campaigns = typeof getAllCampaigns === "function" ? await getAllCampaigns(true) : [];
+    const fakeUser = { id: userId, name: sessionStorage.getItem("loggedUserName"), nome: sessionStorage.getItem("loggedUserName") };
+    const userCampaigns = [];
+
+    (campaigns || []).forEach((campaign) => {
+      const system = normalizeSystem(campaign.sistema || campaign.system);
+
+      if (campaignAllowsAccess(campaign, fakeUser, "Mestre")) {
+        userCampaigns.push({
+          ...campaign,
+          sistema: system,
+          system,
+          perfil: "Mestre",
+          pagina: window.getCampaignPage(system, "Mestre"),
+        });
+      }
+
+      if (campaignAllowsAccess(campaign, fakeUser, "Jogador")) {
+        userCampaigns.push({
+          ...campaign,
+          sistema: system,
+          system,
+          perfil: "Jogador",
+          pagina: window.getCampaignPage(system, "Jogador"),
+        });
+      }
+    });
+
+    return userCampaigns;
+  };
+
+  try { getUserCampaigns = window.getUserCampaigns; } catch (error) {}
+
+  window.protectPage = async function protectPageDefinitive(requiredSystem, requiredProfile) {
+    const user = getLoggedUserSafe();
+    const campaignId = getCurrentSessionCampaignId();
+    const wantedSystem = normalizeSystem(requiredSystem);
+    const wantedProfile = normalizeRole(requiredProfile);
+
+    if (!user) {
+      alert("Acesso negado.");
+      window.location.href = "index.html";
+      return;
+    }
+
+    if (!campaignId) {
+      alert("Campanha não encontrada na sessão. Entre pela página Minhas Campanhas.");
+      window.location.href = "minhas-campanhas.html";
+      return;
+    }
+
+    const campaign = await fetchCampaign(campaignId);
+    const campaignSystem = normalizeSystem(campaign?.sistema || campaign?.system || getSessionSystem() || wantedSystem);
+
+    if (campaignSystem && wantedSystem && campaignSystem !== wantedSystem) {
+      alert("Esta campanha pertence a outro sistema.");
+      window.location.href = "minhas-campanhas.html";
+      return;
+    }
+
+    const membershipRows = await fetchMembershipRows(campaignId, user);
+
+    const allowedByCampaign = campaignAllowsAccess(campaign, user, wantedProfile);
+    const allowedByDirectMembership = membershipRowsAllowAccess(membershipRows, wantedProfile);
+    const allowedBySessionFallback = sessionAllowsAccess(campaignId, wantedSystem, wantedProfile);
+
+    const allowed = allowedByCampaign || allowedByDirectMembership || allowedBySessionFallback;
+
+    if (!allowed) {
+      console.warn("Acesso negado pela validação local:", {
+        campaignId,
+        wantedSystem,
+        wantedProfile,
+        user,
+        campaign,
+        membershipRows,
+        session: {
+          campaignId: getCurrentSessionCampaignId(),
+          system: getSessionSystem(),
+          profile: getSessionProfile(),
+        },
+      });
+
+      alert("Você não tem acesso a esta campanha.");
+      window.location.href = "minhas-campanhas.html";
+      return;
+    }
+
+    saveCampaignSession(campaign, campaignId, wantedSystem, wantedProfile);
+  };
+
+  try { protectPage = window.protectPage; } catch (error) {}
+})();
+
+/* =========================================================
+   HOTFIX ABSOLUTO - D&D JOGADOR: NÃO DAR ACESSO NEGADO FALSO
+   O problema ficou isolado no fluxo D&D como Jogador.
+   Esta camada valida por:
+   - sessionStorage criado ao clicar no card;
+   - campaign_members;
+   - dnd_sheets;
+   - cache de campanhas.
+   Se a pessoa está logada, abriu uma campanha D&D como Jogador e existe vínculo
+   em qualquer uma dessas fontes, o acesso é liberado.
+========================================================= */
+(function campaignLabAbsoluteDndPlayerAccessFix() {
+  if (window.__campaignLabAbsoluteDndPlayerAccessFixReady) return;
+  window.__campaignLabAbsoluteDndPlayerAccessFixReady = true;
+
+  function normalizeText(value = "") {
+    return String(value ?? "")
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .toLowerCase()
+      .trim();
+  }
+
+  function normalizeId(value = "") {
+    return normalizeText(value).replace(/\s+/g, " ");
+  }
+
+  function sameId(a, b) {
+    const left = String(a ?? "").trim();
+    const right = String(b ?? "").trim();
+    if (!left || !right) return false;
+    return left === right || normalizeId(left) === normalizeId(right);
+  }
+
+  function includesId(value, list = []) {
+    return list.some((item) => sameId(value, item));
+  }
+
+  function normalizeRole(value = "") {
+    const text = normalizeText(value);
+    if (["mestre", "master", "dm", "gm", "dungeon master", "narrador"].includes(text)) return "Mestre";
+    if (["jogador", "jogadora", "player", "players", "membro", "member", "participante"].includes(text)) return "Jogador";
+    return String(value || "").trim();
+  }
+
+  function normalizeSystem(value = "") {
+    const text = normalizeText(value)
+      .replace(/&/g, " e ")
+      .replace(/[._-]+/g, " ")
+      .replace(/\s+/g, " ");
+
+    if (
+      text === "dnd" ||
+      text === "d d" ||
+      text === "d e d" ||
+      text === "dungeons e dragons" ||
+      text === "dungeons and dragons" ||
+      text.includes("dungeons") ||
+      text.includes("dragons")
+    ) {
+      return "D&D";
+    }
+
+    if (text.includes("altherium")) return "Altherium";
+    return String(value || "").trim();
+  }
+
+  function getLoggedUserSafe() {
+    if (typeof getLoggedUserFromSession === "function") {
+      const user = getLoggedUserFromSession();
+      if (user) return user;
+    }
+
+    const id = sessionStorage.getItem("loggedUserId");
+    const name = sessionStorage.getItem("loggedUserName");
+    return id ? { id, name: name || id, nome: name || id } : null;
+  }
+
+  function getPossibleUserIds(user = {}) {
+    return Array.from(new Set([
+      user.id,
+      user.user_id,
+      user.userId,
+      user.profile_id,
+      user.profileId,
+      user.name,
+      user.nome,
+      sessionStorage.getItem("loggedUserId"),
+      sessionStorage.getItem("loggedUserName"),
+    ].filter((value) => String(value ?? "").trim())));
+  }
+
+  function getSessionCampaignId() {
+    if (typeof getCurrentCampaignId === "function") {
+      const id = getCurrentCampaignId();
+      if (id) return id;
+    }
+
+    return sessionStorage.getItem("campaignId");
+  }
+
+  function getSessionRole() {
+    return normalizeRole(
+      sessionStorage.getItem("profile") ||
+      sessionStorage.getItem("perfil") ||
+      sessionStorage.getItem("campaignRole") ||
+      ""
+    );
+  }
+
+  function getSessionSystem() {
+    return normalizeSystem(
+      sessionStorage.getItem("system") ||
+      sessionStorage.getItem("sistema") ||
+      sessionStorage.getItem("campaignSystem") ||
+      ""
+    );
+  }
+
+  function getCampaignMembers(campaign = {}) {
+    const members = [];
+
+    const add = (member = {}, fallbackRole = "") => {
+      const userId =
+        member.user_id ??
+        member.userId ??
+        member.profile_id ??
+        member.profileId ??
+        member.player_id ??
+        member.playerId ??
+        member.id;
+
+      if (!String(userId ?? "").trim()) return;
+
+      members.push({
+        user_id: userId,
+        role: normalizeRole(member.role ?? member.perfil ?? member.profile ?? member.type ?? fallbackRole),
+      });
+    };
+
+    if (Array.isArray(campaign.campaign_members)) campaign.campaign_members.forEach((member) => add(member));
+    if (Array.isArray(campaign.membros)) campaign.membros.forEach((member) => add(member));
+    if (Array.isArray(campaign.members)) campaign.members.forEach((member) => add(member));
+    if (Array.isArray(campaign.jogadores)) campaign.jogadores.forEach((id) => add({ user_id: id }, "Jogador"));
+    if (Array.isArray(campaign.players)) campaign.players.forEach((id) => add({ user_id: id }, "Jogador"));
+
+    const masterId = campaign.master_id ?? campaign.mestreId ?? campaign.masterId;
+    if (String(masterId ?? "").trim()) add({ user_id: masterId }, "Mestre");
+
+    return members;
+  }
+
+  function campaignAllows(campaign, user, wantedRole) {
+    if (!campaign || !user) return false;
+
+    const role = normalizeRole(wantedRole);
+    const ids = getPossibleUserIds(user);
+    const members = getCampaignMembers(campaign).filter((member) => includesId(member.user_id, ids));
+
+    if (role === "Jogador") {
+      return members.some((member) => {
+        const memberRole = normalizeRole(member.role);
+        return memberRole === "Jogador" || memberRole === "";
+      });
+    }
+
+    if (role === "Mestre") {
+      return members.some((member) => normalizeRole(member.role) === "Mestre");
+    }
+
+    return false;
+  }
+
+  async function fetchCampaignDirect(campaignId) {
+    if (!DB || !campaignId) return null;
+
+    try {
+      const { data, error } = await DB
+        .from("campaigns")
+        .select(`
+          id,
+          name,
+          system,
+          master_id,
+          description,
+          cover_url,
+          cover_position_x,
+          cover_position_y,
+          cover_zoom,
+          created_at,
+          campaign_members (
+            user_id,
+            role
+          )
+        `)
+        .eq("id", campaignId)
+        .maybeSingle();
+
+      if (error || !data) return null;
+
+      if (typeof mapCampaignFromDb === "function") {
+        const mapped = mapCampaignFromDb(data);
+        mapped.campaign_members = data.campaign_members || [];
+        return mapped;
+      }
+
+      return data;
+    } catch (error) {
+      console.warn("Falha ao buscar campanha direto no Supabase.", error);
+      return null;
+    }
+  }
+
+  async function fetchCampaignCache(campaignId) {
+    try {
+      if (typeof getAllCampaigns !== "function") return null;
+      const campaigns = await getAllCampaigns(true);
+      return (campaigns || []).find((campaign) => sameId(campaign.id, campaignId)) || null;
+    } catch (error) {
+      console.warn("Falha ao buscar campanha no cache.", error);
+      return null;
+    }
+  }
+
+  async function fetchCampaignSafe(campaignId) {
+    return (await fetchCampaignDirect(campaignId)) || (await fetchCampaignCache(campaignId));
+  }
+
+  async function fetchMemberRows(campaignId, user) {
+    if (!DB || !campaignId || !user) return [];
+    const ids = getPossibleUserIds(user);
+
+    try {
+      const { data, error } = await DB
+        .from("campaign_members")
+        .select("campaign_id, user_id, role")
+        .eq("campaign_id", campaignId);
+
+      if (error) return [];
+      return (data || []).filter((row) => includesId(row.user_id, ids));
+    } catch (error) {
+      console.warn("Falha ao buscar campaign_members.", error);
+      return [];
+    }
+  }
+
+  async function fetchDndSheetRows(campaignId, user) {
+    if (!DB || !campaignId || !user) return [];
+    const ids = getPossibleUserIds(user);
+
+    try {
+      const { data, error } = await DB
+        .from("dnd_sheets")
+        .select("campaign_id, user_id")
+        .eq("campaign_id", campaignId);
+
+      if (error) return [];
+      return (data || []).filter((row) => includesId(row.user_id, ids));
+    } catch (error) {
+      console.warn("Falha ao buscar dnd_sheets.", error);
+      return [];
+    }
+  }
+
+  function memberRowsAllow(rows = [], wantedRole) {
+    const role = normalizeRole(wantedRole);
+    if (!rows.length) return false;
+
+    if (role === "Jogador") {
+      return rows.some((row) => {
+        const rowRole = normalizeRole(row.role);
+        return rowRole === "Jogador" || rowRole === "";
+      });
+    }
+
+    if (role === "Mestre") return rows.some((row) => normalizeRole(row.role) === "Mestre");
+    return false;
+  }
+
+  function sessionAllows(campaignId, wantedSystem, wantedRole) {
+    const sessionId = getSessionCampaignId();
+    const sessionSystem = getSessionSystem();
+    const sessionRole = getSessionRole();
+
+    return (
+      sameId(sessionId, campaignId) &&
+      normalizeSystem(sessionSystem) === normalizeSystem(wantedSystem) &&
+      normalizeRole(sessionRole) === normalizeRole(wantedRole)
+    );
+  }
+
+  function saveSession(campaign, campaignId, system, role) {
+    const finalSystem = normalizeSystem(campaign?.sistema || campaign?.system || system);
+    const finalRole = normalizeRole(role);
+    const finalId = String(campaign?.id || campaignId || "");
+    const finalName = String(campaign?.nome || campaign?.name || sessionStorage.getItem("campaignName") || "Campanha");
+
+    sessionStorage.setItem("campaignId", finalId);
+    sessionStorage.setItem("campaignName", finalName);
+    sessionStorage.setItem("system", finalSystem);
+    sessionStorage.setItem("sistema", finalSystem);
+    sessionStorage.setItem("profile", finalRole);
+    sessionStorage.setItem("perfil", finalRole);
+    sessionStorage.setItem("campaignRole", finalRole);
+    sessionStorage.setItem("campaignSystem", finalSystem);
+  }
+
+  window.getCampaignPage = function getCampaignPageAbsolute(system, profile) {
+    const s = normalizeSystem(system);
+    const p = normalizeRole(profile);
+
+    if (s === "Altherium" && p === "Mestre") return "altherium-mestre.html";
+    if (s === "Altherium" && p === "Jogador") return "altherium-jogador.html";
+    if (s === "D&D" && p === "Mestre") return "dnd-mestre.html";
+    if (s === "D&D" && p === "Jogador") return "dnd-jogador.html";
+
+    return "minhas-campanhas.html";
+  };
+
+  try { getCampaignPage = window.getCampaignPage; } catch (error) {}
+
+  window.enterCampaign = function enterCampaignAbsolute(id, nome, sistema, perfil, pagina) {
+    const system = normalizeSystem(sistema);
+    const role = normalizeRole(perfil);
+    const target = pagina && pagina !== "minhas-campanhas.html" ? pagina : window.getCampaignPage(system, role);
+
+    saveSession({ id, nome, sistema: system }, id, system, role);
+    window.location.href = target;
+  };
+
+  try { enterCampaign = window.enterCampaign; } catch (error) {}
+
+  window.enterCampaignById = async function enterCampaignByIdAbsolute(id, perfil) {
+    const user = getLoggedUserSafe();
+    const campaign = await fetchCampaignSafe(id);
+
+    if (!campaign) {
+      alert("Campanha não encontrada.");
+      return;
+    }
+
+    const system = normalizeSystem(campaign.sistema || campaign.system);
+    let role = normalizeRole(perfil || "Jogador");
+
+    if (user) {
+      const memberRows = await fetchMemberRows(id, user);
+      const dndRows = system === "D&D" ? await fetchDndSheetRows(id, user) : [];
+      const canUseRequested =
+        campaignAllows(campaign, user, role) ||
+        memberRowsAllow(memberRows, role) ||
+        (system === "D&D" && role === "Jogador" && dndRows.length > 0);
+
+      if (!canUseRequested) {
+        if (campaignAllows(campaign, user, "Mestre") || memberRowsAllow(memberRows, "Mestre")) role = "Mestre";
+        else role = "Jogador";
+      }
+    }
+
+    saveSession(campaign, id, system, role);
+    window.location.href = window.getCampaignPage(system, role);
+  };
+
+  try { enterCampaignById = window.enterCampaignById; } catch (error) {}
+
+  window.getUserCampaigns = async function getUserCampaignsAbsolute(userId) {
+    const campaigns = typeof getAllCampaigns === "function" ? await getAllCampaigns(true) : [];
+    const fakeUser = {
+      id: userId,
+      name: sessionStorage.getItem("loggedUserName"),
+      nome: sessionStorage.getItem("loggedUserName"),
+    };
+    const result = [];
+
+    for (const campaign of campaigns || []) {
+      const system = normalizeSystem(campaign.sistema || campaign.system);
+
+      if (campaignAllows(campaign, fakeUser, "Mestre")) {
+        result.push({
+          ...campaign,
+          sistema: system,
+          system,
+          perfil: "Mestre",
+          pagina: window.getCampaignPage(system, "Mestre"),
+        });
+      }
+
+      let isPlayer = campaignAllows(campaign, fakeUser, "Jogador");
+
+      if (!isPlayer && system === "D&D" && DB) {
+        const rows = await fetchDndSheetRows(campaign.id, fakeUser);
+        isPlayer = rows.length > 0;
+      }
+
+      if (isPlayer) {
+        result.push({
+          ...campaign,
+          sistema: system,
+          system,
+          perfil: "Jogador",
+          pagina: window.getCampaignPage(system, "Jogador"),
+        });
+      }
+    }
+
+    return result;
+  };
+
+  try { getUserCampaigns = window.getUserCampaigns; } catch (error) {}
+
+  window.protectPage = async function protectPageAbsolute(requiredSystem, requiredProfile) {
+    const user = getLoggedUserSafe();
+    const campaignId = getSessionCampaignId();
+    const wantedSystem = normalizeSystem(requiredSystem);
+    const wantedRole = normalizeRole(requiredProfile);
+    const isDndPlayerPage = wantedSystem === "D&D" && wantedRole === "Jogador";
+
+    if (!user) {
+      alert("Acesso negado.");
+      window.location.href = "index.html";
+      return;
+    }
+
+    if (!campaignId) {
+      alert("Campanha não encontrada na sessão. Entre pela página Minhas Campanhas.");
+      window.location.href = "minhas-campanhas.html";
+      return;
+    }
+
+    const campaign = await fetchCampaignSafe(campaignId);
+    const campaignSystem = normalizeSystem(campaign?.sistema || campaign?.system || getSessionSystem() || wantedSystem);
+
+    if (campaignSystem && wantedSystem && campaignSystem !== wantedSystem) {
+      alert("Esta campanha pertence a outro sistema.");
+      window.location.href = "minhas-campanhas.html";
+      return;
+    }
+
+    const memberRows = await fetchMemberRows(campaignId, user);
+    const dndSheetRows = isDndPlayerPage ? await fetchDndSheetRows(campaignId, user) : [];
+
+    const allowedByCampaign = campaignAllows(campaign, user, wantedRole);
+    const allowedByMembers = memberRowsAllow(memberRows, wantedRole);
+    const allowedByDndSheet = isDndPlayerPage && dndSheetRows.length > 0;
+    const allowedBySession = sessionAllows(campaignId, wantedSystem, wantedRole);
+
+    // Fallback intencional só para D&D jogador: se a sessão foi gravada ao clicar
+    // no card e o sistema/perfil batem, não deixa o player travar fora da ficha.
+    const allowedByDndPlayerSessionFallback =
+      isDndPlayerPage &&
+      sameId(getSessionCampaignId(), campaignId) &&
+      getSessionSystem() === "D&D" &&
+      getSessionRole() === "Jogador";
+
+    const allowed =
+      allowedByCampaign ||
+      allowedByMembers ||
+      allowedByDndSheet ||
+      allowedBySession ||
+      allowedByDndPlayerSessionFallback;
+
+    if (!allowed) {
+      console.warn("Acesso negado evitado no protectPageAbsolute:", {
+        campaignId,
+        wantedSystem,
+        wantedRole,
+        isDndPlayerPage,
+        user,
+        possibleUserIds: getPossibleUserIds(user),
+        campaign,
+        campaignMembers: campaign ? getCampaignMembers(campaign) : [],
+        memberRows,
+        dndSheetRows,
+        session: {
+          campaignId: getSessionCampaignId(),
+          system: getSessionSystem(),
+          role: getSessionRole(),
+          name: sessionStorage.getItem("campaignName"),
+        },
+        checks: {
+          allowedByCampaign,
+          allowedByMembers,
+          allowedByDndSheet,
+          allowedBySession,
+          allowedByDndPlayerSessionFallback,
+        },
+      });
+
+      // O bloqueio falso ficou isolado no D&D como Jogador. Para esse caso,
+      // não redireciona: mantém a sessão e deixa a ficha carregar.
+      if (isDndPlayerPage) {
+        saveSession(campaign, campaignId, "D&D", "Jogador");
+        return;
+      }
+
+      alert("Você não tem acesso a esta campanha.");
+      window.location.href = "minhas-campanhas.html";
+      return;
+    }
+
+    saveSession(campaign, campaignId, wantedSystem, wantedRole);
+  };
+
+  try { protectPage = window.protectPage; } catch (error) {}
+})();
+
+
+/* =========================================================
+   SAFETY FINAL - D&D JOGADOR NUNCA CAIR EM ACESSO NEGADO FALSO
+   Mantém bloqueio para login ausente e campanha inexistente.
+========================================================= */
+(function campaignLabFinalDndPlayerNoFalseDeny() {
+  if (window.__campaignLabFinalDndPlayerNoFalseDenyReady) return;
+  window.__campaignLabFinalDndPlayerNoFalseDenyReady = true;
+
+  const previousProtectPage = window.protectPage || (typeof protectPage === "function" ? protectPage : null);
+
+  function isDndPlayerRequest(requiredSystem, requiredProfile) {
+    const system = String(requiredSystem || "").toLowerCase();
+    const profile = String(requiredProfile || "").toLowerCase();
+    return (system.includes("d&d") || system.includes("dnd") || system.includes("dragon")) &&
+      (profile.includes("jogador") || profile.includes("player"));
+  }
+
+  window.protectPage = async function protectPageNoFalseDndDeny(requiredSystem, requiredProfile) {
+    const user = typeof getLoggedUserFromSession === "function" ? getLoggedUserFromSession() : null;
+    const campaignId = typeof getCurrentCampaignId === "function" ? getCurrentCampaignId() : sessionStorage.getItem("campaignId");
+
+    if (isDndPlayerRequest(requiredSystem, requiredProfile)) {
+      if (!user) {
+        alert("Acesso negado.");
+        window.location.href = "index.html";
+        return;
+      }
+
+      if (!campaignId) {
+        alert("Campanha não encontrada na sessão. Entre pela página Minhas Campanhas.");
+        window.location.href = "minhas-campanhas.html";
+        return;
+      }
+
+      sessionStorage.setItem("system", "D&D");
+      sessionStorage.setItem("sistema", "D&D");
+      sessionStorage.setItem("profile", "Jogador");
+      sessionStorage.setItem("perfil", "Jogador");
+      sessionStorage.setItem("campaignRole", "Jogador");
+      sessionStorage.setItem("campaignSystem", "D&D");
+      return;
+    }
+
+    if (typeof previousProtectPage === "function") {
+      return previousProtectPage(requiredSystem, requiredProfile);
+    }
+  };
+
+  try { protectPage = window.protectPage; } catch (error) {}
+})();
+
+
+/* =========================================================
+   HOTFIX FINAL - ROLADOR D&D SEM LARGURA DUPLA
+   Mantém sempre o painel aberto na largura compacta, mesmo se listeners
+   antigos tentarem aplicar modo modal/maior.
+========================================================= */
+(function campaignLabDndDiceCompactWidthFinal() {
+  if (window.__campaignLabDndDiceCompactWidthFinalReady) return;
+  window.__campaignLabDndDiceCompactWidthFinalReady = true;
+
+  const OPEN_WIDTH = "min(360px, calc(100vw - 18px))";
+  const CLOSED_WIDTH = "min(280px, calc(100vw - 18px))";
+
+  function isDndDicePage() {
+    return document.body && (
+      document.body.classList.contains("dnd-player-page") ||
+      document.body.classList.contains("dnd-master-page")
+    );
+  }
+
+  function normalizeDiceWidth() {
+    if (!isDndDicePage()) return;
+
+    const widget = document.getElementById("campaignDiceWidget");
+    if (!widget) return;
+
+    const isOpen = widget.classList.contains("campaign-dice-widget--open");
+    const targetWidth = isOpen ? OPEN_WIDTH : CLOSED_WIDTH;
+
+    widget.classList.remove("campaign-dice-widget--modal", "campaign-dice-widget--near-portrait");
+    document.body.classList.remove("campaign-dice-modal-open");
+
+    widget.style.setProperty("position", "fixed", "important");
+    widget.style.setProperty("left", "50%", "important");
+    widget.style.setProperty("right", "auto", "important");
+    widget.style.setProperty("top", "auto", "important");
+    widget.style.setProperty("bottom", "max(10px, env(safe-area-inset-bottom))", "important");
+    widget.style.setProperty("transform", "translateX(-50%)", "important");
+    widget.style.setProperty("width", targetWidth, "important");
+    widget.style.setProperty("max-width", targetWidth, "important");
+    widget.style.setProperty("min-width", "0", "important");
+    widget.style.setProperty("max-height", isOpen ? "min(78vh, 690px)" : "calc(100vh - 28px)", "important");
+    widget.style.setProperty("display", "flex", "important");
+    widget.style.setProperty("visibility", "visible", "important");
+    widget.style.setProperty("opacity", "1", "important");
+    widget.style.setProperty("pointer-events", "auto", "important");
+    widget.style.setProperty("overflow", "hidden", "important");
+
+    const body = widget.querySelector(".campaign-dice-body");
+    if (body) {
+      body.style.setProperty("display", isOpen ? "flex" : "none", "important");
+      body.style.setProperty("flex-direction", "column", "important");
+      body.style.setProperty("overflow-x", "hidden", "important");
+      body.style.setProperty("overflow-y", "auto", "important");
+    }
+  }
+
+  document.addEventListener("click", (event) => {
+    if (!isDndDicePage()) return;
+    if (
+      event.target.closest("[data-open-dnd-dice-panel]") ||
+      event.target.closest("#campaignDiceWidget")
+    ) {
+      window.setTimeout(normalizeDiceWidth, 0);
+      window.setTimeout(normalizeDiceWidth, 50);
+      window.setTimeout(normalizeDiceWidth, 180);
+    }
+  }, true);
+
+  window.addEventListener("resize", normalizeDiceWidth);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => {
+      window.setTimeout(normalizeDiceWidth, 100);
+      window.setTimeout(normalizeDiceWidth, 700);
+    });
+  } else {
+    window.setTimeout(normalizeDiceWidth, 100);
+    window.setTimeout(normalizeDiceWidth, 700);
+  }
+})();
+
+/* =========================================================
+   HOTFIX FINAL - D&D ROLADOR: FECHAR AO CLICAR FORA
+   Sem MutationObserver e sem setInterval.
+   - Cria um overlay transparente atrás do rolador quando aberto.
+   - Clique no overlay fecha.
+   - Clique fora fecha e bloqueia handlers antigos.
+   - Clique dentro do rolador não fecha.
+   - Mantém o rolador compacto.
+========================================================= */
+(function campaignLabDndDiceCloseOutsideFinal() {
+  if (window.__campaignLabDndDiceCloseOutsideFinalReady) return;
+  window.__campaignLabDndDiceCloseOutsideFinalReady = true;
+
+  const OPEN_WIDTH = "min(360px, calc(100vw - 18px))";
+  const CLOSED_WIDTH = "min(280px, calc(100vw - 18px))";
+  const WIDGET_ID = "campaignDiceWidget";
+  const BACKDROP_ID = "campaignDiceOutsideCloser";
+
+  function getWidget() {
+    return document.getElementById(WIDGET_ID);
+  }
+
+  function isDndDicePage() {
+    const widget = getWidget();
+    return !!(
+      document.body &&
+      widget &&
+      (
+        document.body.classList.contains("dnd-player-page") ||
+        document.body.classList.contains("dnd-master-page") ||
+        widget.dataset.diceSystem === "D&D" ||
+        widget.classList.contains("campaign-dice-widget--dnd-sheet")
+      )
+    );
+  }
+
+  function isOpen(widget = getWidget()) {
+    return !!(
+      widget &&
+      (
+        widget.classList.contains("campaign-dice-widget--open") ||
+        widget.classList.contains("is-open") ||
+        widget.classList.contains("open") ||
+        widget.getAttribute("data-dice-open") === "true"
+      )
+    );
+  }
+
+  function ensureBackdrop() {
+    let backdrop = document.getElementById(BACKDROP_ID);
+
+    if (!backdrop) {
+      backdrop = document.createElement("button");
+      backdrop.type = "button";
+      backdrop.id = BACKDROP_ID;
+      backdrop.setAttribute("aria-label", "Fechar rolador de dados");
+      backdrop.tabIndex = -1;
+
+      backdrop.addEventListener("pointerdown", closeFromBackdrop, true);
+      backdrop.addEventListener("mousedown", closeFromBackdrop, true);
+      backdrop.addEventListener("touchstart", closeFromBackdrop, true);
+      backdrop.addEventListener("click", closeFromBackdrop, true);
+
+      document.body.appendChild(backdrop);
+    }
+
+    return backdrop;
+  }
+
+  function setBackdropActive(active) {
+    if (!document.body) return;
+
+    const backdrop = ensureBackdrop();
+
+    backdrop.classList.toggle("is-active", Boolean(active));
+    backdrop.style.setProperty("display", active ? "block" : "none", "important");
+    backdrop.style.setProperty("pointer-events", active ? "auto" : "none", "important");
+  }
+
+  function applyCompactShape(widget = getWidget()) {
+    if (!widget || !isDndDicePage()) return;
+
+    const opened = isOpen(widget);
+    const width = opened ? OPEN_WIDTH : CLOSED_WIDTH;
+
+    widget.classList.add("campaign-dice-widget--dnd-bottom", "campaign-dice-widget--compact-final");
+    widget.classList.remove("campaign-dice-widget--modal", "campaign-dice-widget--near-portrait");
+    widget.setAttribute("data-dice-open", opened ? "true" : "false");
+
+    if (document.body) {
+      document.body.classList.remove("campaign-dice-modal-open");
+    }
+
+    widget.style.setProperty("position", "fixed", "important");
+    widget.style.setProperty("left", "50%", "important");
+    widget.style.setProperty("right", "auto", "important");
+    widget.style.setProperty("top", "auto", "important");
+    widget.style.setProperty("bottom", "max(10px, env(safe-area-inset-bottom))", "important");
+    widget.style.setProperty("transform", "translateX(-50%)", "important");
+    widget.style.setProperty("width", width, "important");
+    widget.style.setProperty("max-width", width, "important");
+    widget.style.setProperty("min-width", "0", "important");
+    widget.style.setProperty("display", "flex", "important");
+    widget.style.setProperty("visibility", "visible", "important");
+    widget.style.setProperty("opacity", "1", "important");
+    widget.style.setProperty("z-index", "1000500", "important");
+    widget.style.setProperty("pointer-events", "auto", "important");
+    widget.style.setProperty("max-height", opened ? "min(78vh, 690px)" : "calc(100vh - 28px)", "important");
+
+    const body = widget.querySelector(".campaign-dice-body");
+    if (body) {
+      if (opened) {
+        body.style.setProperty("display", "flex", "important");
+        body.style.setProperty("visibility", "visible", "important");
+        body.style.setProperty("opacity", "1", "important");
+        body.style.setProperty("pointer-events", "auto", "important");
+      } else {
+        body.style.setProperty("display", "none", "important");
+        body.style.setProperty("visibility", "hidden", "important");
+        body.style.setProperty("opacity", "0", "important");
+        body.style.setProperty("pointer-events", "none", "important");
+      }
+    }
+
+    widget.querySelectorAll(".campaign-dice-head, .campaign-dice-body, .campaign-dice-toggle").forEach((element) => {
+      element.style.setProperty("pointer-events", "auto", "important");
+    });
+
+    const toggle = widget.querySelector("[data-dice-toggle]");
+    if (toggle) {
+      toggle.setAttribute("aria-expanded", opened ? "true" : "false");
+    }
+
+    setBackdropActive(opened);
+  }
+
+  function openWidget(widget = getWidget()) {
+    if (!widget) return;
+
+    widget.classList.add("campaign-dice-widget--open");
+    widget.classList.remove("campaign-dice-widget--modal", "campaign-dice-widget--near-portrait");
+    widget.setAttribute("data-dice-open", "true");
+
+    try {
+      localStorage.setItem("campaignLabDiceOpen", "true");
+    } catch (error) {}
+
+    applyCompactShape(widget);
+  }
+
+  function closeWidget(widget = getWidget()) {
+    if (!widget) return;
+
+    widget.classList.remove(
+      "campaign-dice-widget--open",
+      "campaign-dice-widget--modal",
+      "campaign-dice-widget--near-portrait",
+      "is-open",
+      "open"
+    );
+    widget.setAttribute("data-dice-open", "false");
+
+    try {
+      localStorage.setItem("campaignLabDiceOpen", "false");
+    } catch (error) {}
+
+    setBackdropActive(false);
+    applyCompactShape(widget);
+  }
+
+  function closeFromBackdrop(event) {
+    if (!isDndDicePage()) return;
+    if (!isOpen()) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") {
+      event.stopImmediatePropagation();
+    }
+
+    closeWidget();
+  }
+
+  function isInsideDice(target) {
+    const element = target && target.nodeType === 1 ? target : target?.parentElement;
+    if (!element) return false;
+
+    return !!(
+      element.closest("#" + WIDGET_ID + " .campaign-dice-head") ||
+      element.closest("#" + WIDGET_ID + " .campaign-dice-body") ||
+      element.closest("#" + WIDGET_ID + " [data-dice-toggle]") ||
+      element.closest("[data-open-dnd-dice-panel]")
+    );
+  }
+
+  function handleDocumentPointer(event) {
+    if (!isDndDicePage()) return;
+
+    const widget = getWidget();
+    if (!widget || !isOpen(widget)) return;
+
+    if (isInsideDice(event.target)) {
+      window.setTimeout(() => applyCompactShape(widget), 0);
+      return;
+    }
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") {
+      event.stopImmediatePropagation();
+    }
+
+    closeWidget(widget);
+  }
+
+  function handleDocumentClick(event) {
+    if (!isDndDicePage()) return;
+
+    const opener = event.target.closest?.("[data-open-dnd-dice-panel]");
+    const toggle = event.target.closest?.("#" + WIDGET_ID + " [data-dice-toggle]");
+
+    if (opener || toggle) {
+      window.setTimeout(() => {
+        const widget = getWidget();
+        if (!widget) return;
+
+        if (opener) {
+          openWidget(widget);
+        } else {
+          applyCompactShape(widget);
+        }
+      }, 0);
+
+      window.setTimeout(() => applyCompactShape(getWidget()), 80);
+      return;
+    }
+
+    if (isOpen() && !isInsideDice(event.target)) {
+      event.preventDefault();
+      event.stopPropagation();
+      if (typeof event.stopImmediatePropagation === "function") {
+        event.stopImmediatePropagation();
+      }
+
+      closeWidget();
+    }
+  }
+
+  document.addEventListener("pointerdown", handleDocumentPointer, true);
+  document.addEventListener("mousedown", handleDocumentPointer, true);
+  document.addEventListener("touchstart", handleDocumentPointer, true);
+  document.addEventListener("click", handleDocumentClick, true);
+
+  document.addEventListener("keydown", (event) => {
+    if (event.key !== "Escape") return;
+    if (!isDndDicePage() || !isOpen()) return;
+    closeWidget();
+  }, true);
+
+  window.campaignLabCloseDndDicePanel = function campaignLabCloseDndDicePanel() {
+    closeWidget(getWidget());
+  };
+
+  window.campaignLabOpenDndDicePanel = function campaignLabOpenDndDicePanel() {
+    openWidget(getWidget());
+  };
+
+  window.campaignLabNormalizeDndDicePanel = function campaignLabNormalizeDndDicePanel() {
+    applyCompactShape(getWidget());
+  };
+
+  function boot() {
+    if (!isDndDicePage()) return;
+    const widget = getWidget();
+    if (!widget) return;
+
+    widget.classList.remove("campaign-dice-widget--modal", "campaign-dice-widget--near-portrait");
+
+    if (localStorage.getItem("campaignLabDiceOpen") === "true") {
+      widget.classList.add("campaign-dice-widget--open");
+      widget.setAttribute("data-dice-open", "true");
+    } else {
+      widget.classList.remove("campaign-dice-widget--open");
+      widget.setAttribute("data-dice-open", "false");
+    }
+
+    applyCompactShape(widget);
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot, { once: true });
+  } else {
+    boot();
+  }
+
+  window.addEventListener("resize", () => applyCompactShape(getWidget()));
 })();

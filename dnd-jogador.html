@@ -1,4 +1,5 @@
 <!doctype html>
+<!-- ARQUIVO CORRETO: D&D JOGADOR. Não substitua este arquivo pelo HTML do mestre. -->
 <html lang="pt-br">
   <head>
     <meta charset="UTF-8" />
@@ -62,6 +63,13 @@
         >
           Iniciativa
         </button>
+        <button
+          type="button"
+          class="altherium-tab"
+          data-tab="playerMessagesSection"
+        >
+          Mensagens
+        </button>
       </div>
 
       <section
@@ -72,6 +80,9 @@
   <input name="classLevel" type="hidden" />
   <input name="classAutoDefaultsAppliedFor" type="hidden" value="" />
   <input name="dndAltheriumBackgroundAppliedState" type="hidden" value="" />
+  <input name="passivePerception" type="hidden" value="10" />
+  <input name="passivePerceptionManual" type="hidden" value="false" />
+  <input name="spellSaveDcManual" type="hidden" value="false" />
 
   <section class="dnd-v2-hero-card">
     <div class="dnd-v2-hero-main">
@@ -117,27 +128,94 @@
 <option value="Meio-Orc">Meio-Orc</option>
 <option value="Tiefling">Tiefling</option></select></label>
           <label><span>Antecedente</span><select name="background" id="dndAltheriumBackgroundSelect" data-dnd-altherium-background-select="true"><option value="">Selecione</option>
-<option value="Caçador">Caçador</option>
-<option value="Curandeiro">Curandeiro</option>
-<option value="Determinado">Determinado</option>
-<option value="Devoto">Devoto</option>
-<option value="Filho de mercante">Filho de mercante</option>
-<option value="Guerreiro">Guerreiro</option>
-<option value="Guia espiritual">Guia espiritual</option>
-<option value="Corredor">Corredor</option>
-<option value="Peregrino">Peregrino</option>
-<option value="Rastreador">Rastreador</option>
-<option value="Robusto">Robusto</option>
-<option value="Sem passado">Sem passado</option></select></label>
+<option value="Acólito (Acolyte)">Acólito (Acolyte)</option>
+<option value="Artesão (Artisan)">Artesão (Artisan)</option>
+<option value="Artista (Entertainer)">Artista (Entertainer)</option>
+<option value="Charlatão (Charlatan)">Charlatão (Charlatan)</option>
+<option value="Criminoso (Criminal)">Criminoso (Criminal)</option>
+<option value="Erudito (Scribe)">Erudito (Scribe)</option>
+<option value="Fazendeiro (Farmer)">Fazendeiro (Farmer)</option>
+<option value="Forasteiro (Outlander)">Forasteiro (Outlander)</option>
+<option value="Guarda (Guard)">Guarda (Guard)</option>
+<option value="Guia (Guide)">Guia (Guide)</option>
+<option value="Eremita (Hermit)">Eremita (Hermit)</option>
+<option value="Mercador (Merchant)">Mercador (Merchant)</option>
+<option value="Nobre (Noble)">Nobre (Noble)</option>
+<option value="Sábio (Sage)">Sábio (Sage)</option>
+<option value="Marinheiro (Sailor)">Marinheiro (Sailor)</option>
+<option value="Vagabundo (Wayfarer)">Vagabundo (Wayfarer)</option></select></label>
         </div>
       </div>
     </div>
 
-    <div class="dnd-v2-hero-stats">
-      <article><span>CA</span><strong id="dndV2ArmorClassView">10</strong></article>
-      <article><span>PV</span><strong id="dndV2HpView">0 / 0</strong></article>
-      <article><span>Iniciativa</span><strong id="dndV2InitiativeView">0</strong></article>
-      <article><span>Prof.</span><strong id="dndV2ProficiencyView">+2</strong></article>
+    <div class="dnd-v2-hero-stats dnd-v2-hero-stats--editable" data-dnd-v2-editable-summary="true">
+      <article data-dnd-hero-card="armorClass">
+        <span>CA</span>
+        <input
+          id="dndV2ArmorClassView"
+          class="dnd-v2-hero-stat-input"
+          type="number"
+          inputmode="numeric"
+          min="0"
+          value="10"
+          data-dnd-hero-edit="armorClass"
+          aria-label="Editar Classe de Armadura"
+        />
+      </article>
+
+      <article data-dnd-hero-card="hp">
+        <span>PV</span>
+        <div class="dnd-v2-hero-hp-edit" aria-label="Editar pontos de vida">
+          <input
+            id="dndV2HpCurrentHeroInput"
+            class="dnd-v2-hero-stat-input dnd-v2-hero-stat-input--hp"
+            type="number"
+            inputmode="numeric"
+            min="0"
+            value="0"
+            data-dnd-hero-edit="hpCurrent"
+            aria-label="Editar PV atual"
+          />
+          <b>/</b>
+          <input
+            id="dndV2HpMaxHeroInput"
+            class="dnd-v2-hero-stat-input dnd-v2-hero-stat-input--hp"
+            type="number"
+            inputmode="numeric"
+            min="0"
+            value="0"
+            data-dnd-hero-edit="hpMax"
+            aria-label="Editar PV máximo"
+          />
+        </div>
+        <strong id="dndV2HpView" class="dnd-v2-hero-stat-hidden">0 / 0</strong>
+      </article>
+
+      <article data-dnd-hero-card="initiative">
+        <span>Iniciativa</span>
+        <input
+          id="dndV2InitiativeView"
+          class="dnd-v2-hero-stat-input"
+          type="text"
+          inputmode="numeric"
+          value="0"
+          data-dnd-hero-edit="initiative"
+          aria-label="Editar iniciativa"
+        />
+      </article>
+
+      <article data-dnd-hero-card="proficiencyBonus">
+        <span>Prof.</span>
+        <input
+          id="dndV2ProficiencyView"
+          class="dnd-v2-hero-stat-input"
+          type="text"
+          inputmode="numeric"
+          value="+2"
+          data-dnd-hero-edit="proficiencyBonus"
+          aria-label="Editar bônus de proficiência"
+        />
+      </article>
     </div>
   </section>
 
@@ -147,6 +225,7 @@
       <button type="button" data-dnd-v2-tab="attributes">Atributos</button>
       <button type="button" data-dnd-v2-tab="combat">Combate</button>
       <button type="button" data-dnd-v2-tab="skills">Perícias</button>
+      <button type="button" data-dnd-v2-tab="experiences">Experiências</button>
       <button type="button" data-dnd-v2-tab="spells">Magias</button>
       <button type="button" data-dnd-v2-tab="inventory">Inventário</button>
       <button type="button" data-dnd-v2-tab="story">História</button>
@@ -215,21 +294,92 @@
         <div id="dndRaceAutomationPanel" class="dnd-race-automation-panel dnd-v2-race-panel" data-dnd-race-panel="true"></div>
         <p id="dndV2RaceSummary">Escolha raça, classe e antecedente para aplicar bônus.</p>
       </div>
-      <div class="dnd-v2-roll-result" id="dndV2QuickRollResult">
-        <span>Rolagem rápida</span>
-        <strong>--</strong>
-        <p>Use os botões 🎲 da ficha.</p>
+      <div class="dnd-v2-dice-launch-card" id="dndV2DiceLaunchCard">
+        <span>Rolador de dados</span>
+        <strong>🎲</strong>
+        <p>Todos os testes, perícias, salvaguardas, pet e dados livres ficam em um painel único.</p>
+        <button type="button" class="dnd-v2-open-dice-btn" data-open-dnd-dice-panel>
+          Abrir rolador
+        </button>
       </div>
     </aside>
 
     <div class="dnd-v2-content">
       <section class="dnd-v2-panel active" data-dnd-v2-panel="overview">
         <div class="dnd-v2-section-head"><p class="tag">Centro de comando</p><h2>Visão Geral</h2><span>O essencial da mesa em uma tela.</span></div>
-        <div class="dnd-v2-overview-grid">
-          <article class="dnd-v2-big-stat"><span>Classe de Armadura</span><strong id="dndV2ArmorClassBig">10</strong><small>Calculada por armadura, DES e escudo.</small></article>
-          <article class="dnd-v2-big-stat"><span>Pontos de Vida</span><strong id="dndV2HpBig">0 / 0</strong><small>Atual, máximo e temporário.</small></article>
-          <article class="dnd-v2-big-stat"><span>Percepção Passiva</span><strong id="dndV2PassivePerception">10</strong><small>10 + Percepção.</small></article>
-          <article class="dnd-v2-big-stat"><span>CD de Magia</span><strong id="dndV2SpellDcBig">--</strong><small>8 + proficiência + atributo mágico.</small></article>
+        <div class="dnd-v2-overview-grid dnd-v2-overview-grid--editable" data-dnd-v2-editable-overview="true">
+          <article class="dnd-v2-big-stat dnd-v2-big-stat--editable" data-dnd-overview-card="armorClass">
+            <span>Classe de Armadura</span>
+            <input
+              id="dndV2ArmorClassBig"
+              class="dnd-v2-overview-stat-input"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              value="10"
+              data-dnd-overview-edit="armorClass"
+              aria-label="Editar Classe de Armadura"
+            />
+            <small>Calculada por armadura, DES e escudo.</small>
+          </article>
+
+          <article class="dnd-v2-big-stat dnd-v2-big-stat--editable" data-dnd-overview-card="hp">
+            <span>Pontos de Vida</span>
+            <div class="dnd-v2-overview-hp-edit" aria-label="Editar pontos de vida">
+              <input
+                id="dndV2HpCurrentOverviewInput"
+                class="dnd-v2-overview-stat-input dnd-v2-overview-stat-input--hp"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                value="0"
+                data-dnd-overview-edit="hpCurrent"
+                aria-label="Editar PV atual"
+              />
+              <b>/</b>
+              <input
+                id="dndV2HpMaxOverviewInput"
+                class="dnd-v2-overview-stat-input dnd-v2-overview-stat-input--hp"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                value="0"
+                data-dnd-overview-edit="hpMax"
+                aria-label="Editar PV máximo"
+              />
+            </div>
+            <strong id="dndV2HpBig" class="dnd-v2-overview-stat-hidden">0 / 0</strong>
+            <small>Atual, máximo e temporário.</small>
+          </article>
+
+          <article class="dnd-v2-big-stat dnd-v2-big-stat--editable" data-dnd-overview-card="passivePerception">
+            <span>Percepção Passiva</span>
+            <input
+              id="dndV2PassivePerception"
+              class="dnd-v2-overview-stat-input"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              value="10"
+              data-dnd-overview-edit="passivePerception"
+              aria-label="Editar Percepção Passiva"
+            />
+            <small>10 + Percepção, ou valor manual.</small>
+          </article>
+
+          <article class="dnd-v2-big-stat dnd-v2-big-stat--editable" data-dnd-overview-card="spellSaveDc">
+            <span>CD de Magia</span>
+            <input
+              id="dndV2SpellDcBig"
+              class="dnd-v2-overview-stat-input"
+              type="text"
+              inputmode="numeric"
+              value="--"
+              data-dnd-overview-edit="spellSaveDc"
+              aria-label="Editar CD de Magia"
+            />
+            <small>8 + proficiência + atributo mágico, ou valor manual.</small>
+          </article>
         </div>
 
         <div class="dnd-v2-grid-2">
@@ -246,11 +396,10 @@
           </div>
           <div class="dnd-v2-card dnd-v2-card--actions">
             <h3>Ações rápidas</h3>
-            <div class="dnd-v2-action-grid">
-              <button type="button" data-dnd-v2-roll="1d20+initiative" data-dnd-v2-roll-label="Iniciativa">Rolar iniciativa</button>
-              <button type="button" data-dnd-v2-roll="1d20+skillPerception" data-dnd-v2-roll-label="Percepção">Rolar percepção</button>
-              <button type="button" data-dnd-v2-roll="1d20+saveDex" data-dnd-v2-roll-label="Resistência de DES">Res. Destreza</button>
-              <button type="button" data-dnd-v2-roll="1d20" data-dnd-v2-roll-label="Teste puro">Rolar d20</button>
+            <div class="dnd-v2-dice-panel-callout">
+              <strong>Rolagens centralizadas</strong>
+              <p>Os botões de rolagem saíram da ficha para manter a tela limpa. Abra o rolador para testar atributos, salvaguardas, perícias, pet, dano e fórmulas livres.</p>
+              <button type="button" class="dnd-v2-open-dice-btn" data-open-dnd-dice-panel>Abrir rolador de dados</button>
             </div>
           </div>
         </div>
@@ -262,37 +411,31 @@
   <div class="dnd-v2-ability-head"><span>Força</span><strong>FOR</strong></div>
   <input name="strScore" type="number" value="10" min="1" />
   <div class="dnd-v2-ability-mod" id="strModView">0</div>
-  <button type="button" class="dnd-v2-ghost-btn" data-dnd-v2-roll="1d20+strMod" data-dnd-v2-roll-label="Teste de Força">Rolar teste</button>
 </article>
 <article class="dnd-v2-ability-card" data-dnd-v2-ability="dex">
   <div class="dnd-v2-ability-head"><span>Destreza</span><strong>DES</strong></div>
   <input name="dexScore" type="number" value="10" min="1" />
   <div class="dnd-v2-ability-mod" id="dexModView">0</div>
-  <button type="button" class="dnd-v2-ghost-btn" data-dnd-v2-roll="1d20+dexMod" data-dnd-v2-roll-label="Teste de Destreza">Rolar teste</button>
 </article>
 <article class="dnd-v2-ability-card" data-dnd-v2-ability="con">
   <div class="dnd-v2-ability-head"><span>Constituição</span><strong>CON</strong></div>
   <input name="conScore" type="number" value="10" min="1" />
   <div class="dnd-v2-ability-mod" id="conModView">0</div>
-  <button type="button" class="dnd-v2-ghost-btn" data-dnd-v2-roll="1d20+conMod" data-dnd-v2-roll-label="Teste de Constituição">Rolar teste</button>
 </article>
 <article class="dnd-v2-ability-card" data-dnd-v2-ability="int">
   <div class="dnd-v2-ability-head"><span>Inteligência</span><strong>INT</strong></div>
   <input name="intScore" type="number" value="10" min="1" />
   <div class="dnd-v2-ability-mod" id="intModView">0</div>
-  <button type="button" class="dnd-v2-ghost-btn" data-dnd-v2-roll="1d20+intMod" data-dnd-v2-roll-label="Teste de Inteligência">Rolar teste</button>
 </article>
 <article class="dnd-v2-ability-card" data-dnd-v2-ability="wis">
   <div class="dnd-v2-ability-head"><span>Sabedoria</span><strong>SAB</strong></div>
   <input name="wisScore" type="number" value="10" min="1" />
   <div class="dnd-v2-ability-mod" id="wisModView">0</div>
-  <button type="button" class="dnd-v2-ghost-btn" data-dnd-v2-roll="1d20+wisMod" data-dnd-v2-roll-label="Teste de Sabedoria">Rolar teste</button>
 </article>
 <article class="dnd-v2-ability-card" data-dnd-v2-ability="cha">
   <div class="dnd-v2-ability-head"><span>Carisma</span><strong>CAR</strong></div>
   <input name="chaScore" type="number" value="10" min="1" />
   <div class="dnd-v2-ability-mod" id="chaModView">0</div>
-  <button type="button" class="dnd-v2-ghost-btn" data-dnd-v2-roll="1d20+chaMod" data-dnd-v2-roll-label="Teste de Carisma">Rolar teste</button>
 </article></div>
         <div class="dnd-v2-card">
           <h3>Testes de resistência</h3>
@@ -458,132 +601,376 @@
       <section class="dnd-v2-panel" data-dnd-v2-panel="skills">
         <div class="dnd-v2-section-head"><p class="tag">Perícias</p><h2>Proficiência e especialização</h2><span>P marca proficiência. E dobra a proficiência.</span></div>
         <div class="dnd-v2-card"><div class="dnd-v2-bonus-list dnd-skill-list"><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillAcrobatics">
-      <div><strong>Acrobacia</strong><small>DES</small></div>
+      <div><strong>Acrobacia</strong><small>Des</small></div>
       <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillAcrobaticsProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillAcrobatics"/><span>P</span></label>
       <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillAcrobaticsExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillAcrobatics"/><span>E</span></label>
       <input class="dnd-bonus-input" name="skillAcrobatics" type="number" value="0" data-dnd-final-bonus="skillAcrobatics" />
       <input name="skillAcrobaticsManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillAcrobatics" data-dnd-v2-roll-label="Acrobacia">🎲</button>
-    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillAnimalHandling">
-      <div><strong>Lidar com Animais</strong><small>SAB</small></div>
-      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillAnimalHandlingProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillAnimalHandling"/><span>P</span></label>
-      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillAnimalHandlingExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillAnimalHandling"/><span>E</span></label>
-      <input class="dnd-bonus-input" name="skillAnimalHandling" type="number" value="0" data-dnd-final-bonus="skillAnimalHandling" />
-      <input name="skillAnimalHandlingManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillAnimalHandling" data-dnd-v2-roll-label="Lidar com Animais">🎲</button>
     </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillArcana">
-      <div><strong>Arcanismo</strong><small>INT</small></div>
+      <div><strong>Arcanismo</strong><small>Int</small></div>
       <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillArcanaProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillArcana"/><span>P</span></label>
       <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillArcanaExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillArcana"/><span>E</span></label>
       <input class="dnd-bonus-input" name="skillArcana" type="number" value="0" data-dnd-final-bonus="skillArcana" />
       <input name="skillArcanaManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillArcana" data-dnd-v2-roll-label="Arcanismo">🎲</button>
     </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillAthletics">
-      <div><strong>Atletismo</strong><small>FOR</small></div>
+      <div><strong>Atletismo</strong><small>For</small></div>
       <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillAthleticsProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillAthletics"/><span>P</span></label>
       <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillAthleticsExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillAthletics"/><span>E</span></label>
       <input class="dnd-bonus-input" name="skillAthletics" type="number" value="0" data-dnd-final-bonus="skillAthletics" />
       <input name="skillAthleticsManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillAthletics" data-dnd-v2-roll-label="Atletismo">🎲</button>
     </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillDeception">
-      <div><strong>Enganação</strong><small>CAR</small></div>
+      <div><strong>Enganação</strong><small>Car</small></div>
       <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillDeceptionProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillDeception"/><span>P</span></label>
       <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillDeceptionExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillDeception"/><span>E</span></label>
       <input class="dnd-bonus-input" name="skillDeception" type="number" value="0" data-dnd-final-bonus="skillDeception" />
       <input name="skillDeceptionManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillDeception" data-dnd-v2-roll-label="Enganação">🎲</button>
-    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillHistory">
-      <div><strong>História</strong><small>INT</small></div>
-      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillHistoryProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillHistory"/><span>P</span></label>
-      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillHistoryExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillHistory"/><span>E</span></label>
-      <input class="dnd-bonus-input" name="skillHistory" type="number" value="0" data-dnd-final-bonus="skillHistory" />
-      <input name="skillHistoryManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillHistory" data-dnd-v2-roll-label="História">🎲</button>
-    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillInsight">
-      <div><strong>Intuição</strong><small>SAB</small></div>
-      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillInsightProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillInsight"/><span>P</span></label>
-      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillInsightExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillInsight"/><span>E</span></label>
-      <input class="dnd-bonus-input" name="skillInsight" type="number" value="0" data-dnd-final-bonus="skillInsight" />
-      <input name="skillInsightManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillInsight" data-dnd-v2-roll-label="Intuição">🎲</button>
-    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillIntimidation">
-      <div><strong>Intimidação</strong><small>CAR</small></div>
-      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillIntimidationProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillIntimidation"/><span>P</span></label>
-      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillIntimidationExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillIntimidation"/><span>E</span></label>
-      <input class="dnd-bonus-input" name="skillIntimidation" type="number" value="0" data-dnd-final-bonus="skillIntimidation" />
-      <input name="skillIntimidationManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillIntimidation" data-dnd-v2-roll-label="Intimidação">🎲</button>
-    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillInvestigation">
-      <div><strong>Investigação</strong><small>INT</small></div>
-      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillInvestigationProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillInvestigation"/><span>P</span></label>
-      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillInvestigationExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillInvestigation"/><span>E</span></label>
-      <input class="dnd-bonus-input" name="skillInvestigation" type="number" value="0" data-dnd-final-bonus="skillInvestigation" />
-      <input name="skillInvestigationManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillInvestigation" data-dnd-v2-roll-label="Investigação">🎲</button>
-    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillMedicine">
-      <div><strong>Medicina</strong><small>SAB</small></div>
-      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillMedicineProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillMedicine"/><span>P</span></label>
-      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillMedicineExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillMedicine"/><span>E</span></label>
-      <input class="dnd-bonus-input" name="skillMedicine" type="number" value="0" data-dnd-final-bonus="skillMedicine" />
-      <input name="skillMedicineManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillMedicine" data-dnd-v2-roll-label="Medicina">🎲</button>
-    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillNature">
-      <div><strong>Natureza</strong><small>INT</small></div>
-      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillNatureProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillNature"/><span>P</span></label>
-      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillNatureExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillNature"/><span>E</span></label>
-      <input class="dnd-bonus-input" name="skillNature" type="number" value="0" data-dnd-final-bonus="skillNature" />
-      <input name="skillNatureManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillNature" data-dnd-v2-roll-label="Natureza">🎲</button>
-    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillPerception">
-      <div><strong>Percepção</strong><small>SAB</small></div>
-      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillPerceptionProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillPerception"/><span>P</span></label>
-      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillPerceptionExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillPerception"/><span>E</span></label>
-      <input class="dnd-bonus-input" name="skillPerception" type="number" value="0" data-dnd-final-bonus="skillPerception" />
-      <input name="skillPerceptionManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillPerception" data-dnd-v2-roll-label="Percepção">🎲</button>
-    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillPerformance">
-      <div><strong>Atuação</strong><small>CAR</small></div>
-      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillPerformanceProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillPerformance"/><span>P</span></label>
-      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillPerformanceExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillPerformance"/><span>E</span></label>
-      <input class="dnd-bonus-input" name="skillPerformance" type="number" value="0" data-dnd-final-bonus="skillPerformance" />
-      <input name="skillPerformanceManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillPerformance" data-dnd-v2-roll-label="Atuação">🎲</button>
-    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillPersuasion">
-      <div><strong>Persuasão</strong><small>CAR</small></div>
-      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillPersuasionProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillPersuasion"/><span>P</span></label>
-      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillPersuasionExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillPersuasion"/><span>E</span></label>
-      <input class="dnd-bonus-input" name="skillPersuasion" type="number" value="0" data-dnd-final-bonus="skillPersuasion" />
-      <input name="skillPersuasionManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillPersuasion" data-dnd-v2-roll-label="Persuasão">🎲</button>
-    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillReligion">
-      <div><strong>Religião</strong><small>INT</small></div>
-      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillReligionProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillReligion"/><span>P</span></label>
-      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillReligionExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillReligion"/><span>E</span></label>
-      <input class="dnd-bonus-input" name="skillReligion" type="number" value="0" data-dnd-final-bonus="skillReligion" />
-      <input name="skillReligionManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillReligion" data-dnd-v2-roll-label="Religião">🎲</button>
-    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillSleightOfHand">
-      <div><strong>Prestidigitação</strong><small>DES</small></div>
-      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillSleightOfHandProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillSleightOfHand"/><span>P</span></label>
-      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillSleightOfHandExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillSleightOfHand"/><span>E</span></label>
-      <input class="dnd-bonus-input" name="skillSleightOfHand" type="number" value="0" data-dnd-final-bonus="skillSleightOfHand" />
-      <input name="skillSleightOfHandManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillSleightOfHand" data-dnd-v2-roll-label="Prestidigitação">🎲</button>
     </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillStealth">
-      <div><strong>Furtividade</strong><small>DES</small></div>
+      <div><strong>Furtividade</strong><small>Des</small></div>
       <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillStealthProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillStealth"/><span>P</span></label>
       <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillStealthExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillStealth"/><span>E</span></label>
       <input class="dnd-bonus-input" name="skillStealth" type="number" value="0" data-dnd-final-bonus="skillStealth" />
       <input name="skillStealthManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillStealth" data-dnd-v2-roll-label="Furtividade">🎲</button>
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillHistory">
+      <div><strong>História</strong><small>Int</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillHistoryProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillHistory"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillHistoryExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillHistory"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillHistory" type="number" value="0" data-dnd-final-bonus="skillHistory" />
+      <input name="skillHistoryManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillInsight">
+      <div><strong>Intuição</strong><small>Sab</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillInsightProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillInsight"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillInsightExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillInsight"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillInsight" type="number" value="0" data-dnd-final-bonus="skillInsight" />
+      <input name="skillInsightManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillIntimidation">
+      <div><strong>Intimidação</strong><small>Car</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillIntimidationProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillIntimidation"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillIntimidationExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillIntimidation"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillIntimidation" type="number" value="0" data-dnd-final-bonus="skillIntimidation" />
+      <input name="skillIntimidationManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillInvestigation">
+      <div><strong>Investigação</strong><small>Int</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillInvestigationProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillInvestigation"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillInvestigationExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillInvestigation"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillInvestigation" type="number" value="0" data-dnd-final-bonus="skillInvestigation" />
+      <input name="skillInvestigationManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillAnimalHandling">
+      <div><strong>Lidar com Animais</strong><small>Sab</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillAnimalHandlingProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillAnimalHandling"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillAnimalHandlingExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillAnimalHandling"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillAnimalHandling" type="number" value="0" data-dnd-final-bonus="skillAnimalHandling" />
+      <input name="skillAnimalHandlingManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillMedicine">
+      <div><strong>Medicina</strong><small>Sab</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillMedicineProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillMedicine"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillMedicineExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillMedicine"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillMedicine" type="number" value="0" data-dnd-final-bonus="skillMedicine" />
+      <input name="skillMedicineManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillNature">
+      <div><strong>Natureza</strong><small>Int</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillNatureProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillNature"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillNatureExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillNature"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillNature" type="number" value="0" data-dnd-final-bonus="skillNature" />
+      <input name="skillNatureManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillPerception">
+      <div><strong>Percepção</strong><small>Sab</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillPerceptionProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillPerception"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillPerceptionExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillPerception"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillPerception" type="number" value="0" data-dnd-final-bonus="skillPerception" />
+      <input name="skillPerceptionManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillPerformance">
+      <div><strong>Performance</strong><small>Car</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillPerformanceProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillPerformance"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillPerformanceExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillPerformance"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillPerformance" type="number" value="0" data-dnd-final-bonus="skillPerformance" />
+      <input name="skillPerformanceManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillPersuasion">
+      <div><strong>Persuasão</strong><small>Car</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillPersuasionProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillPersuasion"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillPersuasionExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillPersuasion"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillPersuasion" type="number" value="0" data-dnd-final-bonus="skillPersuasion" />
+      <input name="skillPersuasionManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillSleightOfHand">
+      <div><strong>Prestidigitação</strong><small>Des</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillSleightOfHandProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillSleightOfHand"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillSleightOfHandExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillSleightOfHand"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillSleightOfHand" type="number" value="0" data-dnd-final-bonus="skillSleightOfHand" />
+      <input name="skillSleightOfHandManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillReligion">
+      <div><strong>Religião</strong><small>Int</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillReligionProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillReligion"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillReligionExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillReligion"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillReligion" type="number" value="0" data-dnd-final-bonus="skillReligion" />
+      <input name="skillReligionManual" type="hidden" value="false" />
     </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillSurvival">
-      <div><strong>Sobrevivência</strong><small>SAB</small></div>
+      <div><strong>Sobrevivência</strong><small>Sab</small></div>
       <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillSurvivalProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillSurvival"/><span>P</span></label>
       <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillSurvivalExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillSurvival"/><span>E</span></label>
       <input class="dnd-bonus-input" name="skillSurvival" type="number" value="0" data-dnd-final-bonus="skillSurvival" />
       <input name="skillSurvivalManual" type="hidden" value="false" />
-      <button type="button" class="dnd-v2-mini-roll" data-dnd-v2-roll="1d20+skillSurvival" data-dnd-v2-roll-label="Sobrevivência">🎲</button>
     </div></div></div>
+      </section>
+
+
+      <section class="dnd-v2-panel dnd-v2-experiences-panel" data-dnd-v2-panel="experiences">
+        <div class="dnd-v2-section-head">
+          <p class="tag">Recursos</p>
+          <h2>Experiências</h2>
+          <span>Organize proficiências, línguas, talentos, características de classe e recursos especiais da campanha.</span>
+        </div>
+
+        <div class="dnd-experiences-layout">
+
+          <section class="dnd-v2-card dnd-experience-proficiencies-card">
+            <div class="dnd-experience-card-head">
+              <div>
+                <p class="tag">Treinamento</p>
+                <h3>Proficiências</h3>
+                <span>Armaduras, armas e ferramentas que o personagem sabe usar.</span>
+              </div>
+            </div>
+
+            <div class="dnd-experience-proficiency-grid">
+              <div class="dnd-experience-proficiency-box">
+                <h4>Armaduras</h4>
+                <div class="dnd-experience-check-grid">
+                  <label><input type="checkbox" name="profArmorLight" /><span>Leves</span></label>
+                  <label><input type="checkbox" name="profArmorMedium" /><span>Médias</span></label>
+                  <label><input type="checkbox" name="profArmorHeavy" /><span>Pesadas</span></label>
+                  <label><input type="checkbox" name="profShields" /><span>Escudos</span></label>
+                </div>
+              </div>
+
+              <div class="dnd-experience-proficiency-box">
+                <h4>Armas</h4>
+                <div class="dnd-experience-check-grid">
+                  <label><input type="checkbox" name="profWeaponSimple" /><span>Simples</span></label>
+                  <label><input type="checkbox" name="profWeaponMartial" /><span>Marciais</span></label>
+                  <label><input type="checkbox" name="profWeaponOther" /><span>Outras</span></label>
+                </div>
+                <textarea name="weaponProficienciesText" rows="3" placeholder="Ex: Besta de mão, Espada longa, Rapieiras, Espada curta."></textarea>
+              </div>
+
+              <div class="dnd-experience-proficiency-box dnd-experience-proficiency-box--full">
+                <h4>Ferramentas</h4>
+                <textarea name="toolProficiencies" rows="3" placeholder="Ex: Banjo, flauta, Harpa, kit de ladrão, ferramentas de artesão."></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="dnd-v2-card dnd-experience-languages-card">
+            <div class="dnd-experience-card-head">
+              <div>
+                <p class="tag">Comunicação</p>
+                <h3>Línguas</h3>
+                <span>Idiomas conhecidos pelo personagem.</span>
+              </div>
+            </div>
+
+            <textarea name="languages" rows="4" placeholder="Ex: Comum, Élfico, Anão."></textarea>
+          </section>
+
+          <section class="dnd-v2-card dnd-experience-talents-card">
+            <div class="dnd-experience-card-head">
+              <div>
+                <p class="tag">Evolução</p>
+                <h3>Talentos</h3>
+                <span>Talentos, pré-requisitos e efeitos especiais do personagem.</span>
+              </div>
+            </div>
+
+            <div class="dnd-experience-talents-list">
+              <article class="dnd-experience-talent-row">
+                <div class="dnd-experience-talent-top">
+                  <input name="talent1Name" type="text" placeholder="Nome do talento" />
+                  <input name="talent1Prerequisite" type="text" placeholder="Pré-requisito" />
+                </div>
+                <textarea name="talent1Description" rows="4" placeholder="Descreva o efeito do talento. Ex: Você inspira seus companheiros durante 10 minutos..."></textarea>
+              </article>
+
+              <article class="dnd-experience-talent-row">
+                <div class="dnd-experience-talent-top">
+                  <input name="talent2Name" type="text" placeholder="Nome do talento" />
+                  <input name="talent2Prerequisite" type="text" placeholder="Pré-requisito" />
+                </div>
+                <textarea name="talent2Description" rows="4" placeholder="Descreva o efeito do talento."></textarea>
+              </article>
+
+              <article class="dnd-experience-talent-row">
+                <div class="dnd-experience-talent-top">
+                  <input name="talent3Name" type="text" placeholder="Nome do talento" />
+                  <input name="talent3Prerequisite" type="text" placeholder="Pré-requisito" />
+                </div>
+                <textarea name="talent3Description" rows="4" placeholder="Descreva o efeito do talento."></textarea>
+              </article>
+            </div>
+          </section>
+
+          <section class="dnd-v2-card dnd-limited-features-card dnd-limited-features-card--experiences">
+            <div class="dnd-limited-features-head">
+              <div>
+                <p class="tag">Recursos</p>
+                <h3>Características Limitadas</h3>
+                <span>Controle habilidades que recarregam em descanso curto, descanso longo ou ao amanhecer.</span>
+              </div>
+            </div>
+
+            <div class="dnd-limited-features-table" aria-label="Características limitadas">
+              <div class="dnd-limited-feature-row dnd-limited-feature-row--head">
+                <span>Nome</span>
+                <span>Recarga</span>
+                <span>Total</span>
+                <span>Rest.</span>
+              </div>
+
+              <div class="dnd-limited-feature-row">
+                <input name="limitedFeature1Name" type="text" placeholder="Ex: Inspiração Bárdica" />
+                <div class="dnd-recharge-options" aria-label="Recarga da característica 1">
+                  <label title="Descanso curto"><input type="checkbox" name="limitedFeature1RechargeShort" /><span>dc</span></label>
+                  <label title="Descanso longo"><input type="checkbox" name="limitedFeature1RechargeLong" /><span>dl</span></label>
+                  <label title="Amanhecer"><input type="checkbox" name="limitedFeature1RechargeDawn" /><span>am</span></label>
+                </div>
+                <input name="limitedFeature1Total" type="number" min="0" inputmode="numeric" />
+                <input name="limitedFeature1Remaining" type="number" min="0" inputmode="numeric" />
+              </div>
+
+              <div class="dnd-limited-feature-row">
+                <input name="limitedFeature2Name" type="text" />
+                <div class="dnd-recharge-options" aria-label="Recarga da característica 2">
+                  <label title="Descanso curto"><input type="checkbox" name="limitedFeature2RechargeShort" /><span>dc</span></label>
+                  <label title="Descanso longo"><input type="checkbox" name="limitedFeature2RechargeLong" /><span>dl</span></label>
+                  <label title="Amanhecer"><input type="checkbox" name="limitedFeature2RechargeDawn" /><span>am</span></label>
+                </div>
+                <input name="limitedFeature2Total" type="number" min="0" inputmode="numeric" />
+                <input name="limitedFeature2Remaining" type="number" min="0" inputmode="numeric" />
+              </div>
+
+              <div class="dnd-limited-feature-row">
+                <input name="limitedFeature3Name" type="text" />
+                <div class="dnd-recharge-options" aria-label="Recarga da característica 3">
+                  <label title="Descanso curto"><input type="checkbox" name="limitedFeature3RechargeShort" /><span>dc</span></label>
+                  <label title="Descanso longo"><input type="checkbox" name="limitedFeature3RechargeLong" /><span>dl</span></label>
+                  <label title="Amanhecer"><input type="checkbox" name="limitedFeature3RechargeDawn" /><span>am</span></label>
+                </div>
+                <input name="limitedFeature3Total" type="number" min="0" inputmode="numeric" />
+                <input name="limitedFeature3Remaining" type="number" min="0" inputmode="numeric" />
+              </div>
+
+              <div class="dnd-limited-feature-row">
+                <input name="limitedFeature4Name" type="text" />
+                <div class="dnd-recharge-options" aria-label="Recarga da característica 4">
+                  <label title="Descanso curto"><input type="checkbox" name="limitedFeature4RechargeShort" /><span>dc</span></label>
+                  <label title="Descanso longo"><input type="checkbox" name="limitedFeature4RechargeLong" /><span>dl</span></label>
+                  <label title="Amanhecer"><input type="checkbox" name="limitedFeature4RechargeDawn" /><span>am</span></label>
+                </div>
+                <input name="limitedFeature4Total" type="number" min="0" inputmode="numeric" />
+                <input name="limitedFeature4Remaining" type="number" min="0" inputmode="numeric" />
+              </div>
+
+              <div class="dnd-limited-feature-row">
+                <input name="limitedFeature5Name" type="text" />
+                <div class="dnd-recharge-options" aria-label="Recarga da característica 5">
+                  <label title="Descanso curto"><input type="checkbox" name="limitedFeature5RechargeShort" /><span>dc</span></label>
+                  <label title="Descanso longo"><input type="checkbox" name="limitedFeature5RechargeLong" /><span>dl</span></label>
+                  <label title="Amanhecer"><input type="checkbox" name="limitedFeature5RechargeDawn" /><span>am</span></label>
+                </div>
+                <input name="limitedFeature5Total" type="number" min="0" inputmode="numeric" />
+                <input name="limitedFeature5Remaining" type="number" min="0" inputmode="numeric" />
+              </div>
+
+              <div class="dnd-limited-feature-row">
+                <input name="limitedFeature6Name" type="text" />
+                <div class="dnd-recharge-options" aria-label="Recarga da característica 6">
+                  <label title="Descanso curto"><input type="checkbox" name="limitedFeature6RechargeShort" /><span>dc</span></label>
+                  <label title="Descanso longo"><input type="checkbox" name="limitedFeature6RechargeLong" /><span>dl</span></label>
+                  <label title="Amanhecer"><input type="checkbox" name="limitedFeature6RechargeDawn" /><span>am</span></label>
+                </div>
+                <input name="limitedFeature6Total" type="number" min="0" inputmode="numeric" />
+                <input name="limitedFeature6Remaining" type="number" min="0" inputmode="numeric" />
+              </div>
+            </div>
+
+            <p class="dnd-limited-features-note">
+              dc: descanso curto / dl: descanso longo / am: amanhecer.
+            </p>
+          </section>
+
+          <section class="dnd-v2-card dnd-experience-class-features-card">
+            <div class="dnd-experience-card-head">
+              <div>
+                <p class="tag">Classe</p>
+                <h3>Características de Classe</h3>
+                <span>Espaço grande para registrar aptidões, inspirações, estilos de luta, pactos, arquétipos e habilidades ganhas por nível.</span>
+              </div>
+            </div>
+
+            <label class="dnd-class-feature-summary">
+              <span>Resumo geral das características</span>
+              <textarea name="classFeatureNotes" rows="12" placeholder="Ex: Aptidão
+No 3º nível, escolha duas perícias em que você é proficiente...
+
+Inspiração de Bardo
+Você pode inspirar os outros através de palavras animadoras ou música..."></textarea>
+            </label>
+
+            <div class="dnd-class-features-list">
+              <article class="dnd-class-feature-row">
+                <div class="dnd-class-feature-top">
+                  <input name="classFeature1Name" type="text" placeholder="Nome da característica" />
+                  <input name="classFeature1Level" type="text" placeholder="Nível / origem" />
+                  <input name="classFeature1Uses" type="text" placeholder="Usos / recarga" />
+                </div>
+                <textarea name="classFeature1Description" rows="5" placeholder="Descreva a característica de classe, limite, dado, alcance, duração e condição de uso."></textarea>
+              </article>
+
+              <article class="dnd-class-feature-row">
+                <div class="dnd-class-feature-top">
+                  <input name="classFeature2Name" type="text" placeholder="Nome da característica" />
+                  <input name="classFeature2Level" type="text" placeholder="Nível / origem" />
+                  <input name="classFeature2Uses" type="text" placeholder="Usos / recarga" />
+                </div>
+                <textarea name="classFeature2Description" rows="5" placeholder="Descreva a característica."></textarea>
+              </article>
+
+              <article class="dnd-class-feature-row">
+                <div class="dnd-class-feature-top">
+                  <input name="classFeature3Name" type="text" placeholder="Nome da característica" />
+                  <input name="classFeature3Level" type="text" placeholder="Nível / origem" />
+                  <input name="classFeature3Uses" type="text" placeholder="Usos / recarga" />
+                </div>
+                <textarea name="classFeature3Description" rows="5" placeholder="Descreva a característica."></textarea>
+              </article>
+
+              <article class="dnd-class-feature-row">
+                <div class="dnd-class-feature-top">
+                  <input name="classFeature4Name" type="text" placeholder="Nome da característica" />
+                  <input name="classFeature4Level" type="text" placeholder="Nível / origem" />
+                  <input name="classFeature4Uses" type="text" placeholder="Usos / recarga" />
+                </div>
+                <textarea name="classFeature4Description" rows="5" placeholder="Descreva a característica."></textarea>
+              </article>
+
+              <article class="dnd-class-feature-row">
+                <div class="dnd-class-feature-top">
+                  <input name="classFeature5Name" type="text" placeholder="Nome da característica" />
+                  <input name="classFeature5Level" type="text" placeholder="Nível / origem" />
+                  <input name="classFeature5Uses" type="text" placeholder="Usos / recarga" />
+                </div>
+                <textarea name="classFeature5Description" rows="5" placeholder="Descreva a característica."></textarea>
+              </article>
+
+              <article class="dnd-class-feature-row">
+                <div class="dnd-class-feature-top">
+                  <input name="classFeature6Name" type="text" placeholder="Nome da característica" />
+                  <input name="classFeature6Level" type="text" placeholder="Nível / origem" />
+                  <input name="classFeature6Uses" type="text" placeholder="Usos / recarga" />
+                </div>
+                <textarea name="classFeature6Description" rows="5" placeholder="Descreva a característica."></textarea>
+              </article>
+            </div>
+          </section>
+
+        </div>
       </section>
 
       <section class="dnd-v2-panel" data-dnd-v2-panel="spells">
@@ -888,12 +1275,12 @@
             <div class="dnd-rest-grid">
               <section class="dnd-rest-card">
                 <h5>Descanso curto</h5>
-                <p>Gaste Dados de Vida para recuperar PV sem restaurar tudo.</p>
+                <p>Gaste Dados de Vida para recuperar PV. Para rolagens livres de Dados de Vida, use o painel de rolador.</p>
                 <div class="dnd-rest-fields">
                   <label><span>Dados gastos</span><input type="number" min="1" value="1" id="dndRestHitDiceAmount" /></label>
                   <label><span>Dado</span><select id="dndRestHitDieType"><option value="4">d4</option><option value="6">d6</option><option value="8" selected>d8</option><option value="10">d10</option><option value="12">d12</option></select></label>
                 </div>
-                <button type="button" class="dnd-rest-action dnd-rest-action--short" id="applyDndShortRest">Rolar descanso curto</button>
+                <button type="button" class="dnd-rest-action dnd-rest-action--short" id="applyDndShortRest">Aplicar descanso curto</button>
               </section>
 
               <section class="dnd-rest-card">
@@ -906,6 +1293,44 @@
             <div class="dnd-rest-result" id="dndRestResult">Escolha um tipo de descanso.</div>
           </div>
         </div>
+
+        <div class="dnd-v2-grid-2 dnd-sanity-limited-grid dnd-sanity-limited-grid--rest">
+          <section class="dnd-v2-card dnd-sanity-card">
+            <div class="dnd-sanity-card__head">
+              <div>
+                <p class="tag">Sanidade</p>
+                <h3>Nível de Sanidade</h3>
+                <span>Use quando a mesa trabalhar medo, loucura, corrupção mental ou trauma.</span>
+              </div>
+            </div>
+
+            <div class="dnd-sanity-fields">
+              <label class="dnd-v2-field">
+                <span>Nível atual</span>
+                <input name="sanityLevel" type="number" min="0" value="0" inputmode="numeric" />
+              </label>
+
+              <label class="dnd-v2-field">
+                <span>Dado de Sanidade</span>
+                <select name="sanityDie">
+                  <option value="">Selecione</option>
+                  <option value="d4">d4</option>
+                  <option value="d6">d6</option>
+                  <option value="d8">d8</option>
+                  <option value="d10">d10</option>
+                  <option value="d12">d12</option>
+                  <option value="d20">d20</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="dnd-v2-field dnd-v2-textarea dnd-sanity-notes">
+              <span>Notas de sanidade</span>
+              <textarea name="sanityNotes" rows="4" placeholder="Medos, gatilhos, efeitos temporários ou marcas mentais."></textarea>
+            </label>
+          </section>
+        </div>
+
       </section>
 
       <section class="dnd-v2-panel dnd-v2-pet-panel" data-dnd-v2-panel="pet">
@@ -956,10 +1381,8 @@
                 <label><span>Deslocamento</span><input name="petSpeed" type="text" placeholder="9 m" /></label>
               </div>
               <div class="dnd-pet-hp-bar"><div id="dndPetHpBarFill"></div></div>
-              <div class="dnd-pet-quick-actions">
-                <button type="button" data-dnd-v2-roll="1d20+petDexMod" data-dnd-v2-roll-label="Pet · Iniciativa">Rolar iniciativa</button>
-                <button type="button" data-dnd-v2-roll="1d20+petWisMod" data-dnd-v2-roll-label="Pet · Percepção">Rolar percepção</button>
-                <button type="button" data-dnd-v2-roll="1d20+petStrMod" data-dnd-v2-roll-label="Pet · Força">Rolar força</button>
+              <div class="dnd-pet-quick-actions dnd-pet-quick-actions--clean">
+                <p>Use o painel de rolador para iniciativa, percepção e testes do pet.</p>
               </div>
             </div>
 
@@ -982,9 +1405,8 @@
                 <label><span>Bônus</span><input name="petAttackBonus" type="number" value="0" /></label>
                 <label><span>Dano</span><input name="petAttackDamage" type="text" placeholder="1d6+2" /></label>
               </div>
-              <div class="dnd-pet-quick-actions">
-                <button type="button" data-dnd-v2-roll="1d20+petAttackBonus" data-dnd-v2-roll-label="Pet · Ataque">Rolar acerto</button>
-                <button type="button" data-dnd-pet-damage-roll="true">Rolar dano</button>
+              <div class="dnd-pet-quick-actions dnd-pet-quick-actions--clean">
+                <p>Use o painel de rolador para acerto e dano do pet.</p>
               </div>
             </div>
 
@@ -1027,7 +1449,118 @@
       </section>
     </div>
   </section>
+
+
 </form>
+  <aside class="campaign-dice-widget campaign-dice-widget--dnd-sheet campaign-dice-widget--dnd-bottom" id="campaignDiceWidget" aria-label="Rolador de dados da campanha D&D">
+    <div class="campaign-dice-head">
+      <button type="button" class="campaign-dice-toggle" data-dice-toggle aria-expanded="false">
+        <span>Rolador de dados</span>
+        <strong>🎲</strong>
+      </button>
+    </div>
+
+    <div class="campaign-dice-body">
+      <div class="campaign-dice-last-result" id="campaignDiceLastResult">
+        <span>Resultado</span>
+        <strong>--</strong>
+        <p>Escolha uma rolagem ou digite uma fórmula.</p>
+      </div>
+
+      <div class="campaign-dice-quick-grid" aria-label="Dados rápidos">
+        <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d4" data-dice-label="D4">d4</button>
+        <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d6" data-dice-label="D6">d6</button>
+        <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d8" data-dice-label="D8">d8</button>
+        <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d10" data-dice-label="D10">d10</button>
+        <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d12" data-dice-label="D12">d12</button>
+        <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d20" data-dice-label="D20">d20</button>
+        <button type="button" class="campaign-dice-quick-btn" data-dice-formula="1d100" data-dice-label="D100">d100</button>
+      </div>
+
+      <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+        <span>Testes principais</span>
+        <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+initiative" data-dice-label="Iniciativa">Iniciativa</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+strMod" data-dice-label="Força">FOR</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+dexMod" data-dice-label="Destreza">DES</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+conMod" data-dice-label="Constituição">CON</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+intMod" data-dice-label="Inteligência">INT</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+wisMod" data-dice-label="Sabedoria">SAB</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+chaMod" data-dice-label="Carisma">CAR</button>
+        </div>
+      </section>
+
+      <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+        <span>Resistências</span>
+        <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveStr" data-dice-label="Resistência de Força">FOR</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveDex" data-dice-label="Resistência de Destreza">DES</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveCon" data-dice-label="Resistência de Constituição">CON</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveInt" data-dice-label="Resistência de Inteligência">INT</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveWis" data-dice-label="Resistência de Sabedoria">SAB</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+saveCha" data-dice-label="Resistência de Carisma">CAR</button>
+        </div>
+      </section>
+
+      <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+        <span>Perícias</span>
+        <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide campaign-dice-auto-grid--skills">
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillAcrobatics" data-dice-label="Acrobacia">Acrobacia</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillArcana" data-dice-label="Arcanismo">Arcanismo</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillAthletics" data-dice-label="Atletismo">Atletismo</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillDeception" data-dice-label="Enganação">Enganação</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillStealth" data-dice-label="Furtividade">Furtividade</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillHistory" data-dice-label="História">História</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillInsight" data-dice-label="Intuição">Intuição</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillIntimidation" data-dice-label="Intimidação">Intimidação</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillInvestigation" data-dice-label="Investigação">Investigação</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillAnimalHandling" data-dice-label="Lidar com Animais">Animais</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillMedicine" data-dice-label="Medicina">Medicina</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillNature" data-dice-label="Natureza">Natureza</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillPerception" data-dice-label="Percepção">Percepção</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillPerformance" data-dice-label="Performance">Performance</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillPersuasion" data-dice-label="Persuasão">Persuasão</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillSleightOfHand" data-dice-label="Prestidigitação">Prestidigitação</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillReligion" data-dice-label="Religião">Religião</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+skillSurvival" data-dice-label="Sobrevivência">Sobrevivência</button>
+        </div>
+      </section>
+
+      <section class="campaign-dice-auto-box campaign-dice-auto-box--dnd" data-dice-system-only="D&D">
+        <span>Pet e Dados de Vida</span>
+        <div class="campaign-dice-auto-grid campaign-dice-auto-grid--wide">
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+petDexMod" data-dice-label="Pet · Iniciativa">Pet Iniciativa</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+petWisMod" data-dice-label="Pet · Percepção">Pet Percepção</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+petStrMod" data-dice-label="Pet · Força">Pet Força</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d20+petAttackBonus" data-dice-label="Pet · Ataque">Pet Ataque</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d6" data-dice-label="Dado de Vida d6">DV d6</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d8" data-dice-label="Dado de Vida d8">DV d8</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d10" data-dice-label="Dado de Vida d10">DV d10</button>
+          <button type="button" class="campaign-dice-auto-btn" data-dice-formula="1d12" data-dice-label="Dado de Vida d12">DV d12</button>
+        </div>
+      </section>
+
+      <form class="campaign-dice-custom-form" data-dice-custom-form>
+        <label>
+          <span>Nome da rolagem</span>
+          <input name="diceLabel" type="text" placeholder="Ataque, dano, teste..." autocomplete="off" />
+        </label>
+        <label>
+          <span>Fórmula</span>
+          <input name="diceFormula" type="text" placeholder="Ex: 1d20+5, 2d6+3" autocomplete="off" />
+        </label>
+        <button type="submit" class="campaign-dice-roll-btn">Rolar fórmula</button>
+      </form>
+
+      <div class="campaign-dice-history-head">
+        <h3>Histórico da mesa</h3>
+        <button type="button" data-dice-refresh>Atualizar</button>
+      </div>
+      <div class="campaign-dice-history" id="campaignDiceHistory" data-dice-history>
+        <div class="campaign-dice-empty">Nenhuma rolagem visível ainda.</div>
+      </div>
+    </div>
+  </aside>
       </section>
 
       <section
@@ -1048,11 +1581,18 @@
 
             <button
               type="button"
-              class="altherium-btn"
+              class="altherium-btn initiative-clear-btn initiative-clear-btn--master-only"
               id="clearDndPlayerInitiativeBtn"
+              data-initiative-master-only="true"
+              hidden
+              aria-hidden="true"
             >
               Limpar iniciativa
             </button>
+
+            <span class="initiative-player-readonly-badge">
+              Somente o mestre limpa a iniciativa
+            </span>
           </div>
 
           <div class="initiative-board" id="dndPlayerInitiativeBoard">
@@ -1060,6 +1600,97 @@
               <h3>Carregando iniciativa</h3>
               <p>Aguarde enquanto a ordem da mesa é sincronizada.</p>
             </div>
+          </div>
+        </div>
+      </section>
+
+      <section
+        id="playerMessagesSection"
+        class="altherium-section player-campaign-tab-panel player-messages-section dnd-player-messages-section"
+      >
+        <div class="altherium-panel player-chat-panel">
+          <div class="altherium-panel-header player-chat-header">
+            <div>
+              <span class="panel-kicker">Chat da mesa</span>
+              <h2>Mensagens</h2>
+              <p>Converse com o mestre e os outros jogadores desta campanha em tempo real.</p>
+            </div>
+            <span class="player-chat-system-pill">D&amp;D</span>
+          </div>
+
+          <div class="player-chat-shell">
+            <div class="player-chat-messages" id="playerCampaignChatMessages" aria-live="polite">
+              <div class="player-chat-empty">
+                <h3>Carregando mensagens</h3>
+                <p>Aguarde um instante.</p>
+              </div>
+            </div>
+
+            <form class="player-chat-form" id="playerCampaignChatForm" autocomplete="off">
+              <div class="player-chat-recipient-row">
+                <label for="playerCampaignChatRecipient">Enviar para</label>
+                <select id="playerCampaignChatRecipient">
+                  <option value="">Mesa inteira</option>
+                </select>
+                <button
+                  class="player-chat-master-shortcut"
+                  type="button"
+                  id="playerCampaignChatMasterShortcut"
+                  data-player-chat-master-shortcut="true"
+                  disabled
+                  hidden
+                >
+                  Falar só com mestre
+                </button>
+              </div>
+
+              <div class="player-chat-recipient-hint" id="playerCampaignChatRecipientHint">
+                Toda a mesa verá essa conversa.
+              </div>
+
+              <div class="player-chat-tools player-chat-tools--emoji-only">
+                <button class="player-chat-tool-btn" type="button" data-player-chat-tool="emoji" aria-expanded="false">
+                  <span>😊</span>
+                  Emojis
+                </button>
+              </div>
+
+              <div class="player-chat-picker" id="playerCampaignEmojiPicker" data-player-chat-picker="emoji" hidden>
+                <div class="player-chat-picker-title">Escolha um emoji</div>
+                <div class="player-chat-emoji-grid">
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="😀">😀</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="😂">😂</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="😎">😎</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="😈">😈</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="😭">😭</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="😱">😱</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="😤">😤</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="🤝">🤝</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="❤️">❤️</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="✨">✨</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="🎲">🎲</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="⚔️">⚔️</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="🛡️">🛡️</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="🏹">🏹</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="🧙">🧙</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="🐺">🐺</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="👑">👑</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="💀">💀</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="🔥">🔥</button>
+                  <button class="player-chat-emoji-btn" type="button" data-player-chat-emoji="🩸">🩸</button>
+                </div>
+              </div>
+
+              <div class="player-chat-compose-row">
+                <textarea
+                  id="playerCampaignChatInput"
+                  maxlength="800"
+                  rows="2"
+                  placeholder="Digite sua mensagem para a mesa..."
+                ></textarea>
+                <button class="altherium-btn" type="button" id="playerCampaignChatSendBtn">Enviar</button>
+              </div>
+            </form>
           </div>
         </div>
       </section>

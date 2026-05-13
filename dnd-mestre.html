@@ -8,7 +8,7 @@
     <link rel="icon" href="img/favicon.png" />
   </head>
 
-  <body class="dnd-master-page">
+  <body class="dnd-master-page dnd-design-impecavel dnd-master-preview-rework-page dnd-master-preview-polished-page">
     <div class="background-glow"></div>
 
     <header class="header header-center">
@@ -143,8 +143,8 @@
     </main>
 
     <div class="altherium-modal" id="dndModal">
-      <div class="altherium-modal-box dnd-sheet-modal-box">
-        <button class="altherium-close" data-close-dnd-modal>×</button>
+      <div class="altherium-modal-box dnd-sheet-modal-box dnd-master-sheet-preview-modal">
+        <button type="button" class="altherium-close" data-close-dnd-modal aria-label="Fechar ficha" onclick="window.campaignLabCloseDndMasterModal && window.campaignLabCloseDndMasterModal(event)">×</button>
         <h2 id="dndModalTitle">Modal</h2>
 
         <form id="dndForm">
