@@ -35588,3 +35588,252 @@ body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-saves-row
     justify-content: flex-start !important;
   }
 }
+
+/* =========================================================
+   D&D - FICHA RESERVA + COPIAR / COLAR ATIVO
+========================================================= */
+body.dnd-player-page .campaign-sheet-transfer-actions[data-sheet-transfer-actions="D&D"],
+body.dnd-master-page .campaign-sheet-transfer-actions[data-sheet-transfer-actions="D&D"] {
+  display: inline-flex !important;
+}
+
+.dnd-v2-toolbar-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.campaign-lab-dnd-copy-btn,
+.campaign-lab-dnd-paste-btn {
+  min-width: 138px;
+}
+
+.campaign-lab-dnd-paste-btn {
+  border-color: rgba(251, 191, 36, 0.38) !important;
+  color: #fff7d6 !important;
+  background:
+    linear-gradient(135deg, rgba(120, 53, 15, 0.34), rgba(2, 6, 23, 0.9)),
+    rgba(15, 23, 42, 0.7) !important;
+}
+
+.dnd-reserve-sheet-section {
+  display: none;
+  gap: 22px;
+}
+
+.dnd-reserve-sheet-section.active {
+  display: flex;
+  flex-direction: column;
+}
+
+.dnd-reserve-control-panel {
+  overflow: hidden;
+  background:
+    linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.94)),
+    radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 46%);
+}
+
+.dnd-reserve-header .player-chat-system-pill {
+  align-self: flex-start;
+}
+
+.dnd-reserve-actions-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1.3fr) minmax(230px, 0.7fr);
+  gap: 18px;
+  align-items: stretch;
+}
+
+.dnd-reserve-paste-field {
+  margin: 0;
+}
+
+.dnd-reserve-paste-box {
+  min-height: 132px;
+  margin: 8px 0 0;
+  resize: vertical;
+  line-height: 1.55;
+}
+
+.dnd-reserve-buttons {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 10px;
+  padding: 16px;
+  border: 1px solid rgba(34, 211, 238, 0.16);
+  border-radius: 20px;
+  background: rgba(2, 6, 23, 0.42);
+}
+
+.dnd-reserve-buttons .dnd-v2-soft-btn {
+  width: 100%;
+  justify-content: center;
+}
+
+.dnd-reserve-sheet-container {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.dnd-reserve-sheet-form {
+  position: relative;
+  border: 1px solid rgba(251, 191, 36, 0.2);
+  box-shadow:
+    0 24px 80px rgba(0, 0, 0, 0.28),
+    0 0 42px rgba(251, 191, 36, 0.05);
+}
+
+.dnd-reserve-sheet-form::before {
+  content: "FICHA RESERVA";
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 2;
+  padding: 7px 11px;
+  border: 1px solid rgba(251, 191, 36, 0.32);
+  border-radius: 999px;
+  background: rgba(120, 53, 15, 0.26);
+  color: #fde68a;
+  font-size: 0.68rem;
+  font-weight: 900;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.dnd-reserve-sheet-form .dnd-v2-toolbar-actions {
+  justify-content: flex-end;
+}
+
+.dnd-reserve-sheet-form .dnd-v2-toolbar-actions .dnd-v2-soft-btn {
+  min-width: 128px;
+}
+
+@media (max-width: 900px) {
+  .dnd-reserve-actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .dnd-reserve-buttons {
+    padding: 12px;
+  }
+}
+
+@media (max-width: 640px) {
+  .dnd-v2-toolbar-actions {
+    width: 100%;
+    justify-content: stretch;
+  }
+
+  .dnd-v2-toolbar-actions .dnd-v2-soft-btn {
+    flex: 1 1 100%;
+  }
+
+  .dnd-reserve-sheet-form::before {
+    position: static;
+    width: fit-content;
+    margin: 14px 14px 0 auto;
+    display: block;
+  }
+}
+
+/* =========================================================
+   HOTFIX D&D PLAYER - FICHA RESERVA COMO ÚLTIMA ABA
+   Mantém a ordem correta: Ficha, Iniciativa, Mensagens, Ficha Reserva.
+========================================================= */
+.dnd-player-page .player-campaign-tabs .altherium-tab[data-tab="dndReserveSheetSection"] {
+  order: 4 !important;
+}
+
+/* =========================================================
+   HOTFIX D&D PLAYER - FONTES DA FICHA RESERVA IGUAIS À FICHA PRINCIPAL
+========================================================= */
+.dnd-player-page .dnd-reserve-sheet-section,
+.dnd-player-page .dnd-reserve-sheet-section button,
+.dnd-player-page .dnd-reserve-sheet-section input,
+.dnd-player-page .dnd-reserve-sheet-section select,
+.dnd-player-page .dnd-reserve-sheet-section textarea,
+.dnd-player-page .dnd-reserve-sheet-section a,
+.dnd-player-page .dnd-reserve-sheet-section p,
+.dnd-player-page .dnd-reserve-sheet-section span,
+.dnd-player-page .dnd-reserve-sheet-section label,
+.dnd-player-page .dnd-reserve-sheet-section small,
+.dnd-player-page .dnd-reserve-sheet-section strong,
+.dnd-player-page .dnd-reserve-sheet-section b,
+.dnd-player-page .dnd-reserve-sheet-section li,
+.dnd-player-page .dnd-reserve-sheet-section option {
+  font-family: "Inter", sans-serif !important;
+}
+
+.dnd-player-page .dnd-reserve-sheet-section h1,
+.dnd-player-page .dnd-reserve-sheet-section h2,
+.dnd-player-page .dnd-reserve-sheet-section h3,
+.dnd-player-page .dnd-reserve-sheet-section .dnd-v2-system-mark,
+.dnd-player-page .dnd-reserve-sheet-section .dnd-v2-hero-stat-input,
+.dnd-player-page .dnd-reserve-sheet-section .dnd-v2-overview-stat-input,
+.dnd-player-page .dnd-reserve-sheet-section .dnd-v2-ability-mod {
+  font-family: "Quantico", sans-serif !important;
+}
+
+/* =========================================================
+   HOTFIX FINAL D&D PLAYER - FONTE DA FICHA RESERVA
+   Motivo: a ficha principal recebe Aboreto pelo ID #dndPlayerSheetForm.
+   A ficha reserva é clonada via JS e recebe o ID #dndReserveSheetForm,
+   então precisa da mesma regra com a mesma força.
+========================================================= */
+body.dnd-player-page #dndReserveSheetSection,
+body.dnd-player-page #dndReserveSheetSection *,
+body.dnd-player-page #dndReserveSheetForm,
+body.dnd-player-page #dndReserveSheetForm *,
+body.dnd-player-page .dnd-reserve-sheet-form,
+body.dnd-player-page .dnd-reserve-sheet-form * {
+  font-family: "Aboreto", serif !important;
+  font-weight: 400 !important;
+}
+
+body.dnd-player-page #dndReserveSheetForm input,
+body.dnd-player-page #dndReserveSheetForm textarea,
+body.dnd-player-page #dndReserveSheetForm select,
+body.dnd-player-page #dndReserveSheetForm button,
+body.dnd-player-page .dnd-reserve-sheet-form input,
+body.dnd-player-page .dnd-reserve-sheet-form textarea,
+body.dnd-player-page .dnd-reserve-sheet-form select,
+body.dnd-player-page .dnd-reserve-sheet-form button,
+body.dnd-player-page #dndReservePasteBox,
+body.dnd-player-page #dndReservePasteBtn,
+body.dnd-player-page #dndReserveCopyBtn,
+body.dnd-player-page #dndReserveUseAsMainBtn {
+  font-family: "Aboreto", serif !important;
+  font-weight: 400 !important;
+  text-transform: none !important;
+  font-variant: normal !important;
+}
+
+body.dnd-player-page #dndReserveSheetForm input::placeholder,
+body.dnd-player-page #dndReserveSheetForm textarea::placeholder,
+body.dnd-player-page .dnd-reserve-sheet-form input::placeholder,
+body.dnd-player-page .dnd-reserve-sheet-form textarea::placeholder,
+body.dnd-player-page #dndReservePasteBox::placeholder {
+  font-family: "Aboreto", serif !important;
+  font-weight: 400 !important;
+  text-transform: none !important;
+  font-variant: normal !important;
+}
+
+body.dnd-player-page #dndReserveSheetSection .tag,
+body.dnd-player-page #dndReserveSheetSection h1,
+body.dnd-player-page #dndReserveSheetSection h2,
+body.dnd-player-page #dndReserveSheetSection h3,
+body.dnd-player-page #dndReserveSheetSection h4,
+body.dnd-player-page #dndReserveSheetSection .dnd-v2-system-mark,
+body.dnd-player-page #dndReserveSheetSection .dnd-v2-sheet-tabs button,
+body.dnd-player-page #dndReserveSheetSection .dnd-v2-hero-stat-input,
+body.dnd-player-page #dndReserveSheetSection .dnd-v2-overview-stat-input,
+body.dnd-player-page #dndReserveSheetSection .dnd-v2-ability-mod,
+body.dnd-player-page #dndReserveSheetSection .dnd-bonus-input {
+  font-family: "Aboreto", serif !important;
+  font-weight: 400 !important;
+}
