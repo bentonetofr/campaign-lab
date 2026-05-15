@@ -33841,3 +33841,1750 @@ body.campaign-dice-modal-open.dnd-master-page {
     width: 100%;
   }
 }
+
+
+/* =========================================================
+   D&D MESTRE - VISÃO DA FICHA IGUAL AO JOGADOR
+   Patch final: espelha cores, fontes, layout, cards e automações visuais.
+========================================================= */
+body.dnd-master-page.dnd-master-player-mirror-page {
+  --dnd-v2-bg: rgba(2, 6, 23, 0.74);
+  --dnd-v2-card: rgba(15, 23, 42, 0.74);
+  --dnd-v2-card-strong: rgba(8, 13, 28, 0.92);
+  --dnd-v2-line: rgba(34, 211, 238, 0.24);
+  --dnd-v2-line-soft: rgba(148, 163, 184, 0.18);
+  --dnd-v2-cyan: var(--cyan, #00eaff);
+  --dnd-v2-text: var(--text, #f8fafc);
+  --dnd-v2-muted: var(--muted, #94a3b8);
+  --dnd-v2-soft: var(--text-soft, #cbd5e1);
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page #dndModal.active {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 12px !important;
+  background: rgba(1, 4, 12, 0.72) !important;
+  backdrop-filter: blur(14px) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page #dndModal .dnd-master-sheet-preview-modal,
+body.dnd-master-page.dnd-master-player-mirror-page #dndModal .dnd-sheet-modal-box {
+  width: min(1480px, calc(100vw - 24px)) !important;
+  max-width: 1480px !important;
+  height: min(94vh, 1040px) !important;
+  max-height: calc(100vh - 24px) !important;
+  padding: clamp(16px, 2vw, 26px) !important;
+  border-radius: 32px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background:
+    radial-gradient(circle at 8% 0%, rgba(34, 211, 238, 0.13), transparent 30%),
+    radial-gradient(circle at 100% 8%, rgba(215, 181, 109, 0.12), transparent 32%),
+    linear-gradient(145deg, rgba(2, 6, 23, 0.98), rgba(8, 13, 28, 0.98)) !important;
+  border: 1px solid rgba(34, 211, 238, 0.26) !important;
+  box-shadow: 0 34px 120px rgba(0, 0, 0, 0.66), 0 0 70px rgba(34, 211, 238, 0.12) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page #dndModalTitle {
+  flex: 0 0 auto !important;
+  margin: 0 60px 16px 0 !important;
+  color: #f8fafc !important;
+  font-family: "Aboreto", "Quantico", serif !important;
+  font-size: clamp(24px, 2.4vw, 36px) !important;
+  letter-spacing: 1.3px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page #dndForm {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page #dndFormFields {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+  padding: 0 8px 18px 0 !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(34, 211, 238, 0.48) rgba(255, 255, 255, 0.06) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page #dndFormFields::-webkit-scrollbar {
+  width: 9px !important;
+  height: 9px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page #dndFormFields::-webkit-scrollbar-track {
+  border-radius: 999px !important;
+  background: rgba(255, 255, 255, 0.05) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page #dndFormFields::-webkit-scrollbar-thumb {
+  border-radius: 999px !important;
+  background: rgba(34, 211, 238, 0.42) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror {
+  width: 100% !important;
+  max-width: 1360px !important;
+  margin: 0 auto !important;
+  gap: 22px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  color: #f8fafc !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror * {
+  box-sizing: border-box !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror label,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror input,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror select,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror textarea,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror button,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror p,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror span,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror small,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror strong {
+  font-family: "Aboreto", serif !important;
+  font-weight: 400 !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror h2,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror h3,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror h4,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-system-mark,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-name-field input {
+  font-family: "Aboreto", "Quantico", serif !important;
+  font-weight: 400 !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .tag {
+  width: fit-content !important;
+  margin: 0 0 8px !important;
+  padding: 7px 11px !important;
+  border-radius: 999px !important;
+  color: #164e63 !important;
+  background: rgba(34, 211, 238, 0.14) !important;
+  border: 1px solid rgba(34, 211, 238, 0.22) !important;
+  font-size: 10px !important;
+  letter-spacing: 0.16em !important;
+  text-transform: uppercase !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-card {
+  position: relative !important;
+  overflow: hidden !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1.4fr) minmax(330px, 0.6fr) !important;
+  gap: 22px !important;
+  padding: clamp(22px, 3vw, 36px) !important;
+  border: 1px solid rgba(215, 181, 109, 0.2) !important;
+  border-radius: 32px !important;
+  background:
+    linear-gradient(135deg, rgba(241, 231, 207, 0.96), rgba(225, 211, 181, 0.94)),
+    radial-gradient(circle at top left, rgba(255, 255, 255, 0.7), transparent 42%) !important;
+  color: #1f2937 !important;
+  box-shadow: 0 22px 80px rgba(0, 0, 0, 0.32), inset 0 0 0 1px rgba(255, 255, 255, 0.36) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-card::before {
+  content: "" !important;
+  position: absolute !important;
+  inset: 0 !important;
+  pointer-events: none !important;
+  background:
+    linear-gradient(90deg, rgba(74, 48, 18, 0.04) 1px, transparent 1px),
+    linear-gradient(rgba(74, 48, 18, 0.04) 1px, transparent 1px) !important;
+  background-size: 34px 34px !important;
+  opacity: 0.8 !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-main {
+  position: relative !important;
+  z-index: 1 !important;
+  display: flex !important;
+  gap: 24px !important;
+  align-items: flex-start !important;
+  min-width: 0 !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-system-mark {
+  flex: 0 0 86px !important;
+  width: 86px !important;
+  height: 86px !important;
+  border-radius: 50% !important;
+  border: 2px solid rgba(126, 80, 28, 0.28) !important;
+  color: #f8fafc !important;
+  display: grid !important;
+  place-items: center !important;
+  background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.25), transparent 24%), linear-gradient(145deg, #0f172a, #111827) !important;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.24), inset 0 0 0 4px rgba(215, 181, 109, 0.15) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-name-field,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-identity-line label,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-master-v2-native-field label,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-master-v2-field,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-field,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-master-v2-textarea {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 8px !important;
+  margin: 0 !important;
+  color: rgba(203, 213, 225, 0.76) !important;
+  font-size: 12px !important;
+  letter-spacing: 1.2px !important;
+  text-transform: uppercase !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-name-field span,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-identity-line span {
+  color: rgba(31, 41, 55, 0.64) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-name-field input {
+  min-height: 72px !important;
+  padding: 10px 0 !important;
+  border: none !important;
+  border-bottom: 1px solid rgba(126, 80, 28, 0.32) !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  color: #191815 !important;
+  font-size: clamp(34px, 5vw, 62px) !important;
+  line-height: 1 !important;
+  box-shadow: none !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-identity-line {
+  width: 100% !important;
+  display: grid !important;
+  grid-template-columns: 1.25fr 0.42fr 1fr 1fr !important;
+  gap: 12px !important;
+  align-items: start !important;
+  margin-top: 18px !important;
+  overflow: visible !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-card input,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-card select {
+  min-height: 46px !important;
+  color: #111827 !important;
+  border: 1px solid rgba(126, 80, 28, 0.18) !important;
+  border-radius: 14px !important;
+  background: rgba(255, 255, 255, 0.48) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror input,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror select,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror textarea {
+  width: 100% !important;
+  min-height: 46px !important;
+  margin: 0 !important;
+  padding: 0 14px !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  border-radius: 14px !important;
+  background: rgba(2, 6, 23, 0.58) !important;
+  color: #f8fafc !important;
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror textarea {
+  min-height: 110px !important;
+  padding: 14px !important;
+  resize: vertical !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror input:focus,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror select:focus,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror textarea:focus {
+  border-color: rgba(34, 211, 238, 0.72) !important;
+  background: rgba(2, 6, 23, 0.84) !important;
+  box-shadow: 0 0 0 4px rgba(34, 211, 238, 0.1) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-stats {
+  position: relative !important;
+  z-index: 1 !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-stats article {
+  min-height: 132px !important;
+  display: grid !important;
+  place-items: center !important;
+  text-align: center !important;
+  padding: 18px 14px !important;
+  border: 1px solid rgba(126, 80, 28, 0.2) !important;
+  border-radius: 22px !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.25)) !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.28) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-stats article::before {
+  content: "✦" !important;
+  width: 36px !important;
+  height: 36px !important;
+  display: grid !important;
+  place-items: center !important;
+  margin-bottom: 2px !important;
+  border-radius: 50% !important;
+  color: #0f172a !important;
+  background: rgba(215, 181, 109, 0.28) !important;
+}
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-stats article:nth-child(1)::before { content: "🛡" !important; }
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-stats article:nth-child(2)::before { content: "♥" !important; color: #7f1d1d !important; }
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-stats article:nth-child(3)::before { content: "⚡" !important; }
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-stats article:nth-child(4)::before { content: "★" !important; }
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-stats span {
+  color: rgba(31, 41, 55, 0.62) !important;
+  font-size: 11px !important;
+  letter-spacing: 1.2px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-stats input,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-hp-edit input {
+  width: 100% !important;
+  max-width: 94px !important;
+  min-height: 46px !important;
+  padding: 0 8px !important;
+  color: #171717 !important;
+  text-align: center !important;
+  font-size: clamp(26px, 3vw, 42px) !important;
+  border-color: rgba(126, 80, 28, 0.18) !important;
+  background: rgba(255, 255, 255, 0.42) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-hp-edit,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-overview-hp-edit {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 8px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-hp-edit b,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-overview-hp-edit b {
+  color: #111827 !important;
+  font-size: 24px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-command-bar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 45 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  padding: 10px !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  border-radius: 24px !important;
+  background: rgba(4, 9, 20, 0.88) !important;
+  backdrop-filter: blur(18px) !important;
+  box-shadow: 0 16px 45px rgba(0, 0, 0, 0.28) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-sheet-tabs {
+  display: flex !important;
+  gap: 6px !important;
+  padding: 0 !important;
+  overflow-x: auto !important;
+  scrollbar-width: thin !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-sheet-tabs button {
+  flex: 0 0 auto !important;
+  min-height: 42px !important;
+  padding: 0 14px !important;
+  border: none !important;
+  border-radius: 999px !important;
+  background: transparent !important;
+  color: rgba(226, 232, 240, 0.72) !important;
+  font-size: 13px !important;
+  letter-spacing: 0.6px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-sheet-tabs button.active,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-sheet-tabs button:hover {
+  color: #031018 !important;
+  background: linear-gradient(135deg, #22d3ee, #67e8f9) !important;
+  box-shadow: 0 10px 26px rgba(34, 211, 238, 0.18) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-layout {
+  display: grid !important;
+  grid-template-columns: 310px minmax(0, 1fr) !important;
+  gap: 18px !important;
+  align-items: start !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-side-panel {
+  position: sticky !important;
+  top: 78px !important;
+  display: grid !important;
+  gap: 14px !important;
+  padding: 0 !important;
+  border: none !important;
+  background: transparent !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-profile-card,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-race-box,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-roll-result,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-dice-launch-card,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-card,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-big-stat {
+  border: 1px solid rgba(34, 211, 238, 0.16) !important;
+  border-radius: 26px !important;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.86)), radial-gradient(circle at top, rgba(34, 211, 238, 0.1), transparent 42%) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-profile-card,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-race-box,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-roll-result,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-dice-launch-card {
+  padding: 18px !important;
+  text-align: center !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-avatar-duo {
+  position: relative !important;
+  width: fit-content !important;
+  margin: 0 auto 14px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-avatar-preview {
+  width: 92px !important;
+  height: 92px !important;
+  margin: 0 auto !important;
+  border-radius: 50% !important;
+  display: grid !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  border: 1px solid rgba(215, 181, 109, 0.34) !important;
+  color: #fef3c7 !important;
+  font-size: 42px !important;
+  background: radial-gradient(circle at 35% 25%, rgba(255, 255, 255, 0.16), transparent 24%), linear-gradient(145deg, #111827, #020617) !important;
+  box-shadow: inset 0 0 0 5px rgba(215, 181, 109, 0.12) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-avatar-preview img,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-avatar-preview picture,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-avatar-preview canvas {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  border-radius: inherit !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-pet-avatar-mini {
+  position: absolute !important;
+  right: -8px !important;
+  bottom: 0 !important;
+  width: 34px !important;
+  height: 34px !important;
+  border-radius: 50% !important;
+  display: none !important;
+  place-items: center !important;
+  overflow: hidden !important;
+  color: #fef3c7 !important;
+  background: linear-gradient(145deg, #0f172a, #020617) !important;
+  border: 2px solid rgba(215, 181, 109, 0.72) !important;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.32) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-pet-avatar-mini.is-visible {
+  display: grid !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-avatar-upload-btn,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .character-portrait-upload-btn {
+  width: 100% !important;
+  min-height: 42px !important;
+  margin: 0 0 12px !important;
+  padding: 0 14px !important;
+  border-radius: 999px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  cursor: pointer !important;
+  color: #031018 !important;
+  background: linear-gradient(135deg, #22d3ee, #67e8f9) !important;
+  border: 0 !important;
+  box-shadow: 0 12px 28px rgba(34, 211, 238, 0.18) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-profile-card strong {
+  display: block !important;
+  color: #f8fafc !important;
+  font-size: 24px !important;
+  text-align: center !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-profile-card span,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-race-box h3,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-dice-launch-card span {
+  color: #67e8f9 !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-dice-launch-card strong {
+  display: block !important;
+  margin: 8px auto !important;
+  font-size: 34px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-open-dice-btn {
+  width: 100% !important;
+  min-height: 42px !important;
+  margin-top: 12px !important;
+  border-radius: 999px !important;
+  border: 1px solid rgba(34, 211, 238, 0.24) !important;
+  background: rgba(34, 211, 238, 0.08) !important;
+  color: #a5f3fc !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-content {
+  min-width: 0 !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-panel {
+  display: none !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 30px !important;
+  padding: clamp(18px, 2.4vw, 30px) !important;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.86), rgba(2, 6, 23, 0.88)), radial-gradient(circle at top right, rgba(34, 211, 238, 0.08), transparent 40%) !important;
+  box-shadow: 0 24px 74px rgba(0, 0, 0, 0.24) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-panel.active {
+  display: block !important;
+  animation: dndV2PanelIn 0.22s ease !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-section-head {
+  display: grid !important;
+  gap: 6px !important;
+  margin-bottom: 20px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-section-head h2 {
+  margin: 0 !important;
+  color: #f8fafc !important;
+  font-size: clamp(28px, 3vw, 42px) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-section-head span,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-card p,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-card small,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-race-box p,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-roll-result p,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-dice-launch-card p {
+  color: rgba(203, 213, 225, 0.76) !important;
+  line-height: 1.55 !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-overview-grid {
+  display: grid !important;
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-big-stat {
+  min-height: 158px !important;
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 8px !important;
+  padding: 18px !important;
+  background: rgba(255, 255, 255, 0.055) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-big-stat input {
+  max-width: 150px !important;
+  margin: 0 auto !important;
+  text-align: center !important;
+  font-size: clamp(30px, 4vw, 48px) !important;
+  color: #f8fafc !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-card {
+  padding: clamp(18px, 2vw, 24px) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.065), rgba(255, 255, 255, 0.035)) !important;
+  box-shadow: none !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-card h3,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-card h4 {
+  margin: 0 0 16px !important;
+  color: #f8fafc !important;
+  font-size: 22px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-form-grid,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-grid-2,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-master-v2-combat-grid,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-master-v2-experience-grid,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-master-v2-story-grid {
+  gap: 14px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-abilities-grid {
+  display: grid !important;
+  grid-template-columns: repeat(6, minmax(130px, 1fr)) !important;
+  gap: 12px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-ability-card {
+  border: 1px solid rgba(215, 181, 109, 0.18) !important;
+  border-radius: 24px !important;
+  background: linear-gradient(180deg, rgba(241, 231, 207, 0.14), rgba(255, 255, 255, 0.035)) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-ability-card input,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-ability-mod {
+  text-align: center !important;
+  color: #f8fafc !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-save-list,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-skill-list {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-bonus-row,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-save-row,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-skill-row {
+  min-height: 48px !important;
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto auto 66px !important;
+  gap: 8px !important;
+  align-items: center !important;
+  padding: 8px 10px !important;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  border-radius: 16px !important;
+  background: rgba(2, 6, 23, 0.48) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-bonus-row::before,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-bonus-row::after,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-skill-row::before,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-skill-row::after {
+  content: none !important;
+  display: none !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-bonus-input {
+  width: 66px !important;
+  min-height: 34px !important;
+  padding: 4px !important;
+  text-align: center !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-panel,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-spell-slots {
+  background: transparent !important;
+  border: 0 !important;
+  padding: 0 !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-rest-panel,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-rest-card,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-grimoire,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-official-spell-library,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-inventory-wallet-card,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-inventory-list-panel,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-inventory-side-card,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-pet-profile-card,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-pet-card {
+  border: 1px solid rgba(34, 211, 238, 0.16) !important;
+  background: linear-gradient(145deg, rgba(15, 23, 42, 0.88), rgba(2, 6, 23, 0.86)) !important;
+  box-shadow: 0 18px 48px rgba(0, 0, 0, 0.22) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-official-spell-library {
+  border-color: rgba(34, 211, 238, 0.22) !important;
+  border-radius: 26px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page #dndModal .modal-submit-row {
+  flex: 0 0 auto !important;
+  position: sticky !important;
+  bottom: 0 !important;
+  z-index: 70 !important;
+  margin: 0 !important;
+  padding: 14px 0 0 !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+  align-items: center !important;
+  border-top: 1px solid rgba(34, 211, 238, 0.14) !important;
+  background: linear-gradient(to top, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0.72)) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page #dndModal .dnd-master-mirror-apply-btn,
+body.dnd-master-page.dnd-master-player-mirror-page #dndModal .altherium-submit {
+  width: auto !important;
+  min-width: 190px !important;
+  height: 48px !important;
+  padding: 0 24px !important;
+  border-radius: 999px !important;
+  border: 0 !important;
+  background: linear-gradient(135deg, #22d3ee, #67e8f9) !important;
+  color: #031018 !important;
+  box-shadow: 0 14px 34px rgba(34, 211, 238, 0.22) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page #dndModal .dnd-master-mirror-apply-btn:disabled,
+body.dnd-master-page.dnd-master-player-mirror-page #dndModal .altherium-submit:disabled {
+  opacity: 0.72 !important;
+  cursor: default !important;
+  filter: grayscale(0.2) !important;
+}
+
+@media (max-width: 1180px) {
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-layout,
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-side-panel {
+    position: static !important;
+    grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)) !important;
+  }
+
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-overview-grid,
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-abilities-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+}
+
+@media (max-width: 760px) {
+  body.dnd-master-page.dnd-master-player-mirror-page #dndModal {
+    padding: 6px !important;
+  }
+
+  body.dnd-master-page.dnd-master-player-mirror-page #dndModal .dnd-master-sheet-preview-modal,
+  body.dnd-master-page.dnd-master-player-mirror-page #dndModal .dnd-sheet-modal-box {
+    width: calc(100vw - 12px) !important;
+    height: calc(100vh - 12px) !important;
+    max-height: calc(100vh - 12px) !important;
+    padding: 14px !important;
+    border-radius: 22px !important;
+  }
+
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-main,
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-identity-line,
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-hero-stats,
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-overview-grid,
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-abilities-grid,
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-save-list,
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-skill-list {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-v2-name-field input {
+    font-size: 34px !important;
+  }
+
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-bonus-row,
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-save-row,
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-skill-row {
+    grid-template-columns: minmax(0, 1fr) auto auto 58px !important;
+  }
+
+  body.dnd-master-page.dnd-master-player-mirror-page #dndModal .altherium-submit {
+    width: 100% !important;
+  }
+}
+
+
+/* =========================================================
+   HOTFIX REAL - D&D MESTRE COM HTML IGUAL AO PLAYER
+   Compacta a ficha do jogador dentro do modal do mestre.
+========================================================= */
+body.dnd-master-real-player-preview-page #dndModal,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal {
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 12px !important;
+  overflow: hidden !important;
+}
+
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-sheet-preview-modal,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-sheet-preview-modal {
+  width: min(1180px, calc(100vw - 24px)) !important;
+  height: min(92vh, 900px) !important;
+  max-width: min(1180px, calc(100vw - 24px)) !important;
+  max-height: calc(100vh - 24px) !important;
+  padding: 16px !important;
+  border-radius: 26px !important;
+  overflow: hidden !important;
+  display: flex !important;
+  flex-direction: column !important;
+  background:
+    radial-gradient(circle at 12% 0%, rgba(0, 234, 255, 0.14), transparent 30%),
+    radial-gradient(circle at 90% 8%, rgba(80, 120, 255, 0.10), transparent 28%),
+    linear-gradient(145deg, rgba(4, 10, 28, 0.99), rgba(2, 6, 23, 0.99)) !important;
+  border: 1px solid rgba(0, 234, 255, 0.28) !important;
+  box-shadow:
+    0 28px 90px rgba(0, 0, 0, 0.65),
+    0 0 64px rgba(0, 234, 255, 0.12) !important;
+}
+
+body.dnd-master-real-player-preview-page #dndModalTitle {
+  flex: 0 0 auto !important;
+  margin: 0 52px 10px 2px !important;
+  color: #f8fafc !important;
+  font-family: "Quantico", sans-serif !important;
+  font-size: clamp(19px, 2vw, 28px) !important;
+  line-height: 1.1 !important;
+  letter-spacing: 0.02em !important;
+}
+
+body.dnd-master-real-player-preview-page #dndForm {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 10px !important;
+}
+
+body.dnd-master-real-player-preview-page #dndFormFields {
+  flex: 1 1 auto !important;
+  min-height: 0 !important;
+  overflow: auto !important;
+  padding: 2px 6px 8px 2px !important;
+  scrollbar-width: thin !important;
+  scrollbar-color: rgba(0, 234, 255, 0.38) rgba(255, 255, 255, 0.05) !important;
+}
+
+body.dnd-master-real-player-preview-page #dndFormFields::-webkit-scrollbar {
+  width: 9px !important;
+  height: 9px !important;
+}
+
+body.dnd-master-real-player-preview-page #dndFormFields::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.05) !important;
+  border-radius: 999px !important;
+}
+
+body.dnd-master-real-player-preview-page #dndFormFields::-webkit-scrollbar-thumb {
+  background: rgba(0, 234, 255, 0.38) !important;
+  border-radius: 999px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet * {
+  box-sizing: border-box !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet {
+  width: 100% !important;
+  max-width: none !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  background: transparent !important;
+  border: 0 !important;
+  box-shadow: none !important;
+  color: #e5eefc !important;
+  font-family: "Inter", sans-serif !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet h1,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet h2,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet h3,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .tag,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-system-mark {
+  font-family: "Quantico", sans-serif !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-card {
+  margin: 0 0 12px !important;
+  padding: 15px !important;
+  border-radius: 24px !important;
+  grid-template-columns: minmax(0, 1.4fr) minmax(360px, 0.8fr) !important;
+  gap: 14px !important;
+  background:
+    radial-gradient(circle at 0 0, rgba(0, 234, 255, 0.14), transparent 42%),
+    linear-gradient(145deg, rgba(11, 22, 52, 0.96), rgba(4, 12, 34, 0.96)) !important;
+  border: 1px solid rgba(0, 234, 255, 0.24) !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-system-mark {
+  width: 58px !important;
+  height: 58px !important;
+  font-size: 18px !important;
+  border-radius: 18px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-name-field input {
+  min-height: 44px !important;
+  font-size: clamp(20px, 2.1vw, 30px) !important;
+  padding: 8px 12px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-identity-line {
+  grid-template-columns: 1.2fr 90px 1fr 1fr !important;
+  gap: 9px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet label span,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-field span,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-section-head span,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet small,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet p {
+  font-family: "Inter", sans-serif !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet input,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet select,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet textarea,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet button {
+  font-family: "Inter", sans-serif !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stats {
+  grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+  gap: 9px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stats article {
+  min-height: 84px !important;
+  padding: 10px !important;
+  border-radius: 18px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stat-input,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-overview-stat-input {
+  min-height: 36px !important;
+  font-size: 22px !important;
+  padding: 4px 8px !important;
+  text-align: center !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-command-bar {
+  position: sticky !important;
+  top: 0 !important;
+  z-index: 15 !important;
+  margin: 0 0 12px !important;
+  padding: 8px !important;
+  border-radius: 20px !important;
+  background: rgba(3, 9, 28, 0.92) !important;
+  border: 1px solid rgba(0, 234, 255, 0.16) !important;
+  backdrop-filter: blur(16px) !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-sheet-tabs {
+  flex-wrap: nowrap !important;
+  overflow-x: auto !important;
+  gap: 7px !important;
+  padding-bottom: 2px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-sheet-tabs button {
+  flex: 0 0 auto !important;
+  min-height: 34px !important;
+  padding: 7px 11px !important;
+  border-radius: 999px !important;
+  font-size: 11px !important;
+  letter-spacing: 0.05em !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-layout {
+  display: grid !important;
+  grid-template-columns: 230px minmax(0, 1fr) !important;
+  gap: 14px !important;
+  align-items: start !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-side-panel {
+  position: sticky !important;
+  top: 66px !important;
+  align-self: start !important;
+  display: grid !important;
+  gap: 10px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-profile-card,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-race-box,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-dice-launch-card,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-panel,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-card {
+  border-radius: 20px !important;
+  background:
+    radial-gradient(circle at top left, rgba(0, 234, 255, 0.08), transparent 44%),
+    linear-gradient(145deg, rgba(10, 21, 50, 0.94), rgba(4, 12, 34, 0.96)) !important;
+  border: 1px solid rgba(0, 234, 255, 0.18) !important;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.24) !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-profile-card {
+  padding: 14px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-avatar-preview {
+  width: 118px !important;
+  height: 118px !important;
+  font-size: 34px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-pet-avatar-mini {
+  width: 40px !important;
+  height: 40px !important;
+  right: 18px !important;
+  bottom: 8px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-race-box,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-dice-launch-card {
+  padding: 13px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-content {
+  min-width: 0 !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-panel {
+  display: none !important;
+  padding: 15px !important;
+  min-height: 520px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-panel.active {
+  display: block !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-section-head {
+  margin-bottom: 12px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-section-head h2 {
+  font-size: clamp(20px, 2.2vw, 30px) !important;
+  margin: 2px 0 4px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-overview-grid,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-grid-2,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-combat-grid,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-inventory-grid,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-story-grid,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-master-v2-experience-grid {
+  gap: 12px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-card {
+  padding: 14px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-abilities-grid {
+  grid-template-columns: repeat(6, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-ability-card {
+  min-height: 150px !important;
+  padding: 12px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-ability-card input {
+  height: 46px !important;
+  font-size: 25px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-ability-mod {
+  width: 54px !important;
+  height: 34px !important;
+  font-size: 17px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-bonus-list,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-skills-grid {
+  gap: 8px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-bonus-row,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-save-row,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-skill-row {
+  min-height: 42px !important;
+  border-radius: 14px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-skill-row::before,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-skill-row::after,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-save-row::before,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-save-row::after {
+  content: none !important;
+  display: none !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-spell-slots,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-spell-slot-level,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-inventory-list-panel,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-pet-sheet {
+  max-width: 100% !important;
+}
+
+body.dnd-master-real-player-preview-page .modal-submit-row {
+  flex: 0 0 auto !important;
+  margin: 0 !important;
+  padding: 10px 0 0 !important;
+  border-top: 1px solid rgba(0, 234, 255, 0.16) !important;
+  background: linear-gradient(to top, rgba(2, 6, 23, 0.98), rgba(2, 6, 23, 0.78), transparent) !important;
+}
+
+body.dnd-master-real-player-preview-page .modal-submit-row .altherium-submit,
+body.dnd-master-real-player-preview-page .dnd-master-real-submit-btn {
+  width: 100% !important;
+  min-height: 44px !important;
+  border-radius: 16px !important;
+  font-family: "Quantico", sans-serif !important;
+  letter-spacing: 0.08em !important;
+}
+
+@media (max-width: 980px) {
+  body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-layout {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-side-panel {
+    position: static !important;
+    grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+  }
+
+  body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-profile-card {
+    grid-column: span 1 !important;
+  }
+}
+
+@media (max-width: 720px) {
+  body.dnd-master-real-player-preview-page #dndModal .dnd-master-sheet-preview-modal {
+    width: calc(100vw - 10px) !important;
+    height: calc(100vh - 10px) !important;
+    padding: 10px !important;
+    border-radius: 20px !important;
+  }
+
+  body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-identity-line,
+  body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stats,
+  body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-abilities-grid,
+  body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-side-panel {
+    grid-template-columns: 1fr !important;
+  }
+}
+
+
+/* =========================================================
+   D&D MESTRE - PREVIEW DO PLAYER SEM ABA LIVRO
+   Mantém a aba Livro apenas na ficha real do jogador.
+========================================================= */
+.dnd-master-page .dnd-master-true-player-sheet [data-dnd-v2-tab="book"],
+.dnd-master-page .dnd-master-true-player-sheet [data-dnd-v2-panel="book"],
+.dnd-master-real-player-preview-page .dnd-master-true-player-sheet [data-dnd-v2-tab="book"],
+.dnd-master-real-player-preview-page .dnd-master-true-player-sheet [data-dnd-v2-panel="book"] {
+  display: none !important;
+}
+
+.dnd-master-true-player-sheet--without-book .dnd-v2-sheet-tabs {
+  grid-template-columns: repeat(auto-fit, minmax(92px, 1fr));
+}
+
+
+/* =========================================================
+   HOTFIX D&D MESTRE - RESUMO SUPERIOR DO PLAYER ORGANIZADO
+   Corrige CA, PV, Iniciativa e Prof. dentro do modal do mestre.
+   Mantém o visual da ficha do jogador, mas em escala menor.
+========================================================= */
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-card,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-card {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) minmax(300px, 340px) !important;
+  align-items: stretch !important;
+  gap: 16px !important;
+  overflow: hidden !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stats,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stats {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 340px !important;
+  margin-left: auto !important;
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  grid-auto-rows: minmax(112px, auto) !important;
+  gap: 10px !important;
+  align-items: stretch !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stats article,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stats article {
+  width: 100% !important;
+  min-width: 0 !important;
+  min-height: 112px !important;
+  max-height: none !important;
+  padding: 12px 10px !important;
+  display: grid !important;
+  grid-template-rows: auto auto 1fr !important;
+  place-items: center !important;
+  align-content: center !important;
+  justify-content: center !important;
+  gap: 6px !important;
+  overflow: visible !important;
+  border-radius: 20px !important;
+  text-align: center !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stats article::before,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stats article::before {
+  width: 36px !important;
+  height: 36px !important;
+  margin: 0 !important;
+  display: grid !important;
+  place-items: center !important;
+  border-radius: 999px !important;
+  font-size: 15px !important;
+  line-height: 1 !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stats article span,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stats article span {
+  width: 100% !important;
+  min-height: 14px !important;
+  display: block !important;
+  overflow: hidden !important;
+  color: rgba(226, 232, 240, 0.68) !important;
+  font-size: 10px !important;
+  line-height: 1.1 !important;
+  font-weight: 800 !important;
+  letter-spacing: 0.13em !important;
+  text-align: center !important;
+  text-transform: uppercase !important;
+  white-space: nowrap !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stat-input,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stat-input {
+  width: min(100%, 82px) !important;
+  min-width: 0 !important;
+  max-width: 82px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  margin: 0 auto !important;
+  padding: 0 8px !important;
+  display: block !important;
+  border-radius: 14px !important;
+  border: 1px solid rgba(34, 211, 238, 0.28) !important;
+  background: rgba(2, 6, 23, 0.56) !important;
+  color: #f8fafc !important;
+  box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+  text-align: center !important;
+  text-indent: 0 !important;
+  text-overflow: clip !important;
+  font-size: clamp(20px, 2vw, 28px) !important;
+  line-height: 42px !important;
+  font-weight: 500 !important;
+  letter-spacing: -0.02em !important;
+  appearance: textfield !important;
+  -moz-appearance: textfield !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stat-input::-webkit-inner-spin-button,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stat-input::-webkit-outer-spin-button,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stat-input::-webkit-inner-spin-button,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stat-input::-webkit-outer-spin-button {
+  margin: 0 !important;
+  appearance: none !important;
+  -webkit-appearance: none !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-hp-edit,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-hp-edit {
+  width: 100% !important;
+  max-width: 132px !important;
+  min-width: 0 !important;
+  margin: 0 auto !important;
+  display: grid !important;
+  grid-template-columns: minmax(46px, 1fr) 12px minmax(46px, 1fr) !important;
+  align-items: center !important;
+  justify-content: center !important;
+  justify-items: center !important;
+  gap: 4px !important;
+  overflow: visible !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-hp-edit b,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-hp-edit b {
+  width: 12px !important;
+  min-width: 12px !important;
+  display: grid !important;
+  place-items: center !important;
+  color: rgba(248, 250, 252, 0.92) !important;
+  font-size: 28px !important;
+  line-height: 1 !important;
+  font-weight: 400 !important;
+  overflow: visible !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stat-input--hp,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stat-input--hp {
+  width: 100% !important;
+  max-width: 52px !important;
+  height: 42px !important;
+  min-height: 42px !important;
+  padding: 0 4px !important;
+  font-size: clamp(18px, 1.8vw, 25px) !important;
+  line-height: 42px !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stat-hidden,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stat-hidden {
+  display: none !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stats--editable article::after,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stats--editable article::after {
+  display: none !important;
+  content: none !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-main,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-main {
+  min-width: 0 !important;
+  overflow: hidden !important;
+}
+
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-main input,
+body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-main select,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-main input,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-main select {
+  max-width: 100% !important;
+}
+
+@media (max-width: 1080px) {
+  body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-card,
+  body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-card {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stats,
+  body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stats {
+    max-width: 420px !important;
+    margin: 0 auto !important;
+  }
+}
+
+@media (max-width: 560px) {
+  body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stats,
+  body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stats {
+    grid-template-columns: 1fr 1fr !important;
+    max-width: 100% !important;
+  }
+
+  body.dnd-master-real-player-preview-page .dnd-master-true-player-sheet .dnd-v2-hero-stats article,
+  body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-v2-hero-stats article {
+    min-height: 104px !important;
+    padding: 10px 8px !important;
+  }
+}
+
+
+/* =========================================================
+   HOTFIX - D&D MESTRE / TESTES CONTRA MORTE COM BOLINHAS
+   Aplica o mesmo visual da ficha do jogador na visão menor do mestre.
+========================================================= */
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-panel,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-master-mirror-death-dots-fixed {
+  width: 100% !important;
+  margin-top: 18px !important;
+  padding: 16px !important;
+  border: 1px solid rgba(34, 211, 238, 0.20) !important;
+  border-radius: 22px !important;
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.11), transparent 42%),
+    linear-gradient(145deg, rgba(2, 6, 23, 0.76), rgba(15, 23, 42, 0.66)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 14px 34px rgba(0, 0, 0, 0.22) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-head {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 12px !important;
+  margin: 0 0 14px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-head span {
+  color: rgba(248, 250, 252, 0.95) !important;
+  font-family: "Quantico", "Cinzel", serif !important;
+  font-size: 16px !important;
+  font-weight: 700 !important;
+  letter-spacing: 1.5px !important;
+  line-height: 1.1 !important;
+  text-transform: uppercase !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-head small {
+  max-width: 210px !important;
+  color: rgba(203, 213, 225, 0.66) !important;
+  font-family: "Quantico", sans-serif !important;
+  font-size: 10px !important;
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+  text-align: right !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.8px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-row {
+  min-height: 50px !important;
+  display: grid !important;
+  grid-template-columns: minmax(96px, 1fr) auto !important;
+  align-items: center !important;
+  gap: 14px !important;
+  margin: 0 !important;
+  padding: 10px 12px !important;
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-row + .dnd-death-saves-row {
+  margin-top: 10px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-row strong {
+  color: rgba(226, 232, 240, 0.86) !important;
+  font-family: "Quantico", sans-serif !important;
+  font-size: 12px !important;
+  font-weight: 900 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.2px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-save-dots {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 9px !important;
+  min-width: 108px !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-save-dots button {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  width: 28px !important;
+  height: 28px !important;
+  min-width: 28px !important;
+  min-height: 28px !important;
+  max-width: 28px !important;
+  max-height: 28px !important;
+  flex: 0 0 28px !important;
+  overflow: hidden !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  border: 2px solid rgba(148, 163, 184, 0.36) !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  text-indent: -9999px !important;
+  background:
+    radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.13), transparent 30%),
+    rgba(2, 6, 23, 0.84) !important;
+  box-shadow:
+    inset 0 0 0 4px rgba(15, 23, 42, 0.84),
+    0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+  cursor: pointer !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-save-dots button::before,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-save-dots button::after {
+  content: none !important;
+  display: none !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-save-dots button:hover {
+  transform: translateY(-1px) !important;
+  border-color: rgba(34, 211, 238, 0.68) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-save-dots button.is-checked,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-save-dots button[aria-pressed="true"] {
+  border-color: rgba(103, 232, 249, 0.98) !important;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.42), transparent 28%),
+    linear-gradient(135deg, rgba(34, 211, 238, 0.98), rgba(8, 145, 178, 0.98)) !important;
+  box-shadow:
+    0 0 18px rgba(34, 211, 238, 0.34),
+    inset 0 0 0 4px rgba(2, 6, 23, 0.18) !important;
+}
+
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-row--failure .dnd-death-save-dots button.is-checked,
+body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-row--failure .dnd-death-save-dots button[aria-pressed="true"] {
+  border-color: rgba(248, 113, 113, 0.98) !important;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.32), transparent 28%),
+    linear-gradient(135deg, rgba(248, 113, 113, 0.98), rgba(127, 29, 29, 0.98)) !important;
+  box-shadow:
+    0 0 18px rgba(248, 113, 113, 0.32),
+    inset 0 0 0 4px rgba(2, 6, 23, 0.18) !important;
+}
+
+@media (max-width: 760px) {
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-head,
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-head {
+    flex-direction: column !important;
+  }
+
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-saves-head small {
+    text-align: left !important;
+  }
+
+  body.dnd-master-page.dnd-master-player-mirror-page .dnd-master-player-mirror .dnd-death-save-dots {
+    justify-content: flex-start !important;
+  }
+}
+
+
+/* =========================================================
+   FIX DEFINITIVO - DEATH SAVES IGUAL AO PLAYER NO PREVIEW REAL DO MESTRE
+   Corrige o seletor que antes pegava só .dnd-master-player-mirror.
+========================================================= */
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-saves-panel,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-saves-panel,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-saves-panel,
+body.dnd-master-page #dndModal .dnd-master-true-death-saves-final {
+  width: 100% !important;
+  display: block !important;
+  margin: 20px 0 0 !important;
+  padding: 18px !important;
+  border: 1px solid rgba(148, 163, 184, 0.18) !important;
+  border-radius: 22px !important;
+  background:
+    radial-gradient(circle at top left, rgba(34, 211, 238, 0.12), transparent 44%),
+    linear-gradient(145deg, rgba(2, 6, 23, 0.72), rgba(15, 23, 42, 0.62)) !important;
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 16px 36px rgba(0, 0, 0, 0.22) !important;
+  color: rgba(226, 232, 240, 0.95) !important;
+  font-family: "Quantico", "Inter", system-ui, sans-serif !important;
+  overflow: hidden !important;
+}
+
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-saves-head,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-saves-head,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-saves-head {
+  display: flex !important;
+  align-items: flex-start !important;
+  justify-content: space-between !important;
+  gap: 14px !important;
+  margin: 0 0 16px !important;
+  padding: 0 !important;
+  border: 0 !important;
+  background: transparent !important;
+}
+
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-saves-head span,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-saves-head span,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-saves-head span {
+  display: block !important;
+  color: rgba(248, 250, 252, 0.95) !important;
+  font-family: "Quantico", "Cinzel", serif !important;
+  font-size: 18px !important;
+  font-weight: 700 !important;
+  line-height: 1.1 !important;
+  letter-spacing: 1.6px !important;
+  text-transform: uppercase !important;
+  white-space: normal !important;
+}
+
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-saves-head small,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-saves-head small,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-saves-head small {
+  display: block !important;
+  max-width: 220px !important;
+  color: rgba(203, 213, 225, 0.62) !important;
+  font-family: "Quantico", "Inter", system-ui, sans-serif !important;
+  font-size: 11px !important;
+  font-weight: 800 !important;
+  line-height: 1.35 !important;
+  text-align: right !important;
+  text-transform: uppercase !important;
+  letter-spacing: 0.9px !important;
+  white-space: normal !important;
+}
+
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-saves-row,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-saves-row,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-saves-row {
+  min-height: 54px !important;
+  display: grid !important;
+  grid-template-columns: minmax(110px, 1fr) auto !important;
+  align-items: center !important;
+  gap: 18px !important;
+  margin: 0 !important;
+  padding: 12px 14px !important;
+  border: 1px solid rgba(148, 163, 184, 0.12) !important;
+  border-radius: 18px !important;
+  background: rgba(255, 255, 255, 0.035) !important;
+  box-shadow: none !important;
+}
+
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-saves-row + .dnd-death-saves-row,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-saves-row + .dnd-death-saves-row,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-saves-row + .dnd-death-saves-row {
+  margin-top: 10px !important;
+}
+
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-saves-row strong,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-saves-row strong,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-saves-row strong {
+  color: rgba(226, 232, 240, 0.82) !important;
+  font-family: "Quantico", "Inter", system-ui, sans-serif !important;
+  font-size: 13px !important;
+  font-weight: 900 !important;
+  line-height: 1 !important;
+  text-transform: uppercase !important;
+  letter-spacing: 1.4px !important;
+  white-space: nowrap !important;
+}
+
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-save-dots,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-save-dots,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-save-dots {
+  display: flex !important;
+  align-items: center !important;
+  justify-content: flex-end !important;
+  gap: 10px !important;
+  min-width: 118px !important;
+  height: 32px !important;
+  overflow: visible !important;
+}
+
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-save-dots button,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-save-dots button,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-save-dots button {
+  appearance: none !important;
+  -webkit-appearance: none !important;
+  box-sizing: border-box !important;
+  display: block !important;
+  width: 30px !important;
+  height: 30px !important;
+  min-width: 30px !important;
+  min-height: 30px !important;
+  max-width: 30px !important;
+  max-height: 30px !important;
+  flex: 0 0 30px !important;
+  margin: 0 !important;
+  padding: 0 !important;
+  border-radius: 999px !important;
+  border: 2px solid rgba(148, 163, 184, 0.35) !important;
+  color: transparent !important;
+  font-size: 0 !important;
+  line-height: 0 !important;
+  text-indent: -9999px !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(circle at 36% 28%, rgba(255, 255, 255, 0.13), transparent 30%),
+    rgba(2, 6, 23, 0.82) !important;
+  box-shadow:
+    inset 0 0 0 4px rgba(15, 23, 42, 0.82),
+    0 0 0 1px rgba(255, 255, 255, 0.04) !important;
+  cursor: pointer !important;
+  transition: transform 0.18s ease, background 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease !important;
+}
+
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-save-dots button::before,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-save-dots button::after,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-save-dots button::before,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-save-dots button::after,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-save-dots button::before,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-save-dots button::after {
+  content: none !important;
+  display: none !important;
+}
+
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-save-dots button:hover,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-save-dots button:hover,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-save-dots button:hover {
+  transform: translateY(-2px) !important;
+  border-color: rgba(34, 211, 238, 0.65) !important;
+}
+
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-save-dots button.is-checked,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-save-dots button[aria-pressed="true"],
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-save-dots button.is-checked,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-save-dots button[aria-pressed="true"],
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-save-dots button.is-checked,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-save-dots button[aria-pressed="true"] {
+  border-color: rgba(103, 232, 249, 0.95) !important;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.42), transparent 28%),
+    linear-gradient(135deg, rgba(34, 211, 238, 0.98), rgba(8, 145, 178, 0.98)) !important;
+  box-shadow:
+    0 0 18px rgba(34, 211, 238, 0.34),
+    inset 0 0 0 4px rgba(2, 6, 23, 0.18) !important;
+}
+
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-saves-row--failure .dnd-death-save-dots button.is-checked,
+body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-saves-row--failure .dnd-death-save-dots button[aria-pressed="true"],
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-saves-row--failure .dnd-death-save-dots button.is-checked,
+body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-saves-row--failure .dnd-death-save-dots button[aria-pressed="true"],
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-saves-row--failure .dnd-death-save-dots button.is-checked,
+body.dnd-master-page #dndModal .dnd-master-real-player-form .dnd-death-saves-row--failure .dnd-death-save-dots button[aria-pressed="true"] {
+  border-color: rgba(248, 113, 113, 0.98) !important;
+  background:
+    radial-gradient(circle at 35% 30%, rgba(255, 255, 255, 0.32), transparent 28%),
+    linear-gradient(135deg, rgba(248, 113, 113, 0.98), rgba(127, 29, 29, 0.98)) !important;
+  box-shadow:
+    0 0 18px rgba(248, 113, 113, 0.32),
+    inset 0 0 0 4px rgba(2, 6, 23, 0.18) !important;
+}
+
+@media (max-width: 760px) {
+  body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-saves-head,
+  body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-saves-head {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+  }
+
+  body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-saves-head small,
+  body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-saves-head small {
+    max-width: none !important;
+    text-align: left !important;
+  }
+
+  body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-saves-row,
+  body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-saves-row {
+    grid-template-columns: 1fr !important;
+  }
+
+  body.dnd-master-page #dndModal.dnd-master-real-player-modal .dnd-master-true-player-sheet .dnd-death-save-dots,
+  body.dnd-master-real-player-preview-page #dndModal .dnd-master-true-player-sheet .dnd-death-save-dots {
+    justify-content: flex-start !important;
+  }
+}

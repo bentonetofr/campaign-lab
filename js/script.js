@@ -30778,3 +30778,2606 @@ if (!window.campaignLabDndSkillOrderReady) {
   window.setTimeout(boot, 900);
   window.setTimeout(boot, 1800);
 })();
+
+
+/* =========================================================
+   D&D MESTRE - PREVIEW ESPELHADO NA FICHA DO JOGADOR
+   Deixa o modal do mestre visualmente e mecanicamente próximo
+   da ficha do jogador, sem mexer no fluxo de Altherium.
+========================================================= */
+(function campaignLabDndMasterPlayerMirrorFinal() {
+  if (window.__campaignLabDndMasterPlayerMirrorFinalReady) return;
+  window.__campaignLabDndMasterPlayerMirrorFinalReady = true;
+
+  function safeCall(fn, ...args) {
+    try {
+      if (typeof fn === "function") return fn(...args);
+    } catch (error) {
+      console.warn("[D&D mestre mirror] Falha controlada:", error);
+    }
+    return null;
+  }
+
+  function getForm() {
+    const form = document.getElementById("dndForm");
+    if (!form || form.dataset.mode !== "edit-dnd-sheet") return null;
+    return form;
+  }
+
+  function getEditor(form = getForm()) {
+    return form?.querySelector?.(".dnd-master-v2-editor") || null;
+  }
+
+  function esc(value) {
+    if (typeof escapeHtml === "function") return escapeHtml(value ?? "");
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function formNumber(form, name, fallback = 0) {
+    const value = Number(form?.elements?.[name]?.value ?? fallback);
+    return Number.isFinite(value) ? value : fallback;
+  }
+
+  function getNumber(value, fallback = 0) {
+    if (typeof getDndNumberValue === "function") return getDndNumberValue(value);
+    const parsed = Number(String(value ?? "").replace(/[^0-9+-.]/g, ""));
+    return Number.isFinite(parsed) ? parsed : fallback;
+  }
+
+  function getAbilityMod(score) {
+    if (typeof getDndAbilityModifierValue === "function") return getDndAbilityModifierValue(score);
+    return Math.floor((Number(score || 10) - 10) / 2);
+  }
+
+  function rollDie(sides) {
+    if (typeof rollDndDie === "function") return rollDndDie(sides);
+    return Math.floor(Math.random() * Math.max(2, Number(sides) || 8)) + 1;
+  }
+
+  function parseHitDice(value) {
+    if (typeof parseDndHitDiceValue === "function") return parseDndHitDiceValue(value);
+    const text = String(value || "").toLowerCase().replace(/\s+/g, "");
+    const matches = [...text.matchAll(/(\d*)d(4|6|8|10|12)/g)];
+    if (!matches.length) return { total: Math.max(0, Math.floor(getNumber(text, 0))), primarySides: 8 };
+    let total = 0;
+    let primarySides = 8;
+    matches.forEach((match, index) => {
+      const amount = Number(match[1] || "1");
+      const sides = Number(match[2] || "8");
+      if (index === 0) primarySides = sides;
+      total += amount;
+    });
+    return { total, primarySides };
+  }
+
+  function hitDiceState(form) {
+    const totalParsed = parseHitDice(form.elements.hitDiceTotal?.value || "");
+    const remainingParsed = parseHitDice(form.elements.hitDiceRemaining?.value || "");
+    return {
+      totalTotal: totalParsed.total || remainingParsed.total || 1,
+      remainingTotal: remainingParsed.total || totalParsed.total || 0,
+      primarySides: remainingParsed.primarySides || totalParsed.primarySides || 8,
+    };
+  }
+
+  function formatHitDice(amount, sides = 8) {
+    if (typeof formatDndHitDiceValue === "function") return formatDndHitDiceValue(amount, sides);
+    const safeAmount = Math.max(0, Math.floor(Number(amount) || 0));
+    const safeSides = Math.max(4, Math.floor(Number(sides) || 8));
+    return `${safeAmount}d${safeSides}`;
+  }
+
+  function dispatchFormChange(form) {
+    if (!form) return;
+    safeCall(window.syncCampaignLabDndClassFieldsInForm || syncCampaignLabDndClassFieldsInForm, form);
+    safeCall(window.dndEnsureFinalBonusAutomationFields || dndEnsureFinalBonusAutomationFields, form);
+    safeCall(window.dndApplyAltheriumBackgroundSelection || dndApplyAltheriumBackgroundSelection, form, { silent: true });
+    safeCall(window.dndRecalculateAll || dndRecalculateAll, form);
+    safeCall(window.updateDndAutoNumbers || updateDndAutoNumbers);
+    form.dispatchEvent(new Event("input", { bubbles: true }));
+    form.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function saveMasterSheetQuietly() {
+    safeCall(window.saveDndSheetFromModal || saveDndSheetFromModal, false);
+  }
+
+  function ensurePortraitFields(form) {
+    const avatar = form.elements.characterAvatarUrl || form.querySelector('input[name="characterAvatarUrl"]');
+    const portrait = form.elements.characterPortraitUrl || form.querySelector('input[name="characterPortraitUrl"]');
+    if (avatar) avatar.setAttribute("data-character-portrait-url", "");
+    if (portrait) portrait.setAttribute("data-character-portrait-url-secondary", "");
+  }
+
+  function ensureProfileCardMirror(form) {
+    const editor = getEditor(form);
+    if (!editor) return;
+    const profile = editor.querySelector(".dnd-v2-profile-card");
+    const avatar = profile?.querySelector("#dndV2AvatarPreview");
+    if (!profile || !avatar) return;
+
+    profile.classList.add("dnd-v2-profile-card--with-upload", "dnd-master-player-profile-card");
+    avatar.classList.add("dnd-v2-avatar-preview--uploadable");
+    avatar.setAttribute("data-character-portrait-preview", "");
+
+    if (!profile.querySelector(".dnd-v2-avatar-duo")) {
+      const duo = document.createElement("div");
+      duo.className = "dnd-v2-avatar-duo";
+      duo.setAttribute("aria-label", "Imagem do personagem e do pet");
+      avatar.parentNode.insertBefore(duo, avatar);
+      duo.appendChild(avatar);
+
+      const petMini = document.createElement("div");
+      petMini.className = "dnd-v2-pet-avatar-mini";
+      petMini.id = "masterDndPetAvatarMini";
+      petMini.setAttribute("data-dnd-pet-avatar-mini", "");
+      petMini.setAttribute("title", "Imagem do pet");
+      petMini.setAttribute("aria-label", "Imagem do pet");
+      petMini.textContent = "P";
+      duo.appendChild(petMini);
+    }
+
+    if (!profile.querySelector("[data-character-portrait-input]")) {
+      const upload = document.createElement("label");
+      upload.className = "dnd-v2-avatar-upload-btn character-portrait-upload-btn";
+      upload.innerHTML = `Escolher imagem<input type="file" accept="image/png,image/jpeg,image/jpg,image/webp,image/gif" data-character-portrait-input data-character-system="D&D" hidden />`;
+      const reference = profile.querySelector("p") || profile.firstElementChild?.nextElementSibling;
+      profile.insertBefore(upload, reference || null);
+    }
+
+    ensurePortraitFields(form);
+    safeCall(window.updateDndV2AvatarPreview || updateDndV2AvatarPreview, form, form.elements.characterName?.value || "Personagem");
+    updatePetMiniAvatar(form);
+  }
+
+  function updatePetMiniAvatar(form) {
+    const mini = form?.querySelector?.("[data-dnd-pet-avatar-mini]");
+    if (!mini) return;
+
+    const url = String(form.elements.petAvatarUrl?.value || "").trim();
+    const name = String(form.elements.petName?.value || form.elements.petSpecies?.value || "P").trim();
+
+    if (!url) {
+      mini.classList.remove("is-visible");
+      mini.style.backgroundImage = "none";
+      mini.textContent = (name || "P").slice(0, 1).toUpperCase();
+      return;
+    }
+
+    mini.classList.add("is-visible");
+    mini.style.backgroundImage = `url(${url})`;
+    mini.style.backgroundSize = "cover";
+    mini.style.backgroundPosition = "center";
+    mini.textContent = "";
+  }
+
+  function ensureRaceAutomationPanel(form) {
+    const editor = getEditor(form);
+    const raceBox = editor?.querySelector?.(".dnd-v2-race-box");
+    if (!raceBox) return;
+
+    if (!raceBox.querySelector("[data-dnd-race-panel]")) {
+      const panel = document.createElement("div");
+      panel.id = "dndRaceAutomationPanel";
+      panel.className = "dnd-race-automation-panel dnd-v2-race-panel";
+      panel.setAttribute("data-dnd-race-panel", "true");
+      const summary = raceBox.querySelector("#masterDndV2RaceSummary") || raceBox.querySelector("p");
+      raceBox.insertBefore(panel, summary || null);
+    }
+  }
+
+  function ensureDiceLaunchCard(form) {
+    const editor = getEditor(form);
+    const side = editor?.querySelector?.(".dnd-v2-side-panel");
+    if (!side || side.querySelector(".dnd-v2-dice-launch-card")) return;
+
+    const card = document.createElement("div");
+    card.className = "dnd-v2-dice-launch-card dnd-master-dice-launch-card";
+    card.id = "masterDndV2DiceLaunchCard";
+    card.innerHTML = `
+      <span>Rolador de dados</span>
+      <strong>🎲</strong>
+      <p>Testes, perícias, salvaguardas, pet e dados livres ficam no mesmo painel da ficha do jogador.</p>
+      <button type="button" class="dnd-v2-open-dice-btn" data-open-dnd-dice-panel>Abrir rolador</button>
+    `;
+    side.appendChild(card);
+  }
+
+  function buildRestPanelHtml(form) {
+    const diceState = hitDiceState(form);
+    const primary = diceState.primarySides || 8;
+    return `
+      <section class="dnd-v2-panel dnd-v2-rest-panel dnd-master-v2-rest-panel" data-dnd-v2-panel="rest">
+        <div class="dnd-v2-section-head">
+          <p class="tag">Recuperação</p>
+          <h2>Descansar</h2>
+          <span>Gerencie descanso curto, descanso longo, PV, Dados de Vida e espaços de magia como na ficha do jogador.</span>
+        </div>
+
+        <div class="dnd-v2-card dnd-rest-tab-card">
+          <div class="dnd-rest-panel is-open" id="masterDndRestPanel">
+            <div class="dnd-rest-panel__head">
+              <div>
+                <span>Descanso de D&D</span>
+                <h4>Recuperação da sessão</h4>
+              </div>
+            </div>
+
+            <div class="dnd-rest-summary" id="masterDndRestSummary">PV atual: -- / -- • Dados de vida: --</div>
+
+            <div class="dnd-rest-grid">
+              <section class="dnd-rest-card">
+                <h5>Descanso curto</h5>
+                <p>Gaste Dados de Vida para recuperar PV. Para rolagens livres, use o painel de rolador.</p>
+                <div class="dnd-rest-fields">
+                  <label><span>Dados gastos</span><input type="number" min="1" value="1" id="masterDndRestHitDiceAmount" /></label>
+                  <label><span>Dado</span><select id="masterDndRestHitDieType"><option value="4">d4</option><option value="6">d6</option><option value="8" ${primary === 8 ? "selected" : ""}>d8</option><option value="10" ${primary === 10 ? "selected" : ""}>d10</option><option value="12" ${primary === 12 ? "selected" : ""}>d12</option></select></label>
+                </div>
+                <button type="button" class="dnd-rest-action dnd-rest-action--short" id="masterApplyDndShortRest">Aplicar descanso curto</button>
+              </section>
+
+              <section class="dnd-rest-card">
+                <h5>Descanso longo</h5>
+                <p>Restaura PV, zera PV temporário, limpa testes contra morte, recupera Dados de Vida e acende espaços de magia.</p>
+                <button type="button" class="dnd-rest-action dnd-rest-action--long" id="masterApplyDndLongRest">Aplicar descanso longo</button>
+              </section>
+            </div>
+
+            <div class="dnd-rest-result" id="masterDndRestResult">Escolha um tipo de descanso.</div>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
+  function ensureRestTab(form) {
+    const editor = getEditor(form);
+    if (!editor) return;
+
+    const tabs = editor.querySelector(".dnd-v2-sheet-tabs");
+    if (tabs && !tabs.querySelector('[data-dnd-v2-tab="rest"]')) {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.dataset.dndV2Tab = "rest";
+      button.textContent = "Descansar";
+      const petButton = tabs.querySelector('[data-dnd-v2-tab="pet"]');
+      tabs.insertBefore(button, petButton || null);
+    }
+
+    const content = editor.querySelector(".dnd-v2-content");
+    if (content && !content.querySelector('[data-dnd-v2-panel="rest"]')) {
+      const petPanel = content.querySelector('[data-dnd-v2-panel="pet"]');
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = buildRestPanelHtml(form).trim();
+      content.insertBefore(wrapper.firstElementChild, petPanel || null);
+    }
+
+    setupMasterRestControls(form);
+  }
+
+  function updateMasterRestPreview(form) {
+    const summary = document.getElementById("masterDndRestSummary");
+    const amountInput = document.getElementById("masterDndRestHitDiceAmount");
+    const diceSelect = document.getElementById("masterDndRestHitDieType");
+    if (!form || !summary) return;
+    const current = getNumber(form.elements.hpCurrent?.value, 0);
+    const max = getNumber(form.elements.hpMax?.value, 0);
+    const temp = getNumber(form.elements.hpTemp?.value, 0);
+    const dice = hitDiceState(form);
+    const amount = Math.max(1, Math.floor(getNumber(amountInput?.value, 1) || 1));
+    const sides = Math.max(4, Math.floor(getNumber(diceSelect?.value, dice.primarySides || 8)));
+    summary.textContent = `PV atual: ${current} / ${max} • PV temp: ${temp} • Dados de vida: ${form.elements.hitDiceRemaining?.value || "--"} • Vai rolar: ${amount}d${sides}`;
+  }
+
+  function setMasterRestResult(message, type = "neutral") {
+    const box = document.getElementById("masterDndRestResult");
+    if (!box) return;
+    box.className = `dnd-rest-result dnd-rest-result--${type}`;
+    box.textContent = message;
+  }
+
+  function setMasterRestResultHtml(html, type = "neutral") {
+    const box = document.getElementById("masterDndRestResult");
+    if (!box) return;
+    box.className = `dnd-rest-result dnd-rest-result--${type}`;
+    box.innerHTML = html;
+  }
+
+  async function applyMasterShortRest(form) {
+    const amountInput = document.getElementById("masterDndRestHitDiceAmount");
+    const diceSelect = document.getElementById("masterDndRestHitDieType");
+    const current = getNumber(form.elements.hpCurrent?.value, 0);
+    const max = getNumber(form.elements.hpMax?.value, 0);
+    const conMod = getAbilityMod(form.elements.conScore?.value || 10);
+    const amount = Math.max(1, Math.floor(getNumber(amountInput?.value, 1) || 1));
+    const sides = Math.max(4, Math.floor(getNumber(diceSelect?.value, 8) || 8));
+    const dice = hitDiceState(form);
+    const available = Math.max(0, dice.remainingTotal || 0);
+
+    if (max <= 0) {
+      setMasterRestResult("Preencha o PV máximo antes de usar descanso.", "warning");
+      return;
+    }
+
+    const spentFromSheet = available > 0 ? Math.min(amount, available) : amount;
+    const rolls = Array.from({ length: amount }, () => rollDie(sides));
+    const rollTotal = rolls.reduce((sum, value) => sum + value, 0);
+    const constitutionBonus = conMod * amount;
+    const recovered = Math.max(0, rollTotal + constitutionBonus);
+    const nextHp = Math.min(max, current + recovered);
+    const appliedRecovery = Math.max(0, nextHp - current);
+    const nextRemaining = Math.max(0, Math.min(dice.totalTotal, dice.remainingTotal - spentFromSheet));
+
+    if (form.elements.hpCurrent) form.elements.hpCurrent.value = String(nextHp);
+    if (form.elements.hitDiceRemaining) form.elements.hitDiceRemaining.value = formatHitDice(nextRemaining, dice.primarySides);
+
+    dispatchFormChange(form);
+    updateMasterRestPreview(form);
+    saveMasterSheetQuietly();
+
+    const conSign = conMod >= 0 ? "+" : "";
+    const conTotalSign = constitutionBonus >= 0 ? "+" : "";
+    setMasterRestResultHtml(`
+      <div class="dnd-rest-roll-result">
+        <span>Descanso curto</span>
+        <strong>${amount}d${sides}</strong>
+        <div class="dnd-rest-roll-line"><small>Dados rolados</small><b>[${rolls.join(", ")}]</b></div>
+        <div class="dnd-rest-roll-line"><small>Soma dos dados</small><b>${rollTotal}</b></div>
+        <div class="dnd-rest-roll-line"><small>Constituição</small><b>${conSign}${conMod} × ${amount} = ${conTotalSign}${constitutionBonus}</b></div>
+        <div class="dnd-rest-roll-total"><small>Total de cura</small><b>${recovered}</b></div>
+        <div class="dnd-rest-roll-line"><small>Cura aplicada</small><b>${appliedRecovery}</b></div>
+        <div class="dnd-rest-roll-hp">PV: <strong>${current}</strong> → <strong>${nextHp}</strong> / ${max}</div>
+      </div>
+    `, "success");
+  }
+
+  async function applyMasterLongRest(form) {
+    const max = getNumber(form.elements.hpMax?.value, 0);
+    const dice = hitDiceState(form);
+    const recoverAmount = Math.max(1, Math.floor(dice.totalTotal / 2));
+    const nextRemaining = Math.min(dice.totalTotal, dice.remainingTotal + recoverAmount);
+
+    if (max <= 0) {
+      setMasterRestResult("Preencha o PV máximo antes de usar descanso longo.", "warning");
+      return;
+    }
+
+    if (form.elements.hpCurrent) form.elements.hpCurrent.value = String(max);
+    if (form.elements.hpTemp) form.elements.hpTemp.value = "0";
+    if (form.elements.deathSuccesses) form.elements.deathSuccesses.value = "0";
+    if (form.elements.deathFailures) form.elements.deathFailures.value = "0";
+    if (form.elements.hitDiceRemaining && dice.totalTotal > 0) form.elements.hitDiceRemaining.value = formatHitDice(nextRemaining, dice.primarySides);
+    safeCall(window.campaignLabRestoreAllManualSpellSlots, form);
+
+    dispatchFormChange(form);
+    safeCall(window.campaignLabSetupDndDeathSaves, form);
+    updateMasterRestPreview(form);
+    saveMasterSheetQuietly();
+    setMasterRestResult(`Descanso longo aplicado. PV voltou para ${max}, PV temporário zerou e espaços de magia foram restaurados.`, "success");
+  }
+
+  function setupMasterRestControls(form) {
+    const panel = document.getElementById("masterDndRestPanel");
+    if (!form || !panel || panel.dataset.masterRestReady === "true") {
+      updateMasterRestPreview(form);
+      return;
+    }
+    panel.dataset.masterRestReady = "true";
+
+    const shortButton = document.getElementById("masterApplyDndShortRest");
+    const longButton = document.getElementById("masterApplyDndLongRest");
+    const diceSelect = document.getElementById("masterDndRestHitDieType");
+    const amountInput = document.getElementById("masterDndRestHitDiceAmount");
+
+    shortButton?.addEventListener("click", (event) => {
+      event.preventDefault();
+      applyMasterShortRest(form);
+    });
+
+    longButton?.addEventListener("click", (event) => {
+      event.preventDefault();
+      applyMasterLongRest(form);
+    });
+
+    diceSelect?.addEventListener("change", () => updateMasterRestPreview(form));
+    amountInput?.addEventListener("input", () => updateMasterRestPreview(form));
+    updateMasterRestPreview(form);
+  }
+
+  function setupMasterMirrorSaveFeedback(form) {
+    const submit = document.querySelector("#dndModal .modal-submit-row .altherium-submit");
+    if (!submit) return;
+    submit.classList.add("dnd-v2-soft-btn", "dnd-apply-sheet-btn", "dnd-master-mirror-apply-btn");
+    if (!submit.dataset.originalText) submit.dataset.originalText = submit.textContent.trim() || "Aplicar";
+    submit.textContent = submit.dataset.dirty === "true" ? "Aplicar alterações" : "Aplicado";
+    submit.disabled = submit.dataset.dirty !== "true";
+
+    if (form.dataset.masterMirrorSaveFeedbackReady === "true") return;
+    form.dataset.masterMirrorSaveFeedbackReady = "true";
+
+    form.addEventListener("input", () => {
+      submit.dataset.dirty = "true";
+      submit.disabled = false;
+      submit.textContent = "Aplicar alterações";
+    }, true);
+
+    form.addEventListener("change", () => {
+      submit.dataset.dirty = "true";
+      submit.disabled = false;
+      submit.textContent = "Aplicar alterações";
+    }, true);
+
+    form.addEventListener("submit", () => {
+      window.setTimeout(() => {
+        submit.dataset.dirty = "false";
+        submit.disabled = true;
+        submit.textContent = "Aplicado";
+      }, 350);
+    });
+  }
+
+  function bootMasterAutomations(form) {
+    if (!form) return;
+    safeCall(window.setupCampaignLabNumberControls || setupCampaignLabNumberControls);
+    safeCall(window.setupCharacterPortraitControls || setupCharacterPortraitControls);
+    safeCall(window.setupCampaignLabDndClassAutomationPanel || setupCampaignLabDndClassAutomationPanel, form);
+    safeCall(window.setupCampaignLabDndRaceAutomation || setupCampaignLabDndRaceAutomation, form);
+    safeCall(window.setupDndAltheriumBackgroundAutomation || setupDndAltheriumBackgroundAutomation, form);
+    safeCall(window.dndEnsureFinalBonusAutomationFields || dndEnsureFinalBonusAutomationFields, form);
+    safeCall(window.dndBindFinalBonusAutomationEvents || dndBindFinalBonusAutomationEvents);
+    safeCall(window.setupDndSpellSlotTrackers || setupDndSpellSlotTrackers, form);
+    safeCall(window.setupDndInventoryManager, form);
+    safeCall(window.campaignLabSetupDndDeathSaves, form);
+    safeCall(window.campaignLabDndHydrateSpellbookFromSupabase, form, { force: false });
+    safeCall(window.dndRecalculateAll || dndRecalculateAll, form);
+    safeCall(window.updateDndAutoNumbers || updateDndAutoNumbers);
+  }
+
+  function enhanceMasterPreview() {
+    const form = getForm();
+    const editor = getEditor(form);
+    if (!form || !editor) return;
+
+    document.body.classList.add("dnd-master-player-mirror-page");
+    editor.classList.add("dnd-master-player-mirror", "dnd-v2-character-sheet", "dnd-impecavel-sheet");
+    form.classList.add("dnd-master-player-mirror-form");
+    document.getElementById("dndModal")?.classList.add("dnd-master-player-mirror-modal");
+
+    ensureProfileCardMirror(form);
+    ensureRaceAutomationPanel(form);
+    ensureDiceLaunchCard(form);
+    ensureRestTab(form);
+    bootMasterAutomations(form);
+    setupMasterMirrorSaveFeedback(form);
+    updateMasterRestPreview(form);
+    updatePetMiniAvatar(form);
+
+    window.setTimeout(() => {
+      bootMasterAutomations(form);
+      updatePetMiniAvatar(form);
+      safeCall(window.updateDndV2AvatarPreview || updateDndV2AvatarPreview, form, form.elements.characterName?.value || "Personagem");
+    }, 120);
+
+    window.setTimeout(() => {
+      bootMasterAutomations(form);
+      updateMasterRestPreview(form);
+      updatePetMiniAvatar(form);
+    }, 600);
+  }
+
+  document.addEventListener("click", (event) => {
+    if (event.target.closest("[data-open-dnd-sheet], .dnd-sheet-card, [data-dnd-player-id]")) {
+      window.setTimeout(enhanceMasterPreview, 120);
+      window.setTimeout(enhanceMasterPreview, 500);
+      window.setTimeout(enhanceMasterPreview, 1000);
+    }
+
+    const diceButton = event.target.closest(".dnd-master-player-mirror [data-open-dnd-dice-panel]");
+    if (diceButton) {
+      event.preventDefault();
+      const toggle = document.querySelector("#campaignDiceWidget [data-dice-toggle]");
+      if (toggle) toggle.click();
+      else document.getElementById("campaignDiceWidget")?.classList.add("campaign-dice-widget--open");
+    }
+  }, true);
+
+  document.addEventListener("input", (event) => {
+    const form = event.target.closest("#dndForm");
+    if (!form || form.dataset.mode !== "edit-dnd-sheet") return;
+    window.setTimeout(() => {
+      updatePetMiniAvatar(form);
+      updateMasterRestPreview(form);
+      safeCall(window.setupCampaignLabDndRaceAutomation || setupCampaignLabDndRaceAutomation, form);
+    }, 30);
+  }, true);
+
+  document.addEventListener("change", (event) => {
+    const form = event.target.closest("#dndForm");
+    if (!form || form.dataset.mode !== "edit-dnd-sheet") return;
+    window.setTimeout(() => {
+      updatePetMiniAvatar(form);
+      updateMasterRestPreview(form);
+      safeCall(window.setupCampaignLabDndRaceAutomation || setupCampaignLabDndRaceAutomation, form);
+    }, 30);
+  }, true);
+
+  const originalOpen = window.openDndMasterSheetModal || (typeof openDndMasterSheetModal === "function" ? openDndMasterSheetModal : null);
+  if (originalOpen && !originalOpen.__dndMasterPlayerMirrorFinal) {
+    const wrapped = async function (...args) {
+      const result = await originalOpen.apply(this, args);
+      enhanceMasterPreview();
+      window.setTimeout(enhanceMasterPreview, 250);
+      window.setTimeout(enhanceMasterPreview, 900);
+      return result;
+    };
+    wrapped.__dndMasterPlayerMirrorFinal = true;
+    window.openDndMasterSheetModal = wrapped;
+    try { openDndMasterSheetModal = wrapped; } catch (error) {}
+  }
+
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", enhanceMasterPreview);
+  else enhanceMasterPreview();
+
+  window.addEventListener("load", () => {
+    window.setTimeout(enhanceMasterPreview, 250);
+    window.setTimeout(enhanceMasterPreview, 1200);
+  });
+})();
+
+
+/* =========================================================
+   HOTFIX REAL - D&D MESTRE IGUAL À FICHA DO JOGADOR
+   Este bloco não tenta "maquiar" o preview antigo. Ele renderiza
+   dentro do modal do mestre o MESMO HTML da ficha do jogador,
+   preenchido com os dados da ficha aberta e compactado via CSS.
+========================================================= */
+(function campaignLabDndMasterUseRealPlayerSheetPreview() {
+  if (window.__campaignLabDndMasterUseRealPlayerSheetPreviewReady) return;
+  window.__campaignLabDndMasterUseRealPlayerSheetPreviewReady = true;
+
+  const PLAYER_SHEET_TEMPLATE = `
+<input name="classLevel" type="hidden" />
+  <input name="classAutoDefaultsAppliedFor" type="hidden" value="" />
+  <input name="dndAltheriumBackgroundAppliedState" type="hidden" value="" />
+  <input name="passivePerception" type="hidden" value="10" />
+  <input name="passivePerceptionManual" type="hidden" value="false" />
+  <input name="spellSaveDcManual" type="hidden" value="false" />
+
+  <section class="dnd-v2-hero-card">
+    <div class="dnd-v2-hero-main">
+      <div class="dnd-v2-system-mark">D20</div>
+      <div>
+        <p class="tag">Ficha D&D 5e · Campaign Lab</p>
+        <label class="dnd-v2-name-field">
+          <span>Nome do personagem</span>
+          <input name="characterName" type="text" placeholder="Novo herói" autocomplete="off" />
+        </label>
+        <div class="dnd-v2-identity-line">
+          <label><span>Classe</span><input name="className" id="dndClassSelect" type="text" list="dndClassOptionsList" placeholder="Escolha ou escreva" autocomplete="off" /></label>
+          <datalist id="dndClassOptionsList">
+<option value="Artífice"></option>
+<option value="Bárbaro"></option>
+<option value="Bardo"></option>
+<option value="Bruxo"></option>
+<option value="Clérigo"></option>
+<option value="Druida"></option>
+<option value="Feiticeiro"></option>
+<option value="Guerreiro"></option>
+<option value="Ladino"></option>
+<option value="Mago"></option>
+<option value="Monge"></option>
+<option value="Paladino"></option>
+<option value="Patrulheiro"></option>
+</datalist>
+          <label><span>Nível</span><input name="charLevel" id="dndCharLevelInput" type="number" min="1" max="20" value="1" /></label>
+          <label><span>Raça</span><select name="race" id="dndRaceSelect" data-dnd-race-select="true"><option value="">Selecione</option>
+<option value="Humano (Padrão)">Humano (Padrão)</option>
+<option value="Humano (Variante)">Humano (Variante)</option>
+<option value="Anão (Colina)">Anão (Colina)</option>
+<option value="Anão (Montanha)">Anão (Montanha)</option>
+<option value="Elfo (Alto)">Elfo (Alto)</option>
+<option value="Elfo (Silvestre)">Elfo (Silvestre)</option>
+<option value="Elfo (Drow)">Elfo (Drow)</option>
+<option value="Meio-Elfo">Meio-Elfo</option>
+<option value="Halfling (Pés-Leves)">Halfling (Pés-Leves)</option>
+<option value="Halfling (Robusto)">Halfling (Robusto)</option>
+<option value="Draconato">Draconato</option>
+<option value="Gnomo (Floresta)">Gnomo (Floresta)</option>
+<option value="Gnomo (Da Rocha)">Gnomo (Da Rocha)</option>
+<option value="Meio-Orc">Meio-Orc</option>
+<option value="Tiefling">Tiefling</option></select></label>
+          <label><span>Antecedente</span><select name="background" id="dndAltheriumBackgroundSelect" data-dnd-altherium-background-select="true"><option value="">Selecione</option>
+<option value="Acólito (Acolyte)">Acólito (Acolyte)</option>
+<option value="Artesão (Artisan)">Artesão (Artisan)</option>
+<option value="Artista (Entertainer)">Artista (Entertainer)</option>
+<option value="Charlatão (Charlatan)">Charlatão (Charlatan)</option>
+<option value="Criminoso (Criminal)">Criminoso (Criminal)</option>
+<option value="Erudito (Scribe)">Erudito (Scribe)</option>
+<option value="Fazendeiro (Farmer)">Fazendeiro (Farmer)</option>
+<option value="Forasteiro (Outlander)">Forasteiro (Outlander)</option>
+<option value="Guarda (Guard)">Guarda (Guard)</option>
+<option value="Guia (Guide)">Guia (Guide)</option>
+<option value="Eremita (Hermit)">Eremita (Hermit)</option>
+<option value="Mercador (Merchant)">Mercador (Merchant)</option>
+<option value="Nobre (Noble)">Nobre (Noble)</option>
+<option value="Sábio (Sage)">Sábio (Sage)</option>
+<option value="Marinheiro (Sailor)">Marinheiro (Sailor)</option>
+<option value="Vagabundo (Wayfarer)">Vagabundo (Wayfarer)</option></select></label>
+        </div>
+      </div>
+    </div>
+
+    <div class="dnd-v2-hero-stats dnd-v2-hero-stats--editable" data-dnd-v2-editable-summary="true">
+      <article data-dnd-hero-card="armorClass">
+        <span>CA</span>
+        <input
+          id="dndV2ArmorClassView"
+          class="dnd-v2-hero-stat-input"
+          type="number"
+          inputmode="numeric"
+          min="0"
+          value="10"
+          data-dnd-hero-edit="armorClass"
+          aria-label="Editar Classe de Armadura"
+        />
+      </article>
+
+      <article data-dnd-hero-card="hp">
+        <span>PV</span>
+        <div class="dnd-v2-hero-hp-edit" aria-label="Editar pontos de vida">
+          <input
+            id="dndV2HpCurrentHeroInput"
+            class="dnd-v2-hero-stat-input dnd-v2-hero-stat-input--hp"
+            type="number"
+            inputmode="numeric"
+            min="0"
+            value="0"
+            data-dnd-hero-edit="hpCurrent"
+            aria-label="Editar PV atual"
+          />
+          <b>/</b>
+          <input
+            id="dndV2HpMaxHeroInput"
+            class="dnd-v2-hero-stat-input dnd-v2-hero-stat-input--hp"
+            type="number"
+            inputmode="numeric"
+            min="0"
+            value="0"
+            data-dnd-hero-edit="hpMax"
+            aria-label="Editar PV máximo"
+          />
+        </div>
+        <strong id="dndV2HpView" class="dnd-v2-hero-stat-hidden">0 / 0</strong>
+      </article>
+
+      <article data-dnd-hero-card="initiative">
+        <span>Iniciativa</span>
+        <input
+          id="dndV2InitiativeView"
+          class="dnd-v2-hero-stat-input"
+          type="text"
+          inputmode="numeric"
+          value="0"
+          data-dnd-hero-edit="initiative"
+          aria-label="Editar iniciativa"
+        />
+      </article>
+
+      <article data-dnd-hero-card="proficiencyBonus">
+        <span>Prof.</span>
+        <input
+          id="dndV2ProficiencyView"
+          class="dnd-v2-hero-stat-input"
+          type="text"
+          inputmode="numeric"
+          value="+2"
+          data-dnd-hero-edit="proficiencyBonus"
+          aria-label="Editar bônus de proficiência"
+        />
+      </article>
+    </div>
+  </section>
+
+  <section class="dnd-v2-command-bar">
+    <div class="dnd-v2-sheet-tabs" role="tablist" aria-label="Abas da ficha D&D">
+      <button type="button" class="active" data-dnd-v2-tab="overview">Visão Geral</button>
+      <button type="button" data-dnd-v2-tab="attributes">Atributos</button>
+      <button type="button" data-dnd-v2-tab="combat">Combate</button>
+      <button type="button" data-dnd-v2-tab="skills">Perícias</button>
+      <button type="button" data-dnd-v2-tab="experiences">Experiências</button>
+      <button type="button" data-dnd-v2-tab="spells">Magias</button>
+      <button type="button" data-dnd-v2-tab="inventory">Inventário</button>
+      <button type="button" data-dnd-v2-tab="story">História</button>
+      <button type="button" data-dnd-v2-tab="rest">Descansar</button>
+      <button type="button" data-dnd-v2-tab="pet">Pet</button>
+      <button type="button" data-dnd-v2-tab="book">Livro</button>
+    </div>
+    <div class="dnd-v2-toolbar-actions">
+      <button type="button" class="dnd-v2-soft-btn dnd-apply-sheet-btn is-clean" id="dndV2ApplySheetBtn" type="button" aria-label="Aplicar e salvar alterações da ficha" disabled>Aplicado</button>
+    </div>
+  </section>
+
+  <section class="dnd-v2-layout">
+    <aside class="dnd-v2-side-panel">
+      <div class="dnd-v2-profile-card dnd-v2-profile-card--with-upload">
+        <input
+          type="hidden"
+          name="characterAvatarUrl"
+          value=""
+          data-character-portrait-url
+        />
+        <input
+          type="hidden"
+          name="characterPortraitUrl"
+          value=""
+          data-character-portrait-url-secondary
+        />
+
+        <div class="dnd-v2-avatar-duo" aria-label="Imagem do personagem e do pet">
+          <div
+            class="dnd-v2-avatar-preview dnd-v2-avatar-preview--uploadable"
+            id="dndV2AvatarPreview"
+            data-character-portrait-preview
+          >
+            ✦
+          </div>
+
+          <div
+            class="dnd-v2-pet-avatar-mini"
+            id="dndPetAvatarMini"
+            data-dnd-pet-avatar-mini
+            title="Imagem do pet"
+            aria-label="Imagem do pet"
+          >
+            P
+          </div>
+        </div>
+
+        <label class="dnd-v2-avatar-upload-btn character-portrait-upload-btn">
+          Escolher imagem
+          <input
+            type="file"
+            accept="image/png,image/jpeg,image/jpg,image/webp,image/gif"
+            data-character-portrait-input
+            data-character-system="D&D"
+            hidden
+          />
+        </label>
+
+        <p>Resumo vivo da ficha</p>
+        <strong id="dndV2CharacterNameSide">Personagem</strong>
+        <span id="dndV2ClassSide">Classe 1</span>
+      </div>
+      <div class="dnd-v2-race-box">
+        <h3>Automação ativa</h3>
+        <div id="dndRaceAutomationPanel" class="dnd-race-automation-panel dnd-v2-race-panel" data-dnd-race-panel="true"></div>
+        <p id="dndV2RaceSummary">Escolha raça, classe e antecedente para aplicar bônus.</p>
+      </div>
+      <div class="dnd-v2-dice-launch-card" id="dndV2DiceLaunchCard">
+        <span>Rolador de dados</span>
+        <strong>🎲</strong>
+        <p>Todos os testes, perícias, salvaguardas, pet e dados livres ficam em um painel único.</p>
+        <button type="button" class="dnd-v2-open-dice-btn" data-open-dnd-dice-panel>
+          Abrir rolador
+        </button>
+      </div>
+    </aside>
+
+    <div class="dnd-v2-content">
+      <section class="dnd-v2-panel active" data-dnd-v2-panel="overview">
+        <div class="dnd-v2-section-head"><p class="tag">Centro de comando</p><h2>Visão Geral</h2><span>O essencial da mesa em uma tela.</span></div>
+        <div class="dnd-v2-overview-grid dnd-v2-overview-grid--editable" data-dnd-v2-editable-overview="true">
+          <article class="dnd-v2-big-stat dnd-v2-big-stat--editable" data-dnd-overview-card="armorClass">
+            <span>Classe de Armadura</span>
+            <input
+              id="dndV2ArmorClassBig"
+              class="dnd-v2-overview-stat-input"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              value="10"
+              data-dnd-overview-edit="armorClass"
+              aria-label="Editar Classe de Armadura"
+            />
+            <small>Calculada por armadura, DES e escudo.</small>
+          </article>
+
+          <article class="dnd-v2-big-stat dnd-v2-big-stat--editable" data-dnd-overview-card="hp">
+            <span>Pontos de Vida</span>
+            <div class="dnd-v2-overview-hp-edit" aria-label="Editar pontos de vida">
+              <input
+                id="dndV2HpCurrentOverviewInput"
+                class="dnd-v2-overview-stat-input dnd-v2-overview-stat-input--hp"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                value="0"
+                data-dnd-overview-edit="hpCurrent"
+                aria-label="Editar PV atual"
+              />
+              <b>/</b>
+              <input
+                id="dndV2HpMaxOverviewInput"
+                class="dnd-v2-overview-stat-input dnd-v2-overview-stat-input--hp"
+                type="number"
+                inputmode="numeric"
+                min="0"
+                value="0"
+                data-dnd-overview-edit="hpMax"
+                aria-label="Editar PV máximo"
+              />
+            </div>
+            <strong id="dndV2HpBig" class="dnd-v2-overview-stat-hidden">0 / 0</strong>
+            <small>Atual, máximo e temporário.</small>
+          </article>
+
+          <article class="dnd-v2-big-stat dnd-v2-big-stat--editable" data-dnd-overview-card="passivePerception">
+            <span>Percepção Passiva</span>
+            <input
+              id="dndV2PassivePerception"
+              class="dnd-v2-overview-stat-input"
+              type="number"
+              inputmode="numeric"
+              min="0"
+              value="10"
+              data-dnd-overview-edit="passivePerception"
+              aria-label="Editar Percepção Passiva"
+            />
+            <small>10 + Percepção, ou valor manual.</small>
+          </article>
+
+          <article class="dnd-v2-big-stat dnd-v2-big-stat--editable" data-dnd-overview-card="spellSaveDc">
+            <span>CD de Magia</span>
+            <input
+              id="dndV2SpellDcBig"
+              class="dnd-v2-overview-stat-input"
+              type="text"
+              inputmode="numeric"
+              value="--"
+              data-dnd-overview-edit="spellSaveDc"
+              aria-label="Editar CD de Magia"
+            />
+            <small>8 + proficiência + atributo mágico, ou valor manual.</small>
+          </article>
+        </div>
+
+        <div class="dnd-v2-grid-2">
+          <div class="dnd-v2-card">
+            <h3>Identidade</h3>
+            <div class="dnd-v2-form-grid">
+              <label class="dnd-v2-field"><span>Alinhamento</span><input name="alignment" type="text" /></label>
+              <label class="dnd-v2-field"><span>Experiência</span><input name="experience" type="number" min="0"/></label>
+              <label class="dnd-v2-field"><span>Idade</span><input name="age" type="text" /></label>
+              <label class="dnd-v2-field"><span>Altura</span><input name="height" type="text" /></label>
+              <label class="dnd-v2-field"><span>Peso</span><input name="weight" type="text" /></label>
+              <label class="dnd-v2-field"><span>Facção</span><input name="faction" type="text" /></label>
+            </div>
+          </div>
+          <div class="dnd-v2-card dnd-v2-card--actions">
+            <h3>Ações rápidas</h3>
+            <div class="dnd-v2-dice-panel-callout">
+              <strong>Rolagens centralizadas</strong>
+              <p>Os botões de rolagem saíram da ficha para manter a tela limpa. Abra o rolador para testar atributos, salvaguardas, perícias, pet, dano e fórmulas livres.</p>
+              <button type="button" class="dnd-v2-open-dice-btn" data-open-dnd-dice-panel>Abrir rolador de dados</button>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="dnd-v2-panel" data-dnd-v2-panel="attributes">
+        <div class="dnd-v2-section-head"><p class="tag">Núcleo mecânico</p><h2>Atributos</h2><span>Todos começam em 10 para evitar modificadores negativos por padrão.</span></div>
+        <div class="dnd-v2-abilities-grid"><article class="dnd-v2-ability-card" data-dnd-v2-ability="str">
+  <div class="dnd-v2-ability-head"><span>Força</span><strong>FOR</strong></div>
+  <input name="strScore" type="number" value="10" min="1" />
+  <div class="dnd-v2-ability-mod" id="strModView">0</div>
+</article>
+<article class="dnd-v2-ability-card" data-dnd-v2-ability="dex">
+  <div class="dnd-v2-ability-head"><span>Destreza</span><strong>DES</strong></div>
+  <input name="dexScore" type="number" value="10" min="1" />
+  <div class="dnd-v2-ability-mod" id="dexModView">0</div>
+</article>
+<article class="dnd-v2-ability-card" data-dnd-v2-ability="con">
+  <div class="dnd-v2-ability-head"><span>Constituição</span><strong>CON</strong></div>
+  <input name="conScore" type="number" value="10" min="1" />
+  <div class="dnd-v2-ability-mod" id="conModView">0</div>
+</article>
+<article class="dnd-v2-ability-card" data-dnd-v2-ability="int">
+  <div class="dnd-v2-ability-head"><span>Inteligência</span><strong>INT</strong></div>
+  <input name="intScore" type="number" value="10" min="1" />
+  <div class="dnd-v2-ability-mod" id="intModView">0</div>
+</article>
+<article class="dnd-v2-ability-card" data-dnd-v2-ability="wis">
+  <div class="dnd-v2-ability-head"><span>Sabedoria</span><strong>SAB</strong></div>
+  <input name="wisScore" type="number" value="10" min="1" />
+  <div class="dnd-v2-ability-mod" id="wisModView">0</div>
+</article>
+<article class="dnd-v2-ability-card" data-dnd-v2-ability="cha">
+  <div class="dnd-v2-ability-head"><span>Carisma</span><strong>CAR</strong></div>
+  <input name="chaScore" type="number" value="10" min="1" />
+  <div class="dnd-v2-ability-mod" id="chaModView">0</div>
+</article></div>
+        <div class="dnd-v2-card">
+          <h3>Testes de resistência</h3>
+          <div class="dnd-v2-bonus-list dnd-save-list"><div class="dnd-v2-bonus-row dnd-save-row">
+      <div><strong>Força</strong><small>FOR</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="saveStrProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="saveStr"/><span>P</span></label>
+      <input class="dnd-bonus-input" name="saveStr" type="number" value="0" data-dnd-final-bonus="saveStr" />
+      <input name="saveStrManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-save-row">
+      <div><strong>Destreza</strong><small>DES</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="saveDexProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="saveDex"/><span>P</span></label>
+      <input class="dnd-bonus-input" name="saveDex" type="number" value="0" data-dnd-final-bonus="saveDex" />
+      <input name="saveDexManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-save-row">
+      <div><strong>Constituição</strong><small>CON</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="saveConProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="saveCon"/><span>P</span></label>
+      <input class="dnd-bonus-input" name="saveCon" type="number" value="0" data-dnd-final-bonus="saveCon" />
+      <input name="saveConManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-save-row">
+      <div><strong>Inteligência</strong><small>INT</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="saveIntProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="saveInt"/><span>P</span></label>
+      <input class="dnd-bonus-input" name="saveInt" type="number" value="0" data-dnd-final-bonus="saveInt" />
+      <input name="saveIntManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-save-row">
+      <div><strong>Sabedoria</strong><small>SAB</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="saveWisProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="saveWis"/><span>P</span></label>
+      <input class="dnd-bonus-input" name="saveWis" type="number" value="0" data-dnd-final-bonus="saveWis" />
+      <input name="saveWisManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-save-row">
+      <div><strong>Carisma</strong><small>CAR</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="saveChaProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="saveCha"/><span>P</span></label>
+      <input class="dnd-bonus-input" name="saveCha" type="number" value="0" data-dnd-final-bonus="saveCha" />
+      <input name="saveChaManual" type="hidden" value="false" />
+    </div></div>
+        </div>
+      </section>
+
+      <section class="dnd-v2-panel" data-dnd-v2-panel="combat">
+        <div class="dnd-v2-section-head"><p class="tag">Combate</p><h2>Defesa, vida e ataques</h2><span>CA, PV, descanso e ataques em blocos separados.</span></div>
+        <div class="dnd-v2-combat-grid">
+          <div class="dnd-v2-card">
+            <h3>Defesa</h3>
+            <div class="dnd-v2-mini-stats">
+              <label id="dndArmorClassField"><span>CA final</span><input id="dndArmorClassInput" name="armorClass" type="number" data-dnd-editable-result="armorClass" value="10" /><input name="armorClassManual" type="hidden" value="false" /></label>
+              <label><span>Iniciativa</span><input name="initiative" type="number" value="0" /></label>
+              <label><span>Deslocamento</span><input name="speed" type="text" placeholder="9 m" /></label>
+              <label><span>Bônus prof.</span><input name="proficiencyBonus" type="text" value="+2" /></label>
+            </div>
+            <label class="dnd-v2-field"><span>Armadura</span><select name="armorType" id="dndArmorTypeSelect"><option value="Sem Armadura">Sem Armadura</option>
+<option value="Acolchoada">Acolchoada</option>
+<option value="Couro">Couro</option>
+<option value="Couro Batido">Couro Batido</option>
+<option value="Gibão de Peles">Gibão de Peles</option>
+<option value="Camisão de Malha">Camisão de Malha</option>
+<option value="Cota de Escamas">Cota de Escamas</option>
+<option value="Peitoral">Peitoral</option>
+<option value="Meia Armadura">Meia Armadura</option>
+<option value="Corselete de Anéis">Corselete de Anéis</option>
+<option value="Cota de Malha">Cota de Malha</option>
+<option value="Cota de Talas">Cota de Talas</option>
+<option value="Armadura de Placas">Armadura de Placas</option></select></label>
+            <label class="dnd-v2-toggle" id="dndShieldToggle"><input type="checkbox" name="hasShield" id="dndHasShield" /><span>Escudo equipado +2 CA</span></label>
+            <p class="dnd-auto-rule-note" id="dndArmorRuleNote">Leve soma DES. Média limita DES em +2. Pesada não soma DES. Escudo soma +2.</p>
+          </div>
+
+          <div class="dnd-v2-card dnd-hp-box">
+            <h3>Pontos de vida</h3>
+            <div class="dnd-v2-hp-line">
+              <label><span>Atual</span><input name="hpCurrent" type="number" min="0" value="0" /></label>
+              <label><span>Máximo</span><input name="hpMax" type="number" min="0" data-dnd-editable-result="hpMax" value="0" /><input name="hpMaxManual" type="hidden" value="false" /></label>
+              <label><span>Temporários</span><input name="hpTemp" type="number" min="0" value="0" /></label>
+            </div>
+            <div class="dnd-hp-bar dnd-v2-hp-bar"><div id="dndHpBarFill"></div></div>
+            <p class="dnd-auto-rule-note" id="dndHpRuleNote">PV automático por classe, nível e CON. Você ainda pode editar manualmente.</p>
+
+            <div class="dnd-death-saves-panel" data-dnd-death-saves>
+              <input type="hidden" name="deathSuccesses" value="0" data-dnd-death-save-input="success" />
+              <input type="hidden" name="deathFailures" value="0" data-dnd-death-save-input="failure" />
+
+              <div class="dnd-death-saves-head">
+                <span>Testes contra morte</span>
+                <small>Marque até 3 sucessos ou falhas.</small>
+              </div>
+
+              <div class="dnd-death-saves-row dnd-death-saves-row--success">
+                <strong>Sucessos</strong>
+                <div class="dnd-death-save-dots" aria-label="Sucessos contra morte">
+                  <button type="button" data-dnd-death-save="success" data-dnd-death-save-index="1" aria-pressed="false"></button>
+                  <button type="button" data-dnd-death-save="success" data-dnd-death-save-index="2" aria-pressed="false"></button>
+                  <button type="button" data-dnd-death-save="success" data-dnd-death-save-index="3" aria-pressed="false"></button>
+                </div>
+              </div>
+
+              <div class="dnd-death-saves-row dnd-death-saves-row--failure">
+                <strong>Falhas</strong>
+                <div class="dnd-death-save-dots" aria-label="Falhas contra morte">
+                  <button type="button" data-dnd-death-save="failure" data-dnd-death-save-index="1" aria-pressed="false"></button>
+                  <button type="button" data-dnd-death-save="failure" data-dnd-death-save-index="2" aria-pressed="false"></button>
+                  <button type="button" data-dnd-death-save="failure" data-dnd-death-save-index="3" aria-pressed="false"></button>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="dnd-v2-card dnd-v2-card--full dnd-combat-automation" data-dnd-combat-automation>
+            <input type="hidden" name="dndCombatOverrides" value="{}" />
+
+            <div class="dnd-combat-automation__head">
+              <div>
+                <h3>Ataques & Magia Favoritos</h3>
+                <p>Somente armas, itens e magias marcados como favoritos aparecem aqui.</p>
+              </div>
+              <div class="dnd-combat-automation__summary">
+                <article><strong data-dnd-combat-count="weapons">0</strong><span>Armas</span></article>
+                <article><strong data-dnd-combat-count="spells">0</strong><span>Magias</span></article>
+                <article><strong data-dnd-combat-count="items">0</strong><span>Itens</span></article>
+              </div>
+            </div>
+
+            <div class="dnd-combat-automation__toolbar">
+              <label>
+                <span>Buscar</span>
+                <input type="search" data-dnd-combat-search placeholder="Nome, tipo, dano..." autocomplete="off" />
+              </label>
+              <label>
+                <span>Mostrar</span>
+                <select data-dnd-combat-filter>
+                  <option value="all">Tudo</option>
+                  <option value="weapon">Armas</option>
+                  <option value="spell">Magias</option>
+                  <option value="item">Itens</option>
+                </select>
+              </label>
+              <button type="button" data-dnd-combat-refresh>Atualizar lista</button>
+            </div>
+
+            <div class="dnd-combat-automation__empty" data-dnd-combat-empty>
+              <strong>Nenhum ataque automático encontrado.</strong>
+              <span>Favorite armas e itens no Inventário ou magias no Grimório para elas aparecerem aqui.</span>
+            </div>
+
+            <div class="dnd-combat-automation__list" data-dnd-combat-list></div>
+          </div>
+
+          <div class="dnd-v2-card">
+            <h3>Iniciativa da mesa</h3>
+            <div class="initiative-sheet-box dnd-initiative-box dnd-initiative-box--fixed">
+              <div class="dnd-initiative-box__top"><span>Iniciativa de combate</span><input class="dnd-combat-initiative-input" type="number" name="combatInitiative" placeholder="0" data-no-number-control="true" /></div>
+              <p>Esse valor entra na ordem de iniciativa do mestre.</p>
+            </div>
+          </div>
+
+          <div class="dnd-v2-card">
+            <h3>Dados de vida e morte</h3>
+            <div class="dnd-v2-form-grid">
+              <label class="dnd-v2-field"><span>Dado total</span><input name="hitDiceTotal" type="text" /></label>
+              <label class="dnd-v2-field"><span>Restantes</span><input name="hitDiceRemaining" type="text" /></label>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="dnd-v2-panel" data-dnd-v2-panel="skills">
+        <div class="dnd-v2-section-head"><p class="tag">Perícias</p><h2>Proficiência e especialização</h2><span>P marca proficiência. E dobra a proficiência.</span></div>
+        <div class="dnd-v2-card"><div class="dnd-v2-bonus-list dnd-skill-list"><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillAcrobatics">
+      <div><strong>Acrobacia</strong><small>Des</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillAcrobaticsProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillAcrobatics"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillAcrobaticsExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillAcrobatics"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillAcrobatics" type="number" value="0" data-dnd-final-bonus="skillAcrobatics" />
+      <input name="skillAcrobaticsManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillArcana">
+      <div><strong>Arcanismo</strong><small>Int</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillArcanaProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillArcana"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillArcanaExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillArcana"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillArcana" type="number" value="0" data-dnd-final-bonus="skillArcana" />
+      <input name="skillArcanaManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillAthletics">
+      <div><strong>Atletismo</strong><small>For</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillAthleticsProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillAthletics"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillAthleticsExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillAthletics"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillAthletics" type="number" value="0" data-dnd-final-bonus="skillAthletics" />
+      <input name="skillAthleticsManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillDeception">
+      <div><strong>Enganação</strong><small>Car</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillDeceptionProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillDeception"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillDeceptionExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillDeception"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillDeception" type="number" value="0" data-dnd-final-bonus="skillDeception" />
+      <input name="skillDeceptionManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillStealth">
+      <div><strong>Furtividade</strong><small>Des</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillStealthProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillStealth"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillStealthExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillStealth"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillStealth" type="number" value="0" data-dnd-final-bonus="skillStealth" />
+      <input name="skillStealthManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillHistory">
+      <div><strong>História</strong><small>Int</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillHistoryProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillHistory"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillHistoryExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillHistory"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillHistory" type="number" value="0" data-dnd-final-bonus="skillHistory" />
+      <input name="skillHistoryManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillInsight">
+      <div><strong>Intuição</strong><small>Sab</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillInsightProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillInsight"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillInsightExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillInsight"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillInsight" type="number" value="0" data-dnd-final-bonus="skillInsight" />
+      <input name="skillInsightManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillIntimidation">
+      <div><strong>Intimidação</strong><small>Car</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillIntimidationProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillIntimidation"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillIntimidationExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillIntimidation"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillIntimidation" type="number" value="0" data-dnd-final-bonus="skillIntimidation" />
+      <input name="skillIntimidationManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillInvestigation">
+      <div><strong>Investigação</strong><small>Int</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillInvestigationProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillInvestigation"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillInvestigationExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillInvestigation"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillInvestigation" type="number" value="0" data-dnd-final-bonus="skillInvestigation" />
+      <input name="skillInvestigationManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillAnimalHandling">
+      <div><strong>Lidar com Animais</strong><small>Sab</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillAnimalHandlingProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillAnimalHandling"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillAnimalHandlingExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillAnimalHandling"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillAnimalHandling" type="number" value="0" data-dnd-final-bonus="skillAnimalHandling" />
+      <input name="skillAnimalHandlingManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillMedicine">
+      <div><strong>Medicina</strong><small>Sab</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillMedicineProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillMedicine"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillMedicineExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillMedicine"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillMedicine" type="number" value="0" data-dnd-final-bonus="skillMedicine" />
+      <input name="skillMedicineManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillNature">
+      <div><strong>Natureza</strong><small>Int</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillNatureProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillNature"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillNatureExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillNature"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillNature" type="number" value="0" data-dnd-final-bonus="skillNature" />
+      <input name="skillNatureManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillPerception">
+      <div><strong>Percepção</strong><small>Sab</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillPerceptionProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillPerception"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillPerceptionExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillPerception"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillPerception" type="number" value="0" data-dnd-final-bonus="skillPerception" />
+      <input name="skillPerceptionManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillPerformance">
+      <div><strong>Performance</strong><small>Car</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillPerformanceProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillPerformance"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillPerformanceExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillPerformance"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillPerformance" type="number" value="0" data-dnd-final-bonus="skillPerformance" />
+      <input name="skillPerformanceManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillPersuasion">
+      <div><strong>Persuasão</strong><small>Car</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillPersuasionProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillPersuasion"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillPersuasionExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillPersuasion"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillPersuasion" type="number" value="0" data-dnd-final-bonus="skillPersuasion" />
+      <input name="skillPersuasionManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillSleightOfHand">
+      <div><strong>Prestidigitação</strong><small>Des</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillSleightOfHandProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillSleightOfHand"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillSleightOfHandExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillSleightOfHand"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillSleightOfHand" type="number" value="0" data-dnd-final-bonus="skillSleightOfHand" />
+      <input name="skillSleightOfHandManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillReligion">
+      <div><strong>Religião</strong><small>Int</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillReligionProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillReligion"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillReligionExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillReligion"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillReligion" type="number" value="0" data-dnd-final-bonus="skillReligion" />
+      <input name="skillReligionManual" type="hidden" value="false" />
+    </div><div class="dnd-v2-bonus-row dnd-skill-row" data-dnd-v2-skill="skillSurvival">
+      <div><strong>Sobrevivência</strong><small>Sab</small></div>
+      <label class="dnd-v2-pill-check" title="Proficiência"><input type="checkbox" name="skillSurvivalProf" data-dnd-prof-checkbox="true" data-dnd-target-bonus="skillSurvival"/><span>P</span></label>
+      <label class="dnd-v2-pill-check" title="Especialização"><input type="checkbox" name="skillSurvivalExpert" data-dnd-expert-checkbox="true" data-dnd-target-bonus="skillSurvival"/><span>E</span></label>
+      <input class="dnd-bonus-input" name="skillSurvival" type="number" value="0" data-dnd-final-bonus="skillSurvival" />
+      <input name="skillSurvivalManual" type="hidden" value="false" />
+    </div></div></div>
+      </section>
+
+
+      <section class="dnd-v2-panel dnd-v2-experiences-panel" data-dnd-v2-panel="experiences">
+        <div class="dnd-v2-section-head">
+          <p class="tag">Recursos</p>
+          <h2>Experiências</h2>
+          <span>Organize proficiências, línguas, talentos, características de classe e recursos especiais da campanha.</span>
+        </div>
+
+        <div class="dnd-experiences-layout">
+
+          <section class="dnd-v2-card dnd-experience-proficiencies-card">
+            <div class="dnd-experience-card-head">
+              <div>
+                <p class="tag">Treinamento</p>
+                <h3>Proficiências</h3>
+                <span>Armaduras, armas e ferramentas que o personagem sabe usar.</span>
+              </div>
+            </div>
+
+            <div class="dnd-experience-proficiency-grid">
+              <div class="dnd-experience-proficiency-box">
+                <h4>Armaduras</h4>
+                <div class="dnd-experience-check-grid">
+                  <label><input type="checkbox" name="profArmorLight" /><span>Leves</span></label>
+                  <label><input type="checkbox" name="profArmorMedium" /><span>Médias</span></label>
+                  <label><input type="checkbox" name="profArmorHeavy" /><span>Pesadas</span></label>
+                  <label><input type="checkbox" name="profShields" /><span>Escudos</span></label>
+                </div>
+              </div>
+
+              <div class="dnd-experience-proficiency-box">
+                <h4>Armas</h4>
+                <div class="dnd-experience-check-grid">
+                  <label><input type="checkbox" name="profWeaponSimple" /><span>Simples</span></label>
+                  <label><input type="checkbox" name="profWeaponMartial" /><span>Marciais</span></label>
+                  <label><input type="checkbox" name="profWeaponOther" /><span>Outras</span></label>
+                </div>
+                <textarea name="weaponProficienciesText" rows="3" placeholder="Ex: Besta de mão, Espada longa, Rapieiras, Espada curta."></textarea>
+              </div>
+
+              <div class="dnd-experience-proficiency-box dnd-experience-proficiency-box--full">
+                <h4>Ferramentas</h4>
+                <textarea name="toolProficiencies" rows="3" placeholder="Ex: Banjo, flauta, Harpa, kit de ladrão, ferramentas de artesão."></textarea>
+              </div>
+            </div>
+          </section>
+
+          <section class="dnd-v2-card dnd-experience-languages-card">
+            <div class="dnd-experience-card-head">
+              <div>
+                <p class="tag">Comunicação</p>
+                <h3>Línguas</h3>
+                <span>Idiomas conhecidos pelo personagem.</span>
+              </div>
+            </div>
+
+            <textarea name="languages" rows="4" placeholder="Ex: Comum, Élfico, Anão."></textarea>
+          </section>
+
+          <section class="dnd-v2-card dnd-experience-talents-card">
+            <div class="dnd-experience-card-head">
+              <div>
+                <p class="tag">Evolução</p>
+                <h3>Talentos</h3>
+                <span>Talentos, pré-requisitos e efeitos especiais do personagem.</span>
+              </div>
+            </div>
+
+            <div class="dnd-experience-talents-list">
+              <article class="dnd-experience-talent-row">
+                <div class="dnd-experience-talent-top">
+                  <input name="talent1Name" type="text" placeholder="Nome do talento" />
+                  <input name="talent1Prerequisite" type="text" placeholder="Pré-requisito" />
+                </div>
+                <textarea name="talent1Description" rows="4" placeholder="Descreva o efeito do talento. Ex: Você inspira seus companheiros durante 10 minutos..."></textarea>
+              </article>
+
+              <article class="dnd-experience-talent-row">
+                <div class="dnd-experience-talent-top">
+                  <input name="talent2Name" type="text" placeholder="Nome do talento" />
+                  <input name="talent2Prerequisite" type="text" placeholder="Pré-requisito" />
+                </div>
+                <textarea name="talent2Description" rows="4" placeholder="Descreva o efeito do talento."></textarea>
+              </article>
+
+              <article class="dnd-experience-talent-row">
+                <div class="dnd-experience-talent-top">
+                  <input name="talent3Name" type="text" placeholder="Nome do talento" />
+                  <input name="talent3Prerequisite" type="text" placeholder="Pré-requisito" />
+                </div>
+                <textarea name="talent3Description" rows="4" placeholder="Descreva o efeito do talento."></textarea>
+              </article>
+            </div>
+          </section>
+
+          <section class="dnd-v2-card dnd-limited-features-card dnd-limited-features-card--experiences">
+            <div class="dnd-limited-features-head">
+              <div>
+                <p class="tag">Recursos</p>
+                <h3>Características Limitadas</h3>
+                <span>Controle habilidades que recarregam em descanso curto, descanso longo ou ao amanhecer.</span>
+              </div>
+            </div>
+
+            <div class="dnd-limited-features-table" aria-label="Características limitadas">
+              <div class="dnd-limited-feature-row dnd-limited-feature-row--head">
+                <span>Nome</span>
+                <span>Recarga</span>
+                <span>Total</span>
+                <span>Rest.</span>
+              </div>
+
+              <div class="dnd-limited-feature-row">
+                <input name="limitedFeature1Name" type="text" placeholder="Ex: Inspiração Bárdica" />
+                <div class="dnd-recharge-options" aria-label="Recarga da característica 1">
+                  <label title="Descanso curto"><input type="checkbox" name="limitedFeature1RechargeShort" /><span>dc</span></label>
+                  <label title="Descanso longo"><input type="checkbox" name="limitedFeature1RechargeLong" /><span>dl</span></label>
+                  <label title="Amanhecer"><input type="checkbox" name="limitedFeature1RechargeDawn" /><span>am</span></label>
+                </div>
+                <input name="limitedFeature1Total" type="number" min="0" inputmode="numeric" />
+                <input name="limitedFeature1Remaining" type="number" min="0" inputmode="numeric" />
+              </div>
+
+              <div class="dnd-limited-feature-row">
+                <input name="limitedFeature2Name" type="text" />
+                <div class="dnd-recharge-options" aria-label="Recarga da característica 2">
+                  <label title="Descanso curto"><input type="checkbox" name="limitedFeature2RechargeShort" /><span>dc</span></label>
+                  <label title="Descanso longo"><input type="checkbox" name="limitedFeature2RechargeLong" /><span>dl</span></label>
+                  <label title="Amanhecer"><input type="checkbox" name="limitedFeature2RechargeDawn" /><span>am</span></label>
+                </div>
+                <input name="limitedFeature2Total" type="number" min="0" inputmode="numeric" />
+                <input name="limitedFeature2Remaining" type="number" min="0" inputmode="numeric" />
+              </div>
+
+              <div class="dnd-limited-feature-row">
+                <input name="limitedFeature3Name" type="text" />
+                <div class="dnd-recharge-options" aria-label="Recarga da característica 3">
+                  <label title="Descanso curto"><input type="checkbox" name="limitedFeature3RechargeShort" /><span>dc</span></label>
+                  <label title="Descanso longo"><input type="checkbox" name="limitedFeature3RechargeLong" /><span>dl</span></label>
+                  <label title="Amanhecer"><input type="checkbox" name="limitedFeature3RechargeDawn" /><span>am</span></label>
+                </div>
+                <input name="limitedFeature3Total" type="number" min="0" inputmode="numeric" />
+                <input name="limitedFeature3Remaining" type="number" min="0" inputmode="numeric" />
+              </div>
+
+              <div class="dnd-limited-feature-row">
+                <input name="limitedFeature4Name" type="text" />
+                <div class="dnd-recharge-options" aria-label="Recarga da característica 4">
+                  <label title="Descanso curto"><input type="checkbox" name="limitedFeature4RechargeShort" /><span>dc</span></label>
+                  <label title="Descanso longo"><input type="checkbox" name="limitedFeature4RechargeLong" /><span>dl</span></label>
+                  <label title="Amanhecer"><input type="checkbox" name="limitedFeature4RechargeDawn" /><span>am</span></label>
+                </div>
+                <input name="limitedFeature4Total" type="number" min="0" inputmode="numeric" />
+                <input name="limitedFeature4Remaining" type="number" min="0" inputmode="numeric" />
+              </div>
+
+              <div class="dnd-limited-feature-row">
+                <input name="limitedFeature5Name" type="text" />
+                <div class="dnd-recharge-options" aria-label="Recarga da característica 5">
+                  <label title="Descanso curto"><input type="checkbox" name="limitedFeature5RechargeShort" /><span>dc</span></label>
+                  <label title="Descanso longo"><input type="checkbox" name="limitedFeature5RechargeLong" /><span>dl</span></label>
+                  <label title="Amanhecer"><input type="checkbox" name="limitedFeature5RechargeDawn" /><span>am</span></label>
+                </div>
+                <input name="limitedFeature5Total" type="number" min="0" inputmode="numeric" />
+                <input name="limitedFeature5Remaining" type="number" min="0" inputmode="numeric" />
+              </div>
+
+              <div class="dnd-limited-feature-row">
+                <input name="limitedFeature6Name" type="text" />
+                <div class="dnd-recharge-options" aria-label="Recarga da característica 6">
+                  <label title="Descanso curto"><input type="checkbox" name="limitedFeature6RechargeShort" /><span>dc</span></label>
+                  <label title="Descanso longo"><input type="checkbox" name="limitedFeature6RechargeLong" /><span>dl</span></label>
+                  <label title="Amanhecer"><input type="checkbox" name="limitedFeature6RechargeDawn" /><span>am</span></label>
+                </div>
+                <input name="limitedFeature6Total" type="number" min="0" inputmode="numeric" />
+                <input name="limitedFeature6Remaining" type="number" min="0" inputmode="numeric" />
+              </div>
+            </div>
+
+            <p class="dnd-limited-features-note">
+              dc: descanso curto / dl: descanso longo / am: amanhecer.
+            </p>
+          </section>
+
+          <section class="dnd-v2-card dnd-experience-class-features-card">
+            <div class="dnd-experience-card-head">
+              <div>
+                <p class="tag">Classe</p>
+                <h3>Características de Classe</h3>
+                <span>Espaço grande para registrar aptidões, inspirações, estilos de luta, pactos, arquétipos e habilidades ganhas por nível.</span>
+              </div>
+            </div>
+
+            <label class="dnd-class-feature-summary">
+              <span>Resumo geral das características</span>
+              <textarea name="classFeatureNotes" rows="12" placeholder="Ex: Aptidão
+No 3º nível, escolha duas perícias em que você é proficiente...
+
+Inspiração de Bardo
+Você pode inspirar os outros através de palavras animadoras ou música..."></textarea>
+            </label>
+
+            <div class="dnd-class-features-list">
+              <article class="dnd-class-feature-row">
+                <div class="dnd-class-feature-top">
+                  <input name="classFeature1Name" type="text" placeholder="Nome da característica" />
+                  <input name="classFeature1Level" type="text" placeholder="Nível / origem" />
+                  <input name="classFeature1Uses" type="text" placeholder="Usos / recarga" />
+                </div>
+                <textarea name="classFeature1Description" rows="5" placeholder="Descreva a característica de classe, limite, dado, alcance, duração e condição de uso."></textarea>
+              </article>
+
+              <article class="dnd-class-feature-row">
+                <div class="dnd-class-feature-top">
+                  <input name="classFeature2Name" type="text" placeholder="Nome da característica" />
+                  <input name="classFeature2Level" type="text" placeholder="Nível / origem" />
+                  <input name="classFeature2Uses" type="text" placeholder="Usos / recarga" />
+                </div>
+                <textarea name="classFeature2Description" rows="5" placeholder="Descreva a característica."></textarea>
+              </article>
+
+              <article class="dnd-class-feature-row">
+                <div class="dnd-class-feature-top">
+                  <input name="classFeature3Name" type="text" placeholder="Nome da característica" />
+                  <input name="classFeature3Level" type="text" placeholder="Nível / origem" />
+                  <input name="classFeature3Uses" type="text" placeholder="Usos / recarga" />
+                </div>
+                <textarea name="classFeature3Description" rows="5" placeholder="Descreva a característica."></textarea>
+              </article>
+
+              <article class="dnd-class-feature-row">
+                <div class="dnd-class-feature-top">
+                  <input name="classFeature4Name" type="text" placeholder="Nome da característica" />
+                  <input name="classFeature4Level" type="text" placeholder="Nível / origem" />
+                  <input name="classFeature4Uses" type="text" placeholder="Usos / recarga" />
+                </div>
+                <textarea name="classFeature4Description" rows="5" placeholder="Descreva a característica."></textarea>
+              </article>
+
+              <article class="dnd-class-feature-row">
+                <div class="dnd-class-feature-top">
+                  <input name="classFeature5Name" type="text" placeholder="Nome da característica" />
+                  <input name="classFeature5Level" type="text" placeholder="Nível / origem" />
+                  <input name="classFeature5Uses" type="text" placeholder="Usos / recarga" />
+                </div>
+                <textarea name="classFeature5Description" rows="5" placeholder="Descreva a característica."></textarea>
+              </article>
+
+              <article class="dnd-class-feature-row">
+                <div class="dnd-class-feature-top">
+                  <input name="classFeature6Name" type="text" placeholder="Nome da característica" />
+                  <input name="classFeature6Level" type="text" placeholder="Nível / origem" />
+                  <input name="classFeature6Uses" type="text" placeholder="Usos / recarga" />
+                </div>
+                <textarea name="classFeature6Description" rows="5" placeholder="Descreva a característica."></textarea>
+              </article>
+            </div>
+          </section>
+
+        </div>
+      </section>
+
+      <section class="dnd-v2-panel" data-dnd-v2-panel="spells">
+        <div class="dnd-v2-section-head"><p class="tag">Conjuração</p><h2>Magias</h2><span>CD, ataque mágico, espaços e anotações.</span></div>
+        <div class="dnd-v2-card">
+          <div class="dnd-v2-form-grid dnd-spell-header">
+            <label class="dnd-v2-field"><span>Classe mágica</span><input name="spellcastingClass" type="text" /></label>
+            <label class="dnd-v2-field"><span>Habilidade de conjuração</span><input name="spellAbility" type="text" /></label>
+            <label class="dnd-v2-field"><span>CD de resistência</span><input name="spellSaveDc" type="text" /></label>
+            <label class="dnd-v2-field"><span>Bônus de ataque</span><input name="spellAttackBonus" type="text" /></label>
+          </div>
+        </div>
+        <div class="dnd-v2-card dnd-spell-slots"><h3>Espaços de magia</h3><div class="dnd-v2-spell-slots-grid"><div class="dnd-spell-slot-level dnd-v2-spell-slot-level" data-spell-slot-level="1">
+      <input type="hidden" name="spellSlots1" value="0000" data-spell-slot-hidden="1" />
+      <div class="dnd-spell-slot-top">
+        <strong>1º</strong>
+        <input class="dnd-spell-slot-max-input" name="spellSlotsMax1" type="number" min="0" max="12" step="1" value="4" data-spell-slot-max-input="1" aria-label="Quantidade máxima de espaços de magia de 1º nível" />
+      </div>
+      <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de 1º nível"><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="0" aria-pressed="false" title="1º nível - espaço 1"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="1" aria-pressed="false" title="1º nível - espaço 2"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="2" aria-pressed="false" title="1º nível - espaço 3"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="3" aria-pressed="false" title="1º nível - espaço 4"></button></div>
+    </div><div class="dnd-spell-slot-level dnd-v2-spell-slot-level" data-spell-slot-level="2">
+      <input type="hidden" name="spellSlots2" value="000" data-spell-slot-hidden="2" />
+      <div class="dnd-spell-slot-top">
+        <strong>2º</strong>
+        <input class="dnd-spell-slot-max-input" name="spellSlotsMax2" type="number" min="0" max="12" step="1" value="3" data-spell-slot-max-input="2" aria-label="Quantidade máxima de espaços de magia de 2º nível" />
+      </div>
+      <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de 2º nível"><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="0" aria-pressed="false" title="2º nível - espaço 1"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="1" aria-pressed="false" title="2º nível - espaço 2"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="2" aria-pressed="false" title="2º nível - espaço 3"></button></div>
+    </div><div class="dnd-spell-slot-level dnd-v2-spell-slot-level" data-spell-slot-level="3">
+      <input type="hidden" name="spellSlots3" value="000" data-spell-slot-hidden="3" />
+      <div class="dnd-spell-slot-top">
+        <strong>3º</strong>
+        <input class="dnd-spell-slot-max-input" name="spellSlotsMax3" type="number" min="0" max="12" step="1" value="3" data-spell-slot-max-input="3" aria-label="Quantidade máxima de espaços de magia de 3º nível" />
+      </div>
+      <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de 3º nível"><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="0" aria-pressed="false" title="3º nível - espaço 1"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="1" aria-pressed="false" title="3º nível - espaço 2"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="2" aria-pressed="false" title="3º nível - espaço 3"></button></div>
+    </div><div class="dnd-spell-slot-level dnd-v2-spell-slot-level" data-spell-slot-level="4">
+      <input type="hidden" name="spellSlots4" value="000" data-spell-slot-hidden="4" />
+      <div class="dnd-spell-slot-top">
+        <strong>4º</strong>
+        <input class="dnd-spell-slot-max-input" name="spellSlotsMax4" type="number" min="0" max="12" step="1" value="3" data-spell-slot-max-input="4" aria-label="Quantidade máxima de espaços de magia de 4º nível" />
+      </div>
+      <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de 4º nível"><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="0" aria-pressed="false" title="4º nível - espaço 1"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="1" aria-pressed="false" title="4º nível - espaço 2"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="2" aria-pressed="false" title="4º nível - espaço 3"></button></div>
+    </div><div class="dnd-spell-slot-level dnd-v2-spell-slot-level" data-spell-slot-level="5">
+      <input type="hidden" name="spellSlots5" value="000" data-spell-slot-hidden="5" />
+      <div class="dnd-spell-slot-top">
+        <strong>5º</strong>
+        <input class="dnd-spell-slot-max-input" name="spellSlotsMax5" type="number" min="0" max="12" step="1" value="3" data-spell-slot-max-input="5" aria-label="Quantidade máxima de espaços de magia de 5º nível" />
+      </div>
+      <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de 5º nível"><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="0" aria-pressed="false" title="5º nível - espaço 1"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="1" aria-pressed="false" title="5º nível - espaço 2"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="2" aria-pressed="false" title="5º nível - espaço 3"></button></div>
+    </div><div class="dnd-spell-slot-level dnd-v2-spell-slot-level" data-spell-slot-level="6">
+      <input type="hidden" name="spellSlots6" value="00" data-spell-slot-hidden="6" />
+      <div class="dnd-spell-slot-top">
+        <strong>6º</strong>
+        <input class="dnd-spell-slot-max-input" name="spellSlotsMax6" type="number" min="0" max="12" step="1" value="2" data-spell-slot-max-input="6" aria-label="Quantidade máxima de espaços de magia de 6º nível" />
+      </div>
+      <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de 6º nível"><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="0" aria-pressed="false" title="6º nível - espaço 1"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="1" aria-pressed="false" title="6º nível - espaço 2"></button></div>
+    </div><div class="dnd-spell-slot-level dnd-v2-spell-slot-level" data-spell-slot-level="7">
+      <input type="hidden" name="spellSlots7" value="00" data-spell-slot-hidden="7" />
+      <div class="dnd-spell-slot-top">
+        <strong>7º</strong>
+        <input class="dnd-spell-slot-max-input" name="spellSlotsMax7" type="number" min="0" max="12" step="1" value="2" data-spell-slot-max-input="7" aria-label="Quantidade máxima de espaços de magia de 7º nível" />
+      </div>
+      <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de 7º nível"><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="0" aria-pressed="false" title="7º nível - espaço 1"></button><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="1" aria-pressed="false" title="7º nível - espaço 2"></button></div>
+    </div><div class="dnd-spell-slot-level dnd-v2-spell-slot-level" data-spell-slot-level="8">
+      <input type="hidden" name="spellSlots8" value="0" data-spell-slot-hidden="8" />
+      <div class="dnd-spell-slot-top">
+        <strong>8º</strong>
+        <input class="dnd-spell-slot-max-input" name="spellSlotsMax8" type="number" min="0" max="12" step="1" value="1" data-spell-slot-max-input="8" aria-label="Quantidade máxima de espaços de magia de 8º nível" />
+      </div>
+      <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de 8º nível"><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="0" aria-pressed="false" title="8º nível - espaço 1"></button></div>
+    </div><div class="dnd-spell-slot-level dnd-v2-spell-slot-level" data-spell-slot-level="9">
+      <input type="hidden" name="spellSlots9" value="0" data-spell-slot-hidden="9" />
+      <div class="dnd-spell-slot-top">
+        <strong>9º</strong>
+        <input class="dnd-spell-slot-max-input" name="spellSlotsMax9" type="number" min="0" max="12" step="1" value="1" data-spell-slot-max-input="9" aria-label="Quantidade máxima de espaços de magia de 9º nível" />
+      </div>
+      <div class="dnd-spell-slot-dots" aria-label="Espaços de magia de 9º nível"><button type="button" class="dnd-spell-slot-dot" data-spell-slot-dot="0" aria-pressed="false" title="9º nível - espaço 1"></button></div>
+    </div></div></div>
+        <input type="hidden" name="dndSpellbook" id="dndSpellbookData" value="[]" />
+        <section class="dnd-grimoire" data-dnd-grimoire>
+          <div class="dnd-grimoire-hero">
+            <div>
+              <p class="tag">Grimório</p>
+              <h3>Livro de magias</h3>
+              <span>Cadastre suas magias em cards completos, filtre por círculo e use durante a sessão.</span>
+            </div>
+            <div class="dnd-grimoire-counters">
+              <article><strong data-dnd-spell-count-total>0</strong><span>Total</span></article>
+              <article><strong data-dnd-spell-count-prepared>0</strong><span>Preparadas</span></article>
+              <article><strong data-dnd-spell-count-favorite>0</strong><span>Favoritas</span></article>
+            </div>
+          </div>
+
+          <div class="dnd-grimoire-toolbar">
+            <label class="dnd-grimoire-search"><span>Buscar magia</span><input type="search" data-dnd-spell-search placeholder="Ex: Bola de Fogo" autocomplete="off" /></label>
+            <label><span>Círculo</span><select data-dnd-spell-level-filter><option value="all">Todos</option><option value="0">Truques</option><option value="1">1º nível</option><option value="2">2º nível</option><option value="3">3º nível</option><option value="4">4º nível</option><option value="5">5º nível</option><option value="6">6º nível</option><option value="7">7º nível</option><option value="8">8º nível</option><option value="9">9º nível</option></select></label>
+            <button type="button" class="dnd-grimoire-filter" data-dnd-spell-filter-prepared="false">Preparadas</button>
+            <button type="button" class="dnd-grimoire-filter" data-dnd-spell-filter-favorite="false">Favoritas</button>
+            <button type="button" class="dnd-grimoire-add" data-dnd-spell-action="add">+ Adicionar magia</button>
+          </div>
+
+          <div class="dnd-grimoire-editor" data-dnd-grimoire-editor hidden>
+            <div class="dnd-grimoire-editor-head"><div><span data-dnd-spell-editor-kicker>Nova magia</span><strong data-dnd-spell-editor-title>Adicionar ao grimório</strong></div><button type="button" data-dnd-spell-action="cancel-edit">×</button></div>
+            <input type="hidden" data-dnd-spell-field="id" />
+            <div class="dnd-grimoire-editor-grid">
+              <label><span>Nome da magia</span><input type="text" data-dnd-spell-field="name" placeholder="Mísseis Mágicos" /></label>
+              <label><span>Círculo</span><select data-dnd-spell-field="level"><option value="0">Truque</option><option value="1">1º nível</option><option value="2">2º nível</option><option value="3">3º nível</option><option value="4">4º nível</option><option value="5">5º nível</option><option value="6">6º nível</option><option value="7">7º nível</option><option value="8">8º nível</option><option value="9">9º nível</option></select></label>
+              <label><span>Escola</span><input type="text" data-dnd-spell-field="school" placeholder="Evocação" /></label>
+              <label><span>Tipo</span><select data-dnd-spell-field="type"><option value="">Escolha</option><option>Dano</option><option>Cura</option><option>Controle</option><option>Defesa</option><option>Utilidade</option><option>Movimento</option><option>Invocação</option><option>Social</option><option>Exploração</option></select></label>
+              <label><span>Tempo de conjuração</span><input type="text" data-dnd-spell-field="castingTime" placeholder="1 ação" /></label>
+              <label><span>Alcance</span><input type="text" data-dnd-spell-field="range" placeholder="36 m" /></label>
+              <label><span>Componentes</span><input type="text" data-dnd-spell-field="components" placeholder="V, S, M" /></label>
+              <label><span>Material</span><input type="text" data-dnd-spell-field="material" placeholder="Opcional" /></label>
+              <label><span>Duração</span><input type="text" data-dnd-spell-field="duration" placeholder="Instantânea" /></label>
+              <label><span>Teste / ataque</span><input type="text" data-dnd-spell-field="saveAttack" placeholder="Ataque mágico / Resistência DES" /></label>
+              <label><span>Dano / cura</span><input type="text" data-dnd-spell-field="damage" placeholder="3d6 fogo" /></label>
+              <div class="dnd-grimoire-switches"><label><input type="checkbox" data-dnd-spell-field="prepared" /> Preparada</label><label><input type="checkbox" data-dnd-spell-field="favorite" /> Favorita</label><label><input type="checkbox" data-dnd-spell-field="concentration" /> Concentração</label><label><input type="checkbox" data-dnd-spell-field="ritual" /> Ritual</label></div>
+              <label class="dnd-grimoire-wide"><span>Descrição</span><textarea data-dnd-spell-field="description" rows="5" placeholder="Explique o efeito principal da magia."></textarea></label>
+              <label class="dnd-grimoire-wide"><span>Em níveis superiores</span><textarea data-dnd-spell-field="higherLevels" rows="3" placeholder="Como a magia melhora quando usa círculo maior."></textarea></label>
+              <label class="dnd-grimoire-wide"><span>Observações</span><textarea data-dnd-spell-field="notes" rows="3" placeholder="Combos, decisões do mestre, detalhes da campanha."></textarea></label>
+            </div>
+            <div class="dnd-grimoire-editor-actions"><button type="button" data-dnd-spell-action="cancel-edit">Cancelar</button><button type="button" class="dnd-grimoire-save" data-dnd-spell-action="save-spell">Salvar magia</button></div>
+          </div>
+
+          <div class="dnd-grimoire-empty" data-dnd-spell-empty>
+            <strong>Nenhuma magia cadastrada ainda.</strong>
+            <span>Clique em “Adicionar magia” para montar o grimório do personagem.</span>
+          </div>
+          <div class="dnd-grimoire-list" data-dnd-spell-list></div>
+        </section>
+
+        <details class="dnd-grimoire-notes dnd-grimoire-additional-notes">
+          <summary>Anotações adicionais</summary>
+          <div class="dnd-grimoire-additional-notes__body">
+            <label class="dnd-v2-field dnd-v2-textarea dnd-grimoire-additional-notes__field">
+              <span>Texto livre</span>
+              <textarea name="spellNotes" rows="16" placeholder="Use este espaço para anotar regras especiais, combinações de magia, lembretes do mestre, efeitos ativos, componentes importantes ou qualquer observação sobre o grimório."></textarea>
+            </label>
+          </div>
+        </details>
+      </section>
+
+      <section class="dnd-v2-panel" data-dnd-v2-panel="inventory">
+        <div class="dnd-v2-section-head dnd-inventory-section-head">
+          <p class="tag">Recursos</p>
+          <h2>Inventário D&D</h2>
+          <span>Organize moedas, carga, armas, armaduras, itens mágicos, consumíveis e qualquer item criado pela mesa.</span>
+        </div>
+
+        <input type="hidden" name="dndInventoryItems" value="[]" data-dnd-inventory-store="true" />
+        <input type="hidden" name="equipment" value="" />
+        <input type="hidden" name="inventory" value="" />
+
+        <div class="dnd-inventory-summary-grid">
+          <article class="dnd-inventory-summary-card">
+            <span>Itens</span>
+            <strong data-dnd-inventory-total-items>0</strong>
+            <small>Total carregado</small>
+          </article>
+          <article class="dnd-inventory-summary-card">
+            <span>Peso</span>
+            <strong data-dnd-inventory-total-weight>0 lb</strong>
+            <small data-dnd-inventory-carry-status>Dentro do limite</small>
+          </article>
+          <article class="dnd-inventory-summary-card">
+            <span>Valor estimado</span>
+            <strong data-dnd-inventory-total-value>0 PO</strong>
+            <small>Somado pelos itens</small>
+          </article>
+          <article class="dnd-inventory-summary-card">
+            <span>Itens mágicos</span>
+            <strong data-dnd-inventory-magic-count>0</strong>
+            <small data-dnd-inventory-attunement-count>0 sintonizados</small>
+          </article>
+        </div>
+
+        <div class="dnd-inventory-wallet-card">
+          <div class="dnd-inventory-card-head">
+            <div>
+              <h3>Moedas</h3>
+              <p>Controle rápido de dinheiro do personagem.</p>
+            </div>
+            <strong data-dnd-inventory-wallet-total>0 PO</strong>
+          </div>
+
+          <div class="dnd-inventory-money-grid">
+            <label><span>PC</span><input name="coinCopper" type="text" inputmode="numeric" placeholder="0" /></label>
+            <label><span>PP</span><input name="coinSilver" type="text" inputmode="numeric" placeholder="0" /></label>
+            <label><span>PE</span><input name="coinElectrum" type="text" inputmode="numeric" placeholder="0" /></label>
+            <label><span>PO</span><input name="coinGold" type="text" inputmode="numeric" placeholder="0" /></label>
+            <label><span>PL</span><input name="coinPlatinum" type="text" inputmode="numeric" placeholder="0" /></label>
+          </div>
+        </div>
+
+        <div class="dnd-inventory-toolbar">
+          <label class="dnd-inventory-search">
+            <span>Buscar item</span>
+            <input type="search" data-dnd-inventory-search placeholder="Nome, categoria, raridade ou observação..." />
+          </label>
+
+          <label class="dnd-inventory-filter">
+            <span>Categoria</span>
+            <select data-dnd-inventory-filter>
+              <option value="all">Todos</option>
+              <option value="weapon">Armas</option>
+              <option value="armor">Armaduras</option>
+              <option value="shield">Escudos</option>
+              <option value="magic">Itens mágicos</option>
+              <option value="consumable">Consumíveis</option>
+              <option value="tool">Ferramentas</option>
+              <option value="adventuring">Equipamento</option>
+              <option value="treasure">Tesouros</option>
+              <option value="custom">Criados</option>
+            </select>
+          </label>
+
+          <button type="button" class="dnd-inventory-add-btn" data-dnd-inventory-add>
+            + Adicionar item
+          </button>
+        </div>
+
+        <div class="dnd-inventory-main-grid">
+          <aside class="dnd-inventory-side-card">
+            <div class="dnd-inventory-card-head">
+              <div>
+                <h3>Carga</h3>
+                <p>Base sugerida: Força × 15 lb.</p>
+              </div>
+            </div>
+
+            <div class="dnd-inventory-carry-meter">
+              <div><span data-dnd-inventory-carry-current>0 lb</span><strong data-dnd-inventory-carry-max>150 lb</strong></div>
+              <div class="dnd-inventory-carry-bar"><span data-dnd-inventory-carry-fill></span></div>
+            </div>
+
+            <label class="dnd-inventory-manual-capacity">
+              <span>Limite manual</span>
+              <input name="carryingCapacity" type="text" inputmode="decimal" placeholder="Força × 15" />
+            </label>
+
+            <div class="dnd-inventory-quick-actions">
+              <button type="button" data-dnd-inventory-quick="weapon">+ Arma</button>
+              <button type="button" data-dnd-inventory-quick="armor">+ Armadura</button>
+              <button type="button" data-dnd-inventory-quick="consumable">+ Consumível</button>
+              <button type="button" data-dnd-inventory-quick="magic">+ Mágico</button>
+            </div>
+          </aside>
+
+          <div class="dnd-inventory-list-panel">
+            <div class="dnd-inventory-list-head">
+              <div>
+                <h3>Itens do personagem</h3>
+                <p>Cards editáveis para itens oficiais, homebrew e itens criados pela mesa.</p>
+              </div>
+            </div>
+
+            <div class="dnd-inventory-empty" data-dnd-inventory-empty>
+              <strong>Nenhum item cadastrado.</strong>
+              <span>Clique em “Adicionar item” para montar o inventário.</span>
+            </div>
+
+            <div class="dnd-inventory-list" data-dnd-inventory-list></div>
+          </div>
+        </div>
+      </section>
+
+
+      <section class="dnd-v2-panel" data-dnd-v2-panel="story">
+        <div class="dnd-v2-section-head"><p class="tag">Narrativa</p><h2>História e interpretação</h2><span>Campos grandes para personalidade, vínculos e aparência.</span></div>
+        <div class="dnd-v2-form-grid">
+          <label class="dnd-v2-field"><span>Olhos</span><input name="eyes" type="text" /></label>
+          <label class="dnd-v2-field"><span>Pele</span><input name="skin" type="text" /></label>
+          <label class="dnd-v2-field"><span>Cabelo</span><input name="hair" type="text" /></label>
+        </div>
+        <div class="dnd-v2-story-grid">
+          <label class="dnd-v2-field dnd-v2-textarea "><span>Traços de personalidade</span><textarea name="personalityTraits" rows="6"></textarea></label>
+          <label class="dnd-v2-field dnd-v2-textarea "><span>Ideais</span><textarea name="ideals" rows="6"></textarea></label>
+          <label class="dnd-v2-field dnd-v2-textarea "><span>Laços</span><textarea name="bonds" rows="6"></textarea></label>
+          <label class="dnd-v2-field dnd-v2-textarea "><span>Defeitos</span><textarea name="flaws" rows="6"></textarea></label>
+          <label class="dnd-v2-field dnd-v2-textarea "><span>Manias</span><textarea name="quirks" rows="6"></textarea></label>
+          <label class="dnd-v2-field dnd-v2-textarea "><span>Aparência</span><textarea name="appearance" rows="6"></textarea></label>
+          <label class="dnd-v2-field dnd-v2-textarea dnd-v2-span-2"><span>Características & Traços adicionais</span><textarea name="additionalFeatures" rows="10"></textarea></label>
+        </div>
+      </section>
+
+      <section class="dnd-v2-panel dnd-v2-rest-panel" data-dnd-v2-panel="rest">
+        <div class="dnd-v2-section-head">
+          <p class="tag">Recuperação</p>
+          <h2>Descansar</h2>
+          <span>Gerencie descanso curto, descanso longo, PV, Dados de Vida e espaços de magia.</span>
+        </div>
+
+        <div class="dnd-v2-card dnd-rest-tab-card">
+          <div class="dnd-rest-panel is-open" id="dndRestPanel">
+            <div class="dnd-rest-panel__head">
+              <div>
+                <span>Descanso de D&D</span>
+                <h4>Recuperação da sessão</h4>
+              </div>
+            </div>
+
+            <div class="dnd-rest-summary" id="dndRestSummary">PV atual: -- / -- • Dados de vida: --</div>
+
+            <div class="dnd-rest-grid">
+              <section class="dnd-rest-card">
+                <h5>Descanso curto</h5>
+                <p>Gaste Dados de Vida para recuperar PV. Para rolagens livres de Dados de Vida, use o painel de rolador.</p>
+                <div class="dnd-rest-fields">
+                  <label><span>Dados gastos</span><input type="number" min="1" value="1" id="dndRestHitDiceAmount" /></label>
+                  <label><span>Dado</span><select id="dndRestHitDieType"><option value="4">d4</option><option value="6">d6</option><option value="8" selected>d8</option><option value="10">d10</option><option value="12">d12</option></select></label>
+                </div>
+                <button type="button" class="dnd-rest-action dnd-rest-action--short" id="applyDndShortRest">Aplicar descanso curto</button>
+              </section>
+
+              <section class="dnd-rest-card">
+                <h5>Descanso longo</h5>
+                <p>Restaura PV, zera PV temporário, recupera Dados de Vida e acende todos os espaços de magia.</p>
+                <button type="button" class="dnd-rest-action dnd-rest-action--long" id="applyDndLongRest">Aplicar descanso longo</button>
+              </section>
+            </div>
+
+            <div class="dnd-rest-result" id="dndRestResult">Escolha um tipo de descanso.</div>
+          </div>
+        </div>
+
+        <div class="dnd-v2-grid-2 dnd-sanity-limited-grid dnd-sanity-limited-grid--rest">
+          <section class="dnd-v2-card dnd-sanity-card">
+            <div class="dnd-sanity-card__head">
+              <div>
+                <p class="tag">Sanidade</p>
+                <h3>Nível de Sanidade</h3>
+                <span>Use quando a mesa trabalhar medo, loucura, corrupção mental ou trauma.</span>
+              </div>
+            </div>
+
+            <div class="dnd-sanity-fields">
+              <label class="dnd-v2-field">
+                <span>Nível atual</span>
+                <input name="sanityLevel" type="number" min="0" value="0" inputmode="numeric" />
+              </label>
+
+              <label class="dnd-v2-field">
+                <span>Dado de Sanidade</span>
+                <select name="sanityDie">
+                  <option value="">Selecione</option>
+                  <option value="d4">d4</option>
+                  <option value="d6">d6</option>
+                  <option value="d8">d8</option>
+                  <option value="d10">d10</option>
+                  <option value="d12">d12</option>
+                  <option value="d20">d20</option>
+                </select>
+              </label>
+            </div>
+
+            <label class="dnd-v2-field dnd-v2-textarea dnd-sanity-notes">
+              <span>Notas de sanidade</span>
+              <textarea name="sanityNotes" rows="4" placeholder="Medos, gatilhos, efeitos temporários ou marcas mentais."></textarea>
+            </label>
+          </section>
+        </div>
+
+      </section>
+
+      <section class="dnd-v2-panel dnd-v2-pet-panel" data-dnd-v2-panel="pet">
+        <div class="dnd-v2-section-head">
+          <p class="tag">Companheiro</p>
+          <h2>Ficha do Pet</h2>
+          <span>Uma ficha pequena para familiar, montaria, mascote ou companheiro animal.</span>
+        </div>
+
+        <div class="dnd-pet-sheet">
+          <input type="hidden" name="petStrMod" value="0" />
+          <input type="hidden" name="petDexMod" value="0" />
+          <input type="hidden" name="petConMod" value="0" />
+          <input type="hidden" name="petIntMod" value="0" />
+          <input type="hidden" name="petWisMod" value="0" />
+          <input type="hidden" name="petChaMod" value="0" />
+
+          <aside class="dnd-pet-profile-card">
+            <input type="hidden" name="petAvatarUrl" value="" data-dnd-pet-avatar-url />
+            <div class="dnd-pet-avatar" id="dndPetAvatar" data-dnd-pet-avatar-preview>P</div>
+            <label class="dnd-pet-image-upload-btn">
+              Escolher imagem
+              <input type="file" accept="image/png,image/jpeg,image/jpg,image/webp" data-dnd-pet-image-input hidden />
+            </label>
+            <button type="button" class="dnd-pet-image-remove-btn" data-dnd-pet-image-remove>Remover imagem</button>
+            <span>Pet ativo</span>
+            <strong id="dndPetNamePreview">Sem nome</strong>
+            <small id="dndPetTypePreview">Companheiro da ficha</small>
+          </aside>
+
+          <div class="dnd-pet-main">
+            <div class="dnd-pet-card dnd-pet-card--identity">
+              <h3>Identidade</h3>
+              <div class="dnd-pet-form-grid">
+                <label><span>Nome do pet</span><input name="petName" type="text" placeholder="Ex: Nyx" autocomplete="off" /></label>
+                <label><span>Espécie / Tipo</span><input name="petSpecies" type="text" placeholder="Lobo, coruja, familiar..." autocomplete="off" /></label>
+                <label><span>Tamanho</span><select name="petSize"><option value="">Selecione</option><option>Miúdo</option><option>Pequeno</option><option>Médio</option><option>Grande</option><option>Enorme</option><option>Imenso</option></select></label>
+                <label><span>Vínculo</span><input name="petBond" type="text" placeholder="Familiar, montaria, mascote..." autocomplete="off" /></label>
+              </div>
+            </div>
+
+            <div class="dnd-pet-card">
+              <h3>Combate rápido</h3>
+              <div class="dnd-pet-stat-grid">
+                <label><span>CA</span><input name="petArmorClass" type="number" min="0" value="10" /></label>
+                <label><span>PV atual</span><input name="petHpCurrent" type="number" min="0" value="0" /></label>
+                <label><span>PV máx.</span><input name="petHpMax" type="number" min="0" value="0" /></label>
+                <label><span>Deslocamento</span><input name="petSpeed" type="text" placeholder="9 m" /></label>
+              </div>
+              <div class="dnd-pet-hp-bar"><div id="dndPetHpBarFill"></div></div>
+              <div class="dnd-pet-quick-actions dnd-pet-quick-actions--clean">
+                <p>Use o painel de rolador para iniciativa, percepção e testes do pet.</p>
+              </div>
+            </div>
+
+            <div class="dnd-pet-card dnd-pet-card--full">
+              <h3>Atributos do pet</h3>
+              <div class="dnd-pet-abilities">
+                <label><span>FOR</span><input name="petStrScore" type="number" value="10" min="1" /><strong id="dndPetStrModView">+0</strong></label>
+                <label><span>DES</span><input name="petDexScore" type="number" value="10" min="1" /><strong id="dndPetDexModView">+0</strong></label>
+                <label><span>CON</span><input name="petConScore" type="number" value="10" min="1" /><strong id="dndPetConModView">+0</strong></label>
+                <label><span>INT</span><input name="petIntScore" type="number" value="10" min="1" /><strong id="dndPetIntModView">+0</strong></label>
+                <label><span>SAB</span><input name="petWisScore" type="number" value="10" min="1" /><strong id="dndPetWisModView">+0</strong></label>
+                <label><span>CAR</span><input name="petChaScore" type="number" value="10" min="1" /><strong id="dndPetChaModView">+0</strong></label>
+              </div>
+            </div>
+
+            <div class="dnd-pet-card dnd-pet-card--attack">
+              <h3>Ataque principal</h3>
+              <div class="dnd-pet-attack-grid">
+                <label><span>Nome</span><input name="petAttackName" type="text" placeholder="Mordida, garra..." /></label>
+                <label><span>Bônus</span><input name="petAttackBonus" type="number" value="0" /></label>
+                <label><span>Dano</span><input name="petAttackDamage" type="text" placeholder="1d6+2" /></label>
+              </div>
+              <div class="dnd-pet-quick-actions dnd-pet-quick-actions--clean">
+                <p>Use o painel de rolador para acerto e dano do pet.</p>
+              </div>
+            </div>
+
+            <div class="dnd-pet-card dnd-pet-card--notes">
+              <h3>Traços e habilidades</h3>
+              <textarea name="petTraits" placeholder="Sentidos, habilidades especiais, treinamento, vantagens, truques..."></textarea>
+            </div>
+
+            <div class="dnd-pet-card dnd-pet-card--notes">
+              <h3>Anotações do pet</h3>
+              <textarea name="petNotes" placeholder="Personalidade, aparência, vínculo com o personagem, comandos, história..."></textarea>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="dnd-v2-panel dnd-v2-book-panel" data-dnd-v2-panel="book">
+        <div class="dnd-v2-section-head">
+          <p class="tag">Livro</p>
+          <h2>Livro de regras</h2>
+          <span>Leitor de PDF integrado à ficha. O arquivo precisa estar no projeto em <strong>pdf/livro-dnd.pdf</strong>.</span>
+        </div>
+
+        <div class="dnd-v2-book-reader">
+          <div class="dnd-v2-book-reader__top">
+            <div>
+              <span>PDF interno</span>
+              <strong>Livro de D&D</strong>
+            </div>
+            <small>Role dentro do leitor para navegar pelo livro inteiro.</small>
+          </div>
+
+          <iframe
+            class="dnd-v2-book-reader__frame"
+            src="pdf/livro-dnd.pdf#toolbar=1&navpanes=0&scrollbar=1&view=FitH"
+            title="Livro de D&D em PDF"
+            loading="lazy"
+          ></iframe>
+        </div>
+      </section>
+    </div>
+  </section>
+  `;
+
+  function isMasterDndPage() {
+    return Boolean(document.body && document.body.classList.contains("dnd-master-page"));
+  }
+
+  function asText(value, fallback = "") {
+    if (value === undefined || value === null) return fallback;
+    return String(value);
+  }
+
+  function boolValue(value) {
+    if (typeof dnd_bool === "function") return dnd_bool(value);
+    if (value === true) return true;
+    const text = String(value ?? "").trim().toLowerCase();
+    return text === "true" || text === "1" || text === "yes" || text === "sim" || text === "on";
+  }
+
+  function normalizedSheetData(sheet = {}) {
+    const data = { ...sheet };
+
+    try {
+      if (typeof getCampaignLabDndSheetClassName === "function") data.className = getCampaignLabDndSheetClassName(sheet) || data.className || "";
+    } catch (error) {}
+
+    try {
+      if (typeof getCampaignLabDndSheetLevel === "function") data.charLevel = getCampaignLabDndSheetLevel(sheet) || data.charLevel || "1";
+    } catch (error) {}
+
+    try {
+      if (typeof getCampaignLabDndClassLevelLabel === "function") data.classLevel = getCampaignLabDndClassLevelLabel(sheet) || data.classLevel || "";
+    } catch (error) {}
+
+    if (!data.className && data.classLevel) {
+      data.className = String(data.classLevel).replace(/\s+\d+$/, "").trim();
+    }
+
+    if (!data.charLevel && data.classLevel) {
+      const match = String(data.classLevel).match(/(\d+)/);
+      if (match) data.charLevel = match[1];
+    }
+
+    data.charLevel = data.charLevel || "1";
+    data.classLevel = data.classLevel || `${data.className || "Classe"} ${data.charLevel || "1"}`;
+
+    if (data.initiative === undefined || data.initiative === null || data.initiative === "") {
+      data.initiative = data.combatInitiative ?? "0";
+    }
+    if (data.combatInitiative === undefined || data.combatInitiative === null || data.combatInitiative === "") {
+      data.combatInitiative = data.initiative ?? "0";
+    }
+
+    if (!data.characterAvatarUrl && data.characterPortraitUrl) data.characterAvatarUrl = data.characterPortraitUrl;
+    if (!data.characterPortraitUrl && data.characterAvatarUrl) data.characterPortraitUrl = data.characterAvatarUrl;
+    if (!data.petAvatarUrl && data.petPortraitUrl) data.petAvatarUrl = data.petPortraitUrl;
+
+    if (data.proficiencyBonus === undefined || data.proficiencyBonus === null || data.proficiencyBonus === "") data.proficiencyBonus = "+2";
+    if (data.armorClass === undefined || data.armorClass === null || data.armorClass === "") data.armorClass = "10";
+    if (data.hpCurrent === undefined || data.hpCurrent === null || data.hpCurrent === "") data.hpCurrent = "0";
+    if (data.hpMax === undefined || data.hpMax === null || data.hpMax === "") data.hpMax = "0";
+    if (data.passivePerception === undefined || data.passivePerception === null || data.passivePerception === "") data.passivePerception = "10";
+
+    return data;
+  }
+
+  function setFieldValue(field, value) {
+    if (!field) return;
+
+    if (field.type === "checkbox") {
+      field.checked = boolValue(value);
+      return;
+    }
+
+    if (field.type === "radio") {
+      field.checked = asText(field.value) === asText(value);
+      return;
+    }
+
+    if (field.tagName === "SELECT") {
+      const valueText = asText(value);
+      field.value = valueText;
+      if (field.value !== valueText && valueText) {
+        const lower = valueText.toLowerCase();
+        const option = Array.from(field.options).find((item) =>
+          String(item.value || item.textContent || "").toLowerCase() === lower ||
+          String(item.textContent || "").toLowerCase() === lower
+        );
+        if (option) field.value = option.value;
+      }
+      return;
+    }
+
+    field.value = asText(value);
+  }
+
+  function hydrateMirrorForm(form, rawSheet = {}) {
+    if (!form) return;
+    const sheet = normalizedSheetData(rawSheet);
+
+    form.querySelectorAll("[name]").forEach((field) => {
+      const name = field.getAttribute("name");
+      if (!name) return;
+      if (Object.prototype.hasOwnProperty.call(sheet, name)) {
+        setFieldValue(field, sheet[name]);
+      }
+    });
+
+    // Campos derivados que a ficha do jogador usa para resumo e automação.
+    const derived = {
+      className: sheet.className,
+      charLevel: sheet.charLevel,
+      classLevel: sheet.classLevel,
+      initiative: sheet.initiative,
+      combatInitiative: sheet.combatInitiative,
+      armorClass: sheet.armorClass,
+      hpCurrent: sheet.hpCurrent,
+      hpMax: sheet.hpMax,
+      proficiencyBonus: sheet.proficiencyBonus,
+      characterAvatarUrl: sheet.characterAvatarUrl,
+      characterPortraitUrl: sheet.characterPortraitUrl,
+      petAvatarUrl: sheet.petAvatarUrl,
+    };
+
+    Object.entries(derived).forEach(([name, value]) => {
+      form.querySelectorAll(`[name="${CSS.escape(name)}"]`).forEach((field) => setFieldValue(field, value));
+    });
+
+    const name = sheet.characterName || "Personagem";
+    const classLabel = sheet.classLevel || `${sheet.className || "Classe"} ${sheet.charLevel || "1"}`;
+
+    const textPairs = {
+      dndV2CharacterNameSide: name,
+      dndV2ClassSide: classLabel,
+      dndV2HpView: `${sheet.hpCurrent || "0"} / ${sheet.hpMax || "0"}`,
+      dndV2HpBig: `${sheet.hpCurrent || "0"} / ${sheet.hpMax || "0"}`,
+      dndV2RaceSummary: `${sheet.race || "Raça"} • ${sheet.background || "Antecedente"}`,
+    };
+
+    Object.entries(textPairs).forEach(([id, text]) => {
+      const el = document.getElementById(id);
+      if (el) el.textContent = text;
+    });
+
+    const inputPairs = {
+      dndV2ArmorClassView: sheet.armorClass,
+      dndV2ArmorClassBig: sheet.armorClass,
+      dndV2HpCurrentHeroInput: sheet.hpCurrent,
+      dndV2HpMaxHeroInput: sheet.hpMax,
+      dndV2HpCurrentOverviewInput: sheet.hpCurrent,
+      dndV2HpMaxOverviewInput: sheet.hpMax,
+      dndV2InitiativeView: sheet.initiative,
+      dndV2ProficiencyView: sheet.proficiencyBonus,
+      dndV2PassivePerception: sheet.passivePerception,
+    };
+
+    Object.entries(inputPairs).forEach(([id, value]) => {
+      const el = document.getElementById(id);
+      if (el && document.activeElement !== el) el.value = asText(value);
+    });
+
+    const avatar = document.getElementById("dndV2AvatarPreview");
+    const avatarUrl = asText(sheet.characterAvatarUrl || sheet.characterPortraitUrl || "").trim();
+    if (avatar) {
+      if (avatarUrl) {
+        avatar.style.backgroundImage = `url(${avatarUrl})`;
+        avatar.style.backgroundSize = "cover";
+        avatar.style.backgroundPosition = "center";
+        avatar.textContent = "";
+      } else {
+        avatar.style.backgroundImage = "";
+        avatar.textContent = "✦";
+      }
+    }
+
+    const petMini = document.getElementById("dndPetAvatarMini");
+    const petUrl = asText(sheet.petAvatarUrl || "").trim();
+    if (petMini) {
+      if (petUrl) {
+        petMini.hidden = false;
+        petMini.style.display = "grid";
+        petMini.style.backgroundImage = `url(${petUrl})`;
+        petMini.style.backgroundSize = "cover";
+        petMini.style.backgroundPosition = "center";
+        petMini.textContent = "";
+      } else {
+        petMini.hidden = true;
+        petMini.style.display = "none";
+        petMini.style.backgroundImage = "";
+      }
+    }
+  }
+
+  function removeBookTabForMasterPreview(form) {
+    const root = form?.querySelector?.(".dnd-master-true-player-sheet");
+    if (!root) return;
+
+    const bookTab = root.querySelector('[data-dnd-v2-tab="book"]');
+    const bookPanel = root.querySelector('[data-dnd-v2-panel="book"]');
+
+    if (bookTab) bookTab.remove();
+    if (bookPanel) bookPanel.remove();
+
+    root.classList.add("dnd-master-true-player-sheet--without-book");
+    root.dataset.masterBookRemoved = "true";
+  }
+
+  function activateFirstPanel(form) {
+    const root = form?.querySelector(".dnd-master-true-player-sheet");
+    if (!root) return;
+    root.querySelectorAll("[data-dnd-v2-tab]").forEach((button, index) => button.classList.toggle("active", index === 0));
+    root.querySelectorAll("[data-dnd-v2-panel]").forEach((panel, index) => panel.classList.toggle("active", index === 0));
+  }
+
+  function bootMirrorAutomations(form, sheet) {
+    if (!form) return;
+
+    const calls = [
+      () => typeof setupCampaignLabNumberControls === "function" && setupCampaignLabNumberControls(),
+      () => typeof setupCharacterPortraitControls === "function" && setupCharacterPortraitControls(),
+      () => typeof setupCampaignLabDndClassAutomationPanel === "function" && setupCampaignLabDndClassAutomationPanel(form, sheet),
+      () => typeof setupCampaignLabDndRaceAutomation === "function" && setupCampaignLabDndRaceAutomation(form),
+      () => typeof setupDndAltheriumBackgroundAutomation === "function" && setupDndAltheriumBackgroundAutomation(form),
+      () => typeof syncCampaignLabDndClassFieldsInForm === "function" && syncCampaignLabDndClassFieldsInForm(form),
+      () => typeof dndEnsureFinalBonusAutomationFields === "function" && dndEnsureFinalBonusAutomationFields(form),
+      () => typeof dndBindFinalBonusAutomationEvents === "function" && dndBindFinalBonusAutomationEvents(),
+      () => typeof setupDndSpellSlotTrackers === "function" && setupDndSpellSlotTrackers(form),
+      () => typeof window.setupDndInventoryManager === "function" && window.setupDndInventoryManager(form),
+      () => typeof window.campaignLabSetupDndDeathSaves === "function" && window.campaignLabSetupDndDeathSaves(form),
+      () => typeof window.campaignLabDndHydrateSpellbookFromSupabase === "function" && window.campaignLabDndHydrateSpellbookFromSupabase(form, { force: false }),
+      () => typeof dndRecalculateAll === "function" && dndRecalculateAll(form),
+      () => typeof updateDndAutoNumbers === "function" && updateDndAutoNumbers(),
+    ];
+
+    calls.forEach((fn) => { try { fn(); } catch (error) { console.warn("Automação D&D mestre ignorada:", error); } });
+    hydrateMirrorForm(form, sheet);
+  }
+
+  function configureSubmitButton(form) {
+    const submit = form?.querySelector(".modal-submit-row button[type='submit'], button[type='submit'].altherium-submit");
+    if (submit) {
+      submit.disabled = false;
+      submit.textContent = "Aplicar alterações";
+      submit.classList.add("dnd-v2-soft-btn", "dnd-apply-sheet-btn", "dnd-master-real-submit-btn");
+    }
+
+    const innerApply = document.getElementById("dndV2ApplySheetBtn");
+    if (innerApply && form) {
+      innerApply.disabled = false;
+      innerApply.textContent = "Aplicar alterações";
+      innerApply.classList.remove("is-clean");
+      innerApply.onclick = (event) => {
+        event.preventDefault();
+        if (typeof form.requestSubmit === "function") form.requestSubmit();
+        else form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true }));
+      };
+    }
+  }
+
+  async function renderRealPlayerPreview(playerId) {
+    if (!isMasterDndPage()) return;
+
+    const modal = document.getElementById("dndModal");
+    const modalTitle = document.getElementById("dndModalTitle");
+    const form = document.getElementById("dndForm");
+    const formFields = document.getElementById("dndFormFields");
+
+    if (!modal || !form || !formFields) return;
+
+    if (modalTitle) modalTitle.textContent = "Carregando ficha D&D...";
+    modal.classList.add("active", "dnd-master-real-player-modal");
+    document.body.classList.add("dnd-master-real-player-preview-page", "dnd-design-impecavel");
+
+    const campaign = typeof getCurrentCampaign === "function" ? await getCurrentCampaign(true) : null;
+    if (!campaign) throw new Error("Campanha D&D não encontrada para abrir a ficha do jogador.");
+
+    const sheet = typeof getOrCreateDndSheet === "function"
+      ? await getOrCreateDndSheet(campaign.id, playerId, campaign.sistema || campaign.system || "D&D")
+      : { ownerName: playerId, characterName: "Personagem" };
+
+    const normalized = normalizedSheetData(sheet);
+    const titleName = normalized.characterName || normalized.ownerName || "Jogador";
+    if (modalTitle) modalTitle.textContent = `Ficha de ${titleName}`;
+
+    form.dataset.mode = "edit-dnd-sheet";
+    form.dataset.playerId = playerId;
+    form.dataset.campaignId = campaign.id || "";
+    form.classList.add("dnd-master-real-player-form");
+
+    formFields.innerHTML = `
+      <div class="dnd-character-sheet dnd-v2-character-sheet dnd-impecavel-sheet dnd-master-true-player-sheet" data-dnd-master-true-player-sheet="true">
+        ${PLAYER_SHEET_TEMPLATE}
+      </div>
+    `;
+
+    removeBookTabForMasterPreview(form);
+    hydrateMirrorForm(form, normalized);
+    removeBookTabForMasterPreview(form);
+    activateFirstPanel(form);
+    configureSubmitButton(form);
+    bootMirrorAutomations(form, normalized);
+
+    window.setTimeout(() => { removeBookTabForMasterPreview(form); bootMirrorAutomations(form, normalized); }, 80);
+    window.setTimeout(() => { removeBookTabForMasterPreview(form); bootMirrorAutomations(form, normalized); }, 300);
+    window.setTimeout(() => { removeBookTabForMasterPreview(form); bootMirrorAutomations(form, normalized); }, 900);
+  }
+
+  // Esta é a troca definitiva: qualquer clique antigo ou hotfix antigo que chame
+  // openDndMasterSheetModal agora cai nesta versão nova, que renderiza o HTML real do player.
+  window.openDndMasterSheetModal = renderRealPlayerPreview;
+  try { openDndMasterSheetModal = renderRealPlayerPreview; } catch (error) {}
+
+  window.campaignLabRenderRealDndPlayerPreviewForMaster = renderRealPlayerPreview;
+
+  document.addEventListener("click", (event) => {
+    const button = event.target.closest?.(".dnd-master-true-player-sheet [data-dnd-v2-tab]");
+    if (!button) return;
+    event.preventDefault();
+    const root = button.closest(".dnd-master-true-player-sheet");
+    const target = button.dataset.dndV2Tab;
+    root.querySelectorAll("[data-dnd-v2-tab]").forEach((item) => item.classList.toggle("active", item === button));
+    root.querySelectorAll("[data-dnd-v2-panel]").forEach((panel) => panel.classList.toggle("active", panel.dataset.dndV2Panel === target));
+  }, true);
+
+  document.addEventListener("input", (event) => {
+    const form = event.target.closest?.("#dndForm.dnd-master-real-player-form");
+    if (!form) return;
+    window.clearTimeout(form.__dndMasterRealMirrorTimer);
+    form.__dndMasterRealMirrorTimer = window.setTimeout(() => {
+      try {
+        if (typeof dndRecalculateAll === "function") dndRecalculateAll(form);
+        hydrateMirrorForm(form, Object.fromEntries(new FormData(form).entries()));
+      } catch (error) {}
+    }, 90);
+  }, true);
+
+  document.addEventListener("change", (event) => {
+    const form = event.target.closest?.("#dndForm.dnd-master-real-player-form");
+    if (!form) return;
+    window.setTimeout(() => {
+      try {
+        if (typeof dndRecalculateAll === "function") dndRecalculateAll(form);
+        hydrateMirrorForm(form, Object.fromEntries(new FormData(form).entries()));
+      } catch (error) {}
+    }, 80);
+  }, true);
+})();
+
+
+/* =========================================================
+   HOTFIX - D&D MESTRE / TESTES CONTRA MORTE COM BOLINHAS
+   Força a seção da aba Combate, na visão menor do mestre,
+   a usar o mesmo componente clicável da ficha do jogador.
+========================================================= */
+(function campaignLabMasterMirrorDeathSavesDotsFix() {
+  if (window.__campaignLabMasterMirrorDeathSavesDotsFixReady) return;
+  window.__campaignLabMasterMirrorDeathSavesDotsFixReady = true;
+
+  function clampDeath(value) {
+    const n = Number.parseInt(String(value ?? "0").replace(/[^0-9]/g, ""), 10);
+    if (!Number.isFinite(n)) return 0;
+    return Math.max(0, Math.min(3, n));
+  }
+
+  function getForm() {
+    return document.querySelector("#dndModal #dndForm") || document.getElementById("dndForm");
+  }
+
+  function isMasterMirrorOpen(form) {
+    return Boolean(
+      form &&
+      document.body?.classList?.contains("dnd-master-page") &&
+      (form.classList.contains("dnd-master-player-mirror-form") || form.closest(".dnd-master-player-mirror"))
+    );
+  }
+
+  function getInputValue(form, name) {
+    const field = form?.elements?.[name] || form?.querySelector?.(`[name="${name}"]`);
+    return clampDeath(field?.value);
+  }
+
+  function dotButtons(type, count) {
+    return [1, 2, 3].map((index) => {
+      const checked = index <= count;
+      return `<button type="button" data-dnd-death-save="${type}" data-dnd-death-save-index="${index}" class="${checked ? "is-checked" : ""}" aria-pressed="${checked ? "true" : "false"}" aria-label="${type === "failure" ? "Falha" : "Sucesso"} ${index} contra morte"></button>`;
+    }).join("");
+  }
+
+  function buildPanel(successes, failures) {
+    return `
+      <input type="hidden" name="deathSuccesses" value="${successes}" data-dnd-death-save-input="success" />
+      <input type="hidden" name="deathFailures" value="${failures}" data-dnd-death-save-input="failure" />
+
+      <div class="dnd-death-saves-head">
+        <span>Testes contra morte</span>
+        <small>Marque até 3 sucessos ou falhas.</small>
+      </div>
+
+      <div class="dnd-death-saves-row dnd-death-saves-row--success">
+        <strong>Sucessos</strong>
+        <div class="dnd-death-save-dots" aria-label="Sucessos contra morte">${dotButtons("success", successes)}</div>
+      </div>
+
+      <div class="dnd-death-saves-row dnd-death-saves-row--failure">
+        <strong>Falhas</strong>
+        <div class="dnd-death-save-dots" aria-label="Falhas contra morte">${dotButtons("failure", failures)}</div>
+      </div>
+    `;
+  }
+
+  function fixDeathSavesPanel() {
+    const form = getForm();
+    if (!isMasterMirrorOpen(form)) return;
+
+    const editor = form.closest(".dnd-master-player-mirror") || document.querySelector(".dnd-master-player-mirror");
+    const panel = editor?.querySelector?.('[data-dnd-v2-panel="combat"] .dnd-death-saves-panel, [data-dnd-v2-panel="combat"] [data-dnd-death-saves], .dnd-hp-box .dnd-death-saves-panel');
+    if (!panel) return;
+
+    const successes = getInputValue(form, "deathSuccesses");
+    const failures = getInputValue(form, "deathFailures");
+
+    panel.classList.add("dnd-master-mirror-death-dots-fixed");
+    panel.setAttribute("data-dnd-death-saves", "");
+    panel.innerHTML = buildPanel(successes, failures);
+
+    if (typeof window.campaignLabSetupDndDeathSaves === "function") {
+      window.campaignLabSetupDndDeathSaves(form);
+    }
+  }
+
+  function scheduleFix() {
+    window.setTimeout(fixDeathSavesPanel, 0);
+    window.setTimeout(fixDeathSavesPanel, 120);
+    window.setTimeout(fixDeathSavesPanel, 420);
+    window.setTimeout(fixDeathSavesPanel, 900);
+  }
+
+  document.addEventListener("click", (event) => {
+    if (
+      event.target?.closest?.("[data-open-dnd-sheet], .dnd-sheet-card, [data-dnd-player-id]") ||
+      event.target?.closest?.('[data-dnd-v2-tab="combat"], [data-tab="combat"], button')
+    ) {
+      scheduleFix();
+    }
+  }, true);
+
+  document.addEventListener("DOMContentLoaded", scheduleFix);
+  window.addEventListener("load", scheduleFix);
+  scheduleFix();
+})();
+
+
+/* =========================================================
+   FIX DEFINITIVO - TESTES CONTRA MORTE NO PREVIEW REAL DO MESTRE
+   Alvo: ficha D&D do jogador aberta dentro do modal do mestre.
+   Mantém o mesmo visual/funcionalidade da ficha do jogador.
+========================================================= */
+(function campaignLabDndMasterTruePlayerDeathSavesFinalFix() {
+  if (window.__campaignLabDndMasterTruePlayerDeathSavesFinalFixReady) return;
+  window.__campaignLabDndMasterTruePlayerDeathSavesFinalFixReady = true;
+
+  function clampDeath(value) {
+    const text = String(value ?? "").trim();
+    if (/^[01]{1,3}$/.test(text)) {
+      return Math.max(0, Math.min(3, Array.from(text).filter((char) => char === "1").length));
+    }
+    const parsed = Number.parseInt(text.replace(/[^0-9]/g, ""), 10);
+    if (!Number.isFinite(parsed)) return 0;
+    return Math.max(0, Math.min(3, parsed));
+  }
+
+  function getMasterTrueForm() {
+    const modal = document.getElementById("dndModal");
+    if (!modal) return null;
+    return modal.querySelector("#dndForm.dnd-master-real-player-form") ||
+      modal.querySelector("#dndForm") ||
+      document.querySelector("#dndForm.dnd-master-real-player-form");
+  }
+
+  function isMasterTruePreview(form) {
+    return Boolean(
+      form &&
+      (document.body.classList.contains("dnd-master-page") || document.body.classList.contains("dnd-master-real-player-preview-page")) &&
+      (form.classList.contains("dnd-master-real-player-form") || form.querySelector("[data-dnd-master-true-player-sheet]"))
+    );
+  }
+
+  function getFieldValue(form, name) {
+    const field = form?.elements?.[name] || form?.querySelector?.(`[name="${name}"]`);
+    return clampDeath(field?.value);
+  }
+
+  function setFieldValue(form, name, value) {
+    let field = form?.elements?.[name] || form?.querySelector?.(`[name="${name}"]`);
+    if (!field && form) {
+      field = document.createElement("input");
+      field.type = "hidden";
+      field.name = name;
+      form.appendChild(field);
+    }
+    if (!field) return;
+    field.value = String(clampDeath(value));
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function dot(type, index, count) {
+    const checked = index <= count;
+    const label = `${type === "failure" ? "Falha" : "Sucesso"} ${index} contra morte`;
+    return `<button type="button" class="${checked ? "is-checked" : ""}" data-dnd-death-save="${type}" data-dnd-death-save-index="${index}" aria-pressed="${checked ? "true" : "false"}" aria-label="${label}"></button>`;
+  }
+
+  function buildDeathSaves(successes, failures) {
+    return `
+      <input type="hidden" name="deathSuccesses" value="${successes}" data-dnd-death-save-input="success" />
+      <input type="hidden" name="deathFailures" value="${failures}" data-dnd-death-save-input="failure" />
+
+      <div class="dnd-death-saves-head">
+        <span>Testes contra morte</span>
+        <small>Marque até 3 sucessos ou falhas.</small>
+      </div>
+
+      <div class="dnd-death-saves-row dnd-death-saves-row--success">
+        <strong>Sucessos</strong>
+        <div class="dnd-death-save-dots" aria-label="Sucessos contra morte">
+          ${[1, 2, 3].map((index) => dot("success", index, successes)).join("")}
+        </div>
+      </div>
+
+      <div class="dnd-death-saves-row dnd-death-saves-row--failure">
+        <strong>Falhas</strong>
+        <div class="dnd-death-save-dots" aria-label="Falhas contra morte">
+          ${[1, 2, 3].map((index) => dot("failure", index, failures)).join("")}
+        </div>
+      </div>
+    `;
+  }
+
+  function findBrokenDeathTextCard(root) {
+    if (!root) return null;
+    const candidates = Array.from(root.querySelectorAll(".dnd-v2-card, .dnd-box, .dnd-hp-box, article, section, div"));
+    return candidates.find((node) => {
+      const ownText = (node.querySelector("h3")?.textContent || node.textContent || "").trim().toLowerCase();
+      return ownText.includes("testes contra morte") && !node.querySelector("[data-dnd-death-save]");
+    }) || null;
+  }
+
+  function normalizePanel(form) {
+    if (!isMasterTruePreview(form)) return;
+
+    const root = form.querySelector(".dnd-master-true-player-sheet") || form.querySelector("[data-dnd-master-true-player-sheet]") || form;
+    const combat = root.querySelector('[data-dnd-v2-panel="combat"]') || root;
+    let panel = combat.querySelector(".dnd-death-saves-panel[data-dnd-death-saves]") || combat.querySelector("[data-dnd-death-saves]");
+
+    if (!panel) {
+      const broken = findBrokenDeathTextCard(combat);
+      if (broken) {
+        panel = document.createElement("div");
+        panel.className = "dnd-death-saves-panel dnd-master-true-death-saves-final";
+        panel.setAttribute("data-dnd-death-saves", "");
+        broken.replaceWith(panel);
+      }
+    }
+
+    if (!panel) {
+      const hpBox = combat.querySelector(".dnd-hp-box") || combat.querySelector(".dnd-v2-card");
+      if (!hpBox) return;
+      panel = document.createElement("div");
+      panel.className = "dnd-death-saves-panel dnd-master-true-death-saves-final";
+      panel.setAttribute("data-dnd-death-saves", "");
+      hpBox.appendChild(panel);
+    }
+
+    const successes = getFieldValue(form, "deathSuccesses");
+    const failures = getFieldValue(form, "deathFailures");
+
+    panel.classList.add("dnd-master-true-death-saves-final");
+    panel.setAttribute("data-dnd-death-saves", "");
+    panel.innerHTML = buildDeathSaves(successes, failures);
+
+    setFieldValue(form, "deathSuccesses", successes);
+    setFieldValue(form, "deathFailures", failures);
+  }
+
+  function syncDots(form) {
+    if (!isMasterTruePreview(form)) return;
+    const successes = getFieldValue(form, "deathSuccesses");
+    const failures = getFieldValue(form, "deathFailures");
+    form.querySelectorAll('[data-dnd-death-save="success"]').forEach((button) => {
+      const index = Number(button.dataset.dndDeathSaveIndex || 0);
+      const checked = index > 0 && index <= successes;
+      button.classList.toggle("is-checked", checked);
+      button.setAttribute("aria-pressed", checked ? "true" : "false");
+    });
+    form.querySelectorAll('[data-dnd-death-save="failure"]').forEach((button) => {
+      const index = Number(button.dataset.dndDeathSaveIndex || 0);
+      const checked = index > 0 && index <= failures;
+      button.classList.toggle("is-checked", checked);
+      button.setAttribute("aria-pressed", checked ? "true" : "false");
+    });
+  }
+
+  function schedule() {
+    const form = getMasterTrueForm();
+    if (!form) return;
+    [0, 80, 240, 600].forEach((delay) => {
+      window.setTimeout(() => {
+        const currentForm = getMasterTrueForm();
+        normalizePanel(currentForm);
+        syncDots(currentForm);
+      }, delay);
+    });
+  }
+
+  document.addEventListener("click", (event) => {
+    const deathButton = event.target.closest?.('#dndModal .dnd-master-true-player-sheet [data-dnd-death-save]');
+    if (deathButton) {
+      const form = getMasterTrueForm();
+      if (!isMasterTruePreview(form)) return;
+      event.preventDefault();
+      event.stopPropagation();
+
+      const type = deathButton.dataset.dndDeathSave === "failure" ? "failure" : "success";
+      const fieldName = type === "failure" ? "deathFailures" : "deathSuccesses";
+      const index = Number(deathButton.dataset.dndDeathSaveIndex || 0);
+      const current = getFieldValue(form, fieldName);
+      const next = index <= current ? index - 1 : index;
+      setFieldValue(form, fieldName, next);
+      syncDots(form);
+      return;
+    }
+
+    if (event.target.closest?.("[data-open-dnd-sheet], .dnd-sheet-card, [data-dnd-player-id], #dndModal [data-dnd-v2-tab='combat']")) {
+      schedule();
+    }
+  }, true);
+
+  document.addEventListener("input", (event) => {
+    const form = event.target.closest?.("#dndForm.dnd-master-real-player-form");
+    if (!form) return;
+    if (event.target.matches?.('[name="deathSuccesses"], [name="deathFailures"]')) syncDots(form);
+    else window.setTimeout(() => syncDots(form), 40);
+  }, true);
+
+  document.addEventListener("change", (event) => {
+    const form = event.target.closest?.("#dndForm.dnd-master-real-player-form");
+    if (!form) return;
+    window.setTimeout(() => syncDots(form), 40);
+  }, true);
+
+  const previousRender = window.campaignLabRenderRealDndPlayerPreviewForMaster;
+  if (typeof previousRender === "function" && !previousRender.__deathSavesFinalWrapped) {
+    const wrapped = async function (...args) {
+      const result = await previousRender.apply(this, args);
+      schedule();
+      return result;
+    };
+    wrapped.__deathSavesFinalWrapped = true;
+    window.campaignLabRenderRealDndPlayerPreviewForMaster = wrapped;
+    if (window.openDndMasterSheetModal === previousRender) {
+      window.openDndMasterSheetModal = wrapped;
+      try { openDndMasterSheetModal = wrapped; } catch (error) {}
+    }
+  }
+
+  document.addEventListener("DOMContentLoaded", schedule);
+  window.addEventListener("load", schedule);
+  schedule();
+})();
