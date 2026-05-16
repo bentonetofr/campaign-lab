@@ -27137,6 +27137,7 @@ if (!window.campaignLabDndSkillOrderReady) {
         ${hidden("spellSaveDcManual", raw(sheet, "spellSaveDcManual", "false"))}
         ${hidden("characterAvatarUrl", raw(sheet, "characterAvatarUrl", raw(sheet, "characterPortraitUrl", "")))}
         ${hidden("characterPortraitUrl", raw(sheet, "characterPortraitUrl", raw(sheet, "characterAvatarUrl", "")))}
+        ${hidden("dndSpellbook", raw(sheet, "dndSpellbook", raw(sheet, "spellbook", raw(sheet, "spells", "[]"))))}
 
         <section class="dnd-v2-hero-card">
           <div class="dnd-v2-hero-main">
@@ -27553,6 +27554,16 @@ if (!window.campaignLabDndSkillOrderReady) {
 
   async function openDndMasterSheetSafely(playerId) {
     if (!playerId) return;
+
+    document.body.classList.remove("dnd-master-reserve-preview-page");
+    const previousReserveModal = document.getElementById("dndModal");
+    if (previousReserveModal) previousReserveModal.classList.remove("dnd-master-reserve-preview-modal");
+    const previousReserveForm = document.getElementById("dndForm");
+    if (previousReserveForm) {
+      previousReserveForm.classList.remove("dnd-master-reserve-preview-form");
+      previousReserveForm.dataset.reservePreview = "";
+    }
+
     if (openingPlayerId === playerId) return;
 
     openingPlayerId = playerId;
@@ -27623,6 +27634,596 @@ if (!window.campaignLabDndSkillOrderReady) {
     }
   }
 
+
+  function escapeDndMasterChoice(value = "") {
+    if (typeof escapeHtml === "function") return escapeHtml(value ?? "");
+    return String(value ?? "")
+      .replaceAll("&", "&amp;")
+      .replaceAll("<", "&lt;")
+      .replaceAll(">", "&gt;")
+      .replaceAll('"', "&quot;")
+      .replaceAll("'", "&#039;");
+  }
+
+  function injectDndMasterChoiceStyles() {
+    if (document.getElementById("campaignLabDndMasterSheetChoiceStyles")) return;
+
+    const style = document.createElement("style");
+    style.id = "campaignLabDndMasterSheetChoiceStyles";
+    style.textContent = `
+      .dnd-master-sheet-choice-panel {
+        width: 100%;
+        max-width: 860px;
+        margin: 0 auto;
+        display: grid;
+        gap: 22px;
+      }
+
+      .dnd-master-sheet-choice-head {
+        padding: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.18);
+        border-radius: 26px;
+        background:
+          linear-gradient(145deg, rgba(15, 23, 42, 0.92), rgba(2, 6, 23, 0.96)),
+          radial-gradient(circle at top right, rgba(34, 211, 238, 0.12), transparent 42%);
+      }
+
+      .dnd-master-sheet-choice-head .tag {
+        margin-bottom: 14px;
+      }
+
+      .dnd-master-sheet-choice-head h3 {
+        margin: 0 0 8px;
+        font-size: clamp(28px, 4vw, 44px);
+        color: #f8fafc;
+      }
+
+      .dnd-master-sheet-choice-head p {
+        color: #cbd5e1;
+        line-height: 1.6;
+      }
+
+      .dnd-master-sheet-choice-grid {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .dnd-master-sheet-choice-card {
+        min-height: 230px;
+        padding: 24px;
+        border: 1px solid rgba(148, 163, 184, 0.2);
+        border-radius: 26px;
+        background:
+          linear-gradient(145deg, rgba(15, 23, 42, 0.9), rgba(2, 6, 23, 0.96)),
+          radial-gradient(circle at top right, rgba(34, 211, 238, 0.1), transparent 44%);
+        color: #f8fafc;
+        text-align: left;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        gap: 18px;
+        cursor: pointer;
+        transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease;
+      }
+
+      .dnd-master-sheet-choice-card:hover {
+        transform: translateY(-4px);
+        border-color: rgba(34, 211, 238, 0.55);
+        box-shadow: 0 26px 70px rgba(0, 0, 0, 0.35), 0 0 46px rgba(34, 211, 238, 0.12);
+      }
+
+      .dnd-master-sheet-choice-card strong {
+        font-family: "Quantico", sans-serif;
+        font-size: 28px;
+        color: #f8fafc;
+      }
+
+      .dnd-master-sheet-choice-card p {
+        color: #cbd5e1;
+        line-height: 1.55;
+      }
+
+      .dnd-master-sheet-choice-card span {
+        width: fit-content;
+        padding: 8px 12px;
+        border-radius: 999px;
+        background: rgba(34, 211, 238, 0.1);
+        color: #67e8f9;
+        font-size: 12px;
+        font-weight: 900;
+        text-transform: uppercase;
+        letter-spacing: 1.4px;
+      }
+
+      .dnd-master-reserve-preview-banner {
+        margin: 0 0 18px;
+        padding: 16px 18px;
+        border: 1px solid rgba(34, 211, 238, 0.22);
+        border-radius: 18px;
+        background: rgba(34, 211, 238, 0.08);
+        color: #cffafe;
+        font-weight: 800;
+        line-height: 1.5;
+      }
+
+      .dnd-master-reserve-empty-actions {
+        margin-top: 18px;
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+      }
+
+      @media (max-width: 760px) {
+        .dnd-master-sheet-choice-grid {
+          grid-template-columns: 1fr;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  }
+
+  function getDndMasterClient() {
+    try {
+      if (typeof DB !== "undefined" && DB) return DB;
+    } catch (error) {}
+
+    return window.supabaseClient || null;
+  }
+
+  function normalizeDndMasterReserveData(rawData) {
+    if (!rawData) return null;
+
+    let data = rawData;
+
+    if (typeof data === "string") {
+      const text = data.trim();
+      if (!text) return null;
+
+      try {
+        data = JSON.parse(text);
+      } catch (error) {
+        return null;
+      }
+    }
+
+    if (!data || typeof data !== "object") return null;
+
+    if (data.type === "campaign-lab-sheet-copy" && data.data && typeof data.data === "object") {
+      data = data.data;
+    } else if (data.data && typeof data.data === "object") {
+      data = data.data;
+    } else if (data.sheet && typeof data.sheet === "object") {
+      data = data.sheet;
+    }
+
+    if (!data || typeof data !== "object") return null;
+
+    const clean = {};
+    Object.entries(data).forEach(([key, value]) => {
+      if (!key) return;
+      if (["id", "campaign_id", "campaignId", "user_id", "userId", "player_id", "playerId"].includes(key)) return;
+      if (value === undefined || value === null) {
+        clean[key] = "";
+        return;
+      }
+      if (typeof value === "object") {
+        try {
+          clean[key] = JSON.stringify(value);
+        } catch (error) {
+          clean[key] = "";
+        }
+        return;
+      }
+      clean[key] = String(value);
+    });
+
+    return clean;
+  }
+
+  async function readDndReserveSheetForMaster(campaignId, playerId) {
+    const client = getDndMasterClient();
+    if (!client || !campaignId || !playerId) return null;
+
+    try {
+      const { data, error } = await client
+        .from("dnd_reserve_sheets")
+        .select("data")
+        .eq("campaign_id", campaignId)
+        .eq("user_id", playerId)
+        .maybeSingle();
+
+      if (!error && data?.data) {
+        const parsed = normalizeDndMasterReserveData(data.data);
+        if (parsed) return parsed;
+      }
+
+      if (error) console.warn("Não consegui ler dnd_reserve_sheets para o preview do mestre:", error);
+    } catch (error) {
+      console.warn("Falha ao ler Ficha Reserva na tabela separada:", error);
+    }
+
+    try {
+      const { data, error } = await client
+        .from("dnd_sheets")
+        .select("data")
+        .eq("campaign_id", campaignId)
+        .eq("user_id", playerId)
+        .maybeSingle();
+
+      if (error) return null;
+
+      const legacy = data?.data?.dndReserveSheetJson;
+      if (!legacy) return null;
+
+      return normalizeDndMasterReserveData(legacy);
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async function getDndMasterPlayerName(playerId, campaign = null) {
+    try {
+      const profiles = typeof getProfiles === "function" ? await getProfiles() : [];
+      const profile = profiles.find((item) => String(item.id) === String(playerId));
+      if (profile?.name) return profile.name;
+    } catch (error) {}
+
+    return campaign?.ownerName || "Jogador";
+  }
+
+  function forceReadonlyDndReserveMasterPreview(form) {
+    if (!form) return;
+
+    form.classList.add("dnd-master-reserve-preview-form");
+
+    form.querySelectorAll("input, textarea, select").forEach((field) => {
+      if (field.type === "hidden") return;
+      if (field.type === "file") {
+        field.disabled = true;
+        return;
+      }
+
+      if (field.tagName === "SELECT" || field.type === "checkbox" || field.type === "radio") {
+        field.disabled = true;
+        return;
+      }
+
+      field.readOnly = true;
+    });
+
+    form.querySelectorAll("button").forEach((button) => {
+      if (button.matches("[data-dnd-v2-tab], .altherium-close, [data-close-dnd-modal]")) return;
+      if (button.closest(".dnd-v2-sheet-tabs")) return;
+      button.disabled = true;
+      button.classList.add("is-readonly");
+    });
+  }
+
+  function initDndMasterReservePreview(form) {
+    if (!form) return;
+
+    form.classList.add("dnd-master-v2-form");
+
+    try { if (typeof syncCampaignLabDndClassFieldsInForm === "function") syncCampaignLabDndClassFieldsInForm(form); } catch (error) {}
+    try { if (typeof dndEnsureFinalBonusAutomationFields === "function") dndEnsureFinalBonusAutomationFields(form); } catch (error) {}
+    try { if (typeof dndRecalculateAll === "function") dndRecalculateAll(form); } catch (error) {}
+    try { if (typeof setupDndSpellSlotTrackers === "function") setupDndSpellSlotTrackers(form); } catch (error) {}
+    try { if (typeof window.setupDndInventoryManager === "function") window.setupDndInventoryManager(form); } catch (error) {}
+    try { if (typeof window.setupDndSpellbookManager === "function") window.setupDndSpellbookManager(form); } catch (error) {}
+    try { if (typeof window.setupDndOfficialSpellLibrary === "function") window.setupDndOfficialSpellLibrary(form); } catch (error) {}
+    try { if (typeof window.syncAllDndSpellSlotTrackers === "function") window.syncAllDndSpellSlotTrackers(form); } catch (error) {}
+    try { if (typeof window.campaignLabSetupDndDeathSaves === "function") window.campaignLabSetupDndDeathSaves(form); } catch (error) {}
+    try { if (typeof window.campaignLabRenderDndCombatAutomation === "function") window.campaignLabRenderDndCombatAutomation(form); } catch (error) {}
+    try { if (typeof window.renderDndSpellbookManager === "function") window.renderDndSpellbookManager(form); } catch (error) {}
+
+    window.setTimeout(() => {
+      try { if (typeof window.setupDndInventoryManager === "function") window.setupDndInventoryManager(form); } catch (error) {}
+      try { if (typeof window.setupDndSpellbookManager === "function") window.setupDndSpellbookManager(form); } catch (error) {}
+      try { if (typeof window.campaignLabRenderDndCombatAutomation === "function") window.campaignLabRenderDndCombatAutomation(form); } catch (error) {}
+      try { if (typeof window.renderDndSpellbookManager === "function") window.renderDndSpellbookManager(form); } catch (error) {}
+      forceReadonlyDndReserveMasterPreview(form);
+    }, 120);
+
+    forceReadonlyDndReserveMasterPreview(form);
+  }
+
+  async function openDndMasterReserveSheetSafely(playerId) {
+    if (!playerId) return;
+
+    const reserveOpeningKey = `reserve:${playerId}`;
+    if (openingPlayerId === reserveOpeningKey) return;
+
+    openingPlayerId = reserveOpeningKey;
+    forceShowDndMasterModal("Carregando ficha reserva...");
+
+    function setFieldValueLocal(field, value) {
+      if (!field) return;
+
+      const finalValue = value === undefined || value === null ? "" : value;
+
+      if (typeof RadioNodeList !== "undefined" && field instanceof RadioNodeList) {
+        Array.from(field).forEach((node) => setFieldValueLocal(node, finalValue));
+        return;
+      }
+
+      if (field.type === "checkbox") {
+        const text = String(finalValue).toLowerCase();
+        field.checked = finalValue === true || text === "true" || text === "1" || text === "on" || text === "sim";
+        return;
+      }
+
+      if (field.type === "radio") {
+        field.checked = String(field.value) === String(finalValue);
+        return;
+      }
+
+      field.value = String(finalValue);
+    }
+
+    function hydrateReserveIntoCurrentMasterForm(form, reserveData, playerName, campaignId) {
+      if (!form || !reserveData) return;
+
+      const cleanReserveData = normalizeDndMasterReserveData(reserveData) || {};
+      const sheet = {
+        ...cleanReserveData,
+        ownerName: playerName,
+        user_id: playerId,
+        userId: playerId,
+        campaign_id: campaignId,
+        campaignId,
+        system: "D&D",
+      };
+
+      try {
+        if (typeof campaignLabHydrateSheetForm === "function") {
+          campaignLabHydrateSheetForm(form, sheet);
+        }
+      } catch (error) {
+        console.warn("Hydrate global da ficha reserva falhou. Usando hydrate local.", error);
+      }
+
+      Object.entries(sheet).forEach(([name, value]) => {
+        const field = form.elements?.[name] || form.querySelector?.(`[name="${CSS.escape(name)}"]`);
+        if (field) setFieldValueLocal(field, value);
+      });
+
+      const root = form.querySelector(".dnd-master-true-player-sheet") || form.querySelector("[data-dnd-master-true-player-sheet]");
+      if (root) {
+        root.classList.add("dnd-master-true-player-sheet--reserve", "dnd-master-reserve-true-preview");
+        root.dataset.masterReservePreview = "true";
+
+        const tag = root.querySelector(".dnd-v2-hero-card .tag") || root.querySelector(".tag");
+        if (tag) tag.textContent = "Ficha Reserva D&D 5e · Campaign Lab";
+
+        const systemMark = root.querySelector(".dnd-v2-system-mark");
+        if (systemMark) systemMark.textContent = "R20";
+
+        const toolbarApply = root.querySelector("#dndV2ApplySheetBtn, .dnd-apply-sheet-btn");
+        if (toolbarApply) {
+          toolbarApply.disabled = true;
+          toolbarApply.textContent = "Somente visualização";
+          toolbarApply.classList.add("is-clean", "dnd-master-reserve-readonly-btn");
+        }
+      }
+
+      form.dataset.mode = "view-dnd-reserve-sheet";
+      form.dataset.playerId = playerId;
+      form.dataset.sheetKind = "reserve";
+      form.dataset.reservePreview = "true";
+      form.classList.add("dnd-master-reserve-preview-form", "dnd-master-real-player-form");
+
+      const submitButton = form.querySelector(".modal-submit-row button[type='submit'], button[type='submit'].altherium-submit");
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Somente visualização";
+        submitButton.classList.add("dnd-master-reserve-readonly-btn");
+      }
+
+      try { if (typeof syncCampaignLabDndClassFieldsInForm === "function") syncCampaignLabDndClassFieldsInForm(form); } catch (error) {}
+      try { if (typeof dndEnsureFinalBonusAutomationFields === "function") dndEnsureFinalBonusAutomationFields(form); } catch (error) {}
+      try { if (typeof dndEnsureArmorAndHpAutomationFields === "function") dndEnsureArmorAndHpAutomationFields(form); } catch (error) {}
+      try { if (typeof setupDndSpellSlotTrackers === "function") setupDndSpellSlotTrackers(form); } catch (error) {}
+      try { if (typeof syncAllDndSpellSlotTrackers === "function") syncAllDndSpellSlotTrackers(form); } catch (error) {}
+      try { if (typeof dndApplyAltheriumBackgroundSelection === "function") dndApplyAltheriumBackgroundSelection(form, { silent: true }); } catch (error) {}
+      try { if (typeof dndRecalculateAll === "function") dndRecalculateAll(form); } catch (error) {}
+      try { if (typeof updateDndAutoNumbers === "function") updateDndAutoNumbers(); } catch (error) {}
+      try { if (typeof window.setupDndInventoryManager === "function") window.setupDndInventoryManager(form); } catch (error) {}
+      try { if (typeof window.setupDndSpellbookManager === "function") window.setupDndSpellbookManager(form); } catch (error) {}
+      try { if (typeof window.setupDndOfficialSpellLibrary === "function") window.setupDndOfficialSpellLibrary(form); } catch (error) {}
+      try { if (typeof window.renderDndSpellbookManager === "function") window.renderDndSpellbookManager(form); } catch (error) {}
+      try { if (typeof window.campaignLabRenderDndCombatAutomation === "function") window.campaignLabRenderDndCombatAutomation(form); } catch (error) {}
+      try { if (typeof window.campaignLabSetupDndDeathSaves === "function") window.campaignLabSetupDndDeathSaves(form); } catch (error) {}
+
+      try {
+        form.dispatchEvent(new Event("input", { bubbles: true }));
+        form.dispatchEvent(new Event("change", { bubbles: true }));
+      } catch (error) {}
+    }
+
+    try {
+      const modal = document.getElementById("dndModal");
+      const title = document.getElementById("dndModalTitle");
+      const form = document.getElementById("dndForm");
+      const fields = document.getElementById("dndFormFields");
+      const submitButton = form ? form.querySelector("button[type='submit']") : null;
+      const campaign = typeof getCurrentCampaign === "function" ? await getCurrentCampaign(true) : null;
+
+      if (!modal || !title || !form || !fields || !campaign) {
+        throw new Error("Modal, formulário ou campanha indisponível.");
+      }
+
+      const playerName = await getDndMasterPlayerName(playerId, campaign);
+      const reserveData = await readDndReserveSheetForMaster(campaign.id, playerId);
+
+      if (!reserveData) {
+        title.textContent = `Ficha reserva de ${playerName}`;
+        form.dataset.mode = "view-dnd-reserve-sheet";
+        form.dataset.playerId = playerId;
+        form.dataset.sheetKind = "reserve";
+        form.dataset.reservePreview = "true";
+        fields.innerHTML = `
+          <div class="altherium-empty dnd-master-reserve-empty">
+            <h3>Ficha Reserva vazia</h3>
+            <p>Este jogador ainda não salvou uma Ficha Reserva nesta campanha.</p>
+            <div class="dnd-master-reserve-empty-actions">
+              <button type="button" class="altherium-btn" data-dnd-master-open-main-from-empty="${escapeDndMasterChoice(playerId)}">Abrir ficha principal</button>
+            </div>
+          </div>
+        `;
+        if (submitButton) {
+          submitButton.disabled = true;
+          submitButton.textContent = "Ficha reserva vazia";
+        }
+        modal.classList.add("active");
+        return;
+      }
+
+      const realPreview =
+        typeof window.campaignLabRenderRealDndPlayerPreviewForMaster === "function"
+          ? window.campaignLabRenderRealDndPlayerPreviewForMaster
+          : null;
+
+      if (realPreview) {
+        await realPreview(playerId);
+      } else {
+        const sheet = {
+          ...reserveData,
+          ownerName: playerName,
+          user_id: playerId,
+          campaign_id: campaign.id,
+          system: "D&D",
+        };
+
+        fields.innerHTML = typeof buildDndSheetEditor === "function" ? buildDndSheetEditor(sheet, true) : "";
+      }
+
+      title.textContent = `Ficha reserva de ${playerName}`;
+      modal.classList.add("active", "dnd-master-real-player-modal", "dnd-master-reserve-preview-modal");
+      document.body.classList.add("dnd-master-real-player-preview-page", "dnd-master-reserve-preview-page", "dnd-design-impecavel");
+      form.dataset.mode = "view-dnd-reserve-sheet";
+      form.dataset.playerId = playerId;
+      form.dataset.sheetKind = "reserve";
+      form.dataset.reservePreview = "true";
+
+      if (submitButton) {
+        submitButton.disabled = true;
+        submitButton.textContent = "Somente visualização";
+      }
+
+      const applyReserve = () => {
+        const currentForm = document.getElementById("dndForm");
+        hydrateReserveIntoCurrentMasterForm(currentForm, reserveData, playerName, campaign.id);
+      };
+
+      applyReserve();
+      [80, 180, 340, 720, 1100, 1500].forEach((delay) => window.setTimeout(applyReserve, delay));
+    } catch (error) {
+      console.error("Erro ao abrir Ficha Reserva do mestre:", error);
+      const fields = document.getElementById("dndFormFields");
+      if (fields) {
+        fields.innerHTML = `
+          <div class="altherium-empty">
+            <h3>Não foi possível abrir a Ficha Reserva</h3>
+            <p>Confira se a tabela <strong>dnd_reserve_sheets</strong> existe no Supabase e se o jogador já salvou uma reserva.</p>
+          </div>
+        `;
+      }
+    } finally {
+      window.setTimeout(() => {
+        if (openingPlayerId === reserveOpeningKey) openingPlayerId = null;
+      }, 120);
+    }
+  }
+
+  async function openDndMasterSheetChoice(playerId) {
+    if (!playerId) return;
+
+    injectDndMasterChoiceStyles();
+
+    const modal = document.getElementById("dndModal");
+    const title = document.getElementById("dndModalTitle");
+    const form = document.getElementById("dndForm");
+    const fields = document.getElementById("dndFormFields");
+    const submitButton = form ? form.querySelector("button[type='submit']") : null;
+
+    if (!modal || !title || !form || !fields) {
+      await openDndMasterSheetSafely(playerId);
+      return;
+    }
+
+    let playerName = "Jogador";
+    try {
+      const campaign = typeof getCurrentCampaign === "function" ? await getCurrentCampaign(true) : null;
+      playerName = await getDndMasterPlayerName(playerId, campaign);
+    } catch (error) {}
+
+    title.textContent = `Escolher ficha de ${playerName}`;
+    form.dataset.mode = "choose-dnd-sheet";
+    form.dataset.playerId = playerId;
+    form.dataset.sheetKind = "choice";
+
+    if (submitButton) {
+      submitButton.disabled = true;
+      submitButton.textContent = "Escolha uma ficha";
+    }
+
+    fields.innerHTML = `
+      <div class="dnd-master-sheet-choice-panel" data-dnd-master-sheet-choice="${escapeDndMasterChoice(playerId)}">
+        <div class="dnd-master-sheet-choice-head">
+          <p class="tag">D&D · Preview do Mestre</p>
+          <h3>Qual ficha você quer abrir?</h3>
+          <p>Escolha entre a ficha principal do jogador ou a ficha reserva salva separadamente.</p>
+        </div>
+
+        <div class="dnd-master-sheet-choice-grid">
+          <button type="button" class="dnd-master-sheet-choice-card" data-dnd-master-choice-main="${escapeDndMasterChoice(playerId)}">
+            <span>Ficha oficial</span>
+            <strong>Ficha principal</strong>
+            <p>Abre a ficha principal do jogador, com os dados usados normalmente na campanha.</p>
+            <em>Abrir principal →</em>
+          </button>
+
+          <button type="button" class="dnd-master-sheet-choice-card" data-dnd-master-choice-reserve="${escapeDndMasterChoice(playerId)}">
+            <span>Ficha extra</span>
+            <strong>Ficha reserva</strong>
+            <p>Abre a ficha reserva do jogador, incluindo grimório, inventário, favoritos, pet e demais dados salvos.</p>
+            <em>Abrir reserva →</em>
+          </button>
+        </div>
+      </div>
+    `;
+
+    modal.classList.add("active");
+    modal.style.display = "flex";
+    modal.style.visibility = "visible";
+    modal.style.opacity = "1";
+    modal.style.pointerEvents = "auto";
+    modal.style.zIndex = "99999";
+  }
+
+  document.addEventListener("click", async (event) => {
+    const mainButton = event.target.closest?.("[data-dnd-master-choice-main]");
+    const reserveButton = event.target.closest?.("[data-dnd-master-choice-reserve]");
+    const mainFromEmptyButton = event.target.closest?.("[data-dnd-master-open-main-from-empty]");
+
+    if (!mainButton && !reserveButton && !mainFromEmptyButton) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") event.stopImmediatePropagation();
+
+    if (mainButton || mainFromEmptyButton) {
+      const playerId = (mainButton || mainFromEmptyButton).dataset.dndMasterChoiceMain || (mainButton || mainFromEmptyButton).dataset.dndMasterOpenMainFromEmpty;
+      await openDndMasterSheetSafely(playerId);
+      return;
+    }
+
+    if (reserveButton) {
+      await openDndMasterReserveSheetSafely(reserveButton.dataset.dndMasterChoiceReserve);
+    }
+  }, true);
+
   document.addEventListener(
     "click",
     function (event) {
@@ -27638,7 +28239,7 @@ if (!window.campaignLabDndSkillOrderReady) {
         event.stopImmediatePropagation();
       }
 
-      openDndMasterSheetSafely(playerId);
+      openDndMasterSheetChoice(playerId);
     },
     true
   );
@@ -35279,4 +35880,244 @@ Você pode inspirar os outros através de palavras animadoras ou música..."></t
   [800, 1600, 3000, 5000].forEach((delay) => window.setTimeout(boot, delay));
 
   window.campaignLabDndFixFavoriteButtonsNow = boot;
+})();
+
+
+/* =========================================================
+   HOTFIX DEFINITIVO - D&D MESTRE: MAGIAS NO PREVIEW
+   Problema corrigido:
+   - O preview do mestre montava a aba Magias sem hidratar o campo
+     dndSpellbook do jogador aberto.
+   - O gerenciador do grimório podia iniciar vazio e renderizar nenhuma magia.
+   - A hidratação genérica do grimório podia buscar a ficha do mestre logado,
+     não a ficha do player aberto no modal.
+
+   Esta camada força o #dndForm a carregar o dndSpellbook do player correto
+   usando form.dataset.playerId e re-renderiza o grimório no preview.
+========================================================= */
+(function campaignLabDndMasterPreviewSpellbookFix() {
+  if (window.__campaignLabDndMasterPreviewSpellbookFixReady) return;
+  window.__campaignLabDndMasterPreviewSpellbookFixReady = true;
+
+  const FIELD = "dndSpellbook";
+  const EMPTY = "[]";
+
+  function isMasterDndPage() {
+    return Boolean(document.body && document.body.classList.contains("dnd-master-page"));
+  }
+
+  function getMasterForm() {
+    const form = document.getElementById("dndForm");
+    if (!form || form.dataset.mode !== "edit-dnd-sheet") return null;
+    return form;
+  }
+
+  function normalizeSpellbookValue(value) {
+    if (Array.isArray(value)) return JSON.stringify(value);
+    if (value && typeof value === "object") return JSON.stringify(value);
+
+    const text = String(value ?? "").trim();
+    if (!text) return EMPTY;
+
+    try {
+      const parsed = JSON.parse(text);
+      return Array.isArray(parsed) ? JSON.stringify(parsed) : EMPTY;
+    } catch (error) {
+      return EMPTY;
+    }
+  }
+
+  function hasSpells(value) {
+    try {
+      const parsed = JSON.parse(normalizeSpellbookValue(value));
+      return Array.isArray(parsed) && parsed.length > 0;
+    } catch (error) {
+      return false;
+    }
+  }
+
+  function ensureHidden(form) {
+    if (!form) return null;
+
+    let hidden = form.querySelector(`input[name="${FIELD}"]`);
+
+    if (!hidden) {
+      hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = FIELD;
+      hidden.id = "masterDndSpellbookData";
+      hidden.value = EMPTY;
+
+      const spellPanel = form.querySelector('[data-dnd-v2-panel="spells"], .dnd-spell-slots, [data-dnd-grimoire]');
+      if (spellPanel && spellPanel.parentElement) {
+        spellPanel.parentElement.insertBefore(hidden, spellPanel);
+      } else {
+        form.prepend(hidden);
+      }
+    }
+
+    hidden.value = normalizeSpellbookValue(hidden.value);
+    return hidden;
+  }
+
+  function ensureGrimoireSection(form) {
+    if (!form) return;
+
+    try {
+      if (typeof window.setupDndSpellbookManager === "function") {
+        window.setupDndSpellbookManager(form);
+      } else if (typeof window.bootDndSpellbookManagers === "function") {
+        window.bootDndSpellbookManagers();
+      }
+    } catch (error) {
+      console.warn("[D&D mestre] Não consegui iniciar o grimório no preview.", error);
+    }
+  }
+
+  function renderGrimoire(form) {
+    if (!form) return;
+
+    try {
+      if (typeof window.renderDndSpellbookManager === "function") {
+        window.renderDndSpellbookManager(form);
+      } else if (typeof window.setupDndSpellbookManager === "function") {
+        window.setupDndSpellbookManager(form);
+      }
+    } catch (error) {
+      console.warn("[D&D mestre] Não consegui renderizar as magias no preview.", error);
+    }
+  }
+
+  async function getOpenedPlayerSheet(form) {
+    if (!form) return null;
+
+    const playerId = String(form.dataset.playerId || "").trim();
+    if (!playerId) return null;
+
+    if (typeof getCurrentCampaign !== "function" || typeof getOrCreateDndSheet !== "function") return null;
+
+    const campaign = await getCurrentCampaign(true);
+    if (!campaign || !campaign.id) return null;
+
+    return await getOrCreateDndSheet(
+      campaign.id,
+      playerId,
+      campaign.sistema || campaign.system || "D&D"
+    );
+  }
+
+  async function hydrateMasterPreviewSpellbook(options = {}) {
+    if (!isMasterDndPage()) return;
+
+    const form = getMasterForm();
+    if (!form) return;
+
+    const hidden = ensureHidden(form);
+    if (!hidden) return;
+
+    const sheet = await getOpenedPlayerSheet(form);
+    if (!sheet) {
+      ensureGrimoireSection(form);
+      renderGrimoire(form);
+      return;
+    }
+
+    const savedValue = normalizeSpellbookValue(sheet[FIELD] ?? sheet.spellbook ?? sheet.spells ?? EMPTY);
+    const currentValue = normalizeSpellbookValue(hidden.value);
+
+    // Só troca quando existe magia salva ou quando o campo atual está vazio.
+    // Assim não apaga alterações locais enquanto o mestre edita.
+    if (options.force || hasSpells(savedValue) || !hasSpells(currentValue)) {
+      hidden.value = savedValue;
+      form.dataset.dndMasterSpellbookHydrated = "true";
+      form.dataset.dndSpellbookLoaded = "true";
+      form.dataset.dndSpellbookDirty = "false";
+    }
+
+    ensureGrimoireSection(form);
+    renderGrimoire(form);
+
+    // O gerenciador antigo pode renderizar um pouco depois. Reforça sem sobrescrever.
+    window.setTimeout(() => {
+      const latestHidden = ensureHidden(form);
+      if (latestHidden && (options.force || hasSpells(savedValue) || !hasSpells(latestHidden.value))) {
+        latestHidden.value = savedValue;
+      }
+      ensureGrimoireSection(form);
+      renderGrimoire(form);
+    }, 120);
+  }
+
+  function scheduleHydration(force = false) {
+    if (!isMasterDndPage()) return;
+    window.setTimeout(() => hydrateMasterPreviewSpellbook({ force }), 60);
+    window.setTimeout(() => hydrateMasterPreviewSpellbook({ force }), 260);
+    window.setTimeout(() => hydrateMasterPreviewSpellbook({ force }), 800);
+  }
+
+  const previousOpen = window.openDndMasterSheetModal || (typeof openDndMasterSheetModal === "function" ? openDndMasterSheetModal : null);
+  if (typeof previousOpen === "function" && !previousOpen.__masterPreviewSpellbookFix) {
+    const wrappedOpenDndMasterSheetModal = async function wrappedOpenDndMasterSheetModalWithSpellbookFix() {
+      const result = await previousOpen.apply(this, arguments);
+      await hydrateMasterPreviewSpellbook({ force: true });
+      scheduleHydration(true);
+      return result;
+    };
+
+    wrappedOpenDndMasterSheetModal.__masterPreviewSpellbookFix = true;
+    window.openDndMasterSheetModal = wrappedOpenDndMasterSheetModal;
+    try { openDndMasterSheetModal = wrappedOpenDndMasterSheetModal; } catch (error) {}
+  }
+
+  document.addEventListener("click", (event) => {
+    if (event.target.closest?.("[data-open-dnd-sheet]")) {
+      scheduleHydration(true);
+      return;
+    }
+
+    if (event.target.closest?.("#dndForm [data-dnd-v2-tab='spells'], #dndForm [data-dnd-spell-action], #dndForm [data-dnd-official-spell-action]")) {
+      scheduleHydration(false);
+    }
+  }, true);
+
+  document.addEventListener("input", (event) => {
+    const target = event.target;
+    if (!target || target.name !== FIELD) return;
+    const form = target.closest("#dndForm");
+    if (!form || form.dataset.mode !== "edit-dnd-sheet") return;
+
+    // Garante que alterações feitas pelo mestre no grimório do player sejam salvas no player aberto,
+    // porque saveDndSheetFromModal usa form.dataset.playerId.
+    window.clearTimeout(window.__campaignLabDndMasterSpellbookSaveTimer);
+    window.__campaignLabDndMasterSpellbookSaveTimer = window.setTimeout(() => {
+      try {
+        if (typeof saveDndSheetFromModal === "function") saveDndSheetFromModal(false);
+      } catch (error) {
+        console.warn("[D&D mestre] Não consegui salvar o grimório do player aberto.", error);
+      }
+    }, 300);
+  }, true);
+
+  document.addEventListener("change", (event) => {
+    const target = event.target;
+    if (!target || target.name !== FIELD) return;
+    const form = target.closest("#dndForm");
+    if (!form || form.dataset.mode !== "edit-dnd-sheet") return;
+
+    window.clearTimeout(window.__campaignLabDndMasterSpellbookSaveTimer);
+    window.__campaignLabDndMasterSpellbookSaveTimer = window.setTimeout(() => {
+      try {
+        if (typeof saveDndSheetFromModal === "function") saveDndSheetFromModal(false);
+      } catch (error) {}
+    }, 300);
+  }, true);
+
+  // Expõe para teste manual no console, se precisar.
+  window.campaignLabHydrateDndMasterPreviewSpellbook = hydrateMasterPreviewSpellbook;
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", () => scheduleHydration(true));
+  } else {
+    scheduleHydration(true);
+  }
 })();
