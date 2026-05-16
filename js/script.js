@@ -22324,6 +22324,7 @@ if (document.readyState === "loading") {
 ========================================================= */
 (function campaignLabDndCombatAutomation() {
   const FORM_ID = "dndPlayerSheetForm";
+  const RESERVE_FORM_ID = "dndReserveSheetForm";
   const OVERRIDES_FIELD = "dndCombatOverrides";
 
   const CATEGORY_LABELS = {
@@ -22377,6 +22378,17 @@ if (document.readyState === "loading") {
 
   function form() {
     return document.getElementById(FORM_ID);
+  }
+
+  function combatForms() {
+    return Array.from(
+      new Set(
+        [
+          document.getElementById(FORM_ID),
+          document.getElementById(RESERVE_FORM_ID),
+        ].filter(Boolean)
+      )
+    );
   }
 
   function html(value = "") {
@@ -23094,25 +23106,41 @@ if (document.readyState === "loading") {
     const original = window.loadDndSheetIntoPlayerForm;
     window.loadDndSheetIntoPlayerForm = async function wrappedCombatAutomationLoad() {
       const result = await original.apply(this, arguments);
-      const currentForm = form();
-      setupEvents(currentForm);
-      render(currentForm);
+      combatForms().forEach((currentForm) => {
+        setupEvents(currentForm);
+        render(currentForm);
+      });
       return result;
     };
     window.loadDndSheetIntoPlayerForm.__combatAutomationWrapped = true;
   }
 
   function boot() {
-    const currentForm = form();
-    if (!currentForm) return;
-    ensureOverridesField(currentForm);
-    setupEvents(currentForm);
-    render(currentForm);
+    const forms = combatForms();
+    if (!forms.length) return;
+
+    forms.forEach((currentForm) => {
+      ensureOverridesField(currentForm);
+      setupEvents(currentForm);
+      render(currentForm);
+    });
+
     wrapLoad();
   }
 
-  window.campaignLabRenderDndCombatAutomation = function () {
-    render(form());
+  window.campaignLabRenderDndCombatAutomation = function (targetForm = null) {
+    if (targetForm) {
+      ensureOverridesField(targetForm);
+      setupEvents(targetForm);
+      render(targetForm);
+      return;
+    }
+
+    combatForms().forEach((currentForm) => {
+      ensureOverridesField(currentForm);
+      setupEvents(currentForm);
+      render(currentForm);
+    });
   };
 
   if (document.readyState === "loading") {
@@ -34199,6 +34227,14 @@ Você pode inspirar os outros através de palavras animadoras ou música..."></t
         window.syncAllDndSpellSlotTrackers(form);
       }
     } catch (error) {}
+
+    try {
+      if (typeof window.campaignLabRenderDndCombatAutomation === "function") {
+        window.campaignLabRenderDndCombatAutomation(form);
+      }
+    } catch (error) {
+      console.warn("Não consegui renderizar os favoritos de combate da Ficha Reserva.", error);
+    }
   }
 
   function refreshReserveVisuals(form = getReserveForm()) {
@@ -34660,3 +34696,587 @@ Você pode inspirar os outros através de palavras animadoras ou música..."></t
   };
 })();
 
+/* =========================================================
+   HOTFIX FINAL - FICHA RESERVA: ADICIONAR MAGIAS NO GRIMÓRIO
+   Problema corrigido:
+   - A Ficha Reserva é um clone da ficha principal.
+   - cloneNode copia atributos data-dnd-grimoire-ready="true",
+     mas NÃO copia os event listeners.
+   - Resultado: o botão "Salvar magia" parecia funcionar, mas a magia
+     não entrava na lista.
+   Solução:
+   - Remove as flags clonadas.
+   - Reativa o gerenciador do grimório dentro da Ficha Reserva.
+   - Reativa também a biblioteca de magias oficiais para essa ficha.
+========================================================= */
+(function campaignLabDndReserveSpellbookEditorFix() {
+  if (window.__campaignLabDndReserveSpellbookEditorFixReady) return;
+  window.__campaignLabDndReserveSpellbookEditorFixReady = true;
+
+  const FORM_ID = "dndReserveSheetForm";
+
+  function isDndPlayerPage() {
+    return Boolean(document.body && document.body.classList.contains("dnd-player-page"));
+  }
+
+  function getReserveForm() {
+    return document.getElementById(FORM_ID);
+  }
+
+  function getReserveGrimoire(form = getReserveForm()) {
+    return form?.querySelector?.("[data-dnd-grimoire]") || null;
+  }
+
+  function removeClonedReadyFlags(section) {
+    if (!section) return;
+
+    delete section.dataset.dndGrimoireReady;
+    delete section.dataset.dndOfficialSpellLibraryReady;
+    section.removeAttribute("data-dnd-grimoire-ready");
+    section.removeAttribute("data-dnd-official-spell-library-ready");
+  }
+
+  function ensureReserveSpellbookHidden(form) {
+    if (!form) return null;
+
+    let hidden = form.querySelector('input[name="dndSpellbook"]');
+
+    if (!hidden) {
+      hidden = document.createElement("input");
+      hidden.type = "hidden";
+      hidden.name = "dndSpellbook";
+      hidden.value = "[]";
+      hidden.dataset.reserveSpellbookStore = "true";
+
+      const spellPanel = form.querySelector('[data-dnd-v2-panel="spells"], [data-dnd-grimoire], .dnd-spell-slots');
+      if (spellPanel?.parentElement) {
+        spellPanel.parentElement.insertBefore(hidden, spellPanel);
+      } else {
+        form.prepend(hidden);
+      }
+    }
+
+    const current = String(hidden.value || "").trim();
+    if (!current) hidden.value = "[]";
+
+    return hidden;
+  }
+
+  function rebindReserveSpellbookManagers(options = {}) {
+    if (!isDndPlayerPage()) return false;
+
+    const form = getReserveForm();
+    if (!form) return false;
+
+    const section = getReserveGrimoire(form);
+    if (!section) return false;
+
+    if (section.dataset.campaignLabReserveSpellbookFixed === "true" && !options.force) {
+      return true;
+    }
+
+    ensureReserveSpellbookHidden(form);
+    removeClonedReadyFlags(section);
+
+    try {
+      if (typeof window.setupDndSpellbookManager === "function") {
+        window.setupDndSpellbookManager(form);
+      }
+    } catch (error) {
+      console.warn("Não consegui reativar o grimório da Ficha Reserva.", error);
+    }
+
+    try {
+      if (typeof window.setupDndOfficialSpellLibrary === "function") {
+        window.setupDndOfficialSpellLibrary(form);
+      }
+    } catch (error) {
+      console.warn("Não consegui reativar a biblioteca de magias da Ficha Reserva.", error);
+    }
+
+    try {
+      if (typeof window.renderDndSpellbookManager === "function") {
+        window.renderDndSpellbookManager(form);
+      }
+    } catch (error) {}
+
+    section.dataset.campaignLabReserveSpellbookFixed = "true";
+    return true;
+  }
+
+  function saveReserveAfterSpellChange() {
+    try {
+      const debug = window.campaignLabDndReserveDebug;
+      if (debug && typeof debug.save === "function") {
+        window.setTimeout(() => debug.save(), 120);
+        window.setTimeout(() => debug.save(), 700);
+      }
+    } catch (error) {}
+  }
+
+  document.addEventListener(
+    "click",
+    (event) => {
+      const actionButton = event.target.closest?.(`#${FORM_ID} [data-dnd-spell-action]`);
+      if (!actionButton) return;
+
+      const section = actionButton.closest("[data-dnd-grimoire]");
+      if (!section) return;
+
+      const wasFixed = section.dataset.campaignLabReserveSpellbookFixed === "true";
+
+      if (!wasFixed) {
+        event.preventDefault();
+        event.stopPropagation();
+        if (typeof event.stopImmediatePropagation === "function") {
+          event.stopImmediatePropagation();
+        }
+
+        rebindReserveSpellbookManagers({ force: true });
+
+        window.setTimeout(() => {
+          const currentButton = document.body.contains(actionButton) ? actionButton : null;
+          if (currentButton) currentButton.click();
+        }, 0);
+
+        return;
+      }
+
+      const action = actionButton.dataset.dndSpellAction || "";
+      if (["save-spell", "delete-spell", "toggle-prepared", "toggle-favorite"].includes(action)) {
+        saveReserveAfterSpellChange();
+      }
+    },
+    true
+  );
+
+  document.addEventListener(
+    "input",
+    (event) => {
+      if (!event.target.closest?.(`#${FORM_ID} [data-dnd-grimoire]`)) return;
+      rebindReserveSpellbookManagers();
+    },
+    true
+  );
+
+  document.addEventListener(
+    "change",
+    (event) => {
+      if (!event.target.closest?.(`#${FORM_ID} [data-dnd-grimoire]`)) return;
+      rebindReserveSpellbookManagers();
+      saveReserveAfterSpellChange();
+    },
+    true
+  );
+
+  function boot() {
+    rebindReserveSpellbookManagers({ force: true });
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+
+  window.addEventListener("load", () => window.setTimeout(boot, 250));
+  [400, 900, 1600, 2600, 4200].forEach((delay) => window.setTimeout(boot, delay));
+
+  const observer = new MutationObserver(() => {
+    const form = getReserveForm();
+    if (!form) return;
+    const section = getReserveGrimoire(form);
+    if (!section) return;
+    if (section.dataset.campaignLabReserveSpellbookFixed !== "true") {
+      rebindReserveSpellbookManagers({ force: true });
+    }
+  });
+
+  if (document.body) {
+    observer.observe(document.body, { childList: true, subtree: true });
+  } else {
+    document.addEventListener("DOMContentLoaded", () => {
+      if (document.body) observer.observe(document.body, { childList: true, subtree: true });
+    });
+  }
+
+  window.campaignLabFixReserveSpellbookNow = () => rebindReserveSpellbookManagers({ force: true });
+})();
+
+
+/* =========================================================
+   HOTFIX - FICHA RESERVA: FAVORITOS NO COMBATE
+   Garante que itens e magias favoritos da Ficha Reserva apareçam
+   na aba Combate mesmo quando a ficha é clonada depois do boot.
+========================================================= */
+(function campaignLabDndReserveCombatFavoritesFix() {
+  if (window.__campaignLabDndReserveCombatFavoritesFixReady) return;
+  window.__campaignLabDndReserveCombatFavoritesFixReady = true;
+
+  const RESERVE_FORM_ID = "dndReserveSheetForm";
+
+  function isDndPlayerPage() {
+    return Boolean(document.body && document.body.classList.contains("dnd-player-page"));
+  }
+
+  function getReserveForm() {
+    return document.getElementById(RESERVE_FORM_ID);
+  }
+
+  function ensureCombatStore(form) {
+    if (!form) return;
+
+    let inventory = form.querySelector('input[name="dndInventoryItems"]');
+    if (!inventory) {
+      inventory = document.createElement("input");
+      inventory.type = "hidden";
+      inventory.name = "dndInventoryItems";
+      inventory.value = "[]";
+      form.appendChild(inventory);
+    }
+    if (!String(inventory.value || "").trim()) inventory.value = "[]";
+
+    let spells = form.querySelector('input[name="dndSpellbook"]');
+    if (!spells) {
+      spells = document.createElement("input");
+      spells.type = "hidden";
+      spells.name = "dndSpellbook";
+      spells.value = "[]";
+      form.appendChild(spells);
+    }
+    if (!String(spells.value || "").trim()) spells.value = "[]";
+
+    let overrides = form.querySelector('input[name="dndCombatOverrides"]');
+    if (!overrides) {
+      overrides = document.createElement("input");
+      overrides.type = "hidden";
+      overrides.name = "dndCombatOverrides";
+      overrides.value = "{}";
+      form.appendChild(overrides);
+    }
+    if (!String(overrides.value || "").trim()) overrides.value = "{}";
+  }
+
+  function renderReserveCombat() {
+    if (!isDndPlayerPage()) return false;
+
+    const form = getReserveForm();
+    if (!form) return false;
+
+    ensureCombatStore(form);
+
+    if (typeof window.campaignLabRenderDndCombatAutomation === "function") {
+      window.campaignLabRenderDndCombatAutomation(form);
+      return true;
+    }
+
+    return false;
+  }
+
+  function saveReserveSoon() {
+    try {
+      const debug = window.campaignLabDndReserveDebug;
+      if (debug && typeof debug.save === "function") {
+        window.setTimeout(() => debug.save(), 160);
+        window.setTimeout(() => debug.save(), 850);
+      }
+    } catch (error) {}
+  }
+
+  document.addEventListener("click", (event) => {
+    if (!event.target.closest?.(`#${RESERVE_FORM_ID}`)) return;
+
+    const favoriteButton = event.target.closest?.("[data-dnd-inventory-favorite], [data-dnd-spell-action='toggle-favorite']");
+    const combatButton = event.target.closest?.("[data-dnd-combat-action], [data-dnd-combat-refresh]");
+
+    if (favoriteButton || combatButton) {
+      window.setTimeout(renderReserveCombat, 80);
+      window.setTimeout(renderReserveCombat, 300);
+      window.setTimeout(renderReserveCombat, 900);
+      saveReserveSoon();
+    }
+  }, true);
+
+  document.addEventListener("input", (event) => {
+    if (!event.target.closest?.(`#${RESERVE_FORM_ID}`)) return;
+    const name = event.target.name || "";
+    if (["dndInventoryItems", "dndSpellbook", "dndCombatOverrides"].includes(name)) {
+      window.setTimeout(renderReserveCombat, 80);
+      saveReserveSoon();
+    }
+  }, true);
+
+  document.addEventListener("change", (event) => {
+    if (!event.target.closest?.(`#${RESERVE_FORM_ID}`)) return;
+    const name = event.target.name || "";
+    if (["dndInventoryItems", "dndSpellbook", "dndCombatOverrides"].includes(name)) {
+      window.setTimeout(renderReserveCombat, 80);
+      saveReserveSoon();
+    }
+  }, true);
+
+  function boot() {
+    renderReserveCombat();
+  }
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+
+  window.addEventListener("load", () => window.setTimeout(boot, 300));
+  [500, 1000, 1800, 3000, 5000].forEach((delay) => window.setTimeout(boot, delay));
+
+  const observer = new MutationObserver(() => {
+    const form = getReserveForm();
+    if (!form) return;
+    const combat = form.querySelector("[data-dnd-combat-automation]");
+    if (!combat) return;
+    window.setTimeout(renderReserveCombat, 80);
+  });
+
+  if (document.body) {
+    observer.observe(document.body, { childList: true, subtree: true });
+  } else {
+    document.addEventListener("DOMContentLoaded", () => {
+      if (document.body) observer.observe(document.body, { childList: true, subtree: true });
+    });
+  }
+
+  window.campaignLabRenderReserveCombatFavoritesNow = renderReserveCombat;
+})();
+
+/* =========================================================
+   HOTFIX DEFINITIVO - D&D / FICHA RESERVA
+   FAVORITAR ITENS E MAGIAS SEM CONFLITO DE LISTENERS
+
+   Problema corrigido:
+   - A Ficha Reserva é clonada depois do boot principal.
+   - Alguns listeners antigos ficam apontando para a ficha principal.
+   - O clique em ☆ Favoritar podia não alterar o JSON correto.
+
+   Este bloco intercepta SOMENTE os botões de favoritar.
+   Ele altera diretamente o JSON da ficha correta, atualiza Grimório,
+   Inventário e Combate, e força o salvamento.
+========================================================= */
+(function campaignLabDndFavoriteButtonsFinalFix() {
+  if (window.__campaignLabDndFavoriteButtonsFinalFixReady) return;
+  window.__campaignLabDndFavoriteButtonsFinalFixReady = true;
+
+  const MAIN_FORM_ID = "dndPlayerSheetForm";
+  const RESERVE_FORM_ID = "dndReserveSheetForm";
+  const INVENTORY_FIELD = "dndInventoryItems";
+  const SPELLBOOK_FIELD = "dndSpellbook";
+
+  function isDndPage() {
+    return Boolean(document.body && document.body.classList.contains("dnd-player-page"));
+  }
+
+  function isTruthy(value) {
+    return [true, "true", "1", "yes", "sim", "on"].includes(value);
+  }
+
+  function getManagedForm(target) {
+    if (!target || !target.closest) return null;
+    return target.closest(`#${RESERVE_FORM_ID}, #${MAIN_FORM_ID}`);
+  }
+
+  function escapeSelector(value = "") {
+    if (window.CSS && typeof window.CSS.escape === "function") return window.CSS.escape(String(value));
+    return String(value).replace(/[^a-zA-Z0-9_-]/g, "\\$&");
+  }
+
+  function getJsonField(form, name, fallbackValue) {
+    if (!form) return null;
+
+    let field = form.querySelector(`[name="${escapeSelector(name)}"]`);
+
+    if (!field) {
+      field = document.createElement("input");
+      field.type = "hidden";
+      field.name = name;
+      field.value = JSON.stringify(fallbackValue);
+      form.appendChild(field);
+    }
+
+    if (!String(field.value || "").trim()) {
+      field.value = JSON.stringify(fallbackValue);
+    }
+
+    return field;
+  }
+
+  function readJson(form, name, fallbackValue) {
+    const field = getJsonField(form, name, fallbackValue);
+    if (!field) return Array.isArray(fallbackValue) ? [] : fallbackValue;
+
+    try {
+      const parsed = JSON.parse(field.value || JSON.stringify(fallbackValue));
+      if (Array.isArray(fallbackValue)) return Array.isArray(parsed) ? parsed : [];
+      return parsed && typeof parsed === "object" ? parsed : fallbackValue;
+    } catch (error) {
+      field.value = JSON.stringify(fallbackValue);
+      return Array.isArray(fallbackValue) ? [] : fallbackValue;
+    }
+  }
+
+  function writeJson(form, name, value) {
+    const fallbackValue = Array.isArray(value) ? [] : {};
+    const field = getJsonField(form, name, fallbackValue);
+    if (!field) return;
+
+    field.value = JSON.stringify(value || fallbackValue);
+    field.dispatchEvent(new Event("input", { bubbles: true }));
+    field.dispatchEvent(new Event("change", { bubbles: true }));
+  }
+
+  function getItemIdFromButton(button) {
+    const card = button.closest("[data-dnd-inventory-item-id]");
+    return card?.dataset?.dndInventoryItemId || "";
+  }
+
+  function getSpellIdFromButton(button) {
+    const card = button.closest("[data-dnd-spell-id]");
+    return card?.dataset?.dndSpellId || "";
+  }
+
+  function refreshManagers(form) {
+    if (!form) return;
+
+    try {
+      if (typeof window.setupDndInventoryManager === "function") {
+        window.setupDndInventoryManager(form);
+      }
+    } catch (error) {
+      console.warn("Não consegui atualizar o inventário após favoritar.", error);
+    }
+
+    try {
+      if (typeof window.renderDndSpellbookManager === "function") {
+        window.renderDndSpellbookManager(form);
+      } else if (typeof window.setupDndSpellbookManager === "function") {
+        window.setupDndSpellbookManager(form);
+      }
+    } catch (error) {
+      console.warn("Não consegui atualizar o grimório após favoritar.", error);
+    }
+
+    try {
+      if (typeof window.campaignLabRenderDndCombatAutomation === "function") {
+        window.campaignLabRenderDndCombatAutomation(form);
+      }
+    } catch (error) {
+      console.warn("Não consegui atualizar favoritos de combate após favoritar.", error);
+    }
+  }
+
+  function saveFormSoon(form) {
+    if (!form) return;
+
+    const isReserve = form.id === RESERVE_FORM_ID;
+
+    if (isReserve) {
+      try {
+        const debug = window.campaignLabDndReserveDebug;
+        if (debug && typeof debug.save === "function") {
+          window.setTimeout(() => debug.save(), 120);
+          window.setTimeout(() => debug.save(), 650);
+          window.setTimeout(() => debug.save(), 1400);
+        }
+      } catch (error) {}
+      return;
+    }
+
+    try {
+      if (typeof window.saveDndPlayerSheet === "function") {
+        window.setTimeout(() => window.saveDndPlayerSheet(false), 220);
+      } else if (typeof saveDndPlayerSheet === "function") {
+        window.setTimeout(() => saveDndPlayerSheet(false), 220);
+      }
+    } catch (error) {}
+  }
+
+  function toggleInventoryFavorite(form, button) {
+    const itemId = getItemIdFromButton(button);
+    if (!itemId) return false;
+
+    const items = readJson(form, INVENTORY_FIELD, []);
+    const index = items.findIndex((item) => String(item?.id || "") === String(itemId));
+    if (index < 0) return false;
+
+    items[index] = {
+      ...items[index],
+      favorite: !isTruthy(items[index].favorite),
+    };
+
+    writeJson(form, INVENTORY_FIELD, items);
+    refreshManagers(form);
+    saveFormSoon(form);
+    return true;
+  }
+
+  function toggleSpellFavorite(form, button) {
+    const spellId = getSpellIdFromButton(button);
+    if (!spellId) return false;
+
+    const spells = readJson(form, SPELLBOOK_FIELD, []);
+    const index = spells.findIndex((spell) => String(spell?.id || "") === String(spellId));
+    if (index < 0) return false;
+
+    spells[index] = {
+      ...spells[index],
+      favorite: !isTruthy(spells[index].favorite),
+      updatedAt: new Date().toISOString(),
+    };
+
+    writeJson(form, SPELLBOOK_FIELD, spells);
+    refreshManagers(form);
+    saveFormSoon(form);
+    return true;
+  }
+
+  function handleFavoriteClick(event) {
+    if (!isDndPage()) return;
+
+    const inventoryFavoriteButton = event.target.closest?.("[data-dnd-inventory-favorite]");
+    const spellFavoriteButton = event.target.closest?.('[data-dnd-spell-action="toggle-favorite"]');
+    const favoriteButton = inventoryFavoriteButton || spellFavoriteButton;
+
+    if (!favoriteButton) return;
+
+    const form = getManagedForm(favoriteButton);
+    if (!form) return;
+
+    const handled = inventoryFavoriteButton
+      ? toggleInventoryFavorite(form, inventoryFavoriteButton)
+      : toggleSpellFavorite(form, spellFavoriteButton);
+
+    if (!handled) return;
+
+    event.preventDefault();
+    event.stopPropagation();
+    if (typeof event.stopImmediatePropagation === "function") {
+      event.stopImmediatePropagation();
+    }
+  }
+
+  function boot() {
+    [document.getElementById(MAIN_FORM_ID), document.getElementById(RESERVE_FORM_ID)]
+      .filter(Boolean)
+      .forEach(refreshManagers);
+  }
+
+  document.addEventListener("click", handleFavoriteClick, true);
+
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
+  }
+
+  window.addEventListener("load", () => window.setTimeout(boot, 350));
+  [800, 1600, 3000, 5000].forEach((delay) => window.setTimeout(boot, delay));
+
+  window.campaignLabDndFixFavoriteButtonsNow = boot;
+})();
