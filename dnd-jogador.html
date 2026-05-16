@@ -1558,55 +1558,6 @@ Você pode inspirar os outros através de palavras animadoras ou música..."></t
       </section>
 
       <section
-        id="dndReserveSheetSection"
-        class="altherium-section player-campaign-tab-panel dnd-sheet-wrapper dnd-reserve-sheet-section"
-      >
-        <div class="altherium-panel dnd-reserve-control-panel">
-          <div class="altherium-panel-header dnd-reserve-header">
-            <div>
-              <p class="tag">Ficha extra</p>
-              <h2>Ficha Reserva</h2>
-              <p>
-                Cole uma ficha de D&amp;D copiada de outra campanha. Ela fica guardada aqui,
-                separada da sua ficha principal, usando o mesmo modelo visual da ficha normal.
-              </p>
-            </div>
-            <span class="player-chat-system-pill">D&amp;D</span>
-          </div>
-
-          <div class="dnd-reserve-actions-grid">
-            <label class="dnd-v2-field dnd-reserve-paste-field" for="dndReservePasteBox">
-              <span>Colar ficha aqui</span>
-              <textarea
-                id="dndReservePasteBox"
-                class="dnd-reserve-paste-box"
-                placeholder="Cole aqui o JSON da ficha copiada pelo Campaign Lab. Se deixar vazio, o sistema tenta ler a ficha copiada no navegador."
-              ></textarea>
-            </label>
-
-            <div class="dnd-reserve-buttons">
-              <button type="button" class="dnd-v2-soft-btn campaign-lab-dnd-paste-btn" id="dndReservePasteBtn">
-                Colar na ficha reserva
-              </button>
-              <button type="button" class="dnd-v2-soft-btn campaign-lab-dnd-copy-btn" id="dndReserveCopyBtn">
-                Copiar ficha reserva
-              </button>
-              <button type="button" class="dnd-v2-soft-btn" id="dndReserveUseAsMainBtn">
-                Usar reserva como ficha principal
-              </button>
-            </div>
-          </div>
-        </div>
-
-        <div id="dndReserveSheetContainer" class="dnd-reserve-sheet-container">
-          <div class="altherium-empty">
-            <h3>Carregando ficha reserva</h3>
-            <p>Aguarde enquanto o modelo da ficha de D&amp;D é preparado.</p>
-          </div>
-        </div>
-      </section>
-
-      <section
         id="dndPlayerInitiativeSection"
         class="altherium-section player-campaign-tab-panel player-initiative-section"
       >
@@ -1737,6 +1688,64 @@ Você pode inspirar os outros através de palavras animadoras ou música..."></t
           </div>
         </div>
       </section>
+      <section
+        id="dndReserveSheetSection"
+        class="altherium-section player-campaign-tab-panel dnd-sheet-wrapper dnd-reserve-sheet-section"
+      >
+        <div class="altherium-panel dnd-reserve-control-panel">
+          <div class="altherium-panel-header dnd-reserve-header">
+            <div>
+              <p class="tag">Ficha extra</p>
+              <h2>Ficha Reserva</h2>
+              <p>
+                Guarde uma segunda ficha de D&amp;D dentro desta campanha. Você pode colar uma ficha copiada,
+                editar a reserva, copiar de volta ou aplicar a reserva como ficha principal.
+              </p>
+            </div>
+            <div class="dnd-reserve-header-badges">
+              <span class="player-chat-system-pill">D&amp;D</span>
+              <span class="dnd-reserve-save-status is-loading" id="dndReserveSaveStatus" data-reserve-status="loading">
+                Preparando reserva...
+              </span>
+            </div>
+          </div>
+
+          <div class="dnd-reserve-actions-grid">
+            <label class="dnd-v2-field dnd-reserve-paste-field" for="dndReservePasteBox">
+              <span>Colar ficha aqui</span>
+              <textarea
+                id="dndReservePasteBox"
+                class="dnd-reserve-paste-box"
+                spellcheck="false"
+                placeholder="Cole aqui o JSON da ficha copiada pelo Campaign Lab. Se deixar vazio, o sistema tenta ler a ficha copiada no navegador."
+              ></textarea>
+            </label>
+
+            <div class="dnd-reserve-buttons">
+              <button type="button" class="dnd-v2-soft-btn campaign-lab-dnd-paste-btn" id="dndReservePasteBtn">
+                Colar na reserva
+              </button>
+              <button type="button" class="dnd-v2-soft-btn campaign-lab-dnd-copy-btn" id="dndReserveCopyBtn">
+                Copiar reserva
+              </button>
+              <button type="button" class="dnd-v2-soft-btn dnd-reserve-apply-main-btn" id="dndReserveUseAsMainBtn">
+                Usar como ficha principal
+              </button>
+              <p class="dnd-reserve-help-text">
+                A reserva salva automaticamente no Supabase junto da ficha principal.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <div id="dndReserveSheetContainer" class="dnd-reserve-sheet-container">
+          <div class="altherium-empty dnd-reserve-loading-card">
+            <h3>Carregando ficha reserva</h3>
+            <p>Aguarde enquanto o modelo da ficha de D&amp;D é preparado.</p>
+          </div>
+        </div>
+      </section>
+
     </main>
 
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

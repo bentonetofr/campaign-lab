@@ -20407,7 +20407,7 @@ function updateDndV2AvatarPreview(form, fallbackName = "Personagem") {
   }
 
   function getDndSpellbookForms() {
-    return Array.from(document.querySelectorAll("#dndPlayerSheetForm, #dndForm")).filter(Boolean);
+    return Array.from(document.querySelectorAll("#dndPlayerSheetForm, #dndForm, #dndReserveSheetForm")).filter(Boolean);
   }
 
   function getSpellbookSectionHtml() {
@@ -21069,6 +21069,10 @@ function updateDndV2AvatarPreview(form, fallbackName = "Personagem") {
     getDndSpellbookForms().forEach(setupSpellbook);
   }
 
+  window.setupDndSpellbookManager = setupSpellbook;
+  window.renderDndSpellbookManager = renderSpellbook;
+  window.bootDndSpellbookManagers = bootSpellbooks;
+
   const originalLoadDndSheet = window.loadDndSheetIntoPlayerForm;
   if (typeof originalLoadDndSheet === "function" && !originalLoadDndSheet.__dndSpellbookWrapped) {
     const wrappedLoad = async function wrappedLoadDndSheetWithSpellbook() {
@@ -21651,7 +21655,12 @@ function updateDndV2AvatarPreview(form, fallbackName = "Personagem") {
   }
 
   function writeItems(items, options = {}) {
-    const form = getForm();
+    const reserveForm = document.getElementById("dndReserveSheetForm");
+    const form =
+      options.form ||
+      document.getElementById(options.formId || "") ||
+      (reserveForm && reserveForm.contains(document.activeElement) ? reserveForm : null) ||
+      getForm();
     const store = getStore(form);
     if (!form || !store) return;
 
@@ -22025,6 +22034,8 @@ function updateDndV2AvatarPreview(form, fallbackName = "Personagem") {
 
   function openModal(item = null, options = {}) {
     const modal = ensureModal();
+    const ownerForm = options.form || document.getElementById(options.formId || "") || getForm();
+    modal.dataset.ownerFormId = ownerForm?.id || "dndPlayerSheetForm";
     fillModal(item || { category: options.category || "custom", quantity: "1", valueUnit: "PO" }, { isEdit: Boolean(item) });
     modal.classList.add("is-open");
     setTimeout(() => field(modal, "name")?.focus(), 40);
@@ -22035,6 +22046,7 @@ function updateDndV2AvatarPreview(form, fallbackName = "Personagem") {
     if (!modal) return;
     modal.classList.remove("is-open");
     modal.dataset.editingId = "";
+    modal.dataset.ownerFormId = "";
   }
 
   function readModalItem() {
@@ -22060,12 +22072,14 @@ function updateDndV2AvatarPreview(form, fallbackName = "Personagem") {
       return;
     }
 
-    const items = readItems();
+    const modal = ensureModal();
+    const ownerForm = document.getElementById(modal.dataset.ownerFormId || "") || getForm();
+    const items = readItems(ownerForm);
     const index = items.findIndex((current) => current.id === item.id);
     if (index >= 0) items[index] = item;
     else items.unshift(item);
 
-    writeItems(items);
+    writeItems(items, { form: ownerForm });
     closeModal();
   }
 
@@ -22076,10 +22090,10 @@ function updateDndV2AvatarPreview(form, fallbackName = "Personagem") {
     if (form.dataset.dndInventoryReady !== "true") {
       form.dataset.dndInventoryReady = "true";
 
-      form.querySelector("[data-dnd-inventory-add]")?.addEventListener("click", () => openModal());
+      form.querySelector("[data-dnd-inventory-add]")?.addEventListener("click", () => openModal(null, { form }));
 
       form.querySelectorAll("[data-dnd-inventory-quick]").forEach((button) => {
-        button.addEventListener("click", () => openModal(null, { category: button.dataset.dndInventoryQuick || "custom" }));
+        button.addEventListener("click", () => openModal(null, { category: button.dataset.dndInventoryQuick || "custom", form }));
       });
 
       form.querySelector("[data-dnd-inventory-search]")?.addEventListener("input", () => renderInventory(form));
@@ -22104,7 +22118,7 @@ function updateDndV2AvatarPreview(form, fallbackName = "Personagem") {
 
         if (event.target.closest("[data-dnd-inventory-favorite]")) {
           item.favorite = !item.favorite;
-          writeItems(items);
+          writeItems(items, { form });
           if (typeof window.campaignLabRenderDndCombatAutomation === "function") {
             window.campaignLabRenderDndCombatAutomation();
           }
@@ -22112,19 +22126,19 @@ function updateDndV2AvatarPreview(form, fallbackName = "Personagem") {
         }
 
         if (event.target.closest("[data-dnd-inventory-edit]")) {
-          openModal(item);
+          openModal(item, { form });
           return;
         }
 
         if (event.target.closest("[data-dnd-inventory-quantity]")) {
           item.quantity = String(Math.max(1, toInt(item.quantity, 1) + 1));
-          writeItems(items);
+          writeItems(items, { form });
           return;
         }
 
         if (event.target.closest("[data-dnd-inventory-delete]")) {
           if (!confirm(`Remover ${item.name}?`)) return;
-          writeItems(items.filter((current) => current.id !== id));
+          writeItems(items.filter((current) => current.id !== id), { form });
         }
       });
     }
@@ -30233,7 +30247,7 @@ if (!window.campaignLabDndSkillOrderReady) {
   }
 
   function getForms() {
-    return Array.from(document.querySelectorAll("#dndPlayerSheetForm, #dndForm")).filter(Boolean);
+    return Array.from(document.querySelectorAll("#dndPlayerSheetForm, #dndForm, #dndReserveSheetForm")).filter(Boolean);
   }
 
   function getSection(form) {
@@ -33383,28 +33397,71 @@ Você pode inspirar os outros através de palavras animadoras ou música..."></t
 })();
 
 /* =========================================================
-   D&D - FICHA RESERVA + COPIAR / COLAR ENTRE CAMPANHAS
-   Não exige alteração de tabela: salva a reserva em dnd_sheets.data.dndReserveSheetJson.
+   D&D - FICHA RESERVA FINAL, ISOLADA E PERSISTENTE
+   Correção definitiva:
+   - Remove dependência do dndReserveSheetJson dentro da ficha principal.
+   - Usa a tabela public.dnd_reserve_sheets.
+   - Mantém backup local por campanha/jogador.
+   - Não salva nada antes da reserva terminar de carregar.
+   - Não deixa o autosave da ficha principal apagar a reserva.
 ========================================================= */
-(function campaignLabDndReserveSheetAndTransferPatch() {
-  const TRANSFER_KEY =
-    typeof CAMPAIGN_LAB_SHEET_TRANSFER_KEY !== "undefined"
-      ? CAMPAIGN_LAB_SHEET_TRANSFER_KEY
-      : "campaignLabCopiedSheetV1";
-  const TRANSFER_TYPE =
-    typeof CAMPAIGN_LAB_SHEET_TRANSFER_TYPE !== "undefined"
-      ? CAMPAIGN_LAB_SHEET_TRANSFER_TYPE
-      : "campaign-lab-sheet-copy";
+(function campaignLabDndReserveSheetFinalPersistentFix() {
+  const RESERVE_TABLE = "dnd_reserve_sheets";
+  const RESERVE_FORM_ID = "dndReserveSheetForm";
+  const RESERVE_FIELD = "dndReserveSheetJson";
+  const TRANSFER_KEY = "campaignLabCopiedSheetV1";
+  const TRANSFER_TYPE = "campaign-lab-sheet-copy";
   const SYSTEM_LABEL = "D&D";
   const SYSTEM_KEY = "dnd5e-2014";
-  const RESERVE_FIELD = "dndReserveSheetJson";
+  const LOCAL_PREFIX = "campaignLabDndReserveSheetTableV3";
+  const SAVE_DELAY = 550;
+  const META_UPDATED_AT = "__campaignLabReserveUpdatedAt";
 
-  let reserveReady = false;
-  let reserveSyncTimer = null;
-  let reserveSaving = false;
+  const state = {
+    loaded: false,
+    hydrating: false,
+    saving: false,
+    saveTimer: null,
+    lastSavedCleanRaw: "",
+    mainUpdateWrapped: false,
+    eventsBound: false,
+    observerStarted: false,
+    buildAttempts: 0,
+    lastLoadError: "",
+  };
 
   function isDndPlayerPage() {
-    return document.body && document.body.classList.contains("dnd-player-page");
+    return Boolean(document.body && document.body.classList.contains("dnd-player-page"));
+  }
+
+  function getClient() {
+    try {
+      if (typeof DB !== "undefined" && DB) return DB;
+    } catch (error) {}
+
+    return window.supabaseClient || null;
+  }
+
+  function getCampaignIdSafe() {
+    try {
+      if (typeof getCurrentCampaignId === "function") {
+        const current = getCurrentCampaignId();
+        if (current) return String(current).trim();
+      }
+    } catch (error) {}
+
+    return String(sessionStorage.getItem("campaignId") || "").trim();
+  }
+
+  function getUserIdSafe() {
+    try {
+      if (typeof getLoggedUserFromSession === "function") {
+        const user = getLoggedUserFromSession();
+        if (user?.id) return String(user.id).trim();
+      }
+    } catch (error) {}
+
+    return String(sessionStorage.getItem("loggedUserId") || "").trim();
   }
 
   function getMainForm() {
@@ -33412,7 +33469,23 @@ Você pode inspirar os outros através de palavras animadoras ou música..."></t
   }
 
   function getReserveForm() {
-    return document.getElementById("dndReserveSheetForm");
+    return document.getElementById(RESERVE_FORM_ID);
+  }
+
+  function getReserveSection() {
+    return document.getElementById("dndReserveSheetSection");
+  }
+
+  function getReserveContainer() {
+    return document.getElementById("dndReserveSheetContainer");
+  }
+
+  function getStatusElement() {
+    return document.getElementById("dndReserveSaveStatus") || document.getElementById("dndReserveModelSaveBtn");
+  }
+
+  function getLocalKey(campaignId = getCampaignIdSafe(), userId = getUserIdSafe()) {
+    return `${LOCAL_PREFIX}:${campaignId || "sem-campanha"}:${userId || "sem-jogador"}`;
   }
 
   function toast(message, type = "success") {
@@ -33420,8 +33493,36 @@ Você pode inspirar os outros através de palavras animadoras ou música..."></t
       campaignLabShowSheetTransferToast(message, type);
       return;
     }
+
     if (type === "error") alert(message);
     else console.info(message);
+  }
+
+  function setReserveStatus(text, stateName = "clean") {
+    const status = getStatusElement();
+    if (!status) return;
+
+    const buttonText =
+      stateName === "saving"
+        ? "Salvando..."
+        : stateName === "dirty"
+          ? "Salvar reserva"
+          : stateName === "loading"
+            ? "Carregando..."
+            : stateName === "error"
+              ? "Erro ao salvar"
+              : "Reserva salva";
+
+    if (status.tagName === "BUTTON") {
+      status.textContent = buttonText;
+      status.disabled = stateName === "saving" || stateName === "loading";
+    } else {
+      status.textContent = text;
+    }
+
+    status.dataset.reserveStatus = stateName;
+    status.classList.remove("is-clean", "is-dirty", "is-saving", "is-error", "is-loading");
+    status.classList.add(`is-${stateName}`);
   }
 
   function normalizeSystem(value = "") {
@@ -33439,57 +33540,56 @@ Você pode inspirar os outros através de palavras animadoras ou música..."></t
       !normalized ||
       normalized === "d&d" ||
       normalized === "dnd" ||
-      normalized === "dnd5e-2014" ||
       normalized === "dnd5e" ||
+      normalized === "dnd5e-2014" ||
       normalized === "dungeons&dragons" ||
       normalized === "dungeonsanddragons"
     );
   }
 
+  function isTruthy(value) {
+    return ["true", "1", "yes", "sim", "on"].includes(String(value || "").toLowerCase());
+  }
+
+  function formatBonus(value) {
+    const number = Number(value) || 0;
+    return number >= 0 ? `+${number}` : String(number);
+  }
+
+  function abilityMod(score) {
+    return Math.floor(((Number(score) || 10) - 10) / 2);
+  }
+
+  function proficiencyByLevel(levelValue) {
+    const level = Math.max(1, Math.min(20, Math.floor(Number(levelValue) || 1)));
+    if (level >= 17) return 6;
+    if (level >= 13) return 5;
+    if (level >= 9) return 4;
+    if (level >= 5) return 3;
+    return 2;
+  }
+
   function getSheetName(data = {}) {
-    return String(data.characterName || data.name || data.ownerName || "Ficha sem nome").trim();
+    return String(data.characterName || data.name || "Ficha sem nome").trim() || "Ficha sem nome";
   }
 
-  function ensureHiddenReserveField() {
-    const form = getMainForm();
-    if (!form) return null;
+  function defaultValueForField(field) {
+    const name = field?.name || "";
+    const type = String(field?.type || "").toLowerCase();
 
-    let input = form.elements[RESERVE_FIELD];
-    if (input) return input;
-
-    input = document.createElement("input");
-    input.type = "hidden";
-    input.name = RESERVE_FIELD;
-    input.value = "";
-    form.appendChild(input);
-    return input;
+    if (!name) return "";
+    if (["strScore", "dexScore", "conScore", "intScore", "wisScore", "chaScore"].includes(name)) return "10";
+    if (["armorClass", "passivePerception"].includes(name)) return "10";
+    if (["charLevel"].includes(name)) return "1";
+    if (["proficiencyBonus"].includes(name)) return "+2";
+    if (["initiative", "combatInitiative", "hpCurrent", "hpMax", "hpTemp", "deathSuccesses", "deathFailures"].includes(name)) return "0";
+    if (name.endsWith("Manual")) return "false";
+    if (type === "number") return field.getAttribute("value") || "";
+    if (type === "hidden") return field.getAttribute("value") || "";
+    return "";
   }
 
-  function getFormDataComplete(form) {
-    if (!form) return {};
-
-    let data = {};
-
-    try {
-      if (typeof dndGetCompleteFormData === "function") {
-        data = dndGetCompleteFormData(form) || {};
-      } else if (typeof campaignLabGetFormDataComplete === "function") {
-        data = campaignLabGetFormDataComplete(form) || {};
-      } else {
-        data = Object.fromEntries(new FormData(form));
-        form.querySelectorAll('input[type="checkbox"][name]').forEach((checkbox) => {
-          data[checkbox.name] = checkbox.checked ? "true" : "false";
-        });
-      }
-    } catch (error) {
-      console.warn("Falha ao ler ficha de D&D:", error);
-      data = {};
-    }
-
-    return data;
-  }
-
-  function sanitizeData(data = {}, options = {}) {
+  function sanitizeSheetData(data = {}, options = {}) {
     const blocked = new Set([
       "id",
       "campaignId",
@@ -33504,23 +33604,22 @@ Você pode inspirar os outros através de palavras animadoras ou música..."></t
       "created_at",
       "updatedAt",
       "updated_at",
+      RESERVE_FIELD,
     ]);
 
-    if (options.forTransfer) {
-      blocked.add(RESERVE_FIELD);
-    }
+    if (options.keepMeta !== true) blocked.add(META_UPDATED_AT);
 
     const clean = {};
 
     Object.entries(data || {}).forEach(([key, value]) => {
       if (!key || blocked.has(key)) return;
+      if (String(key).startsWith("__campaignLab") && options.keepMeta !== true) return;
+      if (typeof File !== "undefined" && value instanceof File) return;
 
       if (value === undefined || value === null) {
         clean[key] = "";
         return;
       }
-
-      if (value instanceof File) return;
 
       if (typeof value === "object") {
         try {
@@ -33537,248 +33636,122 @@ Você pode inspirar os outros através de palavras animadoras ou música..."></t
     return clean;
   }
 
-  function buildTransferPayload(data = {}) {
-    const cleanData = sanitizeData(data, { forTransfer: true });
+  function stableStringify(data = {}) {
+    const clean = sanitizeSheetData(data);
+    const sorted = {};
+    Object.keys(clean).sort().forEach((key) => {
+      sorted[key] = clean[key];
+    });
+    return JSON.stringify(sorted);
+  }
 
+  function dataWithMeta(data = {}) {
     return {
-      type: TRANSFER_TYPE,
-      system: SYSTEM_LABEL,
-      systemKey: SYSTEM_KEY,
-      app: "Campaign Lab",
-      version: 3,
-      copiedAt: new Date().toISOString(),
-      characterName: getSheetName(cleanData),
-      data: cleanData,
+      ...sanitizeSheetData(data),
+      [META_UPDATED_AT]: new Date().toISOString(),
     };
   }
 
-  function parseSheetPayload(raw = "") {
-    const text = String(raw || "").trim();
-    if (!text) return null;
-
-    let parsed = null;
+  function getFormDataCompleteSafe(form) {
+    if (!form) return {};
 
     try {
-      parsed = JSON.parse(text);
-    } catch (error) {
-      return null;
-    }
-
-    if (!parsed || typeof parsed !== "object") return null;
-
-    if (parsed.type === TRANSFER_TYPE && parsed.data && typeof parsed.data === "object") {
-      if (!isDndSystem(parsed.system || parsed.systemKey)) return { error: "wrong-system", system: parsed.system || parsed.systemKey };
-      return {
-        data: parsed.data,
-        characterName: parsed.characterName || getSheetName(parsed.data),
-        payload: parsed,
-      };
-    }
-
-    if (parsed.system === SYSTEM_KEY && parsed.sheet && typeof parsed.sheet === "object") {
-      return {
-        data: parsed.sheet,
-        characterName: getSheetName(parsed.sheet),
-        payload: parsed,
-      };
-    }
-
-    if (parsed.app === "Campaign Lab" && parsed.sheet && typeof parsed.sheet === "object") {
-      if (!isDndSystem(parsed.system || parsed.systemKey)) return { error: "wrong-system", system: parsed.system || parsed.systemKey };
-      return {
-        data: parsed.sheet,
-        characterName: getSheetName(parsed.sheet),
-        payload: parsed,
-      };
-    }
-
-    if (parsed.data && typeof parsed.data === "object") {
-      if (!isDndSystem(parsed.system || parsed.systemKey)) return { error: "wrong-system", system: parsed.system || parsed.systemKey };
-      return {
-        data: parsed.data,
-        characterName: parsed.characterName || getSheetName(parsed.data),
-        payload: parsed,
-      };
-    }
-
-    if (parsed.characterName || parsed.className || parsed.race || parsed.armorClass || parsed.hpMax) {
-      return {
-        data: parsed,
-        characterName: getSheetName(parsed),
-        payload: parsed,
-      };
-    }
-
-    return null;
-  }
-
-  async function readRawSheetText(preferredText = "") {
-    const typedText = String(preferredText || "").trim();
-    if (typedText) return typedText;
-
-    try {
-      const stored = localStorage.getItem(TRANSFER_KEY);
-      if (stored) return stored;
-    } catch (error) {}
-
-    try {
-      if (navigator.clipboard && typeof navigator.clipboard.readText === "function") {
-        const clipboard = await navigator.clipboard.readText();
-        if (String(clipboard || "").trim()) return clipboard;
+      if (typeof dndGetCompleteFormData === "function") {
+        return sanitizeSheetData(dndGetCompleteFormData(form) || {});
       }
     } catch (error) {}
 
-    return "";
-  }
+    const data = {};
+    const fields = form.querySelectorAll("input[name], select[name], textarea[name]");
 
-  async function copyFormAsDndSheet(form, label = "Ficha") {
-    if (!form) return;
+    fields.forEach((field) => {
+      if (!field.name) return;
+      if (field.type === "file") return;
 
-    const payload = buildTransferPayload(getFormDataComplete(form));
-    const json = JSON.stringify(payload, null, 2);
-
-    try {
-      localStorage.setItem(TRANSFER_KEY, json);
-    } catch (error) {
-      console.warn("Não foi possível salvar a ficha copiada no localStorage:", error);
-    }
-
-    try {
-      if (navigator.clipboard && typeof navigator.clipboard.writeText === "function") {
-        await navigator.clipboard.writeText(json);
+      if (field.type === "checkbox") {
+        data[field.name] = field.checked ? "true" : "false";
+        return;
       }
-    } catch (error) {}
 
-    toast(`${label} copiada: ${payload.characterName}`, "success");
-    return payload;
+      if (field.type === "radio") {
+        if (field.checked) data[field.name] = field.value;
+        else if (!(field.name in data)) data[field.name] = "";
+        return;
+      }
+
+      data[field.name] = field.value ?? "";
+    });
+
+    return sanitizeSheetData(data);
   }
 
-  function hydrateForm(form, data = {}) {
-    if (!form || !data || typeof data !== "object") return;
-
-    if (typeof campaignLabHydrateSheetForm === "function") {
-      campaignLabHydrateSheetForm(form, sanitizeData(data));
-    } else {
-      Object.entries(sanitizeData(data)).forEach(([key, value]) => {
-        const element = form.elements[key];
-        if (!element) return;
-
-        if (element instanceof RadioNodeList) {
-          Array.from(element).forEach((node) => hydrateSingleElement(node, value));
-          return;
-        }
-
-        hydrateSingleElement(element, value);
-      });
-    }
-  }
-
-  function hydrateSingleElement(element, value = "") {
+  function hydrateOneElement(element, value) {
     if (!element) return;
-    if (element.type === "checkbox") {
-      if (typeof dnd_bool === "function") element.checked = dnd_bool(value);
-      else element.checked = ["true", "on", "1", "yes", "sim"].includes(String(value).toLowerCase());
+
+    if (element instanceof RadioNodeList || (typeof NodeList !== "undefined" && element instanceof NodeList)) {
+      Array.from(element).forEach((node) => hydrateOneElement(node, value));
       return;
     }
+
+    if (element.type === "checkbox") {
+      element.checked = isTruthy(value);
+      return;
+    }
+
+    if (element.type === "radio") {
+      element.checked = String(element.value) === String(value);
+      return;
+    }
+
+    if (element.type === "file") return;
+
     element.value = value ?? "";
   }
 
-  function getNumber(value, fallback = 0) {
-    const number = Number(String(value ?? "").replace(",", "."));
-    return Number.isFinite(number) ? number : fallback;
-  }
-
-  function formatBonus(value = 0) {
-    const number = getNumber(value, 0);
-    return number >= 0 ? `+${number}` : String(number);
-  }
-
-  function scoreMod(score = 10) {
-    return Math.floor((getNumber(score, 10) - 10) / 2);
-  }
-
-  function setReserveText(id, value) {
-    const element = document.getElementById(`reserve-${id}`);
-    if (element) element.textContent = value;
-  }
-
-  function setReserveInput(id, value) {
-    const element = document.getElementById(`reserve-${id}`);
-    if (!element) return;
-    if ("value" in element) element.value = value;
-    else element.textContent = value;
-  }
-
-  function refreshReserveSummary(form) {
+  function resetFormToReserveBlank(form) {
     if (!form) return;
 
-    const str = scoreMod(form.elements.strScore?.value);
-    const dex = scoreMod(form.elements.dexScore?.value);
-    const con = scoreMod(form.elements.conScore?.value);
-    const int = scoreMod(form.elements.intScore?.value);
-    const wis = scoreMod(form.elements.wisScore?.value);
-    const cha = scoreMod(form.elements.chaScore?.value);
+    const fields = form.querySelectorAll("input[name], select[name], textarea[name]");
 
-    setReserveText("strModView", formatBonus(str));
-    setReserveText("dexModView", formatBonus(dex));
-    setReserveText("conModView", formatBonus(con));
-    setReserveText("intModView", formatBonus(int));
-    setReserveText("wisModView", formatBonus(wis));
-    setReserveText("chaModView", formatBonus(cha));
+    fields.forEach((field) => {
+      if (field.type === "file") return;
 
-    const characterName = form.elements.characterName?.value || "Ficha reserva";
-    const className = form.elements.className?.value || "Classe";
-    const level = form.elements.charLevel?.value || "1";
-    const race = form.elements.race?.value || "Raça";
-    const background = form.elements.background?.value || "Antecedente";
-    const hpCurrent = form.elements.hpCurrent?.value || "0";
-    const hpMax = form.elements.hpMax?.value || "0";
+      if (field.type === "checkbox" || field.type === "radio") {
+        field.checked = false;
+        return;
+      }
 
-    setReserveInput("dndV2ArmorClassView", form.elements.armorClass?.value || "10");
-    setReserveInput("dndV2ArmorClassBig", form.elements.armorClass?.value || "10");
-    setReserveInput("dndV2HpCurrentHeroInput", hpCurrent);
-    setReserveInput("dndV2HpMaxHeroInput", hpMax);
-    setReserveInput("dndV2HpCurrentOverviewInput", hpCurrent);
-    setReserveInput("dndV2HpMaxOverviewInput", hpMax);
-    setReserveText("dndV2HpView", `${hpCurrent} / ${hpMax}`);
-    setReserveText("dndV2HpBig", `${hpCurrent} / ${hpMax}`);
-    setReserveInput("dndV2InitiativeView", form.elements.initiative?.value || "0");
-    setReserveInput("dndV2ProficiencyView", form.elements.proficiencyBonus?.value || "+2");
-    setReserveInput("dndV2PassivePerception", form.elements.passivePerception?.value || "10");
-    setReserveInput("dndV2SpellDcBig", form.elements.spellSaveDc?.value || "--");
-    setReserveText("dndV2CharacterNameSide", characterName);
-    setReserveText("dndV2ClassSide", `${className} ${level}`);
-    setReserveText("dndV2RaceSummary", `${race} • ${background}`);
+      if (field.tagName === "SELECT") {
+        field.selectedIndex = 0;
+        return;
+      }
+
+      field.value = defaultValueForField(field);
+    });
+
+    if (form.elements.characterName) form.elements.characterName.value = "Ficha reserva";
+    if (form.elements.className) form.elements.className.value = "";
+    if (form.elements.classLevel) form.elements.classLevel.value = "";
+    if (form.elements.charLevel) form.elements.charLevel.value = "1";
+    if (form.elements.proficiencyBonus) form.elements.proficiencyBonus.value = "+2";
   }
 
-  function refreshDndFormAfterHydrate(form, options = {}) {
-    if (!form) return;
+  function hydrateForm(form, data = {}, options = {}) {
+    if (!form || !data || typeof data !== "object") return;
 
-    try {
-      if (typeof syncCampaignLabDndClassFieldsInForm === "function") syncCampaignLabDndClassFieldsInForm(form);
-      if (typeof dndEnsureSavingThrowProficiencyFields === "function") dndEnsureSavingThrowProficiencyFields(form);
-      if (typeof dndEnsureFinalBonusAutomationFields === "function") dndEnsureFinalBonusAutomationFields(form);
-      if (typeof dndEnsureArmorAndHpAutomationFields === "function") dndEnsureArmorAndHpAutomationFields(form);
-      if (typeof setupDndSpellSlotTrackers === "function") setupDndSpellSlotTrackers(form);
-      if (typeof syncAllDndSpellSlotTrackers === "function") syncAllDndSpellSlotTrackers(form);
-      if (typeof dndApplyAltheriumBackgroundSelection === "function") dndApplyAltheriumBackgroundSelection(form, { silent: true });
-      if (typeof dndRecalculateAll === "function") dndRecalculateAll(form);
-      if (typeof updateDndRestPreview === "function" && form.id === "dndPlayerSheetForm") updateDndRestPreview();
-      if (typeof updateDndPlayerPreview === "function" && form.id === "dndPlayerSheetForm") updateDndPlayerPreview();
-      if (typeof updateDndAutoNumbers === "function" && form.id === "dndPlayerSheetForm") updateDndAutoNumbers();
-    } catch (error) {
-      console.warn("Falha ao atualizar ficha de D&D:", error);
-    }
+    if (options.reset !== false) resetFormToReserveBlank(form);
 
-    if (form.id === "dndReserveSheetForm") {
-      refreshReserveSummary(form);
-      window.setTimeout(() => {
-        try {
-          if (typeof updateDndPlayerPreview === "function") updateDndPlayerPreview();
-          if (typeof updateDndAutoNumbers === "function") updateDndAutoNumbers();
-        } catch (error) {}
-      }, 0);
-    }
+    const clean = sanitizeSheetData(data, { keepMeta: true });
+
+    Object.entries(clean).forEach(([key, value]) => {
+      if (key === META_UPDATED_AT) return;
+      const element = form.elements[key];
+      if (!element) return;
+      hydrateOneElement(element, value);
+    });
+
+    refreshReserveVisuals(form);
+    setupReserveDynamicManagers(form);
 
     if (options.dispatch !== false) {
       try {
@@ -33788,362 +33761,902 @@ Você pode inspirar os outros através de palavras animadoras ou música..."></t
     }
   }
 
-  async function pasteIntoDndForm(form, rawText = "", options = {}) {
-    if (!form) return false;
+  function parseRawSheet(raw = "") {
+    if (!raw) return null;
 
-    const raw = await readRawSheetText(rawText);
-    const parsed = parseSheetPayload(raw);
+    let parsed = raw;
 
-    if (!parsed || parsed.error) {
-      if (parsed && parsed.error === "wrong-system") {
-        alert(`Essa ficha pertence a ${parsed.system || "outro sistema"}. Cole apenas fichas de D&D.`);
-      } else {
-        alert("Não encontrei uma ficha válida de D&D para colar.");
+    if (typeof raw === "string") {
+      const text = raw.trim();
+      if (!text) return null;
+
+      try {
+        parsed = JSON.parse(text);
+      } catch (error) {
+        return null;
       }
+    }
+
+    if (!parsed || typeof parsed !== "object") return null;
+
+    if (parsed.type === TRANSFER_TYPE && parsed.data && typeof parsed.data === "object") {
+      if (!isDndSystem(parsed.system || parsed.systemKey)) return { error: "wrong-system" };
+      return sanitizeSheetData(parsed.data);
+    }
+
+    if (parsed.data && typeof parsed.data === "object") {
+      if (!isDndSystem(parsed.system || parsed.systemKey)) return { error: "wrong-system" };
+      return sanitizeSheetData(parsed.data, { keepMeta: true });
+    }
+
+    if (parsed.sheet && typeof parsed.sheet === "object") {
+      if (!isDndSystem(parsed.system || parsed.systemKey)) return { error: "wrong-system" };
+      return sanitizeSheetData(parsed.sheet);
+    }
+
+    if (parsed.characterName || parsed.className || parsed.race || parsed.hpMax || parsed.armorClass) {
+      return sanitizeSheetData(parsed, { keepMeta: true });
+    }
+
+    return null;
+  }
+
+  function getUpdatedAt(data = {}) {
+    const value = data?.[META_UPDATED_AT] || data?.updatedAt || data?.updated_at || "";
+    const time = value ? Date.parse(value) : 0;
+    return Number.isFinite(time) ? time : 0;
+  }
+
+  function pickNewestData(items = []) {
+    const valid = items.filter((item) => item && typeof item === "object" && !item.error);
+    if (!valid.length) return null;
+
+    return valid.sort((a, b) => getUpdatedAt(b) - getUpdatedAt(a))[0];
+  }
+
+  function saveLocalReserve(data = {}) {
+    const campaignId = getCampaignIdSafe();
+    const userId = getUserIdSafe();
+    if (!campaignId || !userId) return;
+
+    try {
+      localStorage.setItem(getLocalKey(campaignId, userId), JSON.stringify(dataWithMeta(data)));
+    } catch (error) {}
+  }
+
+  function readLocalReserve() {
+    try {
+      const raw = localStorage.getItem(getLocalKey());
+      return parseRawSheet(raw || "");
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async function readReserveFromTable() {
+    const client = getClient();
+    const campaignId = getCampaignIdSafe();
+    const userId = getUserIdSafe();
+
+    if (!client || !campaignId || !userId) return null;
+
+    try {
+      const { data, error } = await client
+        .from(RESERVE_TABLE)
+        .select("data")
+        .eq("campaign_id", campaignId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) {
+        state.lastLoadError = error.message || String(error);
+        console.warn("Erro ao ler dnd_reserve_sheets:", error);
+        return null;
+      }
+
+      return data?.data && typeof data.data === "object" ? sanitizeSheetData(data.data, { keepMeta: true }) : null;
+    } catch (error) {
+      state.lastLoadError = error.message || String(error);
+      console.warn("Falha ao ler dnd_reserve_sheets:", error);
+      return null;
+    }
+  }
+
+  async function readLegacyReserveFromMainSheet() {
+    const client = getClient();
+    const campaignId = getCampaignIdSafe();
+    const userId = getUserIdSafe();
+
+    if (!client || !campaignId || !userId) return null;
+
+    try {
+      const { data, error } = await client
+        .from("dnd_sheets")
+        .select("data")
+        .eq("campaign_id", campaignId)
+        .eq("user_id", userId)
+        .maybeSingle();
+
+      if (error) return null;
+
+      const legacy = data?.data?.[RESERVE_FIELD];
+      return parseRawSheet(typeof legacy === "string" ? legacy : legacy ? JSON.stringify(legacy) : "");
+    } catch (error) {
+      return null;
+    }
+  }
+
+  async function loadReserve() {
+    const form = getReserveForm();
+    if (!form || state.hydrating) return;
+
+    state.hydrating = true;
+    state.loaded = false;
+    setReserveStatus("Carregando reserva...", "loading");
+
+    try {
+      const tableData = await readReserveFromTable();
+      const localData = readLocalReserve();
+      const legacyData = await readLegacyReserveFromMainSheet();
+      const bestData = pickNewestData([tableData, localData, legacyData]);
+
+      if (bestData) {
+        hydrateForm(form, bestData, { reset: true, dispatch: false });
+        state.lastSavedCleanRaw = stableStringify(bestData);
+        saveLocalReserve(bestData);
+
+        if (!tableData) {
+          window.setTimeout(() => saveReserveNow({ silent: true, force: true }), 250);
+        }
+
+        setReserveStatus("Reserva carregada", "clean");
+      } else {
+        resetFormToReserveBlank(form);
+        refreshReserveVisuals(form);
+        state.lastSavedCleanRaw = stableStringify(getFormDataCompleteSafe(form));
+        setReserveStatus(state.lastLoadError ? "Reserva local pronta. Verifique a tabela no Supabase." : "Reserva pronta", state.lastLoadError ? "error" : "clean");
+      }
+    } finally {
+      state.loaded = true;
+      state.hydrating = false;
+    }
+  }
+
+  async function saveReserveNow(options = {}) {
+    const silent = Boolean(options.silent);
+    const force = Boolean(options.force);
+    const form = getReserveForm();
+    const client = getClient();
+    const campaignId = getCampaignIdSafe();
+    const userId = getUserIdSafe();
+
+    if (!form || state.hydrating) return false;
+    if (!state.loaded && !force) return false;
+
+    refreshReserveVisuals(form);
+
+    const cleanData = getFormDataCompleteSafe(form);
+    const cleanRaw = stableStringify(cleanData);
+    const dataToSave = dataWithMeta(cleanData);
+
+    saveLocalReserve(dataToSave);
+
+    if (!force && cleanRaw === state.lastSavedCleanRaw) {
+      if (!silent) setReserveStatus("Reserva salva", "clean");
+      return true;
+    }
+
+    if (!client || !campaignId || !userId) {
+      state.lastSavedCleanRaw = cleanRaw;
+      if (!silent) setReserveStatus("Reserva salva localmente", "error");
       return false;
     }
 
-    const name = parsed.characterName || getSheetName(parsed.data);
-
-    if (options.confirm !== false) {
-      const ok = confirm(`Colar a ficha "${name}" ${options.targetLabel || "aqui"}?\n\nIsso substituirá os campos desta ficha.`);
-      if (!ok) return false;
-    }
-
-    hydrateForm(form, parsed.data);
-    refreshDndFormAfterHydrate(form, { dispatch: false });
-
-    if (form.id === "dndPlayerSheetForm") {
-      try {
-        if (typeof saveDndPlayerSheet === "function") await saveDndPlayerSheet(false);
-      } catch (error) {
-        console.warn("A ficha foi colada, mas não salvou automaticamente:", error);
-      }
-    }
-
-    if (form.id === "dndReserveSheetForm") {
-      syncReserveSheetToHidden(true);
-    }
-
-    toast(`Ficha colada: ${name}`, "success");
-    return true;
-  }
-
-  function syncReserveSheetToHidden(saveNow = false) {
-    const reserveForm = getReserveForm();
-    const hidden = ensureHiddenReserveField();
-    if (!reserveForm || !hidden || reserveSaving) return;
-
-    const data = sanitizeData(getFormDataComplete(reserveForm));
-    hidden.value = JSON.stringify(data);
-    refreshReserveSummary(reserveForm);
-
-    clearTimeout(reserveSyncTimer);
-    reserveSyncTimer = window.setTimeout(async () => {
-      if (!saveNow && document.hidden) return;
-
-      try {
-        reserveSaving = true;
-        if (typeof saveDndPlayerSheet === "function") await saveDndPlayerSheet(false);
-      } catch (error) {
-        console.warn("Não foi possível salvar a ficha reserva automaticamente:", error);
-      } finally {
-        reserveSaving = false;
-      }
-    }, saveNow ? 40 : 650);
-  }
-
-  async function getReserveDefaultData() {
     try {
-      const user = typeof getLoggedUserFromSession === "function" ? getLoggedUserFromSession() : null;
-      const campaign = typeof getCurrentCampaign === "function" ? await getCurrentCampaign(true) : null;
-      if (typeof getDefaultDndSheet === "function") {
-        return getDefaultDndSheet(campaign?.id || "reserve", user?.id || "reserve", "D&D");
-      }
-    } catch (error) {}
+      state.saving = true;
+      if (!silent) setReserveStatus("Salvando reserva...", "saving");
 
-    return {
-      characterName: "Ficha reserva",
-      className: "",
-      charLevel: "1",
-      classLevel: "",
-      race: "",
-      background: "",
-      strScore: "10",
-      dexScore: "10",
-      conScore: "10",
-      intScore: "10",
-      wisScore: "10",
-      chaScore: "10",
-      hpCurrent: "0",
-      hpMax: "0",
-      hpTemp: "0",
-      armorClass: "10",
-      initiative: "0",
-      proficiencyBonus: "+2",
-    };
+      const { error } = await client
+        .from(RESERVE_TABLE)
+        .upsert(
+          {
+            campaign_id: campaignId,
+            user_id: userId,
+            data: dataToSave,
+          },
+          { onConflict: "campaign_id,user_id" }
+        );
+
+      if (error) throw error;
+
+      state.lastSavedCleanRaw = cleanRaw;
+      if (!silent) setReserveStatus("Reserva salva no Supabase", "clean");
+      return true;
+    } catch (error) {
+      console.warn("Erro ao salvar ficha reserva em dnd_reserve_sheets:", error);
+      if (!silent) {
+        setReserveStatus("Erro ao salvar no Supabase. Backup local mantido.", "error");
+        toast("A Ficha Reserva não salvou no Supabase. Confira se a tabela dnd_reserve_sheets existe e se o SQL foi rodado.", "error");
+      }
+      return false;
+    } finally {
+      state.saving = false;
+    }
   }
 
-  async function loadReserveSheetFromHidden() {
-    const reserveForm = getReserveForm();
-    const hidden = ensureHiddenReserveField();
-    if (!reserveForm || !hidden) return;
+  function scheduleReserveSave() {
+    if (!state.loaded || state.hydrating) return;
 
-    let data = null;
+    const form = getReserveForm();
+    if (!form) return;
 
-    if (String(hidden.value || "").trim()) {
-      const parsed = parseSheetPayload(hidden.value);
-      if (parsed && !parsed.error) data = parsed.data;
+    refreshReserveVisuals(form);
+    saveLocalReserve(getFormDataCompleteSafe(form));
 
-      if (!data) {
-        try {
-          const plain = JSON.parse(hidden.value);
-          if (plain && typeof plain === "object") data = plain;
-        } catch (error) {}
-      }
+    const cleanRaw = stableStringify(getFormDataCompleteSafe(form));
+    if (cleanRaw === state.lastSavedCleanRaw) {
+      setReserveStatus("Reserva salva", "clean");
+      return;
     }
 
-    if (!data) data = await getReserveDefaultData();
-
-    hydrateForm(reserveForm, data);
-    refreshDndFormAfterHydrate(reserveForm, { dispatch: false });
-    syncReserveSheetToHidden(false);
+    setReserveStatus("Alterações na reserva pendentes", "dirty");
+    clearTimeout(state.saveTimer);
+    state.saveTimer = window.setTimeout(() => saveReserveNow(), SAVE_DELAY);
   }
 
   function prefixReserveIds(form) {
+    if (!form) return;
+
     const idMap = new Map();
 
     form.querySelectorAll("[id]").forEach((element) => {
       const oldId = element.id;
+      if (!oldId || oldId.startsWith("reserve-")) return;
       const newId = `reserve-${oldId}`;
       idMap.set(oldId, newId);
       element.id = newId;
     });
 
     form.querySelectorAll("label[for]").forEach((label) => {
-      const oldFor = label.getAttribute("for");
-      if (idMap.has(oldFor)) label.setAttribute("for", idMap.get(oldFor));
+      const value = label.getAttribute("for");
+      if (idMap.has(value)) label.setAttribute("for", idMap.get(value));
     });
-  }
 
-  function setupReserveInternalTabs(form) {
-    if (!form || form.dataset.reserveTabsReady === "true") return;
-    form.dataset.reserveTabsReady = "true";
-
-    form.addEventListener("click", (event) => {
-      const button = event.target.closest("[data-dnd-v2-tab]");
-      if (!button || !form.contains(button)) return;
-
-      const target = button.dataset.dndV2Tab;
-      form.querySelectorAll("[data-dnd-v2-tab]").forEach((tab) => {
-        tab.classList.toggle("active", tab === button);
-      });
-      form.querySelectorAll("[data-dnd-v2-panel]").forEach((panel) => {
-        panel.classList.toggle("active", panel.dataset.dndV2Panel === target);
+    ["aria-controls", "aria-labelledby", "aria-describedby"].forEach((attr) => {
+      form.querySelectorAll(`[${attr}]`).forEach((element) => {
+        const value = element.getAttribute(attr);
+        if (idMap.has(value)) element.setAttribute(attr, idMap.get(value));
       });
     });
   }
 
-  function setupReserveFormListeners(form) {
-    if (!form || form.dataset.reserveFormReady === "true") return;
-    form.dataset.reserveFormReady = "true";
+  function polishReserveClone(form) {
+    if (!form) return;
 
-    let timer = null;
-    const schedule = () => {
-      clearTimeout(timer);
-      timer = window.setTimeout(() => {
-        refreshDndFormAfterHydrate(form, { dispatch: false });
-        syncReserveSheetToHidden(false);
-      }, 120);
-    };
+    form.classList.add("dnd-reserve-sheet-form");
+    form.dataset.reserveSheet = "true";
+    form.setAttribute("autocomplete", "off");
+    form.setAttribute("novalidate", "true");
 
-    form.addEventListener("input", schedule);
-    form.addEventListener("change", schedule);
-  }
+    form.querySelectorAll(`[name="${RESERVE_FIELD}"]`).forEach((field) => field.remove());
 
-  function buildReserveFormClone() {
-    const mainForm = getMainForm();
-    const container = document.getElementById("dndReserveSheetContainer");
-    if (!mainForm || !container) return null;
+    form.querySelectorAll('input[type="file"]').forEach((input) => {
+      input.disabled = true;
+      input.removeAttribute("name");
+      const label = input.closest("label");
+      if (label) {
+        label.classList.add("dnd-reserve-disabled-upload");
+        label.title = "Na ficha reserva, cole uma ficha que já tenha imagem salva.";
+      }
+    });
 
-    const clone = mainForm.cloneNode(true);
-    clone.id = "dndReserveSheetForm";
-    clone.classList.add("dnd-reserve-sheet-form");
-    clone.dataset.reserveSheet = "true";
-    clone.removeAttribute("data-dnd-auto-ready");
-    clone.removeAttribute("data-dnd-v2-refresh-ready");
-    clone.removeAttribute("data-dnd-v2-rolls-ready");
-
-    clone.querySelectorAll(`[name="${RESERVE_FIELD}"]`).forEach((item) => item.remove());
-    clone.querySelectorAll("[data-dnd-v2-ready]").forEach((item) => delete item.dataset.dndV2Ready);
-
-    prefixReserveIds(clone);
-
-    const toolbar = clone.querySelector(".dnd-v2-toolbar-actions");
+    const toolbar = form.querySelector(".dnd-v2-toolbar-actions");
     if (toolbar) {
       toolbar.innerHTML = `
         <button type="button" class="dnd-v2-soft-btn campaign-lab-dnd-copy-btn" id="dndReserveModelCopyBtn">Copiar reserva</button>
         <button type="button" class="dnd-v2-soft-btn campaign-lab-dnd-paste-btn" id="dndReserveModelPasteBtn">Colar na reserva</button>
-        <button type="button" class="dnd-v2-soft-btn dnd-apply-sheet-btn is-clean" id="dndReserveModelSaveBtn">Salvar reserva</button>
+        <button type="button" class="dnd-v2-soft-btn dnd-apply-sheet-btn is-clean" id="dndReserveModelSaveBtn">Reserva salva</button>
       `;
     }
+
+    const systemMark = form.querySelector(".dnd-v2-system-mark");
+    if (systemMark) systemMark.textContent = "R20";
+
+    const titleTag = form.querySelector(".dnd-v2-hero-card .tag");
+    if (titleTag) titleTag.textContent = "Ficha Reserva · D&D 5e";
+  }
+
+  function setupReserveInternalTabs(form) {
+    if (!form) return;
+
+    const buttons = Array.from(form.querySelectorAll("[data-dnd-v2-tab]"));
+
+    buttons.forEach((button) => {
+      button.addEventListener("click", (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+
+        const target = button.dataset.dndV2Tab;
+        if (!target) return;
+
+        buttons.forEach((item) => item.classList.toggle("active", item === button));
+        form.querySelectorAll("[data-dnd-v2-panel]").forEach((panel) => {
+          panel.classList.toggle("active", panel.dataset.dndV2Panel === target);
+        });
+      }, true);
+    });
+  }
+
+  function buildReserveClone() {
+    const mainForm = getMainForm();
+    const container = getReserveContainer();
+
+    if (!mainForm || !container) return false;
+    if (getReserveForm()) return true;
+
+    const clone = mainForm.cloneNode(true);
+    clone.id = RESERVE_FORM_ID;
+
+    prefixReserveIds(clone);
+    polishReserveClone(clone);
+    setupReserveInternalTabs(clone);
+    resetFormToReserveBlank(clone);
 
     container.innerHTML = "";
     container.appendChild(clone);
 
-    setupReserveInternalTabs(clone);
-    setupReserveFormListeners(clone);
-
-    return clone;
+    refreshReserveVisuals(clone);
+    setupReserveDynamicManagers(clone);
+    bindReserveEvents();
+    loadReserve();
+    return true;
   }
 
-  async function setupReserveSheet() {
-    if (!isDndPlayerPage()) return;
-    if (reserveReady && getReserveForm()) return;
-
-    ensureHiddenReserveField();
-    const reserveForm = buildReserveFormClone();
-    if (!reserveForm) return;
-
-    reserveReady = true;
-    await loadReserveSheetFromHidden();
+  function byReserveId(id) {
+    return document.getElementById(`reserve-${id}`);
   }
 
-  function setupToolbarButtons() {
-    if (!isDndPlayerPage()) return;
+  function setReserveText(id, value) {
+    const element = byReserveId(id);
+    if (element) element.textContent = value;
+  }
 
-    const copyBtn = document.getElementById("campaignLabDndCopySheetBtn");
-    const pasteBtn = document.getElementById("campaignLabDndPasteSheetBtn");
+  function setReserveValue(id, value) {
+    const element = byReserveId(id);
+    if (element && "value" in element) element.value = value;
+  }
 
-    if (copyBtn && copyBtn.dataset.dndTransferReady !== "true") {
-      copyBtn.dataset.dndTransferReady = "true";
-      copyBtn.addEventListener("click", () => copyFormAsDndSheet(getMainForm(), "Ficha principal"));
+  function syncDeathSaves(form) {
+    if (!form) return;
+
+    const success = Math.max(0, Math.min(3, Number(form.elements.deathSuccesses?.value || 0)));
+    const failure = Math.max(0, Math.min(3, Number(form.elements.deathFailures?.value || 0)));
+
+    form.querySelectorAll('[data-dnd-death-save="success"]').forEach((button) => {
+      const index = Number(button.dataset.dndDeathSaveIndex || 0);
+      const active = index <= success;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+
+    form.querySelectorAll('[data-dnd-death-save="failure"]').forEach((button) => {
+      const index = Number(button.dataset.dndDeathSaveIndex || 0);
+      const active = index <= failure;
+      button.classList.toggle("active", active);
+      button.setAttribute("aria-pressed", active ? "true" : "false");
+    });
+  }
+
+  function syncSpellSlotDots(form) {
+    if (!form) return;
+
+    form.querySelectorAll(".dnd-spell-slot-level").forEach((levelBox) => {
+      const hidden = levelBox.querySelector("[data-spell-slot-hidden]");
+      const dots = Array.from(levelBox.querySelectorAll(".dnd-spell-slot-dot"));
+      if (!hidden || !dots.length) return;
+
+      const raw = String(hidden.value || "").replace(/[^01]/g, "");
+      const normalized = (raw + "0".repeat(dots.length)).slice(0, dots.length);
+      hidden.value = normalized;
+
+      dots.forEach((dot, index) => {
+        const active = normalized[index] === "1";
+        dot.classList.toggle("is-checked", active);
+        dot.setAttribute("aria-pressed", active ? "true" : "false");
+      });
+    });
+  }
+
+  function setupReserveDynamicManagers(form = getReserveForm()) {
+    if (!form) return;
+
+    try {
+      if (typeof window.setupDndInventoryManager === "function") {
+        window.setupDndInventoryManager(form);
+      }
+    } catch (error) {
+      console.warn("Não consegui renderizar o inventário da Ficha Reserva.", error);
     }
 
-    if (pasteBtn && pasteBtn.dataset.dndTransferReady !== "true") {
-      pasteBtn.dataset.dndTransferReady = "true";
-      pasteBtn.addEventListener("click", () => pasteIntoDndForm(getMainForm(), "", { targetLabel: "na ficha principal" }));
+    try {
+      if (typeof window.setupDndSpellbookManager === "function") {
+        window.setupDndSpellbookManager(form);
+      } else if (typeof window.bootDndSpellbookManagers === "function") {
+        window.bootDndSpellbookManagers();
+      }
+    } catch (error) {
+      console.warn("Não consegui renderizar o grimório da Ficha Reserva.", error);
+    }
+
+    try {
+      if (typeof window.setupDndOfficialSpellLibrary === "function") {
+        window.setupDndOfficialSpellLibrary(form);
+      }
+    } catch (error) {}
+
+    try {
+      if (typeof window.syncAllDndSpellSlotTrackers === "function") {
+        window.syncAllDndSpellSlotTrackers(form);
+      }
+    } catch (error) {}
+  }
+
+  function refreshReserveVisuals(form = getReserveForm()) {
+    if (!form) return;
+
+    const level = Math.max(1, Math.min(20, Math.floor(Number(form.elements.charLevel?.value) || 1)));
+    const prof = proficiencyByLevel(level);
+
+    const str = abilityMod(form.elements.strScore?.value);
+    const dex = abilityMod(form.elements.dexScore?.value);
+    const con = abilityMod(form.elements.conScore?.value);
+    const int = abilityMod(form.elements.intScore?.value);
+    const wis = abilityMod(form.elements.wisScore?.value);
+    const cha = abilityMod(form.elements.chaScore?.value);
+
+    if (form.elements.proficiencyBonus) form.elements.proficiencyBonus.value = formatBonus(prof);
+    if (form.elements.classLevel && form.elements.className?.value) {
+      form.elements.classLevel.value = `${form.elements.className.value} ${level}`;
+    }
+
+    setReserveText("strModView", formatBonus(str));
+    setReserveText("dexModView", formatBonus(dex));
+    setReserveText("conModView", formatBonus(con));
+    setReserveText("intModView", formatBonus(int));
+    setReserveText("wisModView", formatBonus(wis));
+    setReserveText("chaModView", formatBonus(cha));
+
+    const armorClass = form.elements.armorClass?.value || "10";
+    const hpCurrent = form.elements.hpCurrent?.value || "0";
+    const hpMax = form.elements.hpMax?.value || "0";
+    const initiative = form.elements.initiative?.value || "0";
+    const passive = form.elements.passivePerception?.value || "10";
+    const spellDc = form.elements.spellSaveDc?.value || "--";
+
+    setReserveValue("dndV2ArmorClassView", armorClass);
+    setReserveValue("dndV2ArmorClassBig", armorClass);
+    setReserveValue("dndV2HpCurrentHeroInput", hpCurrent);
+    setReserveValue("dndV2HpMaxHeroInput", hpMax);
+    setReserveValue("dndV2HpCurrentOverviewInput", hpCurrent);
+    setReserveValue("dndV2HpMaxOverviewInput", hpMax);
+    setReserveText("dndV2HpView", `${hpCurrent} / ${hpMax}`);
+    setReserveText("dndV2HpBig", `${hpCurrent} / ${hpMax}`);
+    setReserveValue("dndV2InitiativeView", initiative);
+    setReserveValue("dndV2ProficiencyView", formatBonus(prof));
+    setReserveValue("dndV2PassivePerception", passive);
+    setReserveValue("dndV2SpellDcBig", spellDc);
+
+    const characterName = form.elements.characterName?.value || "Ficha reserva";
+    const className = form.elements.className?.value || "Classe";
+    const race = form.elements.race?.value || "Raça não definida";
+    const background = form.elements.background?.value || "Antecedente não definido";
+
+    setReserveText("dndV2CharacterNameSide", characterName);
+    setReserveText("dndV2ClassSide", `${className} ${level}`);
+    setReserveText("dndV2RaceSummary", `${race} • ${background}`);
+
+    const hpFill = byReserveId("dndHpBarFill");
+    if (hpFill) {
+      const max = Number(hpMax) || 0;
+      const current = Number(hpCurrent) || 0;
+      const pct = max > 0 ? Math.max(0, Math.min(100, (current / max) * 100)) : 0;
+      hpFill.style.width = `${pct}%`;
+    }
+
+    const avatar = byReserveId("dndV2AvatarPreview");
+    const avatarUrl = form.elements.characterAvatarUrl?.value || form.elements.characterPortraitUrl?.value || "";
+    if (avatar) {
+      avatar.innerHTML = avatarUrl
+        ? `<img src="${String(avatarUrl).replace(/"/g, "&quot;")}" alt="Imagem da ficha reserva" loading="lazy" />`
+        : "✦";
+    }
+
+    const petMini = form.querySelector("[data-dnd-pet-avatar-mini]");
+    const petUrl = form.elements.petAvatarUrl?.value || form.elements.petImageUrl?.value || "";
+    if (petMini) {
+      petMini.hidden = !petUrl;
+      petMini.classList.toggle("has-image", Boolean(petUrl));
+      petMini.innerHTML = petUrl ? `<img src="${String(petUrl).replace(/"/g, "&quot;")}" alt="Imagem do pet" loading="lazy" />` : "P";
+    }
+
+    syncDeathSaves(form);
+    syncSpellSlotDots(form);
+
+    if (form.id === RESERVE_FORM_ID) {
+      setupReserveDynamicManagers(form);
     }
   }
 
-  function setupReserveButtons() {
-    if (!isDndPlayerPage()) return;
-    if (document.body.dataset.dndReserveButtonsReady === "true") return;
-    document.body.dataset.dndReserveButtonsReady = "true";
+  function bindReserveEvents() {
+    if (state.eventsBound) return;
+    state.eventsBound = true;
 
-    document.addEventListener("click", async (event) => {
-      const reserveForm = getReserveForm();
-      const mainForm = getMainForm();
+    document.addEventListener("input", (event) => {
+      if (!event.target.closest?.(`#${RESERVE_FORM_ID}`)) return;
+      scheduleReserveSave();
+    }, true);
 
-      if (event.target.closest("#dndReservePasteBtn")) {
+    document.addEventListener("change", (event) => {
+      if (!event.target.closest?.(`#${RESERVE_FORM_ID}`)) return;
+      scheduleReserveSave();
+    }, true);
+
+    document.addEventListener("click", (event) => {
+      const deathDot = event.target.closest?.(`#${RESERVE_FORM_ID} [data-dnd-death-save]`);
+      if (deathDot) {
         event.preventDefault();
-        await setupReserveSheet();
-        const text = document.getElementById("dndReservePasteBox")?.value || "";
-        const ok = await pasteIntoDndForm(getReserveForm(), text, { targetLabel: "na ficha reserva" });
+        event.stopPropagation();
+        const form = getReserveForm();
+        const type = deathDot.dataset.dndDeathSave;
+        const index = Math.max(0, Math.min(3, Number(deathDot.dataset.dndDeathSaveIndex || 0)));
+        const fieldName = type === "success" ? "deathSuccesses" : "deathFailures";
+        if (form?.elements[fieldName]) {
+          const current = Number(form.elements[fieldName].value || 0);
+          form.elements[fieldName].value = String(current === index ? index - 1 : index);
+          scheduleReserveSave();
+        }
+        return;
+      }
+
+      const slotDot = event.target.closest?.(`#${RESERVE_FORM_ID} .dnd-spell-slot-dot`);
+      if (slotDot) {
+        event.preventDefault();
+        event.stopPropagation();
+        const levelBox = slotDot.closest(".dnd-spell-slot-level");
+        const hidden = levelBox?.querySelector("[data-spell-slot-hidden]");
+        const dots = Array.from(levelBox?.querySelectorAll(".dnd-spell-slot-dot") || []);
+        const index = dots.indexOf(slotDot);
+        if (hidden && index >= 0) {
+          const current = (String(hidden.value || "").replace(/[^01]/g, "") + "0".repeat(dots.length)).slice(0, dots.length).split("");
+          current[index] = current[index] === "1" ? "0" : "1";
+          hidden.value = current.join("");
+          scheduleReserveSave();
+        }
+      }
+    }, true);
+
+    window.addEventListener("beforeunload", () => {
+      const form = getReserveForm();
+      if (!form || !state.loaded) return;
+      saveLocalReserve(getFormDataCompleteSafe(form));
+    });
+
+    document.addEventListener("visibilitychange", () => {
+      if (!document.hidden) return;
+      const form = getReserveForm();
+      if (!form || !state.loaded) return;
+      saveLocalReserve(getFormDataCompleteSafe(form));
+      saveReserveNow({ silent: true, force: true });
+    });
+  }
+
+  function ensureReserveTabLast() {
+    const tabs = document.querySelector(".player-campaign-tabs");
+    if (!tabs) return;
+
+    let button = tabs.querySelector('[data-tab="dndReserveSheetSection"]');
+    if (!button) {
+      button = document.createElement("button");
+      button.type = "button";
+      button.className = "altherium-tab";
+      button.dataset.tab = "dndReserveSheetSection";
+      button.textContent = "Ficha Reserva";
+    }
+
+    tabs.appendChild(button);
+  }
+
+  function ensureReserveSectionExists() {
+    if (getReserveSection()) return;
+
+    const main = document.querySelector(".altherium-main, main");
+    if (!main) return;
+
+    const section = document.createElement("section");
+    section.id = "dndReserveSheetSection";
+    section.className = "altherium-section player-campaign-tab-panel dnd-sheet-wrapper dnd-reserve-sheet-section";
+    section.innerHTML = `
+      <div class="altherium-panel dnd-reserve-control-panel">
+        <div class="altherium-panel-header dnd-reserve-header">
+          <div>
+            <p class="tag">Ficha extra</p>
+            <h2>Ficha Reserva</h2>
+            <p>Guarde uma segunda ficha de D&amp;D nesta campanha. Ela salva em tabela separada no Supabase.</p>
+          </div>
+          <div class="dnd-reserve-header-badges">
+            <span class="player-chat-system-pill">D&amp;D</span>
+            <span class="dnd-reserve-save-status is-loading" id="dndReserveSaveStatus" data-reserve-status="loading">Preparando reserva...</span>
+          </div>
+        </div>
+
+        <div class="dnd-reserve-actions-grid">
+          <label class="dnd-v2-field dnd-reserve-paste-field" for="dndReservePasteBox">
+            <span>Colar ficha aqui</span>
+            <textarea id="dndReservePasteBox" class="dnd-reserve-paste-box" spellcheck="false" placeholder="Cole aqui o JSON da ficha copiada pelo Campaign Lab."></textarea>
+          </label>
+
+          <div class="dnd-reserve-buttons">
+            <button type="button" class="dnd-v2-soft-btn campaign-lab-dnd-paste-btn" id="dndReservePasteBtn">Colar na reserva</button>
+            <button type="button" class="dnd-v2-soft-btn campaign-lab-dnd-copy-btn" id="dndReserveCopyBtn">Copiar reserva</button>
+            <button type="button" class="dnd-v2-soft-btn dnd-reserve-apply-main-btn" id="dndReserveUseAsMainBtn">Usar como ficha principal</button>
+            <p class="dnd-reserve-help-text">A reserva salva em public.dnd_reserve_sheets e não é apagada pelo autosave da ficha principal.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="dndReserveSheetContainer" class="dnd-reserve-sheet-container">
+        <div class="altherium-empty dnd-reserve-loading-card">
+          <h3>Carregando ficha reserva</h3>
+          <p>Aguarde enquanto o modelo da ficha de D&amp;D é preparado.</p>
+        </div>
+      </div>
+    `;
+
+    const messages = document.getElementById("playerMessagesSection");
+    if (messages?.parentElement === main) messages.insertAdjacentElement("afterend", section);
+    else main.appendChild(section);
+  }
+
+  function buildTransferPayload(form, label = "Ficha") {
+    const data = sanitizeSheetData(getFormDataCompleteSafe(form));
+
+    return {
+      type: TRANSFER_TYPE,
+      app: "Campaign Lab",
+      system: SYSTEM_LABEL,
+      systemKey: SYSTEM_KEY,
+      version: 5,
+      copiedAt: new Date().toISOString(),
+      label,
+      characterName: getSheetName(data),
+      data,
+    };
+  }
+
+  async function writeTransferPayload(payload, successLabel = "Ficha copiada") {
+    const json = JSON.stringify(payload, null, 2);
+
+    try {
+      localStorage.setItem(TRANSFER_KEY, json);
+    } catch (error) {}
+
+    try {
+      if (navigator.clipboard?.writeText) await navigator.clipboard.writeText(json);
+    } catch (error) {}
+
+    toast(`${successLabel}: ${payload.characterName}`, "success");
+    return json;
+  }
+
+  async function readTransferText(preferredText = "") {
+    const typed = String(preferredText || "").trim();
+    if (typed) return typed;
+
+    try {
+      const stored = localStorage.getItem(TRANSFER_KEY);
+      if (String(stored || "").trim()) return stored;
+    } catch (error) {}
+
+    try {
+      if (navigator.clipboard?.readText) {
+        const clipboard = await navigator.clipboard.readText();
+        if (String(clipboard || "").trim()) return clipboard;
+      }
+    } catch (error) {}
+
+    return "";
+  }
+
+  async function copyForm(form, label = "Ficha") {
+    if (!form) return;
+    await writeTransferPayload(buildTransferPayload(form, label), `${label} copiada`);
+  }
+
+  async function pasteIntoForm(form, preferredText = "", options = {}) {
+    if (!form) return false;
+
+    const text = await readTransferText(preferredText);
+    if (!text) {
+      toast("Cole uma ficha válida ou copie uma ficha antes.", "error");
+      return false;
+    }
+
+    const parsed = parseRawSheet(text);
+
+    if (!parsed || parsed.error) {
+      toast("Essa ficha não é uma ficha de D&D válida do Campaign Lab.", "error");
+      return false;
+    }
+
+    hydrateForm(form, parsed, { reset: true, dispatch: false });
+
+    if (options.main) {
+      refreshMainFormAfterPaste(form);
+    } else {
+      state.loaded = true;
+      await saveReserveNow({ force: true });
+    }
+
+    toast(options.main ? "Ficha colada como principal." : "Ficha colada na reserva.", "success");
+    return true;
+  }
+
+  function refreshMainFormAfterPaste(form) {
+    if (!form) return;
+
+    try { if (typeof syncCampaignLabDndClassFieldsInForm === "function") syncCampaignLabDndClassFieldsInForm(form); } catch (error) {}
+    try { if (typeof dndRecalculateAll === "function") dndRecalculateAll(form); } catch (error) {}
+    try { if (typeof updateDndPlayerPreview === "function") updateDndPlayerPreview(); } catch (error) {}
+    try { if (typeof updateDndAutoNumbers === "function") updateDndAutoNumbers(); } catch (error) {}
+    try { if (typeof syncAllDndSpellSlotTrackers === "function") syncAllDndSpellSlotTrackers(form); } catch (error) {}
+
+    try {
+      form.dispatchEvent(new Event("input", { bubbles: true }));
+      form.dispatchEvent(new Event("change", { bubbles: true }));
+    } catch (error) {}
+  }
+
+  function bindButtons() {
+    document.addEventListener("click", async (event) => {
+      if (!isDndPlayerPage()) return;
+
+      const mainForm = getMainForm();
+      const reserveForm = getReserveForm();
+
+      if (event.target.closest("#campaignLabDndCopySheetBtn")) {
+        event.preventDefault();
+        await copyForm(mainForm, "Ficha principal");
+        return;
+      }
+
+      if (event.target.closest("#campaignLabDndPasteSheetBtn")) {
+        event.preventDefault();
+        const ok = await pasteIntoForm(mainForm, "", { main: true });
         if (ok) {
-          const box = document.getElementById("dndReservePasteBox");
-          if (box) box.value = "";
+          try { if (typeof saveDndPlayerSheet === "function") await saveDndPlayerSheet(false); } catch (error) {}
         }
         return;
       }
 
       if (event.target.closest("#dndReserveCopyBtn, #dndReserveModelCopyBtn")) {
         event.preventDefault();
-        await setupReserveSheet();
-        await copyFormAsDndSheet(getReserveForm(), "Ficha reserva");
+        await ensureReserveBuiltSoon(true);
+        await copyForm(getReserveForm(), "Ficha reserva");
         return;
       }
 
-      if (event.target.closest("#dndReserveModelPasteBtn")) {
+      if (event.target.closest("#dndReservePasteBtn, #dndReserveModelPasteBtn")) {
         event.preventDefault();
-        await setupReserveSheet();
-        await pasteIntoDndForm(getReserveForm(), "", { targetLabel: "na ficha reserva" });
-        return;
-      }
-
-      if (event.target.closest("#dndReserveUseAsMainBtn")) {
-        event.preventDefault();
-        await setupReserveSheet();
-        if (!reserveForm || !mainForm) return;
-
-        const name = getSheetName(getFormDataComplete(reserveForm));
-        const ok = confirm(`Usar a ficha reserva "${name}" como ficha principal?\n\nIsso substituirá os campos da ficha principal atual.`);
-        if (!ok) return;
-
-        hydrateForm(mainForm, getFormDataComplete(reserveForm));
-        refreshDndFormAfterHydrate(mainForm, { dispatch: false });
-        try {
-          if (typeof saveDndPlayerSheet === "function") await saveDndPlayerSheet(false);
-        } catch (error) {}
-        toast("Ficha reserva aplicada como principal.", "success");
+        await ensureReserveBuiltSoon(true);
+        const box = document.getElementById("dndReservePasteBox");
+        const ok = await pasteIntoForm(getReserveForm(), box?.value || "", { main: false });
+        if (ok && box) box.value = "";
         return;
       }
 
       if (event.target.closest("#dndReserveModelSaveBtn")) {
         event.preventDefault();
-        await setupReserveSheet();
-        syncReserveSheetToHidden(true);
-        toast("Ficha reserva salva.", "success");
+        await ensureReserveBuiltSoon(true);
+        await saveReserveNow({ force: true });
+        return;
       }
+
+      if (event.target.closest("#dndReserveUseAsMainBtn")) {
+        event.preventDefault();
+        await ensureReserveBuiltSoon(true);
+
+        const currentReserveForm = getReserveForm();
+        const currentMainForm = getMainForm();
+        if (!currentReserveForm || !currentMainForm) return;
+
+        const data = getFormDataCompleteSafe(currentReserveForm);
+        const name = getSheetName(data);
+        const ok = confirm(`Usar a ficha reserva "${name}" como ficha principal?\n\nIsso substitui os campos atuais da ficha principal.`);
+        if (!ok) return;
+
+        hydrateForm(currentMainForm, data, { reset: true, dispatch: false });
+        refreshMainFormAfterPaste(currentMainForm);
+
+        try { if (typeof saveDndPlayerSheet === "function") await saveDndPlayerSheet(false); } catch (error) {}
+        toast("Ficha reserva aplicada como principal.", "success");
+      }
+    }, true);
+  }
+
+  function wrapMainUpdateToIgnoreReserveField() {
+    if (state.mainUpdateWrapped) return;
+    if (typeof updateDndSheet !== "function") return;
+
+    const original = updateDndSheet;
+
+    updateDndSheet = async function updateDndSheetWithoutReserveField(campaignId, userId, data) {
+      const cleanData = data && typeof data === "object" ? { ...data } : {};
+      delete cleanData[RESERVE_FIELD];
+      return original.call(this, campaignId, userId, cleanData);
+    };
+
+    updateDndSheet.__reserveFinalWrapped = true;
+    state.mainUpdateWrapped = true;
+  }
+
+  async function ensureReserveBuiltSoon(force = false) {
+    ensureReserveTabLast();
+    ensureReserveSectionExists();
+
+    if (buildReserveClone()) return true;
+
+    if (!force) return false;
+
+    for (let i = 0; i < 12; i += 1) {
+      await new Promise((resolve) => window.setTimeout(resolve, 250));
+      if (buildReserveClone()) return true;
+    }
+
+    setReserveStatus("Não consegui criar a Ficha Reserva. Recarregue a página.", "error");
+    return false;
+  }
+
+  function startObserver() {
+    if (state.observerStarted) return;
+    state.observerStarted = true;
+
+    const observer = new MutationObserver(() => {
+      if (!isDndPlayerPage()) return;
+      if (getReserveForm()) return;
+      ensureReserveBuiltSoon(false);
     });
-  }
 
-  function wrapDndSheetLoad() {
-    try {
-      if (typeof loadDndSheetIntoPlayerForm === "function" && !loadDndSheetIntoPlayerForm.__dndReserveWrapped) {
-        const original = loadDndSheetIntoPlayerForm;
-        loadDndSheetIntoPlayerForm = async function () {
-          const result = await original.apply(this, arguments);
-          window.setTimeout(() => {
-            setupToolbarButtons();
-            setupReserveSheet();
-          }, 120);
-          return result;
-        };
-        loadDndSheetIntoPlayerForm.__dndReserveWrapped = true;
-      }
-    } catch (error) {}
-  }
-
-  function wrapDndPlayerSheetSetup() {
-    try {
-      if (typeof setupDndPlayerSheet === "function" && !setupDndPlayerSheet.__dndReserveWrapped) {
-        const original = setupDndPlayerSheet;
-        setupDndPlayerSheet = async function () {
-          const result = await original.apply(this, arguments);
-          window.setTimeout(() => {
-            setupToolbarButtons();
-            setupReserveSheet();
-          }, 120);
-          return result;
-        };
-        setupDndPlayerSheet.__dndReserveWrapped = true;
-      }
-    } catch (error) {}
+    observer.observe(document.body, { childList: true, subtree: true });
   }
 
   function init() {
     if (!isDndPlayerPage()) return;
-    wrapDndSheetLoad();
-    wrapDndPlayerSheetSetup();
-    setupToolbarButtons();
-    setupReserveButtons();
-    window.setTimeout(() => {
-      setupToolbarButtons();
-      setupReserveSheet();
-    }, 1400);
-    window.setTimeout(() => {
-      setupToolbarButtons();
-      setupReserveSheet();
-    }, 2600);
+
+    wrapMainUpdateToIgnoreReserveField();
+    bindButtons();
+    startObserver();
+    ensureReserveBuiltSoon(false);
+
+    [300, 800, 1500, 2600, 4200].forEach((delay) => {
+      window.setTimeout(() => ensureReserveBuiltSoon(false), delay);
+    });
   }
 
-  wrapDndSheetLoad();
-  wrapDndPlayerSheetSetup();
+  wrapMainUpdateToIgnoreReserveField();
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);
   } else {
     init();
   }
+
+  window.campaignLabDndReserveDebug = {
+    build: () => ensureReserveBuiltSoon(true),
+    load: loadReserve,
+    save: () => saveReserveNow({ force: true }),
+    data: () => getFormDataCompleteSafe(getReserveForm()),
+    localKey: getLocalKey,
+    state,
+  };
 })();
+
